@@ -58,10 +58,15 @@ public class MyButtonInitiateDragAndDrop extends MySpanButton {
 //                    pointerDragged(x - 1, y - 1); //ths dragged element moves by the '1' pixels
                     pointerDragged(x - 2, y - 2); //ths dragged element moves by the '1' pixels
                 });
-                if (false) ev.consume(); //not necessary since the event is only send once and there are no other longPress listeners(??)
+                if (false) {
+                    ev.consume(); //not necessary since the event is only send once and there are no other longPress listeners(??)
+                }
             } else {
 //            Dialog.show("", "Turn Sort OFF to Drag and drop", "OK", null);
-                Dialog.show("", "Drag and drop not possible (view sorted, or D&D not possible in this view)", "OK", null);
+                Form f = getComponentForm();
+                if (f instanceof MyForm && ((MyForm) f).isShowDragAndDropWarning()) {
+                    Dialog.show("", "Drag and drop not possible (view sorted, or D&D not possible in this view)", "OK", null);
+                }
             }
         });
     }

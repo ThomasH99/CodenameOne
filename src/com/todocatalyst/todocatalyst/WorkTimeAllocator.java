@@ -14,14 +14,14 @@ import java.util.Hashtable;
 import java.util.LinkedList;
 
 /**
-each list or item which has workTime, or worktime allocated, has its own WTA which is used to allocate
-workTime to its (sub-)tasks, itself (if the project task has its own Remaining) or its items (if its a list). 
-
- * Split btw WorkTimeDef and ItemList: WTD calculates work slots and finds
- * date/time corresponding to a workload sum; recalculated if work slots change.
- * IL adds an additional structure to calculate sum of workload for each item,
- * indexed by index. IL adds a convenience method to get start/endWorkTime for
- * each item (based on Index). IL can calculate this for subItems
+ * each list or item which has workTime, or worktime allocated, has its own WTA
+ * which is used to allocate workTime to its (sub-)tasks, itself (if the project
+ * task has its own Remaining) or its items (if its a list). * Split btw
+ * WorkTimeDef and ItemList: WTD calculates work slots and finds date/time
+ * corresponding to a workload sum; recalculated if work slots change. IL adds
+ * an additional structure to calculate sum of workload for each item, indexed
+ * by index. IL adds a convenience method to get start/endWorkTime for each item
+ * (based on Index). IL can calculate this for subItems
  * (Projects)/Sublists/Categories.
  *
  * Maintains a list of sorted, non-overlapping slots. The list is created by
@@ -174,7 +174,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
     private void initAndReset() {
         workTimeCache = null;
 //          WorkSlotList workSlotList = this.ownerOrCategory.getWorkSlotListN();
-WorkSlotList workSlots = this.ownerItemItemListOrCategory.getWorkSlotListN();
+        WorkSlotList workSlots = this.ownerItemItemListOrCategory.getWorkSlotListN();
         this.workTimeSlices = new WorkTimeSlices(workSlots); //workSlotList != null ? new WorkTimeSlices(this.ownerOrCategory.getWorkSlotListN()) : null;
 //        this.itemsSortedFiltered = (List<ItemAndListCommonInterface>) this.ownerOrCategory.getList();
         this.itemsSortedFiltered = (List<Item>) this.ownerItemItemListOrCategory.getList();
@@ -183,9 +183,11 @@ WorkSlotList workSlots = this.ownerItemItemListOrCategory.getWorkSlotListN();
         long requiredWorkTime = this.ownerItemItemListOrCategory.getRemaining(); //calculate how much time is needed from all subtasks
 //        long availWorktime = getAvailableTime();
         long availWorktime = workTimeSlices.getAvailableTime();
-        if (requiredWorkTime > availWorktime||workSlots==null) { //if need additional workTime, ==null to get even a zero-slice for zero-duration tasks
+
+        if (requiredWorkTime > availWorktime || workSlots == null) { //if need additional workTime, ==null to get even a zero-slice for zero-duration tasks
             requiredWorkTime -= availWorktime; //reduce to needed additional workTime
             List<ItemAndListCommonInterface> potentialProviders = this.ownerItemItemListOrCategory.getOtherPotentialWorkTimeProvidersInPrioOrderN();
+
             if (potentialProviders != null) {
                 for (ItemAndListCommonInterface prov : potentialProviders) {
                     //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
@@ -193,6 +195,9 @@ WorkSlotList workSlots = this.ownerItemItemListOrCategory.getWorkSlotListN();
 //                    addWorkTimeSlices(prov.getAllocatedWorkTimeN(this.ownerOrCategory));
                     WorkTimeSlices slices = prov.getAllocatedWorkTimeN((Item) ownerItemItemListOrCategory); //(Item) since we should only allocate to items
                     if (slices != null) {
+                        if (Config.WORKTIME_TEST) {
+                            ASSERT.that(slices.getAllocatedDuration() > 0, "no time allocated in workSlotSlides=" + slices);
+                        }
                         workTimeSlices.addWorkTime(slices);
 //                    requiredWorkTime = getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
 //                    requiredWorkTime = workTimeSlices.getRemainingDuration(); //set remaining to any duration that could not be allocated by this provider
@@ -225,15 +230,17 @@ WorkSlotList workSlots = this.ownerItemItemListOrCategory.getWorkSlotListN();
     public String toString() {
         String sep = "";
         String sliceStr = "";
-        if (workTimeCache != null)
+        if (workTimeCache != null) {
             for (WorkTimeSlices slice : workTimeCache.values()) {
                 sliceStr += sep + (slice == null ? "<null>" : slice.toString());
+                if(!sep.equals("")) sep="|";
             }
+        }
         return "WorkTimeAllocator for:"
                 + (ownerItemItemListOrCategory != null ? (ownerItemItemListOrCategory.getText()) : "NONE??")
-                + "Got:" + (workTimeSlices != null ? workTimeSlices.getAvailableTime() : "<none>")
-                + ";\nWorkTime= " + (workTimeSlices != null ? workTimeSlices.toString() : "<none>")
-                + ";\nAllocations: " + (sliceStr.length() > 0 ? sliceStr : "<none>"); //workTimeCache.toString(); Item.
+                + " Avail:" + (workTimeSlices != null ? MyDate.formatDuration(workTimeSlices.getAvailableTime()) : "<none>")
+                + ";\nWTSlices= [\n" + (workTimeSlices != null ? workTimeSlices.toString()+"\n] " : "<none>")
+                + ";\nAllocations= [\n" + (sliceStr.length() > 0 ? sliceStr+"\n]" : "<none>"); //workTimeCache.toString(); Item.
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -254,9 +261,12 @@ WorkSlotList workSlots = this.ownerItemItemListOrCategory.getWorkSlotListN();
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
-    returns the list of items that have a slice of this workSlot allocated to them, in allocation order based on order of the list of items in itemsSortedFiltered
-    @param workSlot
-    @return
+     * returns the list of items that have a slice of this workSlot allocated to
+     * them, in allocation order based on order of the list of items in
+     * itemsSortedFiltered
+     *
+     * @param workSlot
+     * @return
      */
 //    public List<Item> getItemsInWorkSlot(WorkSlot workSlot) { xxx
 //        List<Item> itemsInWorkSlot = new ArrayList();
@@ -293,7 +303,7 @@ WorkSlotList workSlots = this.ownerItemItemListOrCategory.getWorkSlotListN();
      * @param item
      * @param remainingDuration
      * @param duration
-     * @return 
+     * @return
      */
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private WorkTimeSlices calculateWorkTime(WorkTimeSlices prevWorkTime) {
@@ -452,7 +462,8 @@ WorkSlotList workSlots = this.ownerItemItemListOrCategory.getWorkSlotListN();
 //</editor-fold>
     /**
      * returns allocated workTime for the item at index itemIndex and for an
-     * effort of desiredDuration, may return less than desired even 0. Call with project task itself to get the time allocated to it. 
+     * effort of desiredDuration, may return less than desired even 0. Call with
+     * project task itself to get the time allocated to it.
      *
      * @param itemIndex must be a valid itemIndex
      * @param desiredDuration
@@ -657,10 +668,13 @@ WorkSlotList workSlots = this.ownerItemItemListOrCategory.getWorkSlotListN();
             if (ownerItemItemListOrCategory instanceof Item) {
                 Item itemOwner = (Item) ownerItemItemListOrCategory;
                 boolean notAProject = !itemOwner.isProject();
-                long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(notAProject); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
+//                long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(notAProject); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
+                long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
                 if (remainingPrjTask > 0 || notAProject) {
                     WorkTimeSlices newWorkTS = workTimeSlices.getWorkTime(remainingPrjTask, ownerItemItemListOrCategory);
-                    if (newWorkTS!=null) workTimeCache.put(itemOwner, newWorkTS); //add the 
+                    if (newWorkTS != null) {
+                        workTimeCache.put(itemOwner, newWorkTS); //add the 
+                    }
                 }
             }
 //            }

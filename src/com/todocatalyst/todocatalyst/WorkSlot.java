@@ -92,7 +92,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
 //    private List<Item> itemsWithSlicesOfThisWorkSlot = new ArrayList(); //unsorted /for now
-    private List itemsWithSlicesOfThisWorkSlot = new ArrayList(); //unsorted /for now
+    private List itemsWithNonZeroSlicesOfThisWorkSlot = new ArrayList(); //unsorted /for now
     private List<Runnable> opsAfterSubtaskUpdates = new ArrayList(); //operations to run once all changes to Item's fields have been made, e.g. repeatRules
 
     public WorkSlot() {
@@ -877,7 +877,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
                 //                + " " + getText() + "[" + getObjectIdP() + "]" + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
                 + (getObjectIdP() == null ? " [NoObjId]" : (" [" + getObjectIdP() + "]"))
                 + (" Owner:" + (getOwner() != null ? (getOwner().getText() + "/" + getOwner().getObjectIdP()) : "None")
-                +(getRepeatRule()!=null?"RepRul["+getRepeatRule().getObjectIdP()+"]":""));
+                + (getRepeatRule() != null ? "RepRul[" + getRepeatRule().getObjectIdP() + "]" : ""));
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -908,7 +908,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         //if duration is not updated, then initialDuration-duration==0 meaning original start is always used
 //        return start + (initialDuration - duration);
         Date startTime = getDate(PARSE_START_TIME);
-        return (startTime == null) ? new Date(0) : startTime; //TODO!!! is 'Date(0)' best undefined time?! Rather use MyDate.MAXDATE?!
+        return (startTime == null) ? new MyDate(0) : startTime; //TODO!!! is 'Date(0)' best undefined time?! Rather use MyDate.MAXDATE?!
 
 //        return startTime;
     }
@@ -917,12 +917,14 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return getStartTimeD().getTime();
 //    }
     /**
-     * adjusts start in case the slot covers the current time, or in case some
-     * of the duration has already been consumed (this is necessary to make it
-     * possible to reduce a time slot as it is consumed by individual tasks,
-     * otherwise each time a task is completed, the next will start at start
-     * time of the slot). If startDate is in the past, return NOW
-     * (MyDate.getNow())
+     * returns startTime if startTime > now (starts in the future), if
+     * endTime<now (in the past) returns endTime, otherwise (startStart <= now
+     * <= endTime) returns now. adjusts start in case the slot covers the
+     * current time, or in case some of the duration has already been consumed
+     * (this is necessary to make it possible to reduce a time slot as it is
+     * consumed by individual tasks, otherwise each time a task is completed,
+     * the next will start at start time of the slot). If startDate is in the
+     * past, return NOW (MyDate.getNow())
      */
 //    public long getStartAdjustedXXX() {
 ////        return getStartAdjusted(new Date().getTime());
@@ -943,8 +945,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    if ()
 //}
 //</editor-fold>
-        return Math.max((getStartTimeD().getTime()), now); //"start + (initialDuration - duration)" add the difference btw initialDuration and current duration (=time consumed) to original start, return the latest time of this new start, and NOW
-//        }
+        if (getStartTimeD().getTime() > now) { //|| getEndTimeD().getTime()> now)
+            return getStartTimeD().getTime(); //"start + (initialDuration - duration)" add the difference btw initialDuration and current duration (=time consumed) to original start, return the latest time of this new start, and NOW
+        } else {
+            return Math.min((getEndTimeD().getTime()), now); //"start + (initialDuration - duration)" add the difference btw initialDuration and current duration (=time consumed) to original start, return the latest time of this new start, and NOW
+        }//        }
     }
 
     public final void setStartTime(Date start) {
@@ -959,12 +964,12 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        }
 //</editor-fold>
         if ((start != null && start.getTime() != 0)) {
+            setEndTime(new MyDate(start.getTime() + getDurationInMillis()));
             put(PARSE_START_TIME, start);
-            setEndTime(new Date(start.getTime() + getDurationInMillis()));
 //            updateEndTimeWithNewStartTime(start);
         } else {
-            remove(PARSE_START_TIME);
             setEndTime(null);
+            remove(PARSE_START_TIME);
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        updateEndTimeWithNewStartTime(start == null ? new Date(0) : start);
@@ -980,6 +985,18 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        setEndTime((start == null) ? (new Date(0)) : (new Date(start.getTime() + getDurationInMillis()))); //!!!Java compiler error?? When date is a valid date, this somehow gives a 0 date as parameter to setEndTime()!!!
 //        setEndTime(testNewEndDate);
 //</editor-fold>
+    }
+
+    public boolean isInThePast(long now) {
+        return getEndTimeD().getTime() < now;
+    }
+
+    public boolean isInTheFuture(long now) {
+        return getStartTimeD().getTime() > now;
+    }
+
+    public boolean isOngoing(long now) {
+        return getStartTimeD().getTime() <= now && now <= getEndTimeD().getTime();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1026,7 +1043,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return start + duration;
 //        return new Date(getStartTimeD().getTime() + getDurationInMillis()); //unchanged, even as start is in the past, or consumedDuration>0
         Date time = getDate(PARSE_END_TIME);
-        return (time == null) ? new Date(0) : time; //TODO!!! is 'Date(0)' best undefined time?! Rather use MyDate.MAXDATE?!
+        return (time == null) ? new MyDate(0) : time; //TODO!!! is 'Date(0)' best undefined time?! Rather use MyDate.MAXDATE?!
 
     }
 
@@ -1097,8 +1114,19 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        }
 // </editor-fold>
         return ((long) getDurationInMinutes()) * MyDate.MINUTE_IN_MILLISECONDS;
+//        Long duration = getLong(PARSE_DURATION); //only store the time as minutues (more readable in parse)
+//        if (duration != null) {
+//            return duration; //only store the time as minutues (more readable in parse)
+//        } else {
+//            return 0;
+//        }
+
     }
 
+    /**
+     * workslot duration is always set by the user (no automatic calculation that could millisecond results) so only store minutes in Parse
+     * @return 
+     */
     public int getDurationInMinutes() {
 //        return getDurationInMillis() / MINUTES_IN_MILLISECONDS;
         Integer duration = getInt(PARSE_DURATION); //only store the time as minutues (more readable in parse)
@@ -1107,6 +1135,9 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         } else {
             return 0;
         }
+//        Long durationInMillis = getDurationInMillis();
+//        int durationInMinutes = (int) (durationInMillis / MyDate.MINUTE_IN_MILLISECONDS);
+//        return durationInMinutes;
     }
 
     /**
@@ -1172,10 +1203,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      */
     public long getDurationAdjusted(long fromTime, long toTime) {
         if (Config.TEST) {
-            Date actualEnd = new Date(
+            Date actualEnd = new MyDate(
                     Math.min(getStartTimeD().getTime() + getDurationInMillis(), toTime)
             ); //get the earliest endDate
-            Date actualStart = new Date(
+            Date actualStart = new MyDate(
                     Math.max(getStartTimeD().getTime(), fromTime)
             ); //get the latest startDate
 
@@ -1229,7 +1260,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
         Date startDate = getStartTimeD();
         if (startDate.getTime() != 0) {
-            setEndTime(new Date(getStartTimeD().getTime() + getDurationInMillis()));
+            setEndTime(new MyDate(getStartTimeD().getTime() + getDurationInMillis()));
         } else {
             setEndTime(null);
         }
@@ -1698,16 +1729,16 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        }
 //    }
     /**
-     * keep track of which items have been allocated a slide of this workslot
+     * keep track of which items have been allocated a (non-zero?!) slide of this workslot
      *
      * @param item
      */
     public void addItemWithSlice(Item item) {
-        itemsWithSlicesOfThisWorkSlot.add(item);
+        itemsWithNonZeroSlicesOfThisWorkSlot.add(item);
     }
 
     public void resetItemWithSlice() {
-        itemsWithSlicesOfThisWorkSlot = new ArrayList();
+        itemsWithNonZeroSlicesOfThisWorkSlot = new ArrayList();
     }
 
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -1755,13 +1786,13 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return items;
 //    }
 ////</editor-fold>
-    public Item getItemsInWorkSlotAsArticialItem() {
+    public Item getItemsInWorkSlotAsArticialItemXXX() {
 //        List<? extends ItemAndListCommonInterface> subtasks = getTasksInWorkSlotForToday();
         ItemAndListCommonInterface owner = getOwner();
-        owner.forceCalculationOfWorkTime();
+        owner.forceCalculationOfWorkTimeXXX();
         Item artificialItem = new Item();
 //        artificialItem.setList(getTasksInWorkSlotForToday());
-        artificialItem.setList(new ArrayList(itemsWithSlicesOfThisWorkSlot)); //work on a copy!
+        artificialItem.setList(new ArrayList(itemsWithNonZeroSlicesOfThisWorkSlot)); //work on a copy!
         artificialItem.setText(
                 WorkSlot.WORKSLOT
                 + " " + MyDate.formatTimeNew(getStartTimeD()) + "-" + MyDate.formatTimeNew(getEndTimeD())
@@ -1919,7 +1950,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public List<ItemAndListCommonInterface> getListFull() {
-        return (List<ItemAndListCommonInterface>) itemsWithSlicesOfThisWorkSlot;
+        return (List<ItemAndListCommonInterface>) itemsWithNonZeroSlicesOfThisWorkSlot;
     }
 
     @Override
@@ -1997,7 +2028,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public FilterSortDef getFilterSortDef() {
+    public FilterSortDef getFilterSortDefN() {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -2043,7 +2074,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //            myRepeatRule.updateIfExpiredOrDeletedWorkslots(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
 //            myRepeatRule.updateWhenWorkSlotDeleted(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
 //</editor-fold>
-            myRepeatRule.updateIfExpiredOrDeletedWorkslots(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+            myRepeatRule.updateWhenWorkslotDeleted(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
             //NB. We don't delete the item's refs to repeatrule
             DAO.getInstance().saveNew(myRepeatRule, false);
         }

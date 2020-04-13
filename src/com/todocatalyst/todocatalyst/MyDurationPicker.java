@@ -45,19 +45,19 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //        }
 //    }
 //</editor-fold>
-
-//    @Override
-    protected void updateValueXXX() {
-//        if (getType()==Display.PICKER_TYPE_TIME && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
-//        if (getType()==Display.PICKER_TYPE_TIME && getTime() != 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
-//        if (getType() == Display.PICKER_TYPE_DURATION && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
-        if (getType() == Display.PICKER_TYPE_DURATION && getDuration() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
-            setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
-        } else {
-            super.updateValue(); //To change body of generated methods, choose Tools | Templates.
-        }
-    }
 //<editor-fold defaultstate="collapsed" desc="comment">
+
+////    @Override
+//    protected void updateValueXXX() {
+////        if (getType()==Display.PICKER_TYPE_TIME && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
+////        if (getType()==Display.PICKER_TYPE_TIME && getTime() != 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
+////        if (getType() == Display.PICKER_TYPE_DURATION && getTime() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
+//        if (getType() == Display.PICKER_TYPE_DURATION && getDuration() == 0 && zeroValuePattern != null) { //getType()==Display.PICKER_TYPE_TIME needed since updateValue is called in constructor before value is set to an Integer
+//            setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
+//        } else {
+//            super.updateValue(); //To change body of generated methods, choose Tools | Templates.
+//        }
+//    }
 //    MyDurationPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
 //        this(null, parseIdMap, getDurationInMinutes, setDurationInMinutes);
 //    }
@@ -90,7 +90,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
             this.zeroValuePattern = zeroValuePatternVal;
         }
         setDuration(durationInMillis);
-        setUIID("LabelValue");
+        setUIID("ScreenItemEditableValue");
 //        this.zeroValuePattern = ""; // "<set>";
         setFormatter(new SimpleDateFormat() {
             public String format(Object durationInMillis) {
@@ -153,7 +153,6 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //    public void setDurationMinutesXXX(int minutes) {
 //        this.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
 //    }
-//</editor-fold>
 //    private void notifyMyActionListenersXXX() {
 //        for (Object al : getListeners()) {
 //            if (al instanceof MyActionListener) {
@@ -161,12 +160,14 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //            }
 //        }
 //    }
+//</editor-fold>
     /**
     set the duration
     @param timeInMillis 
      */
     @Override
     public void setDuration(long timeInMillis) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (clearButton != null) {
 ////            clearButton.setHidden(time == 0); //hide clear button when field is cleared
 //            clearButton.setVisible(timeInMillis != 0); //hide clear button when field is cleared, show if value is set
@@ -175,6 +176,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //        if (true || millis != 0) {
 //            preserveSeconds = millis; //always save milliseconds
 //        }
+//</editor-fold>
         if (preserveSecondsWhenEditing)
             preserveSecondsAndMillis = timeInMillis % MyDate.MINUTE_IN_MILLISECONDS;; //always save seconds
 //        super.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
@@ -193,6 +195,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
         fireActionEvent(-99, -99); //-99 used in CN1 Picker to ignore built-in action listener
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public void setDurationXXX(long timeInMinutes) {
 ////        if (clearButton != null) {
 //////            clearButton.setHidden(time == 0); //hide clear button when field is cleared
@@ -207,13 +210,16 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //            }
 //        }
 //    }
+//</editor-fold>
     @Override
     public long getDuration() {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        long millis = editedMillis % 1000;
 //        if (millis == 0 && preserveSeconds != null) { //if milliseconds were removed during editing, and were preserved before editing, then add back again
 //            editedMillis += preserveSeconds; //add the missing millis back again
 //            preserveSeconds = null;
 //        }
+//</editor-fold>
         long editedMillis;
         if (preserveSecondsWhenEditing) {
             preserveSecondsAndMillis = 0;
@@ -232,9 +238,11 @@ class MyDurationPicker extends Picker implements SwipeClear {
     pattern show when zero value, in most screens where there is an edit button, "" is the best pattern, but for example in Timer, "0:00" (or similar localized version) shows that there is an editable/clickable
     @param zeroValuePattern 
      */
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public void setZeroValuePattern(String zeroValuePattern) {
 //        this.zeroValuePattern = zeroValuePattern;
 //    }
+//</editor-fold>
     public void setShowZeroValueAsZeroDuration(boolean showZeroValuePattern) {
         MyDate d;
         if (showZeroValuePattern) {
@@ -244,6 +252,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
         }
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private Button clearButton = null;
 //    public void setClearButton(Button clearButton) {
 //        this.clearButton = clearButton;
@@ -267,6 +276,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //            }
 //        }
 //    }
+//</editor-fold>
     void swipeClear() {
         setDurationAndNotify(0L); //will notify myActionListeners
     }
@@ -367,7 +377,9 @@ class MyDurationPicker extends Picker implements SwipeClear {
         swipeClear();
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public void fireClicked() { //needed to give access to 'click' the button programmatically
 //        super.fireClicked();
 //    }
+//</editor-fold>
 };

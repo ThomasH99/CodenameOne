@@ -20,7 +20,7 @@ import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.layouts.MyBorderLayout;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.GridLayout;
 import com.codename1.ui.plaf.Style;
@@ -129,7 +129,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             MyForm previousForm, Runnable updateOnDone,
             GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected,
             boolean exitWhenMaxObjectsIsSelected) {
-        this(title, listOfAllLists, listOfAllTopLevelProjects, selectedObjects, previousForm, updateOnDone, 
+        this(title, listOfAllLists, listOfAllTopLevelProjects, selectedObjects, previousForm, updateOnDone,
                 labelMaker, 1, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
     }
 
@@ -140,10 +140,13 @@ public class ScreenObjectPicker<E> extends MyForm {
         super(title, previousForm, updateOnDone);
         assert maxNbOfSelected >= minNbOfSelected && maxNbOfSelected >= 1;
         if (listOfAllLists != null) //may be null
+        {
             this.listOfAllLists1 = new ArrayList(listOfAllLists); //make a copy to it can be modified if adding missing elements in code below
+        }
         if (listOfAllTopLevelProjects != null) //may be null
+        {
             this.listOfAllTopLevelProjects1 = new ArrayList(listOfAllTopLevelProjects); //make a copy to it can be modified if adding missing elements in code below
-//        this.listOfAllTasks = listOfAllTasks;
+        }//        this.listOfAllTasks = listOfAllTasks;
         this.selectedObjects1 = selectedObjects;
         this.minNbOfSelected = minNbOfSelected;
         this.maxNbOfSelected = maxNbOfSelected;
@@ -155,13 +158,15 @@ public class ScreenObjectPicker<E> extends MyForm {
         if (selectedObjects1 != null && selectedObjects1.size() > 0) {
             if (selectedObjects1.get(0) instanceof ItemList) {
                 for (ItemList itemList : (List<ItemList>) selectedObjects1) {
-                    if (!listOfAllLists1.contains(itemList))
+                    if (!listOfAllLists1.contains(itemList)) {
                         listOfAllLists1.add(0, itemList); //TODO!!!! if multiple elements in selectedObjects, then they are added in *reverse* order to the list (not an issue as long as ObjectPicker is only used to pick Owner)
+                    }
                 }
             } else if (selectedObjects1.get(0) instanceof Item) {
                 for (Item item : (List<Item>) selectedObjects1) {
-                    if (!listOfAllTopLevelProjects1.contains(item))
+                    if (!listOfAllTopLevelProjects1.contains(item)) {
                         listOfAllTopLevelProjects1.add(0, item);
+                    }
                 }
             }
         }
@@ -196,10 +201,11 @@ public class ScreenObjectPicker<E> extends MyForm {
 //            errorMsgInSelection = "Please select 1 element at most";
 //            errorMsgInSelection = "Please select %i elements at most";
 //            errorMsgInSelection = "Please select " + (this.maxNbOfSelected + 1) + " element" + (this.maxNbOfSelected > 1 ? "s" : "") + " at most";
-            if (this.maxNbOfSelected > 1)
+            if (this.maxNbOfSelected > 1) {
                 errorMsgInSelection = "Please select " + (this.maxNbOfSelected + 1) + " elements at most";
-            else
+            } else {
                 errorMsgInSelection = "Please select " + (this.maxNbOfSelected + 1) + " element at most";
+            }
         }
 
         if (this.labelMaker == null) {
@@ -210,7 +216,7 @@ public class ScreenObjectPicker<E> extends MyForm {
         setScrollableY(false); //disable scrolling of form, necessary to let lists handle their own scrolling 
         listCont = new Container(BoxLayout.y());
         listCont.setScrollableY(true); //disable scrolling of form, necessary to let lists handle their own scrolling 
-        getContentPane().add(MyBorderLayout.CENTER, listCont);
+        getContentPane().add(BorderLayout.CENTER, listCont);
         addCommandsToToolbar(getToolbar());
 
         getToolbar().addSearchCommand((e) -> {
@@ -225,7 +231,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             }
 //            getContentPane().animateLayout(150);
             animateMyForm();
-        });
+        }, MyPrefs.defaultIconSizeInMM.getFloat());
         refreshAfterEdit();
     }
 
@@ -241,7 +247,7 @@ public class ScreenObjectPicker<E> extends MyForm {
     }
 
     /**
-    return true if (possibly modified) category can be saved
+     * return true if (possibly modified) category can be saved
      */
 //    public  boolean checkItemListIsValidForSaving(ItemList itemList) {
     public boolean checkObjectChoiceIsValid(int nbSelectedItems) {
@@ -250,7 +256,9 @@ public class ScreenObjectPicker<E> extends MyForm {
         if (errorMsg != null) {
             Dialog.show("Error", errorMsg, "OK", null);
             return false;
-        } else return true;
+        } else {
+            return true;
+        }
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {
@@ -259,8 +267,9 @@ public class ScreenObjectPicker<E> extends MyForm {
         //if (objectCreator!=null)
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllObjects, ScreenObjectPicker.this)); //TODO!!!! enable adding new elements to picker screen
         setCheckIfSaveOnExit(() -> checkObjectChoiceIsValid(selectedObjects1.size()));
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //false: don't refresh ScreenItem when returning from Category selector
-
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //false: don't refresh ScreenItem when returning from Category selector
+        addStandardBackCommand();
+        
         if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //UI: always enable Cancel to make it easy to regret any changes
             toolbar.addCommandToOverflowMenu(
                     "Cancel", null, (e) -> {
@@ -322,7 +331,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             }
             );
         }
-        if (scrollToFirstSelected&&firstSelectedChk!=null) {
+        if (scrollToFirstSelected && firstSelectedChk != null) {
             scrollComponentToVisible(firstSelectedChk);
         }
         return cont;
@@ -406,7 +415,7 @@ public class ScreenObjectPicker<E> extends MyForm {
 //                }
                 butCont.add(buttonLists);
                 butCont.add(buttonProjects);
-                add(MyBorderLayout.SOUTH, butCont);
+                add(BorderLayout.SOUTH, butCont);
             }
             ItemAndListCommonInterface firstSelectedObj;
             if (selectedObjects1.size() > 0) { //if we already have element(s) selected

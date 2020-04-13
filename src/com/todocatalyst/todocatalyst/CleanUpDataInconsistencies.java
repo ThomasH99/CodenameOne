@@ -613,27 +613,31 @@ public class CleanUpDataInconsistencies {
                         dao.saveNew(false, itemListList, itemList);
                     }
                 }
-            } else if (!itemList.getOwner().equals(itemListList) && !itemList.isSystemList()) {
-                Log.p("CLEANUP: ItemListList not owner: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") does not have ItemListList as owner but instead \"" + itemList.getOwner() + "\" objId=" + ((ParseObject) itemList.getOwner()).getObjectIdP(), logLevel);
-                if (itemListList.contains(itemList)) {
-                    if (executeCleanup) { //correct to right owner
+            } else if (!itemList.getOwner().equals(itemListList)) {
+                if (!itemList.isSystemList()) {
+                    Log.p("CLEANUP: ItemListList not owner: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") does not have ItemListList as owner but instead \"" + itemList.getOwner() + "\" objId=" + ((ParseObject) itemList.getOwner()).getObjectIdP(), logLevel);
+                    if (itemListList.contains(itemList)) {
+                        if (executeCleanup) { //correct to right owner
+                            itemList.setOwner(itemListList);
+                            dao.saveNew((ParseObject) itemList, false);
+                        }
+                    } else if (executeCleanup) { //force owner to ItemListList anyway //TODO may not be the right solution if one day ItemLists of ItemLists is supported
+                        Log.p("CLEANUP: ItemList wrong owner: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") does not have ItemListList as owner but instead \"" + itemList.getOwner() + "\" objId=" + ((ParseObject) itemList.getOwner()).getObjectIdP(), logLevel);
                         itemList.setOwner(itemListList);
                         dao.saveNew((ParseObject) itemList, false);
                     }
-                } else if (executeCleanup) { //force owner to ItemListList anyway //TODO may not be the right solution if one day ItemLists of ItemLists is supported
-                    Log.p("CLEANUP: ItemList wrong owner: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") does not have ItemListList as owner but instead \"" + itemList.getOwner() + "\" objId=" + ((ParseObject) itemList.getOwner()).getObjectIdP(), logLevel);
-                    itemList.setOwner(itemListList);
-                    dao.saveNew((ParseObject) itemList, false);
                 }
-            } else if (!itemListList.contains(itemList) && !itemList.isSystemList()) {
-                Log.p("CLEANUP: ItemList not in ItemListList: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") has owner ItemListList but ItemListList does not reference it", logLevel);
-                if (executeCleanup) {
-                    itemListList.add(itemList);
+            } else if (!itemListList.contains(itemList)) {
+                if (!itemList.isSystemList()) {
+                    Log.p("CLEANUP: ItemList not in ItemListList: ItemList \"" + itemList + "\" (ObjId=" + itemList.getObjectIdP() + ", size=" + itemList.getSize() + ") has owner ItemListList but ItemListList does not reference it", logLevel);
+                    if (executeCleanup) {
+                        itemListList.add(itemList);
+                    }
                 }
             }
-            if (executeCleanup) {
-                dao.saveNew((ParseObject) itemListList, false);
-            }
+        }
+        if (executeCleanup) {
+            dao.saveNew((ParseObject) itemListList, false);
         }
     }
 
@@ -661,8 +665,8 @@ public class CleanUpDataInconsistencies {
 //        for (Category cat : CategoryList.getInstance().getList()) {
         for (Object o : CategoryList.getInstance().getListFull()) {
             Category cat = (Category) o;
-            if (cat.getFilterSortDef() != null && cat.getFilterSortDef().getObjectIdP() != null) {
-                catsWithFilter.put(cat.getFilterSortDef().getObjectIdP(), cat);
+            if (cat.getFilterSortDefN() != null && cat.getFilterSortDefN().getObjectIdP() != null) {
+                catsWithFilter.put(cat.getFilterSortDefN().getObjectIdP(), cat);
             }
         }
 
@@ -671,8 +675,8 @@ public class CleanUpDataInconsistencies {
 //        for (ItemList itemList : ItemListList.getInstance().getList()) {
         for (Object o : ItemListList.getInstance().getListFull()) {
             ItemList itemList = (ItemList) o;
-            if (itemList.getFilterSortDef() != null && itemList.getFilterSortDef().getObjectIdP() != null) {
-                itemListsWithFilter.put(itemList.getFilterSortDef().getObjectIdP(), itemList);
+            if (itemList.getFilterSortDefN() != null && itemList.getFilterSortDefN().getObjectIdP() != null) {
+                itemListsWithFilter.put(itemList.getFilterSortDefN().getObjectIdP(), itemList);
             }
         }
 
@@ -680,8 +684,8 @@ public class CleanUpDataInconsistencies {
 //        Map<FilterSortDef, Item> itemsWithFilter = new HashMap<>();
         Map<String, Item> itemsWithFilter = new HashMap<>();
         for (Item item : dao.getAllItems()) {
-            if (item.getFilterSortDef() != null && item.getFilterSortDef().getObjectIdP() != null) {
-                itemsWithFilter.put(item.getFilterSortDef().getObjectIdP(), item);
+            if (item.getFilterSortDefN() != null && item.getFilterSortDefN().getObjectIdP() != null) {
+                itemsWithFilter.put(item.getFilterSortDefN().getObjectIdP(), item);
             }
         }
 

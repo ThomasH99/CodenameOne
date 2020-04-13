@@ -19,11 +19,8 @@ import com.codename1.ui.Form;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
-import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
-import com.codename1.ui.layouts.GridLayout;
 import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.util.StringUtil;
@@ -49,7 +46,7 @@ public class ScreenRepair extends MyForm {
 //    private final static String CURRENT_USER_STORAGE_ID = "parseCurrentUser";
 //    MyForm mainScreen;
     public final static String SCREEN_TITLE = "Internal/Repair";
-
+    
     ScreenRepair(MyForm mainScreen) { // throws ParseException, IOException {
         super(SCREEN_TITLE, null, () -> {
         });
@@ -60,7 +57,7 @@ public class ScreenRepair extends MyForm {
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
     }
-
+    
     @Override
     public void refreshAfterEdit() {
         getContentPane().removeAll();
@@ -68,22 +65,31 @@ public class ScreenRepair extends MyForm {
         restoreKeepPos();
         super.refreshAfterEdit();
     }
-
+    
     public void addCommandsToToolbar() {
         Toolbar toolbar = getToolbar();
         //DONE/BACK
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+        addStandardBackCommand();
 
 //        toolbar.addCommandToOverflowMenu(makeCancelCommand());
 //        toolbar.addCommandToOverflowMenu(new Command("Reset to default")); //reset to default values
     }
-
-    private Label createForFont(Font fnt, String s) {
+    
+    private static String FONT_TEXT = "Task status DONE 123490";
+    
+    private Component createForFont(Font fnt, String s) {
+        Container c = new Container(BoxLayout.y());
         Label l = new Label(s);
         l.getUnselectedStyle().setFont(fnt);
-        return l;
+//        SpanLabel lt = new SpanLabel(FONT_TEXT); //NB. SpanLabel changes the font size to fit in screen width!
+        Label lt = new Label(FONT_TEXT);
+        lt.getUnselectedStyle().setFont(fnt);
+        c.add(l).add(lt);
+//        return l;
+        return c;
     }
-
+    
     public MyForm makeShowBuiltinFontsForm() {
 //        GridLayout gr = new GridLayout(5);
         Layout gr = BoxLayout.y();
@@ -92,15 +98,15 @@ public class ScreenRepair extends MyForm {
         MyForm hi = new MyForm("Fonts", ScreenRepair.this, () -> {
         });
         hi.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> this.showBack()));
-
+        
         hi.setLayout(gr);
         hi.setScrollableY(true);
 
 //        hi.getToolbar().setBackCommand(Command.create("", Icons.iconBackToPrevFormToolbarStyle, (e) -> this.show()));
         getToolbar().setBackCommand(makeDoneUpdateWithParseIdMapCommand());
-
+        
         int fontSize = Display.getInstance().convertToPixels(3);
-
+        
         Font smallPlainSystemFont = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_SMALL);
         Font mediumPlainSystemFont = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_MEDIUM);
         Font largePlainSystemFont = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_PLAIN, Font.SIZE_LARGE);
@@ -110,7 +116,7 @@ public class ScreenRepair extends MyForm {
         Font smallItalicSystemFont = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_ITALIC, Font.SIZE_SMALL);
         Font mediumItalicSystemFont = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_ITALIC, Font.SIZE_MEDIUM);
         Font largeItalicSystemFont = Font.createSystemFont(Font.FACE_SYSTEM, Font.STYLE_ITALIC, Font.SIZE_LARGE);
-
+        
         Font smallPlainMonospaceFont = Font.createSystemFont(Font.FACE_MONOSPACE, Font.STYLE_PLAIN, Font.SIZE_SMALL);
         Font mediumPlainMonospaceFont = Font.createSystemFont(Font.FACE_MONOSPACE, Font.STYLE_PLAIN, Font.SIZE_MEDIUM);
         Font largePlainMonospaceFont = Font.createSystemFont(Font.FACE_MONOSPACE, Font.STYLE_PLAIN, Font.SIZE_LARGE);
@@ -120,7 +126,7 @@ public class ScreenRepair extends MyForm {
         Font smallItalicMonospaceFont = Font.createSystemFont(Font.FACE_MONOSPACE, Font.STYLE_ITALIC, Font.SIZE_SMALL);
         Font mediumItalicMonospaceFont = Font.createSystemFont(Font.FACE_MONOSPACE, Font.STYLE_ITALIC, Font.SIZE_MEDIUM);
         Font largeItalicMonospaceFont = Font.createSystemFont(Font.FACE_MONOSPACE, Font.STYLE_ITALIC, Font.SIZE_LARGE);
-
+        
         Font smallPlainProportionalFont = Font.createSystemFont(Font.FACE_PROPORTIONAL, Font.STYLE_PLAIN, Font.SIZE_SMALL);
         Font mediumPlainProportionalFont = Font.createSystemFont(Font.FACE_PROPORTIONAL, Font.STYLE_PLAIN, Font.SIZE_MEDIUM);
         Font largePlainProportionalFont = Font.createSystemFont(Font.FACE_PROPORTIONAL, Font.STYLE_PLAIN, Font.SIZE_LARGE);
@@ -130,11 +136,11 @@ public class ScreenRepair extends MyForm {
         Font smallItalicProportionalFont = Font.createSystemFont(Font.FACE_PROPORTIONAL, Font.STYLE_ITALIC, Font.SIZE_SMALL);
         Font mediumItalicProportionalFont = Font.createSystemFont(Font.FACE_PROPORTIONAL, Font.STYLE_ITALIC, Font.SIZE_MEDIUM);
         Font largeItalicProportionalFont = Font.createSystemFont(Font.FACE_PROPORTIONAL, Font.STYLE_ITALIC, Font.SIZE_LARGE);
-
+        
         String[] nativeFontTypes = {
             "native:MainThin", "native:MainLight", "native:MainRegular", "native:MainBold", "native:MainBlack",
             "native:ItalicThin", "native:ItalicLight", "native:ItalicRegular", "native:ItalicBold", "native:ItalicBlack"};
-
+        
         for (String s : nativeFontTypes) {
             Font tt = Font.createTrueTypeFont(s, s).derive(fontSize, Font.STYLE_PLAIN);
             hi.add(createForFont(tt, s));
@@ -178,7 +184,7 @@ public class ScreenRepair extends MyForm {
 //  hi.show();
         return hi;
     }
-
+    
     private MyForm showDeviceInfo() {
         MyForm hi = new MyForm("Device info", ScreenRepair.this, () -> {
         });
@@ -216,16 +222,16 @@ public class ScreenRepair extends MyForm {
                 density = "DENSITY_VERY_LOW";
                 break;
         }
-
+        
         double pixelsPerMM = (((double) d.convertToPixels(1000)) / 1000.0);
         L10NManager l10n = L10NManager.getInstance();
-
+        
         hi.setLayout(new TableLayout(50, 2));
         TableLayout.Constraint span2 = new TableLayout.Constraint().horizontalSpan(2);
         TableLayout.Constraint w40 = new TableLayout.Constraint().widthPercentage(40);
         TableLayout.Constraint right = new TableLayout.Constraint().horizontalAlign(Component.RIGHT);
         hi.setScrollableY(true);
-
+        
         hi.
                 add(w40, new SpanLabel("Density:")).add(right, new SpanLabel(density)).
                 //                add(" ").
@@ -344,15 +350,15 @@ public class ScreenRepair extends MyForm {
 //    hi.show();
         return hi;
     }
-
+    
     private MyForm showLocalizationInfo() {
 //        Form hi = new Form("L10N", new TableLayout(16, 2));
         MyForm hi = new MyForm("L10N", ScreenRepair.this, () -> {
         });
         hi.setLayout(new TableLayout(16, 2));
-
+        
         hi.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> this.showBack()));
-
+        
         L10NManager l10n = L10NManager.getInstance();
         hi.add("format(double)").add(l10n.format(11.11)).
                 add("format(int)").add(l10n.format(33)).
@@ -373,7 +379,7 @@ public class ScreenRepair extends MyForm {
         //hi.show();
         return hi;
     }
-
+    
     private Label getSysProp(String key) {
         return new Label(Display.getInstance().getProperty(key, "None"));
     }
@@ -426,19 +432,19 @@ public class ScreenRepair extends MyForm {
     Label dropTarget2Label;//= new Label();
     private InlineInsertNewItemContainer2 pinchContainer;
     Item pinchItem;
-
+    
     private boolean minimumPinchSizeReached() {
         return false;
     }
-
+    
     public void setInsertItemValues(Object obj, Object sortField, Object objBefore, Object objAfter) {//, getValueFunction, makeNewValueFunction) {
         if (obj instanceof Item) {
             Item item = (Item) obj;
-
+            
         } else if (obj instanceof WorkSlot) {
         } else if (obj instanceof Category) {
         } else if (obj instanceof ItemList) {
-
+            
         }
     }
 
@@ -635,7 +641,7 @@ public class ScreenRepair extends MyForm {
         } else {
             return comp.toString();
         }
-
+        
     }
 
     //////////////////////////////////////////////////////////
@@ -660,7 +666,7 @@ public class ScreenRepair extends MyForm {
         content.add(new Button(MyReplayCommand.create("Repair data menu", null, (e) -> {
             new ScreenRepairData(ScreenRepair.this).show();
         })));
-
+        
         content.add(new Button(new Command("Refresh cache") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -671,10 +677,10 @@ public class ScreenRepair extends MyForm {
                 Dialog.show("Info", "Finished updating cache", "OK", null);
             }
         }));
-
+        
         Label labelCoord = new Label("LabelCoord");
         SpanLabel labelInfo = new SpanLabel("LabelInfo\nline2\nline3\nline4\nLine5\nLine6\nLine7");
-
+        
         content.add(new Button(new Command("Test Pinch") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -733,7 +739,7 @@ public class ScreenRepair extends MyForm {
                 pinchForm.setPinchInsertEnabled(false);
                 pinchForm.getContentPane().setName("ContentPane");
                 pinchForm.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenRepair.this.showBack()));
-
+                
                 Container cont = new Container(BoxLayout.y());
                 cont.setScrollableY(true);
                 cont.setName("Container.y");
@@ -747,7 +753,7 @@ public class ScreenRepair extends MyForm {
                     cont.addComponent(contCont);
                 }
                 pinchForm.addComponent(BorderLayout.CENTER, cont);
-
+                
                 Container south = new Container(BoxLayout.y());
                 south.setName("SouthCont");
                 south.addAll(labelCoord, labelInfo);
@@ -775,7 +781,7 @@ public class ScreenRepair extends MyForm {
         content.add(new Button(Command.create("Native logs", null, (e9) -> {
 //            Form hi = new MyForm("Native Logs Reader", BoxLayout.y());
             Form hi = new MyForm("Native Logs Reader", null, null);
-
+            
             hi.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenRepair.this.showBack()));
             String logs = NativeLogs.getNativeLogs();
             TextArea textArea = new TextArea(logs);
@@ -824,11 +830,11 @@ public class ScreenRepair extends MyForm {
             fd.add(reset);
             fd.show();
         })));
-
+        
         content.add(new Button(Command.create("xxxRun tests menu", null, (e) -> {
             new ScreenRunTests(ScreenRepair.this).show();
         })));
-
+        
         content.add(new Button(new Command("Storage location info") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -845,16 +851,17 @@ public class ScreenRepair extends MyForm {
                 Dialog.show("Info", str, "OK", null);
             }
         }));
-
-        if (false) {
-            content.add(new Button(Command.create("Test ScreenEdit2", null, (e) -> {
-//            @Override
-//            public void actionPerformed(ActionEvent evt) {
-                new ScreenItem2(new Item(), ScreenRepair.this, () -> {
-                }, false, null).show();
-            }
-            )));
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            content.add(new Button(Command.create("Test ScreenEdit2", null, (e) -> {
+////            @Override
+////            public void actionPerformed(ActionEvent evt) {
+//                new ScreenItem2(new Item(), ScreenRepair.this, () -> {
+//                }, false, null).show();
+//            }
+//            )));
+//        }
+//</editor-fold>
 
         content.add(new Button(new Command("Show files in FileSystemStorage") {
             @Override
@@ -862,7 +869,7 @@ public class ScreenRepair extends MyForm {
                 new ScreenFileSystemTree().show();
             }
         }));
-
+        
         content.add(
                 new Button(new Command("Simulate notification", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
                     @Override
@@ -901,7 +908,7 @@ public class ScreenRepair extends MyForm {
                     }
                 }
                 ));
-
+        
         content.add(
                 new Button(new Command("Simulate LocalNotif reception", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
                     @Override
@@ -914,7 +921,7 @@ public class ScreenRepair extends MyForm {
                     }
                 }
                 ));
-
+        
         content.add(
                 new Button(new Command("Update AlarmHandler", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
                     @Override
@@ -923,7 +930,7 @@ public class ScreenRepair extends MyForm {
                     }
                 }
                 ));
-
+        
         content.add(
                 new Button(new Command("Refresh first alarms", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
                     @Override
@@ -956,7 +963,7 @@ public class ScreenRepair extends MyForm {
                     }
                 }
                 ));
-
+        
         content.add(new Button(new Command("Show local notifications") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -969,7 +976,7 @@ public class ScreenRepair extends MyForm {
                 form.show();
             }
         }));
-
+        
         content.add(new Button(new Command("Show Today badge count") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -1058,7 +1065,7 @@ public class ScreenRepair extends MyForm {
                         }
                     }
                     compList.animateLayout(ANIMATION_TIME_FAST);
-                });
+                }, MyPrefs.defaultIconSizeInMM.getFloat());
                 Container c = null;
                 for (String s : list) {
                     c = new SpanLabel(s);
@@ -1071,7 +1078,7 @@ public class ScreenRepair extends MyForm {
             }
         }
         ));
-
+        
         content.add(
                 new Button(new Command("Send error log", Icons.iconSettings) {
                     @Override
@@ -1079,19 +1086,20 @@ public class ScreenRepair extends MyForm {
                     ) {
 //                String log = Log.getLogContent();
                         if (Dialog.show("Send log", "", "OK", "Cancel")) {
-                            Log.sendLog();
+//                            Log.sendLog();
+                            DAO.emailLog(evt);
                         }
                     }
                 }
                 ));
-
+        
         content.add(new Button(new Command("Show device info") {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 showDeviceInfo().show();
             }
         }));
-
+        
         content.add(new Button(new Command("Show built-in fonts") {
             @Override
             public void actionPerformed(ActionEvent evt) {

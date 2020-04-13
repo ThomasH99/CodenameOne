@@ -147,6 +147,14 @@ public class ScreenItemListProperties extends MyForm {
                 DAO.getInstance().cleanUpItemListOrCategory(itemList, false);
             });
         }
+
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemListSettings", "Settings", Icons.iconSettings, (e) -> {
+            new ScreenSettingsItemListProperties(ScreenItemListProperties.this, () -> {
+                refreshAfterEdit();
+            }).show();
+        }
+        ));
+
     }
 
     /**
@@ -204,8 +212,8 @@ public class ScreenItemListProperties extends MyForm {
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
         content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**", true));
 
-        if (MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
-            Label itemObjectId = new Label(itemList.getObjectIdP() == null ? "<set on save>" : itemList.getObjectIdP(), "LabelFixed");
+        if (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
+            Label itemObjectId = new Label(itemList.getObjectIdP() == null ? "<set on save>" : itemList.getObjectIdP(), "ScreenItemValueUneditable");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
         if (Config.TEST) {

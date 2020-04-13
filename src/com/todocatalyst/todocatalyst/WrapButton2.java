@@ -6,7 +6,7 @@ import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.events.ActionListener;
-import com.codename1.ui.layouts.MyBorderLayout;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 
 /**
@@ -52,7 +52,7 @@ public class WrapButton2 extends Container {
      */
     public WrapButton2(String txt) {
         setUIID("Button");
-        setLayout(new MyBorderLayout());
+        setLayout(new BorderLayout());
         text = new TextArea(getUIManager().localize(txt, txt));
         text.setColumns(100);
         text.setUIID("Button");
@@ -61,8 +61,8 @@ public class WrapButton2 extends Container {
         text.setActAsLabel(true);
         actualButton = new Button();
         actualButton.setUIID("WrapButtonIcon");
-        addComponent(MyBorderLayout.WEST, actualButton);
-        addComponent(MyBorderLayout.CENTER, BoxLayout.encloseX(text));
+        addComponent(BorderLayout.WEST, actualButton);
+        addComponent(BorderLayout.CENTER, BoxLayout.encloseX(text));
         setLeadComponent(actualButton);
     }
 

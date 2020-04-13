@@ -559,7 +559,9 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                     }
                     s.append("\nLOG:\n").append(rs); //TODO!!!: shorten stack trace to only show the methods called. For now, the first, most significant, part of trace will be included
 
-                    MyAnalyticsService.sendCrashReport((Throwable) evt.getSource(), s.toString(), false);
+                    if (MyAnalyticsService.isEnabled()) {
+                        MyAnalyticsService.sendCrashReport((Throwable) evt.getSource(), s.toString(), false);
+                    }
 
                     p("Exception in " + Display.getInstance().getProperty("AppName", "app") + " version " + Display.getInstance().getProperty("AppVersion", "Unknown"));
                     p("OS " + Display.getInstance().getPlatformName());
@@ -608,9 +610,11 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         Log.p("LOCALE = " + locale);
 
 //        if (Config.PARSE_OFFLINE && !getPlatformName().equals("ios") && !getPlatformName().equals("and")) { //never run in local mode on a device !!seems to return "ios" with ios skin on simulator??
-        MyAnalyticsService.init("UA-133276111-1", "www.todocatalyst.com");
-        MyAnalyticsService.setAppsMode(true);
-        if (Config.PARSE_OFFLINE && Display.getInstance().isSimulator()) { //never run in local mode on a device
+        if (!Config.ANALYTICS_DISABLED) {
+            MyAnalyticsService.init("UA-133276111-1", "www.todocatalyst.com");
+            MyAnalyticsService.setAppsMode(true);
+        }
+        if (Config.PARSE_DB_OFFLINE && Display.getInstance().isSimulator()) { //never run in local mode on a device
             Parse.initialize(
                     "http://localhost:1337/parse",
                     "l0Gw4hYdg7hJDPEG11Qzxqh59Yj9F2JXDkDdbdCc",
@@ -727,7 +731,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //</editor-fold>
 //        Icons.get(); //Init singleton for icons
 
-        if (!Config.PARSE_OFFLINE) {
+        if (!Config.FULLY_LOCAL_MODE) {
             NetworkManager.getInstance().addErrorListener((e) -> {
                 Log.p("NetworkManager error=" + e);
                 //"There was a network error, would you like to retry?"
@@ -756,9 +760,6 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //            Toolbar.setPermanentSideMenu(true); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
         Toolbar.setPermanentSideMenu(Display.getInstance().isTablet()); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
         Display.getInstance().setPureTouch(true);
-        if (Display.getInstance().isTablet()) {
-            Display.getInstance().lockOrientation(true); //lock screen rotation to portrait=true, https://stackoverflow.com/questions/48712682/codenameone-rotate-display
-        }//        }
 
 //        Display d = Display.getInstance();
 //        Label supported = new Label();
@@ -868,7 +869,11 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         Display.getInstance().setProperty("iosHideToolbar", "true"); //prevent ttoolbar over keyboard to show (Done/Next button): https://stackoverflow.com/questions/48727116/codename-one-done-button-of-ios-virtual-keyboard
 
         if (Display.getInstance().canForceOrientation()) {
-            Display.getInstance().lockOrientation(!Config.TEST); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
+            if (false&&Display.getInstance().isTablet()) {
+                Display.getInstance().lockOrientation(true); //lock screen rotation to portrait=true, https://stackoverflow.com/questions/48712682/codenameone-rotate-display
+            }//        }
+//            Display.getInstance().lockOrientation(!Config.TEST); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
+            Display.getInstance().lockOrientation(MyPrefs.screenRotationDisabled.getBoolean()); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
         }
 
         //Check if already logged in, if so, removeFromCache cache
@@ -952,7 +957,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             itemList.addItem(item);
             itemList.addToList(item);
 //            DAO.getInstance().saveNew(true, item, itemList);
-            DAO.getInstance().saveNew( item, itemList);
+            DAO.getInstance().saveNew(item, itemList);
             DAO.getInstance().saveNewExecuteUpdate();
         }
 
@@ -1172,7 +1177,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //        System.out.println(records);
         long t1 = System.currentTimeMillis();
         Log.p("performBackgroundFetch called, time=" + new Date() + ", deadline=" + deadline + ", date(deadline)="
-                + new Date(deadline) + "; deadline value=" + deadline + "ms; deadline vs now=" + (deadline - System.currentTimeMillis()));
+                + new MyDate(deadline) + "; deadline value=" + deadline + "ms; deadline vs now=" + (deadline - System.currentTimeMillis()));
         AlarmHandler.getInstance().updateLocalNotificationsOnBackgroundFetch();
 //        System.out.println("performBackgroundFetch/deadline=" + deadline);
         onComplete.onSucess(Boolean.TRUE);

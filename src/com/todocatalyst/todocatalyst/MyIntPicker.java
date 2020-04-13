@@ -37,7 +37,8 @@ import java.util.Map;
                 this.intMax = maxValue;
             }
 //            int defaultSelectedValue = get.get();
-            assert minValue < maxValue && step != 0 && value >= minValue && value <= maxValue && (value - minValue) % step == 0 : "wrong init values";
+            ASSERT.that( minValue < maxValue && step != 0 && value >= minValue && value <= maxValue && (value - minValue) % step == 0,
+                    "wrong init values, minValue="+minValue+", maxValue="+maxValue+", value="+value+", step="+step);
             this.setType(Display.PICKER_TYPE_STRINGS);
             int i = minValue;
             int count = 0;

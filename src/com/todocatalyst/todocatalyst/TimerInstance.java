@@ -275,7 +275,7 @@ public class TimerInstance extends ParseObject {
 //        } else {
 //            remove(PARSE_TIMER_START_TIME);
 //        }
-        setStartTime(new Date(start));
+        setStartTime(new MyDate(start));
 //        setElapsedTime(0);
     }
 
@@ -285,7 +285,7 @@ public class TimerInstance extends ParseObject {
 
     public Date getStartTimeD() {
         Date startTime = getDate(PARSE_TIMER_START_TIME);
-        return (startTime == null) ? new Date(0) : startTime;
+        return (startTime == null) ? new MyDate(0) : startTime;
     }
 
     public long getStartTime() {
@@ -580,7 +580,11 @@ public class TimerInstance extends ParseObject {
     private void setSources(Item itemOrProject, ItemList itemList) {
         ASSERT.that(itemOrProject != null || itemList != null);
         setItemList(itemList);
-        setTimedItem(itemOrProject);
+        if (itemOrProject.isProject()) {
+            setTimedProject(itemOrProject);
+        } else {
+            setTimedItem(itemOrProject);
+        }
         if (itemOrProject == null || itemOrProject.isProject()) { //don't call updateToNext if only one task
 //            updateToNextTimerItem(true, false); //initialize to first element to time (itemOrProject; first subtask in itemOrProject; or first item in itemList or first subtask in first project in itemList)
             updateToNextTimerItem(true); //initialize to first element to time (itemOrProject; first subtask in itemOrProject; or first item in itemList or first subtask in first project in itemList)
@@ -928,7 +932,7 @@ public class TimerInstance extends ParseObject {
 //        if (update) {
         if (updateAndSave) {
             setTimedItem(nextTimedItem);
-            if (true ||project instanceof Item) {
+            if (true || project instanceof Item) {
                 setTimedProject(project); //set project (possibly to null to indicate we've finished with the project)
             }//            else if (project instanceof WorkSlot)
 //            setTimedProject(project); //set project

@@ -6,6 +6,7 @@ import com.codename1.io.Log;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Container;
+import com.codename1.ui.Display;
 import com.codename1.ui.Label;
 import com.parse4cn1.ParseException;
 //import com.codename1.ui.*;
@@ -61,18 +62,23 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //            ;
 //        }
         addSettingBoolean(content, parseIdMap2, MyPrefs.keepScreenAlwaysOnInApp);
+        if (Display.getInstance().canForceOrientation()) {
+            addSettingBoolean(content, parseIdMap2, MyPrefs.screenRotationDisabled, () -> Display.getInstance().lockOrientation(true), () -> Display.getInstance().lockOrientation(false));
+        }
         addSettingInt(content, parseIdMap2, MyPrefs.overdueLogInterval, 0, 365, 1);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.pinchInsertEnabled);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.enableShowingSystemInfo);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.showSourceItemInEditScreens);
         addSettingBoolean(content, parseIdMap2, MyPrefs.showObjectIdsInEditScreens);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.pinchInsertEnabled);
         content.add(makeSpacer());
         if (Config.TEST_STORE_PASSWORD_FOR_USER) {
             try {
                 ParseUser parseUser = ParseUser.fetchBySession(ParseUser.getCurrent().getSessionToken()); //fetch password
             } catch (ParseException ex) {
-                Log.p("error retrieving parseuser, exception="+ ex);
+                Log.p("error retrieving parseuser, exception=" + ex);
             }
             content.add(BorderLayout.centerEastWest(null, new Label(ParseUser.getCurrent().getEmail()), new Label("Email")));
-            content.add(BorderLayout.centerEastWest(null, new Label((String)ParseUser.getCurrent().get("visiblePassword")), new Label("Password")));
+            content.add(BorderLayout.centerEastWest(null, new Label((String) ParseUser.getCurrent().get("visiblePassword")), new Label("Password")));
         }
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice);
 //        addSettingInt(content, parseIdMap2, MyPrefs.alarmDefaultSnoozeTimeInMinutes, 0, 120, 1);

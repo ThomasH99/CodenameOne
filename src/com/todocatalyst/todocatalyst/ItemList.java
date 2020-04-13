@@ -135,7 +135,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 ////        setNoSave(temporaryNoSaveList);
 //    }
 //</editor-fold>
-
     public ItemList(String listName, boolean temporaryNoSaveList) {
 //        this(listName, null, null, temporaryNoSaveList, false);
         this(listName, null, null, temporaryNoSaveList);
@@ -144,7 +143,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    public ItemList(boolean saveImmediatelyToParse, String listName) {
 //        this(listName, null, null, false, saveImmediatelyToParse);
 //    }
-
     public ItemList(String listName, List<E> list) {
         this(listName, list, null, false);
     }
@@ -198,8 +196,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
     public boolean isSystemList() {
 //        Boolean isSystemList = getBoolean(PARSE_SYSTEM_LIST);
-        String systemName = getString(PARSE_SYSTEM_NAME);
-        return (systemName != null);
+//        String systemName = getString(PARSE_SYSTEM_NAME);
+        String systemName = getSystemName();
+        return (!systemName.isEmpty());
     }
 
     /**
@@ -1074,7 +1073,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         List<E> list = getListFull();
 //        List<? extends ItemAndListCommonInterface> list = getListFull();
 //        FilterSortDef filterSortDef = getFilterSortDef();
-        FilterSortDef filterSortDef = getFilterSortDef();
+        FilterSortDef filterSortDef = getFilterSortDefN();
         if (false && Config.TEST) {
             Log.p("Calling getList() for list=" + this.getText() + (filterSortDef != null ? (" Filter defined, options=" + filterSortDef.getFilterOptions()) : "Filter NOT defined"));// + "; filter=" + getFilterSortDef());
         }
@@ -1671,29 +1670,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public FilterSortDef getFilterSortDef() {
+    public FilterSortDef getFilterSortDefN() {
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
         filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
-        if (false && Config.TEST && filterSortDef == null) {
-            Log.p("FilterSortDef==null for list=" + this);
-        }
-        if (filterSortDef == null && !isNoSave() && MyPrefs.useDefaultFilterInItemListsWhenNoneDefined.getBoolean()) { //!isNoSave() <=> a hack to avoid that temporary, eg Statistics, lists are filtered
-            if (false && Config.TEST) {
-                Log.p("FilterSortDef - returning DefaultFilter for list=" + this);
-            }
-            return FilterSortDef.getDefaultFilter();
-        }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (filterSortDef != null) {
-//            return filterSortDef;
-//        } else {
-//            return null;
-//        }
-//</editor-fold>
         return filterSortDef;
     }
-    //<editor-fold defaultstate="collapsed" desc="comment">
 
+    //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * returns a string that identifies the item. chosen in the following order:
      * getText() owner.getText() getLogicalName()
@@ -1795,7 +1778,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         ItemListList.getInstance().remove(this);
         DAO.getInstance().saveNew((ParseObject) ItemListList.getInstance(), false);
 
-        FilterSortDef filter = getFilterSortDef();
+        FilterSortDef filter = getFilterSortDefN();
         if (filter != null) {
             filter.delete(deleteDate);
             DAO.getInstance().delete(filter);

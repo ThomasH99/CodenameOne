@@ -229,7 +229,7 @@ public class MyDate extends Date {
 ////        time = calendar.getTime().getTime();
 //    }
 //</editor-fold>
-    public long getTime() {
+    public long getTimeXXX() {
 //        return time;
 //        return (timeWithFlags & topmostSignbit) == 0 ? (timeWithFlags & timeMask) : (timeWithFlags & timeMask) | flagMask; //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
 //        return (timeWithFlags & topmostSignbit) == 0 ? (timeWithFlags & timeMask) : ((timeWithFlags & timeMask) | flagMask); //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
@@ -239,9 +239,10 @@ public class MyDate extends Date {
 //    private long getTimeWithFlags() {
 //        return timeWithFlags;
 //    }
-    public void setTime(long time) {
+    public void setTimeXXX(long time) {
 //        this.timeWithFlags = time | timeSetBit | dateSetBit; //if setting time directly like this, we don't know if only date or time is set, so set both flags
         this.timeWithFlags = time;
+        super.setTime(time);
     }
 
     /**
@@ -747,7 +748,7 @@ public class MyDate extends Date {
 //    }
 //</editor-fold>
     static Date getEndOfWeek(Date date) {
-        return new Date(getStartOfWeek(date).getTime() + MyDate.DAY_IN_MILLISECONDS * 7 - 1); //end of week is start of week + 7 days -1ms to get the last millisecond in the week
+        return new MyDate(getStartOfWeek(date).getTime() + MyDate.DAY_IN_MILLISECONDS * 7 - 1); //end of week is start of week + 7 days -1ms to get the last millisecond in the week
     }
 
     static Date getStartOfMonth(Date date) {
@@ -785,7 +786,7 @@ public class MyDate extends Date {
 // get start of the next month
         cal.add(Calendar.MONTH, 1);
 //        return cal.getTime();
-        return new Date(cal.getTime().getTime() - 1); //end of month is start of next month -1 millisecond 
+        return new MyDate(cal.getTime().getTime() - 1); //end of month is start of next month -1 millisecond 
     }
 
     /**
@@ -795,7 +796,7 @@ public class MyDate extends Date {
      */
     int getDayNumberInWeek() {
         Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date(getTime()));
+        cal.setTime(new MyDate(getTime()));
 //        return (Settings.getInstance().weeksStartOnMondays() ? (cal.get(Calendar.DAY_OF_WEEK) == 1 ? 7 : cal.get(Calendar.DAY_OF_WEEK) - 1) : cal.get(Calendar.DAY_OF_WEEK)); //SUNDAY==1, MONDAY==2 etc.
         return (MyPrefs.weeksStartOnMondays.getBoolean() ? (cal.get(Calendar.DAY_OF_WEEK) == 1 ? 7 : cal.get(Calendar.DAY_OF_WEEK) - 1) : cal.get(Calendar.DAY_OF_WEEK)); //SUNDAY==1, MONDAY==2 etc.
 //        return cal.get(Calendar.DAY_OF_WEEK)+(Settings.getInstance().weeksStartOnMondays()?); //SUNDAY==1, MONDAY==2 etc.
@@ -824,7 +825,7 @@ public class MyDate extends Date {
 //        // This way we can make the following calculation without having to worry about rounding errors
 //        return (int) ((calendar.getTime().getTime() - getTime()) / DAY_IN_MILLISECONDS);
 //    }
-    public void addDays(int days) {
+    public void addDaysXXX(int days) {
 //        time += days * DAY_IN_MILLISECONDS;
 //        setTime(getTimeWithFlags() + days * DAY_IN_MILLISECONDS);
         addToTimeKeepFlags(days * DAY_IN_MILLISECONDS);
@@ -833,7 +834,7 @@ public class MyDate extends Date {
 //    public void subtractDays(int days) {
 //        time -= days * DAY_IN_MILLISECONDS;
 //    }
-    public void addMinutes(int minutes) {
+    public void addMinutesXXX(int minutes) {
 //        time += minutes * MINUTE_IN_MILLISECONDS;
 //        setTime(getTime() + minutes * MINUTE_IN_MILLISECONDS);
         addToTimeKeepFlags(minutes * MINUTE_IN_MILLISECONDS);
@@ -842,7 +843,7 @@ public class MyDate extends Date {
 //    public void subtractMinutes(int minutes) { //-use addMinutes(-3)
 //        time -= minutes * MINUTE_IN_MILLISECONDS;
 //    }
-    public void addHours(int hours) {
+    public void addHoursXXX(int hours) {
 //        time += hours * HOUR_IN_MILISECONDS;
 //        setTime(getTime() + hours * HOUR_IN_MILISECONDS);
         addToTimeKeepFlags(hours * HOUR_IN_MILISECONDS);
@@ -857,7 +858,7 @@ public class MyDate extends Date {
      * valid, the value itself is returned (no change). If dayOfMonth is <1, the
      * same value is returned.
      */
-    public int getValidDayOfMonth(int dayOfMonth, int month, int year) {
+    public int getValidDayOfMonthXXX(int dayOfMonth, int month, int year) {
         int daysInMonth = getDaysInMonth(month, year);
         while (dayOfMonth > daysInMonth && dayOfMonth > 1) {
             dayOfMonth--; //reduce date until we reach a valid one for the given month/year
@@ -1111,8 +1112,10 @@ public class MyDate extends Date {
     }
 
     /**
-     * Return the week of the date, where week is a week starting with Sunday or Monday till the following Sun/Mon (so 1st and last week can be just one day long).
-     * 
+     * Return the week of the date, where week is a week starting with Sunday or
+     * Monday till the following Sun/Mon (so 1st and last week can be just one
+     * day long).
+     *
      * Field number for get and set indicating the week number within the
      * current month. The first week of the month, as defined by
      * getFirstDayOfWeek() and getMinimalDaysInFirstWeek(), has value 1.
@@ -1125,7 +1128,7 @@ public class MyDate extends Date {
     public static int getWeekOfMonth(Date date) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
-                
+
         int v = calendar.get(Calendar.WEEK_OF_MONTH);
         return v;
     }
@@ -1466,7 +1469,7 @@ public class MyDate extends Date {
      * @return
      */
     static public String formatDateNew(long date) {
-        return formatDateNew(new Date(date));
+        return formatDateNew(new MyDate(date));
     }
 
     static public String formatDateNew(Date date) {
@@ -1478,7 +1481,7 @@ public class MyDate extends Date {
     }
 
     static public String formatDateTimeNew(long date) {
-        return formatDateNew(new Date(date), false, true, true, false, false);
+        return formatDateNew(new MyDate(date), false, true, true, false, false);
     }
 
     static public String formatTimeNew(Date date) {
@@ -1781,9 +1784,9 @@ public class MyDate extends Date {
         TimeZone tz = cal.getTimeZone();
 //        cal.setTime(new Date(System.currentTimeMillis() - tz.getRawOffset()));
         if (false) {
-            cal.setTime(new Date(hoursMinutesInMilliSeconds - (noTimeZoneCorrection ? 0 : tz.getRawOffset())));
+            cal.setTime(new MyDate(hoursMinutesInMilliSeconds - (noTimeZoneCorrection ? 0 : tz.getRawOffset())));
         } else {
-            cal.setTime(new Date(hoursMinutesInMilliSeconds));
+            cal.setTime(new MyDate(hoursMinutesInMilliSeconds));
         }
         DateFormat dtfmt;
         if (useUSFormat) {
@@ -1795,23 +1798,24 @@ public class MyDate extends Date {
     }
 
     static String formatDuration(long hoursMinutesInMilliSeconds) {
-        return MyDate.formatDuration(hoursMinutesInMilliSeconds, false);
+        return formatDuration(hoursMinutesInMilliSeconds, false);
     }
 
     static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds) {
-        return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, false);
+        return formatDuration(hoursMinutesInMilliSeconds, showSeconds, false);
     }
 
     private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean showLeadingZeroForHour) {
-        return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, false, showLeadingZeroForHour);
+        return formatDuration(hoursMinutesInMilliSeconds, showSeconds, false, showLeadingZeroForHour);
     }
 
     private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour) {
-        return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, true);
+        return formatDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, false); //false: don't show duration as 2h51, but 2:51
     }
 
-    private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes) {
-        return MyDate.formatDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, showHBtwHoursAndMinutes, true, true);
+    private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour,
+            boolean showHBtwHoursAndMinutes) {
+        return formatDuration(hoursMinutesInMilliSeconds, showSeconds, roundUpMinutes, showLeadingZeroForHour, showHBtwHoursAndMinutes, true, true);
     }
 
     /**
@@ -1825,7 +1829,8 @@ public class MyDate extends Date {
      * @param dontShowZeroHours
      * @return
      */
-    private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour, boolean showHBtwHoursAndMinutes, boolean dontShowZeroHours, boolean showSecondsIfNoMinutesOrHours) {//, boolean roundLessThan1MinuteUp) {
+    private static String formatDuration(long hoursMinutesInMilliSeconds, boolean showSeconds, boolean roundUpMinutes, boolean showLeadingZeroForHour,
+            boolean showHBtwHoursAndMinutes, boolean dontShowZeroHours, boolean showSecondsIfNoMinutesOrHours) {//, boolean roundLessThan1MinuteUp) {
 //        boolean SHOW_SECONDS = false;
 //        boolean SHOW_LEADING_ZERO_FOR_HOUR = true;
         String s; // = "";
@@ -1951,7 +1956,7 @@ public class MyDate extends Date {
 
     private static String formatDateL10NShort(long timeInMilliSeconds) {
 //        return L10NManager.getInstance().formatDateShortStyle(new Date(timeInMilliSeconds));
-        return formatDateL10NShort(new Date(timeInMilliSeconds));
+        return formatDateL10NShort(new MyDate(timeInMilliSeconds));
     }
 
     private static String formatDateL10NShort(Date date) {
@@ -1991,7 +1996,7 @@ public class MyDate extends Date {
 
     static Date currentTimeMillisRoundedDownToMinutesAsDate() {
 //        if (forceCurrentTime!=0)
-        return roundDownToFullMinutes(new Date(currentTimeMillis()));
+        return roundDownToFullMinutes(new MyDate(currentTimeMillis()));
     }
 
     static long currentTimeMillisRoundedDownToMinutesAsLong() {
@@ -2108,6 +2113,7 @@ public class MyDate extends Date {
 
     /**
      * returns the first time (when the day starts) of the date in time
+     * https://stackoverflow.com/questions/10308356/how-to-obtain-the-start-time-and-end-time-of-a-day
      *
      * @param time
      * @return
@@ -2130,17 +2136,40 @@ public class MyDate extends Date {
      * @param time
      * @return
      */
-    static Date getStartOfMinute(Date time) {
-//        Calendar cal = Calendar.getInstance();
-//        cal.setTime(time);
+    static Date getRoundUpToNextMinute(Date time) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(time);
 //        cal.set(Calendar.MINUTE, 0);
 //        cal.set(Calendar.SECOND, 0);
 //        cal.set(Calendar.MILLISECOND, 0); //ensure it's after midnight //TODO!!!! is 0 the right value??
-//        return cal.getTime();
-        long rounded = time.getTime();
-        long seconds = (rounded % MINUTE_IN_MILLISECONDS) / SECOND_IN_MILLISECONDS;
-        rounded = (rounded / MINUTE_IN_MILLISECONDS + (seconds >= 30 ? 1 : 0)) * MINUTE_IN_MILLISECONDS;
-        return new Date(rounded); //round off to minutes
+
+        cal.add(Calendar.MINUTE, 1); //THJ: add a full minute, then set seconds/millis to 0 - will wrongly round up x min 0s 0ms to x+1, but not a noticeabl issue
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+//        long rounded = time.getTime();
+//        long seconds = (rounded % MINUTE_IN_MILLISECONDS) / SECOND_IN_MILLISECONDS;
+//        rounded = (rounded / MINUTE_IN_MILLISECONDS + (seconds >= 30 ? 1 : 0)) * MINUTE_IN_MILLISECONDS;
+//        return new Date(rounded); //round off to minutes
+    }
+
+    static Date getRoundToNearestMinute(Date time) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(time);
+//        cal.set(Calendar.MINUTE, 0);
+//        cal.set(Calendar.SECOND, 0);
+//        cal.set(Calendar.MILLISECOND, 0); //ensure it's after midnight //TODO!!!! is 0 the right value??
+
+        //https://stackoverflow.com/questions/9001384/java-date-rounding
+        // 'add' cause changing larger fields if necessary
+        cal.add(Calendar.SECOND, 30);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        return cal.getTime();
+//        long rounded = time.getTime();
+//        long seconds = (rounded % MINUTE_IN_MILLISECONDS) / SECOND_IN_MILLISECONDS;
+//        rounded = (rounded / MINUTE_IN_MILLISECONDS + (seconds >= 30 ? 1 : 0)) * MINUTE_IN_MILLISECONDS;
+//        return new Date(rounded); //round off to minutes
     }
 
     /**
@@ -2168,7 +2197,8 @@ public class MyDate extends Date {
         if (date1 == null || date2 == null) {
             return false;
         }
-        return date1.getTime() >= getStartOfDay(date2).getTime() && date1.getTime() <= getEndOfDay(date2).getTime();
+        long startOfDay = getStartOfDay(date2).getTime();
+        return date1.getTime() >= startOfDay && date1.getTime() < startOfDay + MyDate.DAY_IN_MILLISECONDS;
     }
 
     static boolean isSameWeekAndYear(Date date1, Date date2) {
@@ -2212,7 +2242,10 @@ public class MyDate extends Date {
     }
 
     /**
-     * returns the last time (when the day ends) of the date in time
+     * returns the last time (when the day ends) of the date in time NB.
+     * getEndOfDay is not recommended, but is used here for RepeatRules (to
+     * ensure the end-date of a repeat is the last millisecond of the chosen
+     * day) and in Statistics (to validate if this is necessary?!)
      *
      * @param time
      * @return
@@ -2225,7 +2258,16 @@ public class MyDate extends Date {
 //        cal.set(Calendar.SECOND, 59);
 //        cal.set(Calendar.MILLISECOND, 999); //ensure it's after midnight //TODO!!!! is 0 the right value??
 //        return cal.getTime();
-        return new Date(getStartOfDay(time).getTime() + DAY_IN_MILLISECONDS - 1);
+        return new MyDate(getStartOfDay(time).getTime() + DAY_IN_MILLISECONDS - 1);
+    }
+
+//    @Override
+    public boolean equalsXXX(Object date) {
+//        Date.equals() == return obj instanceof Date && getTime() == ((Date) obj).getTime();
+        if (date == null || !(date instanceof Date)) {
+            return false;
+        }
+        return ((Date) date).getTime() == getTime();
     }
 // <editor-fold defaultstate="collapsed" desc="comment">
 //        / ================================================== ==

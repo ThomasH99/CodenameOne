@@ -393,6 +393,9 @@ public class RepeatRule {
      * of the week. Values can be OR'd together to indicate a multple day event.
      */
     public static final int WEEKDAYS_IN_MONTH = 256;
+
+    public static final int DAYS_IN_MONTH = 512; //THJ to select several days in month (e.g. 2nd, 7th and 29th), like iOS Reminders!
+
     // JAVADOC COMMENT ELIDED
     /**
      * Represents the number of times the event will occur. This value is
@@ -411,6 +414,7 @@ public class RepeatRule {
      * of the event.
      */
     public static final int INTERVAL = 128;
+
     // JAVADOC COMMENT ELIDED
     /**
      * Indicates that the frequency of the event occurs daily.
@@ -763,7 +767,6 @@ public class RepeatRule {
 //    public Enumeration datesXXX(long startDate, long subsetBeginning, long subsetEnding) {
 //        return datesAsVector(startDate, subsetBeginning, subsetEnding).elements();
 //    }
-
     /**
      * Stores a date.
      *
@@ -1060,6 +1063,24 @@ public class RepeatRule {
     }
 
     /**
+     * returns true if dayInMonth is selected as in daysInMonth
+     * @param daysInMonth bit pattern with selected days in month, right-most bit = day 1.
+     * @param dayInMonth 1..31
+     * @return 
+     */
+    private boolean containsDay(int daysInMonth, int dayInMonth) {
+        com.codename1.ui.Calendar cal; 
+//use Month class in com.codename1.ui.Calendar as inspiration (basically just a grid
+        
+        int dayInMonthBit = 1 << (dayInMonth-1);
+        if ((dayInMonthBit & dayInMonthBit) != 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
      * Store days by month.
      *
      * @param dates array to be extended
@@ -1074,19 +1095,24 @@ public class RepeatRule {
     private void storeDaysByMonth(Vector dates, long date, long rangeStart, long rangeEnd, Integer dayInWeek, Integer dayInMonth, Integer weekInMonth, Integer weekDaysInMonth) {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date(date));
+        Integer daysInMonth = null;//0;
 //        Integer weekDaysInMonth=null; //THHJ
         // move date to the first of the month
         date -= DAY_INCREMENT
                 * (calendar.get(Calendar.DAY_OF_MONTH) - 1);
-        if (dayInMonth != null) {
+        if (daysInMonth != null) {
+//            if(containsDay(daysInMonth,date)){
+//                
+//            }
+        } else if (dayInMonth != null) {
             /*THHJvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv*/
             //check if day of month is higher than actual month last day, if so, change to last day (fixes eg that currently 31/2 actually becomes 3/3
             //use eg 32 (or higher) as "last day of month" so correct that down to last day of month
             int day = dayInMonth.intValue();
-            int daysInMonth = MyDate.getDaysInMonth(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR)); //+1 since MyDate uses 1..12
+            int nbDaysInMonth = MyDate.getDaysInMonth(calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.YEAR)); //+1 since MyDate uses 1..12
 //            if (day>31 || dayInMonth.intValue()>MyDate.getDaysInMonth(calendar.get(Calendar.MONTH+1), calendar.get(Calendar.YEAR))) {
             //find the last day in this specific month
-            while (day > daysInMonth) {
+            while (day > nbDaysInMonth) {
                 day--;
             }
             /*THHJ^^^^^^^^^^^^^^^^^^^^^^^^^^*/

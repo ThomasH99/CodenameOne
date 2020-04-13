@@ -13,7 +13,7 @@ import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
-import com.codename1.ui.layouts.MyBorderLayout;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 
@@ -72,7 +72,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
         ASSERT.that(categoryList != null, "why itemOrItemListForNewTasks2==null here?");
         this.categoryList = categoryList;
         this.insertBeforeElement = insertBeforeElement;
-        Container contForTextEntry = new Container(new MyBorderLayout());
+        Container contForTextEntry = new Container(new BorderLayout());
 
 //        SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
 //        add(swipC);
@@ -102,10 +102,10 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
             textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
         AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
-        contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
+        contForTextEntry.add(BorderLayout.CENTER, textEntryField);
 
         //close insert container
-        contForTextEntry.add(MyBorderLayout.WEST, westCont);
+        contForTextEntry.add(BorderLayout.WEST, westCont);
         if (categoryList != null && categoryList.getSize() > 0) { //only add close button if in a non-empty list
 //            westCont.add(new Button(Command.create(null, Icons.iconCloseCircleLabelSty, (ev) -> {
             westCont.add(new Button(Command.createMaterial(null, Icons.iconCloseCircle, (ev) -> {
@@ -131,7 +131,7 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
             }
         }, "InlineEditCategory");
         //Enter full screen edit of the new Category:
-        contForTextEntry.add(MyBorderLayout.EAST, new Button(editNewCmd));
+        contForTextEntry.add(BorderLayout.EAST, new Button(editNewCmd));
         add(contForTextEntry);
     }
 

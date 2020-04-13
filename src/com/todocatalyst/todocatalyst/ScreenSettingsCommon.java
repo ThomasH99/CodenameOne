@@ -73,7 +73,8 @@ public class ScreenSettingsCommon extends MyForm {
     public void addCommandsToToolbar() {
         Toolbar toolbar = getToolbar();
         //DONE/BACK
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+        addStandardBackCommand();
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
             toolbar.addCommandToOverflowMenu(makeCancelCommand());

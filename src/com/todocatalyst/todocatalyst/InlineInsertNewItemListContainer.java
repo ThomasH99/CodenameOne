@@ -13,7 +13,7 @@ import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
-import com.codename1.ui.layouts.MyBorderLayout;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 
@@ -69,16 +69,16 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
         this.refItemList = refItemList;
         ASSERT.that(refItemList != null, () -> "why itemOrItemListForNewTasks2==null here?");
 //        this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
-        
+
         if (ownerList != null) {
             this.itemOrItemListForNewItemLists = ownerList;
         } else if (refItemList != null) {
-            this.itemOrItemListForNewItemLists = (ItemListList)refItemList.getOwner();
+            this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
         }
-        
+
         this.insertBeforeRefElement = insertBeforeRefElement;
 
-        Container contForTextEntry = new Container(new MyBorderLayout());
+        Container contForTextEntry = new Container(new BorderLayout());
 
         textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
         textEntryField.setHint(ENTER_ITEMLIST);
@@ -101,14 +101,15 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
             }
         });
 
-        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null)
+        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
             textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
+        }
         AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
-        contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
+        contForTextEntry.add(BorderLayout.CENTER, textEntryField);
 
         //close insert container
-        contForTextEntry.add(MyBorderLayout.WEST, westCont);
+        contForTextEntry.add(BorderLayout.WEST, westCont);
         if (itemOrItemListForNewItemLists != null && itemOrItemListForNewItemLists.getSize() > 0) { //only add close button if in a non-empty list
             westCont.add(new Button(Command.createMaterial(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
@@ -132,7 +133,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
             }
         }, "InlineEditItemList");
         //Enter full screen edit of the new Category:
-        contForTextEntry.add(MyBorderLayout.EAST, new Button(editNewCmd));
+        contForTextEntry.add(BorderLayout.EAST, new Button(editNewCmd));
         add(contForTextEntry);
     }
 
@@ -179,13 +180,14 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 //        }
 //</editor-fold>
         itemOrItemListForNewItemLists.addToList(newItemList, refItemList, !insertBeforeRefElement); //add after item
-        ASSERT.that(myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT)!=null);
+        ASSERT.that(myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT) == null, 
+                "old value left for SAVE_LOCALLY_INSERT_BEFORE_REF_ELT="+myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT));
 //        DAO.getInstance().saveNew((ParseObject)newItemList, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP()));
 //        DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewItemLists,true);
-        DAO.getInstance().saveNew((ParseObject)newItemList);
+        DAO.getInstance().saveNew((ParseObject) newItemList);
         DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewItemLists);
         DAO.getInstance().saveNewExecuteUpdate();
-         myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP());
+        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP());
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container

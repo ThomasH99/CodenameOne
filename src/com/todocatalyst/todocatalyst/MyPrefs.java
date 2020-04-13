@@ -6,6 +6,8 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.io.Preferences;
+import com.codename1.ui.Form;
+import com.codename1.ui.Toolbar.BackCommandPolicy;
 import java.util.Date;
 
 /**
@@ -42,6 +44,9 @@ public class MyPrefs {
     static PrefEntry itemRemoveTrailingPrecedingSpacesAndNewlines
             = new PrefEntry("**", "itemRemoveTrailingPrecedingSpacesAndNewlines", true, "**");
 
+    static PrefEntry useEstimateDefaultValueForZeroEstimatesInMinutes
+            = new PrefEntry("Use default time estimate", "useEstimateDefaultValueForZeroEstimatesInMinutes", true,
+                    "Default time estimate to use for non-estimated tasks. Set to typical average value of actual effort for small tasks to avoid having to estimate these. Set to 0 to de-activate.");
     static PrefEntry estimateDefaultValueForZeroEstimatesInMinutes
             = new PrefEntry("Default time estimate", "estimateDefaultValueForZeroEstimatesInMinutes", 4,
                     "Default time estimate to use for non-estimated tasks. Set to typical average value of actual effort for small tasks to avoid having to estimate these. Set to 0 to de-activate.");
@@ -263,19 +268,19 @@ public class MyPrefs {
             = new PrefEntry("**", "alarmTimeOfDayWhenToUpdateAlarmsInMinutes", 10, "How many days ahead are alarmsminutes should an alarm snooze"); //10 = 10 minutes after midnight
 
     static PrefEntry alarmShowDueTimeAtEndOfNotificationText
-            = new PrefEntry(Format.f("Include {0} in notifications", Item.DUE_DATE ), "alarmShowDueTimeAtEndOfNotificationText", true, 
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.DUE_DATE), "alarmShowDueTimeAtEndOfNotificationText", true,
                     "**");
     static PrefEntry alarmShowAlarmTimeAtEndOfNotificationText
-            = new PrefEntry(Format.f("Include {0} in notifications", Item.ALARM_DATE ), "alarmShowAlarmTimeAtEndOfNotificationText", true, 
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.ALARM_DATE), "alarmShowAlarmTimeAtEndOfNotificationText", true,
                     "**");
     static PrefEntry alarmShowWaitingTimeAtEndOfNotificationText
-            = new PrefEntry(Format.f("Include {0} in notifications", Item.WAIT_UNTIL_DATE ), "alarmShowWaitingTimeAtEndOfNotificationText", true, 
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.WAIT_UNTIL_DATE), "alarmShowWaitingTimeAtEndOfNotificationText", true,
                     "**");
     static PrefEntry alarmShowWaitingAlarmTimeAtEndOfNotificationText
-            = new PrefEntry(Format.f("Include {0} in notifications", Item.WAITING_ALARM_DATE ), "alarmShowWaitingAlarmTimeAtEndOfNotificationText", true, 
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.WAITING_ALARM_DATE), "alarmShowWaitingAlarmTimeAtEndOfNotificationText", true,
                     "**");
     static PrefEntry alarmShowSnoozeUntilTimeAtEndOfNotificationText
-            = new PrefEntry(Format.f("Include {0} in notifications", Item.WAITING_ALARM_DATE ), "alarmShowSnoozeUntilTimeAtEndOfNotificationText", true, 
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.WAITING_ALARM_DATE), "alarmShowSnoozeUntilTimeAtEndOfNotificationText", true,
                     "**");
 
     static PrefEntry alarmDaysAheadToFetchFutureAlarms
@@ -323,11 +328,17 @@ public class MyPrefs {
     static PrefEntry askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem //TODO!!! No, only ask if overwriting an alreadyd defined value!
             = new PrefEntry("Confirm before inserting a template into an existing task", "askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem",
                     false, "**");
-    static PrefEntry keepDoneTasksVisibleTheDayTheyreCompleted //TODO!!! No, only ask if overwriting an alreadyd defined value!
-//            = new PrefEntry("If Completed tasks are hidden, keep them visible until midnight of the day they were completed", //"Don't hide Completed tasks the day they were completed
-            = new PrefEntry("Show just Completed tasks until midnight", //"Don't hide Completed tasks the day they were completed
-                    "keepDoneTasksVisibleTheDayTheyreCompleted",
-                    true, "**");
+    static PrefEntry showTemplateListAfterCreatingNewTemplateFromExistingProject //TODO!!! No, only ask if overwriting an alreadyd defined value!
+            = new PrefEntry("Show the list of templates after creating new template from existing project", "showTemplateListAfterCreatingNewTemplateFromExistingProject",
+                    true, "Allows you to immediately make edits to the just created template"); //"helpful to easily make small adjustments
+    static PrefEntry maxNbTemplatesAllowedToChoseForInsertion //TODO!!! No, only ask if overwriting an alreadyd defined value!
+            = new PrefEntry("Maximum number of templates that can chosen for insertion", "maxNbTemplatesAllowedToChoseForInsertion",
+                    3, "Allows you to immediately make edits to the just created template"); //"helpful to easily make small adjustments
+//    static PrefEntry keepDoneTasksVisibleTheDayTheyreCompletedXXX //TODO!!! No, only ask if overwriting an alreadyd defined value!
+//            //            = new PrefEntry("If Completed tasks are hidden, keep them visible until midnight of the day they were completed", //"Don't hide Completed tasks the day they were completed
+//            = new PrefEntry("Show just Completed tasks until midnight", //"Don't hide Completed tasks the day they were completed
+//                    "keepDoneTasksVisibleTheDayTheyreCompleted",
+//                    true, "**");
     static PrefEntry itemDueDateDefaultDaysAheadInTime //TODO!!! No, only ask if overwriting an alreadyd defined value!
             = new PrefEntry("Default number of days ahead in time for Due dates (0 disables)", //"Don't hide Completed tasks the day they were completed
                     "itemDueDateDefaultDaysAheadInTime",
@@ -349,9 +360,9 @@ public class MyPrefs {
             = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.CHALLENGE), "itemInheritOwnerProjectChallenge", false,
                     INHERITS + Item.CHALLENGE);
 
-    static PrefEntry itemInheritOwnerStarredProperties
+    static PrefEntry itemInheritOwnerProjectStarred
             //            = new PrefEntry(Format.f("Subtasks inherit {0} from their project","propert", "itemInheritOwnerStarredProperties", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.STARRED), "itemInheritOwnerStarredProperties", true,
+            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.STARRED), "itemInheritOwnerProjectStarred", true,
                     INHERITS + Item.STARRED);
 
     static PrefEntry itemInheritOwnerProjectPriority
@@ -405,8 +416,8 @@ public class MyPrefs {
             = new PrefEntry(Format.f("Even completed subtasks inherit valhes from their project", Item.TEMPLATE), "itemInheritEvenDoneSubtasksInheritOwnerValues", false,
                     INHERITS + Item.TEMPLATE);
 
-    static PrefEntry useDefaultFilterInItemsWhenNoneDefined
-            = new PrefEntry("By default, hide Done and Cancelled tasks in lists", "useDefaultFilterInItemsWhenNoneDefined", true, "**");
+//    static PrefEntry useDefaultFilterInItemsWhenNoneDefinedXXX
+//            = new PrefEntry("By default, hide Done and Cancelled tasks in lists", "useDefaultFilterInItemsWhenNoneDefined", true, "**");
 
     // ************** END inherit values from owning Project *************
     static PrefEntry itemExtractRemainingEstimateFromStringInTaskText
@@ -417,7 +428,6 @@ public class MyPrefs {
 
 //    static PrefEntry itemProjectPropertiesDerivedFromSubtasks
 //            = new PrefEntry("Project properties like [STARTED_ON] shows values from subtasks", "itemProjectPropertiesDerivedFromSubtasks", true, "**");
-
     static PrefEntry workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime
             = new PrefEntry(Format.f("Prioritize {0} from Categories", Item.WORTIME), "workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime", true, "If one of a tasks categories has work time, use that to calculate the finish time instead of the work time of the Porject or List the task belongs to");
 
@@ -454,6 +464,15 @@ public class MyPrefs {
     static PrefEntry reloadChangedDataInBackground
             = new PrefEntry("Refresh changed data in background", "reloadChangedDataInBackground", false, "** - NOT END USER");
 
+//    static PrefEntry defaultIconSizeInMM = new PrefEntry("Default icons size in millimeters", "defaultIconSizeInMM", Float.parseFloat(Form.getUIManager().getThemeConstant("menuImageSize", "4.5")), "** - NOT END USER");
+    static PrefEntry defaultIconSizeInMM = new PrefEntry("Default icons size in millimeters", 
+            "defaultIconSizeInMM", 6.0f, "** - NOT END USER"); //NB! Also set in theme.css/#Constants: overflowImageSize and menuImageSize
+
+    static PrefEntry defaultIconGapInMM
+            = new PrefEntry("Default icons size in 0.1 millimeters", "defaultIconGapInMM", 0.5f, "** - NOT END USER");
+
+    static BackCommandPolicy defaultBackPolicy = BackCommandPolicy.AS_ARROW;
+
     //ITEMLIST
     static PrefEntry useDefaultFilterInItemListsWhenNoneDefined
             = new PrefEntry("By default, hide Done and Cancelled tasks in lists", "useDefaultFilterInItemListsWhenNoneDefined", true, "**");
@@ -479,6 +498,10 @@ public class MyPrefs {
             = new PrefEntry("enableRepairCommandsInMenus", "enableRepairCommandsInMenus", true, "**");
     static PrefEntry pinchInsertEnabled
             = new PrefEntry("Enable pinch insert in lists", "pinchInsertEnabled", true, "**");
+    static PrefEntry screenRotationDisabled
+            = new PrefEntry("Disable screen rotation", "screenRotationDisabled", true, "**");
+    static PrefEntry enableShowingSystemInfo
+            = new PrefEntry("Show additional system information like unique identified", "enableShowingSystemInfo", true, "**");
 
     //REPEATRULE
     static PrefEntry repeatMaxInterval = new PrefEntry("repeatMaxInterval**", "repeatMaxInterval", 365, "maximun value for repeat interval**");
@@ -508,29 +531,27 @@ public class MyPrefs {
             = new PrefEntry("Show internal RepeatRule data", "repeatShowInternalDataInRepeatScreen", true, "**");
     static PrefEntry repeatInsertAfterLastDueDateInstanceInsteadOfJustCompleted
             = new PrefEntry("Show internal RepeatRule data", "repeatInsertAfterLastDueDateInstanceInsteadOfJustCompleted", true, "**");
-        static PrefEntry insertNewRepeatInstancesInStartOfLists
+    static PrefEntry insertNewRepeatInstancesInStartOfLists
             = new PrefEntry("not used in code yet**", "insertNewRepeatInstancesInStartOfLists", false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
     static PrefEntry insertNewRepeatInstancesJustAfterRepeatOriginator
             = new PrefEntry("Insert new repeat instances after the original ",
                     "insertNewRepeatInstancesJustAfterRepeatOriginator", true, "Always insert new repeat tasks after the repeating task instead of beginning/end of list"); //"at the end"
-        static PrefEntry repeatOnCompletionFromDueDateIfLaterThanCompletedDate
-            = new PrefEntry("Repeat from Completed date will repeat from Due date for tasks completed before due date", 
+    static PrefEntry repeatOnCompletionFromDueDateIfLaterThanCompletedDate
+            = new PrefEntry("Repeat from Completed date will repeat from Due date for tasks completed before due date",
                     "repeatOnCompletionFromDueDateIfLaterThanCompletedDate", true, "**"); //"at the end"
-
-
 
     //ITEMS IN LIST
     static PrefEntry itemListAlwaysShowHideUntilDate = new PrefEntry("Show Hide Until date", "itemListAlwaysShowHideUntilDate", true, "**");
     static PrefEntry itemListAlwaysShowStartByDate = new PrefEntry("Show Start By dates", "itemListAlwaysShowStartByDate", true, "**");
     static PrefEntry itemListExpiresByDate = new PrefEntry("Show Expires By date", "itemListExpiresByDate", true, "**");
     static PrefEntry itemListWaitingTillDate = new PrefEntry("Show Waiting Till date", "itemListWaitingTillDate", true, "**");
-    static PrefEntry itemListShowRemainingEvenIfZero = new PrefEntry("In lists of tasks, show even zero [REMAINING]**", "itemListShowRemainingEvenIfZero", false, "**");
-    static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry("In lists of tasks, show even zero [REMAINING]**",
+    static PrefEntry itemListShowRemainingEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_REMAINING), "itemListShowRemainingEvenIfZero", false, "**");
+    static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry(Format.f("Show {0} for tasks not {1}", Item.EFFORT_ACTUAL, ItemStatus.DONE.getName()),
             "itemListShowActualIfNonZeroEvenIfNotDone", false, "**");
-    static PrefEntry itemListEffortEstimate = new PrefEntry("Show Effort Estimate in list details**", "itemListEffortEstimate", true, "**");
-    static PrefEntry itemListAllowDuplicateListNames = new PrefEntry("Show Effort Estimate in list details**", "itemListAllowDuplicateListNames", false, "**");
-    static PrefEntry earnedValueDecimals = new PrefEntry("Number of decimals shown for task Value**", "earnedValueDecimals", 2, "**");
-    static PrefEntry itemListDontShowValueIfEarnedValuePerHourIsNonZero = new PrefEntry("Show Effort Estimate in list details**",
+    static PrefEntry itemListEffortEstimate = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ESTIMATE), "itemListEffortEstimate", true, "**");
+    static PrefEntry itemListAllowDuplicateListNames = new PrefEntry("Allow use of same name for different lists", "itemListAllowDuplicateListNames", false, "**");
+    static PrefEntry earnedValueDecimals = new PrefEntry(Format.f("Number of decimals shown for {0 earled value}",Item.EARNED_VALUE), "earnedValueDecimals", 2, "**");
+    static PrefEntry itemListDontShowValueIfEarnedValuePerHourIsNonZero = new PrefEntry(Format.f("Show {0} even when 0",Item.EARNED_VALUE),
             "itemListDontShowValueIfEarnedValuePerHourIsNonZero", true, "**");
 
     //
@@ -611,6 +632,8 @@ public class MyPrefs {
             "workSlotContinueAddingInlineWorkslots", true, "**");
     static PrefEntry workSlotUseSmartDates = new PrefEntry("Use smart dates",
             "workSlotUseSmartDates", true, "**");
+    static PrefEntry workSlotsMayBeCreatedInThePast = new PrefEntry("Use smart dates",
+            "workSlotsMayBeCreatedInThePast", true, "**");
 
     MyPrefs() {
 //         int x=7:
@@ -664,8 +687,12 @@ public class MyPrefs {
             return (Long) Preferences.get(settingId, (Long) defaultValue);
         }
 
+        public float getFloat() {
+            return (Float) Preferences.get(settingId, (Float) defaultValue);
+        }
+
         public Date getDate() {
-            return new Date(Preferences.get(settingId, ((Date) defaultValue).getTime()));
+            return new MyDate(Preferences.get(settingId, ((Date) defaultValue).getTime()));
         }
 
         public boolean getBoolean() {
@@ -693,7 +720,7 @@ public class MyPrefs {
     }
 
     public static Date getDate(PrefEntry setting) {
-        return new Date(Preferences.get(setting.settingId, ((Date) setting.defaultValue).getTime()));
+        return new MyDate(Preferences.get(setting.settingId, ((Date) setting.defaultValue).getTime()));
     }
 
     public static boolean getBoolean(PrefEntry setting) {

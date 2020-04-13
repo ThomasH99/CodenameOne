@@ -5,7 +5,6 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Graphics;
 import com.codename1.ui.events.ScrollListener;
 import com.codename1.ui.layouts.BorderLayout;
-import com.codename1.ui.layouts.MyBorderLayout;
 import java.util.ArrayList;
 
 /**

@@ -26,7 +26,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
 
     MyDateAndTimePicker() {
         super();
-        setUIID("LabelValue");
+        setUIID("ScreenItemEditableValue");
         zeroValuePattern = "";
         setType(Display.PICKER_TYPE_DATE_AND_TIME);
         setShowMeridiem(false); //TODO!!!! depend on locale!!
@@ -48,7 +48,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
         if (date != null && date.getTime() != 0) {
             this.setDate(date);
         } else {
-            setDate(new Date(0)); //UI: default date is undefined
+            setDate(new MyDate(0)); //UI: default date is undefined
         }
     }
 
@@ -128,7 +128,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
     }
 
     public void swipeClear() {
-        setDateAndNotify(new Date(0));
+        setDateAndNotify(new MyDate(0));
     }
 
     @Override

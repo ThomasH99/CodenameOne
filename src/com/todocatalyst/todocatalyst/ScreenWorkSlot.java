@@ -40,6 +40,10 @@ public class ScreenWorkSlot extends MyForm {
 //    private RepeatRuleParseObject repeatRuleCopyBeforeEdit;
     protected static String FORM_UNIQUE_ID = "ScreenEditWorkSlot"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     private static String REPEAT_RULE_DELETED_MARKER = "REPEAT_RULE_DELETED";
+    private String lastFieldSetManually = ""; //whenever setting a new field, duration, endDate, startDate, the 3rd one should be updated based on the current and last set
+    private final static String DURATION = "duration"; //whenever setting a new field, duration, endDate, startDate, the 3rd one should be updated based on the current and last set
+    private final static String END_DATE = "endDate"; //whenever setting a new field, duration, endDate, startDate, the 3rd one should be updated based on the current and last set
+    private final static String START_DATE = "startDate"; //whenever setting a new field, duration, endDate, startDate, the 3rd one should be updated based on the current and last set
 
 //    MyDateAndTimePicker startByDate;
 //    MyDurationPicker duration;
@@ -58,7 +62,10 @@ public class ScreenWorkSlot extends MyForm {
 //        } else {
 //        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId("-" + this.workSlot.getObjectIdP()));
 //        initLocalSaveOfEditedValues(getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
-        previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
+        String prevValId = this.workSlot.getObjectIdP() != null ? this.workSlot.getObjectIdP() : ("From-" + previousForm.getUniqueFormId());
+
+//        previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
+        previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + prevValId);
 //        }
         setLayout(BoxLayout.y());
         getContentPane().setScrollableY(true);
@@ -99,7 +106,7 @@ public class ScreenWorkSlot extends MyForm {
 //    public static boolean checkWorkSlotIsValidForSaving(WorkSlot workSlot, ItemAndListCommonInterface owner) {//, Date startByDate, int duration) {
         List<WorkSlot> overlapping;
         String errorMsg = null;
-        if (startByDate.getTime() == 0 || duration == 0) { // ^ XOR - if one and only one is true
+        if (startByDate.getTime() == 0 ^ duration == 0) { // ^ XOR - if one and only one is true (OK to exit if both are zero, no workshop
 //        if (workSlot.getStartTimeD().getTime() == 0 || workSlot.getDurationInMillis() == 0) {
 //            if ((startByDate.getDate().getTime() == 0 || startByDate.getDate().getTime() == now) ^ duration.getTime() == 0) { // ^ XOR - if one and only one is true
             errorMsg = "Both " + WorkSlot.START_TIME + " and " + WorkSlot.DURATION + " must be defined";
@@ -177,7 +184,8 @@ public class ScreenWorkSlot extends MyForm {
 //        }));
 //</editor-fold>
 
-        if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //        toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> { //DONE!! replace with default Cancel command MyForm.makeCancelCommand()??
+        if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //        toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> { //DONE!! replace with default Cancel command MyForm.makeCancelCommand()??
+            //should always be OK to cancel editing a workslot
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Log.p("Clicked");
 ////            item.revert(); //forgetChanges***/refresh
@@ -252,43 +260,47 @@ public class ScreenWorkSlot extends MyForm {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container content) {
         parseIdMap2.parseIdMapReset();
+        lastFieldSetManually = "";
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Container content = new Container();
-        if (false) {
-            TableLayout tl;
-//        int spanButton = 2;
-            int nbFields = 8;
-            if (Display.getInstance().isTablet()) {
-                tl = new TableLayout(nbFields, 2);
-            } else {
-                tl = new TableLayout(nbFields * 2, 1);
-//            spanButton = 1;
-            }
-            tl.setGrowHorizontally(true);
-            content.setLayout(tl);
-        }
+//        if (false) {
+//            TableLayout tl;
+////        int spanButton = 2;
+//            int nbFields = 8;
+//            if (Display.getInstance().isTablet()) {
+//                tl = new TableLayout(nbFields, 2);
+//            } else {
+//                tl = new TableLayout(nbFields * 2, 1);
+////            spanButton = 1;
+//            }
+//            tl.setGrowHorizontally(true);
+//            content.setLayout(tl);
+//        }
+//</editor-fold>
         long now = MyDate.currentTimeMillis();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyDateAndTimePicker startByDate = new MyDateAndTimePicker("<start work on this date>", parseIdMap2,
 //                () -> workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()
 //                ? new Date(now) : workSlot.getStartTimeD(),
 //                (d) -> workSlot.setStartTime(d));
-//</editor-fold>
 //        Date defaultDate = (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? MyDate.getStartOfMinute(new Date(now)) : new Date(0));
-        GetVal makeDefaultWorkSlotStartDate = () -> (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? MyDate.getStartOfMinute(new Date(now)) : new Date(0));
-        MyDateAndTimePicker startByDate = new MyDateAndTimePicker();
-        initField(WorkSlot.PARSE_START_TIME, startByDate,
+//</editor-fold>
+        GetVal makeDefaultWorkSlotStartDate
+                = () -> (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? MyDate.getRoundUpToNextMinute(new MyDate(now)) : new MyDate(0));
+        MyDateAndTimePicker startByDatePicker = new MyDateAndTimePicker();
+        initField(WorkSlot.PARSE_START_TIME, startByDatePicker,
                 //                () -> ((workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()) ? 
                 //                        new Date(now) 
                 //                        : workSlot.getStartTimeD()),
                 () -> workSlot.getStartTimeD(),
                 (d) -> workSlot.setStartTime((Date) d),
-                () -> startByDate.getDate(),
-                (d) -> startByDate.setDate((Date) d),
-                new Date(0), //round to nearest minute to avoid seconds showing
+                () -> startByDatePicker.getDate(),
+                (d) -> startByDatePicker.setDate((Date) d),
+                new MyDate(0), //round to nearest minute to avoid seconds showing
                 makeDefaultWorkSlotStartDate);
 //        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
-        content.add(layoutN(WorkSlot.START_TIME, startByDate, WorkSlot.START_TIME_HELP));
+        content.add(layoutN(WorkSlot.START_TIME, startByDatePicker, WorkSlot.START_TIME_HELP));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyDurationPicker duration = new MyDurationPicker(parseIdMap2,
@@ -296,11 +308,9 @@ public class ScreenWorkSlot extends MyForm {
 //                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() : (int) workSlot.getDurationInMinutes(), //UI: use default workSlot duration
 //                (i) -> workSlot.setDurationInMinutes((int) i));
 //</editor-fold>
-        MyDateAndTimePicker endByDate = new MyDateAndTimePicker();
-        MyDurationPicker duration = new MyDurationPicker();
-        duration.addActionListener(e -> {
-            endByDate.setDate(new Date(startByDate.getDate().getTime() + duration.getDuration()));
-        });
+        MyDurationPicker durationPicker = new MyDurationPicker();
+        durationPicker.setMinuteStep(MyPrefs.workSlotDurationStepIntervalInMinutes.getInt());
+
 //        Long defaultDuration = new Long((MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0
 //                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS
 //                : 0));
@@ -312,46 +322,184 @@ public class ScreenWorkSlot extends MyForm {
 //                () -> item.getRemainingEffort(false), (l) -> item.setRemaining((long) l, false),
 //                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDurationInMillis((long) l));
 //</editor-fold>
-        initField(WorkSlot.PARSE_DURATION, duration,
+        initField(WorkSlot.PARSE_DURATION, durationPicker,
                 //                () -> ((workSlot.getDurationInMinutes() == 0
                 //                && MyPrefs.workSlotDefaultDurationInMinutes.getInt() != 0)
                 //                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS
                 //                : workSlot.getDurationInMillis()),
                 () -> workSlot.getDurationInMillis(),
                 (l) -> workSlot.setDurationInMillis((long) l),
-                () -> duration.getDuration(),
-                (l) -> duration.setDuration((long) l),
+                () -> durationPicker.getDuration(),
+                (l) -> durationPicker.setDuration((long) l),
                 new Long(0),
                 makeDefaultDuration);
-        duration.setMinuteStep(MyPrefs.workSlotDurationStepIntervalInMinutes.getInt());
+        content.add(layoutN(WorkSlot.DURATION, durationPicker, WorkSlot.DURATION_HELP));
 
-        content.add(layoutN(WorkSlot.DURATION, duration, WorkSlot.DURATION_HELP));
+        MyDateAndTimePicker endByDatePicker = new MyDateAndTimePicker();
+//<editor-fold defaultstate="collapsed" desc="comment">
+        if (false) {
+            initField("RandomUnusedKey", endByDatePicker, //random key because the value is never used directly, only in the UI to set Duration
+                    //                () -> ((workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()) ?
+                    //                        new Date(now)
+                    //                        : workSlot.getStartTimeD()),
+                    () -> new MyDate(startByDatePicker.getDate().getTime() + durationPicker.getDuration()), //workSlot.getEndTimeD(),
+                    (d) -> { //we never use the value other than to update start or duration pickers
+                    },
+                    () -> null,
+                    (d) -> endByDatePicker.setDate((Date) d),
+                    new MyDate(0),
+                    () -> {
+//                    long defaultEndTime = startByDatePicker.getDate().getTime() != 0 ? startByDatePicker.getDate().getTime() : ((Date) makeDefaultWorkSlotStartDate.getVal()).getTime()
+//                    + durationPicker.getTime() != 0 ? durationPicker.getTime() : ((Date) makeDefaultDuration.getVal()).getTime();
+//                    return new Date(defaultEndTime);
+                        return null; //should never be called?!
+                    });
+        }
+//</editor-fold>
+        if (startByDatePicker.getDate().getTime() != 0) {
+            endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime() + durationPicker.getDuration())); //simply set to start+duration pickers (even when zero or have locally stored values)
+        } else {
+            endByDatePicker.setDate(new MyDate(0)); //simply set to start+duration pickers (even when zero or have locally stored values)
+        }//        content.add(new Label("Start by")).add(startByDate);
+//        content.add(layout("Start by",startByDate, "**"));
+        content.add(layoutN(WorkSlot.END_TIME, endByDatePicker, WorkSlot.END_TIME_HELP));
 
-        endByDate.addActionListener(e -> {
-            if (endByDate.getDate().getTime() < startByDate.getDate().getTime()) {
-                endByDate.setDate(new Date(startByDate.getDate().getTime()));
-            } else {
-                duration.setDuration(endByDate.getDate().getTime() - startByDate.getDate().getTime());
+        durationPicker.addActionListener(e -> {
+            if (durationPicker.getDuration() != 0) { //if date is set
+                if (lastFieldSetManually.equals(START_DATE)) {
+                    endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime() + durationPicker.getDuration()));
+                } else if (lastFieldSetManually.equals(END_DATE) && endByDatePicker.getDate().getTime() != 0) {
+                    startByDatePicker.setDate(new MyDate(endByDatePicker.getDate().getTime() - durationPicker.getDuration()));
+                } else if (startByDatePicker.getDate().getTime() != 0 && endByDatePicker.getDate().getTime() != 0) {
+                    //UI: if both start and enddate are defined, keep startdate and update enddate
+                    endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime() + durationPicker.getDuration()));
+                }
+
+                if (!MyPrefs.workSlotsMayBeCreatedInThePast.getBoolean()) {
+                    if (startByDatePicker.getDate().getTime() < MyDate.currentTimeMillis()) {
+                        //IF start is in the past and this is now allowed, move it to 'now' and update endDate to start+duration
+                        startByDatePicker.setDate(new MyDate(MyDate.currentTimeMillis()));
+                        endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime() + durationPicker.getDuration()));
+                    }
+                }
+
+                if (false && endByDatePicker.getDate().getTime() < startByDatePicker.getDate().getTime()) { //if already sat endDate is before new startDate
+                    //set endDate to startDate + already set duration or default duration
+                    endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime()
+                            + durationPicker.getDuration() != 0 ? durationPicker.getDuration()
+                            : MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS));
+                }
+                lastFieldSetManually = DURATION;
+            } else { //if duration is cleared
+                if (lastFieldSetManually.equals(START_DATE)) {
+                    endByDatePicker.setDate(new MyDate(0));
+                } else if (lastFieldSetManually.equals(END_DATE)) {
+                    startByDatePicker.setDate(new MyDate(0));
+                } else if (startByDatePicker.getDate().getTime() != 0) {//&& endByDatePicker.getDate().getTime() != 0) {
+                    //UI: if both start and enddate are defined, keep startdate and clear enddate
+                    endByDatePicker.setDate(new MyDate(0));
+                }
             }
         });
-        initField("RandomUnusedKey", endByDate, //random key because the value is never used directly, only in the UI to set Duration
-                //                () -> ((workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()) ? 
-                //                        new Date(now) 
-                //                        : workSlot.getStartTimeD()),
-                () -> workSlot.getEndTimeD(),
-                (d) -> {
-                },
-                () -> null,
-                (d) -> endByDate.setDate((Date) d),
-                new Date(0),
-                () -> {
-                    long defaultEndTime = startByDate.getDate().getTime() != 0 ? startByDate.getDate().getTime() : ((Date) makeDefaultWorkSlotStartDate.getVal()).getTime()
-                    + duration.getTime() != 0 ? duration.getTime() : ((Date) makeDefaultDuration.getVal()).getTime();
-                    return new Date(defaultEndTime);
-                });
-//        content.add(new Label("Start by")).add(startByDate);
-//        content.add(layout("Start by",startByDate, "**"));
-        content.add(layoutN(WorkSlot.END_TIME, endByDate, WorkSlot.END_TIME_HELP));
+
+        startByDatePicker.addActionListener(e -> {
+            if (startByDatePicker.getDate().getTime() != 0) { //if date is set
+                if (!MyPrefs.workSlotsMayBeCreatedInThePast.getBoolean()) {
+                    if (startByDatePicker.getDate().getTime() < MyDate.currentTimeMillis()) {
+                        startByDatePicker.setDate(new MyDate(MyDate.currentTimeMillis()));
+                    }
+                }
+                if (lastFieldSetManually.equals(END_DATE)) {
+                    if (endByDatePicker.getDate().getTime() < startByDatePicker.getDate().getTime()) { //if already sat endDate is before new startDate
+                        //set endDate to startDate + already set duration or default duration
+                        endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime()
+                                + durationPicker.getDuration() != 0 ? durationPicker.getDuration()
+                                : MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS));
+                    }
+                    durationPicker.setDuration(Math.max(0, endByDatePicker.getDate().getTime() - startByDatePicker.getDate().getTime()));
+                } else if (lastFieldSetManually.equals(DURATION) && durationPicker.getDuration() != 0) { //durationPicker.getDuration() != 0 in case it was set but then cleared
+                    endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime() + durationPicker.getDuration()));
+                } else if (durationPicker.getDuration() != 0 && endByDatePicker.getDate().getTime() != 0) {
+                    //adjust endDate if both duration and endDate were previously set (e.g. editing an existing workslot)
+                    endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime() + durationPicker.getDuration()));
+                } else if (MyPrefs.workSlotDefaultDurationInMinutes.getInt() > 0) {
+                    durationPicker.setDuration(MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
+                    endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime() + durationPicker.getDuration()));
+                }
+                lastFieldSetManually = START_DATE;
+            } else { //field was cleared, also clear endDate if set
+                if (endByDatePicker.getDate().getTime() != 0) {
+                    endByDatePicker.setDate(new MyDate(0));
+                }
+//                lastFieldSetManually = ""; //if startDate was cleared, then leave the previously set field as lastSet
+            }
+        });
+
+        endByDatePicker.addActionListener(e -> {
+            if (endByDatePicker.getDate().getTime() != 0) {
+                if (lastFieldSetManually.equals(DURATION)) {
+                    startByDatePicker.setDate(new MyDate(endByDatePicker.getDate().getTime() - durationPicker.getDuration()));
+                } else if (lastFieldSetManually.equals(START_DATE) && startByDatePicker.getDate().getTime() != 0) { //durationPicker.getDuration() != 0 in case it was set but then cleared
+                    durationPicker.setDuration(endByDatePicker.getDate().getTime() - startByDatePicker.getDate().getTime());
+                } else if (durationPicker.getDuration() != 0 && startByDatePicker.getDate().getTime() != 0) {
+                    //if startDate is in the past, adjust it to now *before* calculating duration
+                    if (!MyPrefs.workSlotsMayBeCreatedInThePast.getBoolean() && startByDatePicker.getDate().getTime() < MyDate.currentTimeMillis()) {
+                        startByDatePicker.setDate(new MyDate(MyDate.currentTimeMillis()));
+                    }
+                    //adjust duration if both duration and startDate were previously set (e.g. editing an existing workslot)
+                    durationPicker.setDuration(endByDatePicker.getDate().getTime() - startByDatePicker.getDate().getTime());
+                } else if (MyPrefs.workSlotDefaultDurationInMinutes.getInt() > 0) {
+                    //UI: if default duration is defined, used it to derive startDate (e.g. use case: you adjust the workslot to match a start+end time like in a calendar
+                    durationPicker.setDuration(MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
+                    startByDatePicker.setDate(new MyDate(endByDatePicker.getDate().getTime() - durationPicker.getDuration()));
+                }
+                lastFieldSetManually = END_DATE;
+            } else { //endDate was cleared
+                //if endDate is cleared, then if startDate is defined, keep startDate and clear duration
+                if (startByDatePicker.getDate().getTime() != 0) {//if startDate is in the past, adjust it to now *before* calculating duration
+                    if (!MyPrefs.workSlotsMayBeCreatedInThePast.getBoolean() && startByDatePicker.getDate().getTime() < MyDate.currentTimeMillis()) {
+                        startByDatePicker.setDate(new MyDate(MyDate.currentTimeMillis()));
+                    }
+                    durationPicker.setDuration(0);
+                }
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (startByDatePicker.getDate().getTime() != 0 && durationPicker.getDuration() != 0) {
+//                if (MyPrefs.workSlotsMayBeCreatedInThePast.getBoolean()) {
+//                    if (endByDatePicker.getDate().getTime() < startByDatePicker.getDate().getTime()) { //if endDate set before startDate, set endDate to startDate
+//                        endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime()));
+//                    } else {
+//                        durationPicker.setDuration(endByDatePicker.getDate().getTime() - startByDatePicker.getDate().getTime());
+//                    }
+//                } else {
+//                    if (endByDatePicker.getDate().getTime() < startByDatePicker.getDate().getTime()) { //if endDate set before startDate, set endDate to startDate
+//                        endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime()));
+//                    } else {
+//                        durationPicker.setDuration(endByDatePicker.getDate().getTime() - startByDatePicker.getDate().getTime());
+//                    }
+//
+//                }
+//            } else { //if startByDatePicker OR durationPicker not set yet, set startTime to endTime - default duration
+//                if (durationPicker.getDuration() != 0) {
+//                    long newStartDate = endByDatePicker.getDate().getTime() - durationPicker.getDuration();
+//                    if (!MyPrefs.workSlotsMayBeCreatedInThePast.getBoolean() && newStartDate < MyDate.currentTimeMillis()) {
+//                        newStartDate = MyDate.currentTimeMillis();
+//                        durationPicker.setDuration(Math.max(0, endByDatePicker.getDate().getTime() - newStartDate));
+//                    }
+//                    startByDatePicker.setDate(new MyDate(newStartDate));
+//                } else if (startByDatePicker.getDate().getTime() != 0) {
+//                    long newDuration =
+//                    if (!MyPrefs.workSlotsMayBeCreatedInThePast.getBoolean() && newStartDate < MyDate.currentTimeMillis()) {
+//                        if (endByDatePicker.getDate().getTime() < startByDatePicker.getDate().getTime()) { //if endDate set before startDate, set endDate to startDate
+//                            endByDatePicker.setDate(new MyDate(startByDatePicker.getDate().getTime()));
+//                        } else {
+//                            durationPicker.setDuration(Math.max(0, endByDatePicker.getDate().getTime() - startByDatePicker.getDate().getTime()));
+//                        }
+//                    }
+//                }
+//            }
+//</editor-fold>
+        });
 
 //REPEAT RULE
         WrapButton repeatRuleButton = new WrapButton();
@@ -387,7 +535,7 @@ public class ScreenWorkSlot extends MyForm {
             }
             //only allow editing RR if startDate is set
 //            if (workSlot.getStartTimeD().getTime() == 0) {
-            if (startByDate.getDate().getTime() == 0) {
+            if (startByDatePicker.getDate().getTime() == 0) {
                 Dialog.show("INFO", Format.f("Please set {0 start date} before editing the {1 REPEAT_RULE} definition",
                         WorkSlot.START_TIME, Item.REPEAT_RULE), "OK", null);
                 return;
@@ -422,7 +570,7 @@ public class ScreenWorkSlot extends MyForm {
                 }
                 previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //store edited rule (otherwise not persisted in local memory)
 
-            }, false, startByDate.getDate(), makeDefaultWorkSlotStartDate, true).show(); //TODO false<=>editing startdate not allowed - correct???
+            }, false, startByDatePicker.getDate(), makeDefaultWorkSlotStartDate, true).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
 
@@ -471,6 +619,7 @@ public class ScreenWorkSlot extends MyForm {
             }
         }
         Label ownerLabel = new Label(ownerText);
+        //NB!! If adding support for EDITING owner, don't allow it for repeating rules!
 
 //        statusCont.add(new Label(Item.BELONGS_TO)).add(owner); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //        content.add(layout(Item.BELONGS_TO, owner, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
@@ -511,7 +660,8 @@ public class ScreenWorkSlot extends MyForm {
         }
         if (workSlot.getObjectIdP() != null) { //don't show for a new created workslot
 //        content.add(layoutN("Unallocated time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
-            content.add(layoutN("Available time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
+//            content.add(layoutN("Available time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
+            content.add(layoutN("Remaining time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
                     true, true, false));
         }
 
@@ -520,8 +670,8 @@ public class ScreenWorkSlot extends MyForm {
                     true, true, false));
         }
 
-        if ((Config.TEST || MyPrefs.showObjectIdsInEditScreens.getBoolean()) && workSlot.getObjectIdP() != null) {
-            Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "LabelFixed");
+        if ((Config.TEST || (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean())) && workSlot.getObjectIdP() != null) {
+            Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "ScreenItemValueUneditable");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
@@ -537,7 +687,7 @@ public class ScreenWorkSlot extends MyForm {
                             + " " + MyDate.formatDuration(workSlotSource.getDurationInMillis(), true)
                             + " [" + workSlotSource.getObjectIdP() + "]";
                 }
-                SpanLabel sourceLabel = new SpanLabel(text, "LabelFixed");
+                SpanLabel sourceLabel = new SpanLabel(text, "ScreenItemValueUneditable");
 //            statusCont.add(new Label(Item.SOURCE)).add(source); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            statusCont.add(layout(Item.SOURCE, source, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
@@ -554,7 +704,7 @@ public class ScreenWorkSlot extends MyForm {
                 text = estim.cleaned;
                 workSlotName.setText(text);
                 if (estim.minutes != 0) {
-                    duration.setDurationAndNotify(estim.minutes * MyDate.MINUTE_IN_MILLISECONDS); //notify to save local values!
+                    durationPicker.setDurationAndNotify(estim.minutes * MyDate.MINUTE_IN_MILLISECONDS); //notify to save local values!
                 }
             }
             setTitle(SCREEN_TITLE + (text != null && text.length() > 0 ? " " + text : ""));
@@ -575,7 +725,7 @@ public class ScreenWorkSlot extends MyForm {
 //        setEditOnShow(workSlotName); //UI: start editing this field, NO
 //        MyTextField comment = new MyTextField("Description", parseIdMap2, () -> workSlot.getComment(), (s) -> workSlot.setComment(s));
 //        content.add(new Label("Description")).add(comment);
-        setCheckIfSaveOnExit(() -> checkWorkSlotIsValidForSaving(ownerObj, workSlot, startByDate.getDate(), duration.getDuration())); //TODO: when owner can be edited, use new/edited one
+        setCheckIfSaveOnExit(() -> checkWorkSlotIsValidForSaving(ownerObj, workSlot, startByDatePicker.getDate(), durationPicker.getDuration())); //TODO: when owner can be edited, use new/edited one
         return content;
     }
 

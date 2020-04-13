@@ -36,24 +36,23 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
     protected void buildContentPane(Container content) {
 //        cont.setScrollableY(true);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListAllowDuplicateListNames);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewItemsInStartOfLists);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowRemainingEvenIfZero);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListEffortEstimate);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListDontShowValueIfEarnedValuePerHourIsNonZero);
+        addSettingInt(content, parseIdMap2, MyPrefs.earnedValueDecimals, 0, 2, 1);
         
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListAlwaysShowHideUntilDate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListAlwaysShowStartByDate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListExpiresByDate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListWaitingTillDate);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowRemainingEvenIfZero);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListEffortEstimate);
 
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.dragDropAsSubtaskEnabled);
         addSettingBoolean(content, parseIdMap2, MyPrefs.dragDropAsSupertaskEnabled);
-        addSettingInt(content, parseIdMap2, MyPrefs.useSmartdatesForThisManyDaysOverdueDueOrFinishDates, 0, 60, 1);
         addSettingInt(content, parseIdMap2, MyPrefs.dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask, 5, 25, 1);
-        addSettingInt(content, parseIdMap2, MyPrefs.earnedValueDecimals, 0, 2, 1);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListDontShowValueIfEarnedValuePerHourIsNonZero);
+        content.add(makeSpacer());
+        addSettingInt(content, parseIdMap2, MyPrefs.useSmartdatesForThisManyDaysOverdueDueOrFinishDates, 0, 60, 1);
         
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.hideStickyHeadersForSortedLists);

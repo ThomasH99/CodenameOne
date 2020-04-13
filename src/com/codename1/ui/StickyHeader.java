@@ -6,9 +6,6 @@
  */
 package com.codename1.ui;
 
-import com.codename1.ui.Container;
-import com.codename1.ui.Graphics;
-import com.codename1.ui.Painter;
 import com.codename1.ui.events.ScrollListener;
 import com.codename1.ui.geom.Rectangle;
 import com.codename1.ui.layouts.BorderLayout;
@@ -50,29 +47,63 @@ public class StickyHeader extends Container implements ScrollListener {
 
     private boolean needToCheck = false;
     private static String KEY_STICKY = "sticky";
+    boolean longPress = false;
 
     public StickyHeader() {
         super();
         setLayout(BorderLayout.center());
-        hideShowButton.setCommand(Command.createMaterial("", FontImage.MATERIAL_EXPAND_LESS, (ev) -> {
-            hidden = !hidden;
+//        hideShowButton.setCommand(Command.createMaterial("", FontImage.MATERIAL_EXPAND_LESS, (ev) -> {
+        hideShowButton.setCommand(Command.createMaterial("", Icons.iconCollapseListStickyHeader, (ev) -> {
+            if (longPress) {
+                longPress = false;
+            } else {
+                hidden = !hidden;
 //            hideFollowingComponents(hidden);
-            Container parent = getParent();
-            int index = parent.getComponentIndex(this);
-            int count = parent.getComponentCount();
-            for (int i = index + 1; i < count; i++) {
-                Component comp = parent.getComponentAt(i);
-                if (comp instanceof StickyHeader) break;
-                else comp.setHidden(hidden);
-            }
+                Container parent = getParent();
+                int index = parent.getComponentIndex(this);
+                int count = parent.getComponentCount();
+                for (int i = index + 1; i < count; i++) {
+                    Component comp = parent.getComponentAt(i);
+                    if (comp instanceof StickyHeader) {
+                        break;
+                    } else {
+                        comp.setHidden(hidden);
+                    }
+                }
 //            if (hidden)
 //                hideShowButton.setMaterialIcon(hidden?FontImage.MATERIAL_EXPAND_LESS:FontImage.MATERIAL_EXPAND_MORE);
 //            else
 //                hideShowButton.setMaterialIcon(FontImage.MATERIAL_EXPAND_MORE);
-            hideShowButton.setMaterialIcon(hidden ? FontImage.MATERIAL_EXPAND_MORE : FontImage.MATERIAL_EXPAND_LESS);
-            parent.animateHierarchy(300);
-
+                hideShowButton.setMaterialIcon(hidden ? Icons.iconExpandListStickyHeader : Icons.iconCollapseListStickyHeader);
+                parent.animateHierarchy(300);
+            }
         }));
+
+        //if longpressing an expanded stickyHeader, collapse all; if longpressing a collapsed stickyHeader, expand all those already collapsed
+        hideShowButton.addLongPressListener((e) -> {
+            longPress = true;
+            if (hidden) {
+                for (Component comp : getParent().getChildrenAsList(true)) {
+                    if (comp instanceof StickyHeader) {
+                        ((StickyHeader) comp).hidden = false;
+                        ((StickyHeader) comp).hideShowButton.setMaterialIcon(Icons.iconCollapseListStickyHeader);
+                    } else {
+                        comp.setHidden(false);
+                    }
+                }
+            } else {
+                for (Component comp : getParent().getChildrenAsList(true)) {
+                    if (comp instanceof StickyHeader) {
+                        ((StickyHeader) comp).hidden = true;
+                        ((StickyHeader) comp).hideShowButton.setMaterialIcon(Icons.iconExpandListStickyHeader);
+                    } else {
+                        comp.setHidden(true);
+                    }
+                }
+            }
+            getParent().animateHierarchy(300);
+        });
+
         super.add(BorderLayout.EAST, hideShowButton);
     }
 
@@ -80,6 +111,7 @@ public class StickyHeader extends Container implements ScrollListener {
         this();
         this.setUIID(uiid);
     }
+
     public StickyHeader(String uiid, String iconUiid) {
         this();
         this.setUIID(uiid);
@@ -92,8 +124,11 @@ public class StickyHeader extends Container implements ScrollListener {
         int count = parent.getComponentCount();
         for (int i = index + 1; i < count; i++) {
             Component comp = parent.getComponentAt(i);
-            if (comp instanceof StickyHeader) break;
-            else comp.setHidden(hide);
+            if (comp instanceof StickyHeader) {
+                break;
+            } else {
+                comp.setHidden(hide);
+            }
         }
         parent.animateHierarchy(300);
     }

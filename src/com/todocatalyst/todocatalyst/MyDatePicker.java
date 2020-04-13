@@ -27,7 +27,7 @@ class MyDatePicker extends Picker implements SwipeClear {
 //    }
     MyDatePicker() {
         super();
-        setUIID("LabelValue");
+        setUIID("ScreenItemEditableValue");
 //        this.zeroValuePattern = ""; //"<set>";
         this.setType(Display.PICKER_TYPE_DATE);
         setFormatter(new SimpleDateFormat() {
@@ -44,9 +44,9 @@ class MyDatePicker extends Picker implements SwipeClear {
     MyDatePicker(Date date) {
         this();
          if (date != null && date.getTime() != 0) {
-            this.setDate(date);
+            setDate(date);
         } else {
-            this.setDate(new Date(0)); //UI: default date is undefined
+            setDate(new MyDate(0)); //UI: default date is undefined
         }
     }
     MyDatePicker(Date date, String zeroValuePattern, boolean setEndOfSelectedDay) {
@@ -130,7 +130,7 @@ class MyDatePicker extends Picker implements SwipeClear {
 //    }
 //</editor-fold>
     void swipeClear() {
-        setDateAndNotify(new Date(0));
+        setDateAndNotify(new MyDate(0));
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    Component makeContainerWithClearButtonXXX() {

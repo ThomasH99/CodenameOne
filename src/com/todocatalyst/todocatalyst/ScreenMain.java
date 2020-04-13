@@ -15,7 +15,7 @@ import com.codename1.ui.Form;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
-import com.codename1.ui.layouts.MyBorderLayout;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.util.Resources;
 import static com.todocatalyst.todocatalyst.MyForm.ScreenType.ALL_TASKS;
@@ -55,11 +55,11 @@ public class ScreenMain extends MyForm {
 //        toolbar.setScrollOffUponContentPane(true);
 //        setLayout(new BorderLayout());
 //        setLayout(BoxLayout.y());
-        setLayout(new MyBorderLayout());
+        setLayout(new BorderLayout());
 //        getContentPane().setScrollableY(true);
         Container contentContainer = new Container(BoxLayout.y());
         contentContainer.setScrollableY(true);
-        add(MyBorderLayout.CENTER, contentContainer);
+        add(BorderLayout.CENTER, contentContainer);
 //        addCommandsToToolbar(getToolbar(), getContentPane());//, theme);
         addCommandsToToolbar(getToolbar(), contentContainer);//, theme);
 //        addCommandsToToolbar(new Toolbar(), getContentPane());//, theme); //new Toolbar() hack to hide the toolbar
@@ -95,7 +95,7 @@ public class ScreenMain extends MyForm {
 //    }
     private void makeAndAddButtons(Command cmd, Toolbar toolbar, Container cont, String helpText) {
 //        Component titleButton = makeHelpButton(cmd.getCommandName(), helpText);
-        Button titleButton = new MyButtonLongPress(cmd, Command.create(null, null, (e) -> {
+        Button titleButton = new MyButtonLongPressXXX(cmd, Command.create(null, null, (e) -> {
             showToastBar(helpText);
         }));
         titleButton.setGap(Display.getInstance().convertToPixels((float) 1.5));
@@ -121,7 +121,7 @@ public class ScreenMain extends MyForm {
     private Component makeMainButton(Command cmd, String helpText) {
 
 //        Button titleButton = makeHelpButton(cmd.getCommandName(), helpText);
-        Button titleButton = new MyButtonLongPress(cmd, Command.create(null, null, (e) -> {
+        Button titleButton = new MyButtonLongPressXXX(cmd, Command.create(null, null, (e) -> {
             showToastBar(helpText);
         }));
         titleButton.setUIID("MainMenuCommand");
@@ -132,7 +132,7 @@ public class ScreenMain extends MyForm {
         editButton.setMaterialIcon(Icons.iconEdit);
         editButton.setText("");
         editButton.setUIID("Container");
-        Container c = MyBorderLayout.centerEastWest(null, editButton, titleButton);
+        Container c = BorderLayout.centerEastWest(null, editButton, titleButton);
         c.setLeadComponent(titleButton);
         c.setUIID("Button");
 //        c.setLeadComponent(titleButton);
@@ -167,7 +167,8 @@ public class ScreenMain extends MyForm {
 //    }
 //</editor-fold>
     public void addCommandsToToolbar(Toolbar toolbar, Container cont) { //, Resources theme) {
-        toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox());
+        
+        toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
 
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
         MyReplayCommand listOfAlarms = MyReplayCommand.create(ScreenListOfAlarms.screenTitle, Icons.iconMainAlarms/*FontImage.create(" \ue838 ", iconStyle)*/,
@@ -198,7 +199,8 @@ public class ScreenMain extends MyForm {
 //        }
 //</editor-fold>
         Command overdue = MyReplayCommand.create(SCREEN_OVERDUE_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainOverdue, (e) -> {
-                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
+                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_DUE_DATE, 
+                            FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
 //                    new ScreenListOfItems(SCREEN_OVERDUE_TITLE, () -> new ItemList(SCREEN_OVERDUE_TITLE, DAO.getInstance().getOverdue(), filterSort, true), ScreenMain.this, (i) -> {
 //                    new ScreenListOfItems(SCREEN_OVERDUE_TITLE, () -> new ItemList(SCREEN_OVERDUE_TITLE, DAO.getInstance().getNamedItemList(DAO.OVERDUE, SCREEN_OVERDUE_TITLE), filterSort, true), ScreenMain.this, (i) -> {
                     new ScreenListOfItems(OVERDUE, "No overdue tasks the last " + MyPrefs.overdueLogInterval.getInt() + " days",
@@ -273,17 +275,6 @@ public class ScreenMain extends MyForm {
         );
         makeAndAddButtons(inbox, toolbar, cont, "**");
 
-        if (true || Config.TEST) {
-            Command allTasks = MyReplayCommand.create(SCREEN_ALL_TASKS_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainAllTasks, (e) -> {
-                        FilterSortDef allTasksSystemFilter = DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString());
-                        new ScreenListOfItems(ALL_TASKS, 
-                                () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(false,false,true,false,false), allTasksSystemFilter, true), ScreenMain.this, (i) -> {
-                        }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
-                    }
-            );
-            makeAndAddButtons(allTasks, toolbar, cont, "**");
-        }
-
         Command lists = MyReplayCommand.create(SCREEN_LISTS_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/,
                 Icons.iconMainLists, (e) -> {
 //                new ScreenListOfItemLists("Lists", new ItemList(DAO.getInstance().getAllItemLists()), ScreenMain.this, (i)->{}).show();                     //null: do nothing, lists are saved if edited
@@ -305,6 +296,17 @@ public class ScreenMain extends MyForm {
         );
         makeAndAddButtons(categories, toolbar, cont, "**");
 
+        if (true || Config.TEST) {
+            Command allTasks = MyReplayCommand.create(SCREEN_ALL_TASKS_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainAllTasks, (e) -> {
+                        FilterSortDef allTasksSystemFilter = DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString());
+                        new ScreenListOfItems(ALL_TASKS, 
+                                () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(false,false,true,false,false), allTasksSystemFilter, true), ScreenMain.this, (i) -> {
+                        }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
+                    }
+            );
+            makeAndAddButtons(allTasks, toolbar, cont, "**");
+        }
+
         Command projects = MyReplayCommand.create(SCREEN_PROJECTS_TITLE, Icons.iconMainProjects, (e) -> {
             MyForm myForm = new ScreenListOfItems(SCREEN_PROJECTS_TITLE, "No projects", () -> new ItemList(DAO.getInstance().getAllProjects()), ScreenMain.this, (i) -> {
             }, 0);
@@ -323,7 +325,7 @@ public class ScreenMain extends MyForm {
 //            new ScreenListOfWorkSlots("", DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), null, ScreenMain.this, (i) -> {
 //if (true){
             ItemList tempWorkSlotOwnerList = new ItemList("Future " + WorkSlot.WORKSLOT + "s", true);
-            tempWorkSlotOwnerList.setWorkSlotList(new WorkSlotList(tempWorkSlotOwnerList, DAO.getInstance().getWorkSlots(new Date(MyDate.currentTimeMillis())), true));
+            tempWorkSlotOwnerList.setWorkSlotList(new WorkSlotList(tempWorkSlotOwnerList, DAO.getInstance().getWorkSlots(new MyDate(MyDate.currentTimeMillis())), true));
 //} else{
 //WorkSlotList tempWorkSlotList = new WorkSlotList(DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())));
 //}
@@ -366,7 +368,8 @@ public class ScreenMain extends MyForm {
         //TODO!!! add support for help text on these commands
         Command completionLog = MyReplayCommand.create(SCREEN_COMPLETION_LOG_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/,
                 Icons.iconMainCompletionLog, (e) -> {
-                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, false, false);
+//                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, false, false);
+                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_ALL, false, false); //showAll enough since query only gets done tasks
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_COMPLETION_LOG_TITLE, () -> new ItemList(SCREEN_COMPLETION_LOG_TITLE, DAO.getInstance().getCompletionLog(), filterSort, true), ScreenMain.this, (i) -> {
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_COMPLETION_LOG_TITLE, () -> new ItemList(SCREEN_COMPLETION_LOG_TITLE, DAO.getInstance().getNamedItemList(DAO.LOG, SCREEN_COMPLETION_LOG_TITLE), filterSort, true), 
                     MyForm myForm = new ScreenListOfItems(SCREEN_COMPLETION_LOG_TITLE, "No tasks completed the last " + MyPrefs.completionLogInterval.getInt() + " days",

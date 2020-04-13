@@ -36,7 +36,7 @@ public class EditFieldContainer extends Container {
 
     EditFieldContainer(String fieldLabelTxt, Component field, String helpText, SwipeClear swipeClearFct,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, Image fieldIcon) {
-        super(new MyBorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+        super(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
         setUIID("EditFieldContainer");
         Container fieldContainer = this;
         MyBorderLayout layout = MyBorderLayout.center();
@@ -48,13 +48,13 @@ public class EditFieldContainer extends Container {
         } else if (field instanceof MyOnOffSwitch) {
         } else if (field instanceof WrapButton) {
 //                ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
-            ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "ScreenItemField" : "ScreenItemValue");
+            ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "ScreenItemField" : "ScreenItemEditableValue");
             ((WrapButton) field).setUIID("Container");
             ((WrapButton) field).getTextComponent().setRTL(true);
-        } else if (field instanceof ComponentGroup) {
+        } else if (field instanceof ComponentGroup|| field instanceof MyToggleButton) {
         } else {
 //                field.setUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
-            field.setUIID(showAsFieldUneditable ? "ScreenItemValueUneditable" : "ScreenItemValue");
+            field.setUIID(showAsFieldUneditable ? "ScreenItemValueUneditable" : "ScreenItemEditableValue");
         }
 
         //EDIT FIELD
@@ -87,11 +87,11 @@ public class EditFieldContainer extends Container {
             Button swipeDeleteFieldButton = new Button();
             swipeDeleteFieldButton.setUIID("ClearFieldButton");
             swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
-                ActionListener l = (ev) -> {
-                    swipeClearFct.clearFieldValue();
-                    fieldContainer.revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
-                    swipeCont.close();
-                };
+            ActionListener l = (ev) -> {
+                swipeClearFct.clearFieldValue();
+                fieldContainer.revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
+                swipeCont.close();
+            };
             if (false) { //deactivate since bad UI, better to show the clear command and leave it to the user to clear
                 swipeCont.addSwipeOpenListener(l);
             }
@@ -113,7 +113,7 @@ public class EditFieldContainer extends Container {
                 int labelPreferredW = fieldLabel.getPreferredW();
                 int fieldPreferredW = visibleField.getPreferredW();
                 if (labelPreferredW + fieldPreferredW > availDisplWidth) { //if too wide
-                    if (field instanceof MyComponentGroup) { //MyComponentGroups cannot wrap and must be shown fully so split on *two* lines
+                    if (field instanceof ComponentGroup ){//|| field instanceof MyToggleButton) { //MyComponentGroups cannot wrap and must be shown fully so split on *two* lines
                         fieldContainer.add(MyBorderLayout.NORTH, fieldLabel);
                         fieldContainer.add(MyBorderLayout.EAST, visibleField);
                     } else {

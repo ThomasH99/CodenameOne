@@ -6,28 +6,20 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.io.Log;
-import com.codename1.ui.AnimationManager;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
-import com.codename1.ui.Font;
 import com.codename1.ui.Form;
-import com.codename1.ui.Graphics;
 import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
-import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionEvent.Type;
-import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
-import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.Layout;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyDragAndDropSwipeableContainer.DragDirection.DOWN;
 import static com.todocatalyst.todocatalyst.MyDragAndDropSwipeableContainer.DragDirection.UP;
-import static com.todocatalyst.todocatalyst.MyDragAndDropSwipeableContainer.InsertPositionType.NONE;
-import java.util.List;
 
 /**
  * top-level container used in list to support (activatable) drag and drop

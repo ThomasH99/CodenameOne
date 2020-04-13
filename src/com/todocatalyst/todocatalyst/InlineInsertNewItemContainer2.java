@@ -15,7 +15,7 @@ import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.animations.MorphTransition;
-import com.codename1.ui.layouts.MyBorderLayout;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 import com.todocatalyst.todocatalyst.MyForm.Action;
@@ -123,7 +123,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         if (Config.TEST) {
             setName("InlineInsertNewItemContainer2"); //for debugging
         }
-        Container contForTextEntry = new Container(new MyBorderLayout());
+        Container contForTextEntry = new Container(new BorderLayout());
         Container swipC;
         if (refItem != null) {
             swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
@@ -139,6 +139,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
 
         textEntryField = new MyTextField2(100); //TODO!!!! need field to enter edit mode //UI: 100 width of text field (to avoid showing a small one on eg tablet
         textEntryField.setName("inlineItemEditFieldAsync");
+        textEntryField.setNextFocusDown(null);
 
 //          AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField2, item, 1000, () -> item.setText(textEntryField2.getText())); //normal that this appear as non-used!
         if (myForm.previousValues != null && myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
@@ -328,11 +329,11 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
                 }
         );
         if (false) {
-            contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
+            contForTextEntry.add(BorderLayout.CENTER, textEntryField);
         }
 
         Container westCont = new Container(BoxLayout.x());
-        contForTextEntry.add(MyBorderLayout.WEST, westCont);
+        contForTextEntry.add(BorderLayout.WEST, westCont);
 
         //CLOSE button, only add if in a non-empty list
         if (itemOrItemListForNewElements != null && itemOrItemListForNewElements.getSize() > 0) {
@@ -480,6 +481,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         editNewCmd = CommandTracked.create(null, Icons.iconEdit, (ev) -> {
 
             Item newItem = new Item(textEntryField.getText(), true); //true: interpret textual values
+            newItem.setRemainingDefaultValue();
             if (false) {
                 textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
             }            //must set owner here to display correctly if going to full screen edit of item (and if there is a repeatRule)
@@ -554,7 +556,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
             }, () -> myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE), isTemplate, predefinedValues);
             screenItem2.show();
         }, "InlineEditItem");
-        contForTextEntry.add(MyBorderLayout.EAST, new Button(editNewCmd));
+        contForTextEntry.add(BorderLayout.EAST, new Button(editNewCmd));
     }
 
     /**
@@ -669,6 +671,7 @@ public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer impl
         if (taskText != null && taskText.length() > 0) {
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
             newItem = new Item(taskText, true); //true: interpret textual values
+            newItem.setRemainingDefaultValue();
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                        if (continueAddingNewItems) {

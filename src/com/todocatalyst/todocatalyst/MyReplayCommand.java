@@ -43,6 +43,7 @@ public class MyReplayCommand extends CommandTracked {
     private MyReplayCommand(String cmdUniqueID, String commandName, char icon) {
         super(commandName);
         setMaterialIcon(icon);
+//        setMaterialIconSize(MyPrefs.defaultIconSizeInMM.getFloat());
         assert (cmdUniqueID != null && !cmdUniqueID.isEmpty()) || (commandName != null && commandName.length() > 0) : "when using command name/String as unique ID it must not be null or empty";
         if (cmdUniqueID != null && !cmdUniqueID.isEmpty()) {
             setCmdUniqueID(cmdUniqueID);
@@ -162,7 +163,7 @@ public class MyReplayCommand extends CommandTracked {
 
         return cmd;
     }
-
+    
     public static MyReplayCommand create(String cmdUniquePrefix, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev) {
         return create(cmdUniquePrefix, cmdUniquePostfix, commandName, icon, ev, false, () -> true);
     }

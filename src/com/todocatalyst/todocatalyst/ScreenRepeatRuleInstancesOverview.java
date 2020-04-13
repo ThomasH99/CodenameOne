@@ -7,19 +7,9 @@ package com.todocatalyst.todocatalyst;
 
 //import com.codename1.io.Log;
 import com.codename1.io.Log;
-import com.codename1.ui.Button;
 import com.codename1.ui.Container;
-import com.codename1.ui.Dialog;
-import com.codename1.ui.Display;
-import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BoxLayout;
-import com.codename1.ui.layouts.FlowLayout;
-import com.codename1.ui.layouts.MyBorderLayout;
-import com.codename1.ui.table.TableLayout;
-import static com.todocatalyst.todocatalyst.MyForm.ANIMATION_TIME_DEFAULT;
-import java.util.Date;
-import java.util.List;
 
 /**
  *

@@ -36,7 +36,7 @@ import com.codename1.ui.Form;
 import com.codename1.ui.Image;
 import com.codename1.ui.Slider;
 import com.codename1.ui.geom.Dimension;
-import com.codename1.ui.layouts.MyBorderLayout;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.GridLayout;
 import com.codename1.ui.plaf.Border;
@@ -92,12 +92,12 @@ public class RatingWidget {
         Preferences.set("alreadyRated", true);
         InteractionDialog id = new InteractionDialog("Please Rate "  + getProperty("AppName", "The App"));
         Form f = getCurrentForm();
-        id.setLayout(new MyBorderLayout());
+        id.setLayout(new BorderLayout());
         Slider rate = createStarRankSlider();
         Button ok = new Button("OK");
         Button no = new Button("No Thanks");
         id.add(CENTER, FlowLayout.encloseCenterMiddle(rate)).
-                add(MyBorderLayout.SOUTH, GridLayout.encloseIn(2, no, ok));
+                add(BorderLayout.SOUTH, GridLayout.encloseIn(2, no, ok));
         int height = id.getPreferredH();
         id.show(f.getHeight()  - height - f.getTitleArea().getHeight(), 0, 0, 0);
         no.addActionListener(e -> id.dispose());

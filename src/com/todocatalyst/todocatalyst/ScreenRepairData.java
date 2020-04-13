@@ -50,7 +50,8 @@ public class ScreenRepairData extends MyForm {
     public void addCommandsToToolbar() {
         Toolbar toolbar = getToolbar();
         //DONE/BACK
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+        addStandardBackCommand();
 
 //        toolbar.addCommandToOverflowMenu(makeCancelCommand());
 //        toolbar.addCommandToOverflowMenu(new Command("Reset to default")); //reset to default values

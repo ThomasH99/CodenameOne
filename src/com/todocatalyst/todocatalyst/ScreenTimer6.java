@@ -5,8 +5,6 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Display;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BorderLayout;
-import com.codename1.ui.layouts.MyBorderLayout;
-//import java.util.function.*;
 
 /**
  * Shows a timer. UI:
@@ -126,8 +124,33 @@ public class ScreenTimer6 extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {
 
         super.addCommandsToToolbar(toolbar);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        backCommand = makeDoneUpdateWithParseIdMapCommand(true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
-        backCommand = makeDoneUpdateWithParseIdMapCommand("", true, () -> {
+//        backCommand = makeDoneUpdateWithParseIdMapCommand("", true, () -> {
+//            TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
+//            if (timerInstance != null) {//can be null if exiting after finishing with last timer?!
+//                timerInstance.setFullScreen(false);
+//                timerInstance.saveMe();
+//            }
+//            //disable alwaysOn if necessary
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            if (Display.getInstance().isScreenSaverDisableSupported() && MyPrefs.getBoolean(MyPrefs.timerKeepScreenAlwaysOnInTimer)) {
+////                Display.getInstance().setScreenSaverEnabled(true); //true enable normal screensaver, false keeps screen on all the time
+////            }
+////</editor-fold>
+//            if (Display.getInstance().isScreenSaverDisableSupported()) {
+////                    && !MyPrefs.keepScreenAlwaysOnInApp.getBoolean() && MyPrefs.timerKeepScreenAlwaysOnInTimer.getBoolean()) {
+//                boolean screenAlwaysOnInAppButOffInTimer = MyPrefs.keepScreenAlwaysOnInApp.getBoolean() && !MyPrefs.timerKeepScreenAlwaysOnInTimer.getBoolean();
+////                Display.getInstance().setScreenSaverEnabled(true); //turn screenSaver back on if it was only disable by the Timer
+////                Display.getInstance().setScreenSaverEnabled(!screenAlwaysOnInAppButOffInTimer); //turn screenSaver back on if it was only disable by the Timer
+//                Display.getInstance().setScreenSaverEnabled(!MyPrefs.keepScreenAlwaysOnInApp.getBoolean()); //turn screenSaver back on if it was only disable by the Timer
+//            }
+//            return true;
+//        }, true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
+//        toolbar.setBackCommand(backCommand); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
+//</editor-fold>
+        backCommand=addStandardBackCommand();
+        setCheckIfSaveOnExit(() -> {
             TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
             if (timerInstance != null) {//can be null if exiting after finishing with last timer?!
                 timerInstance.setFullScreen(false);
@@ -147,8 +170,7 @@ public class ScreenTimer6 extends MyForm {
                 Display.getInstance().setScreenSaverEnabled(!MyPrefs.keepScreenAlwaysOnInApp.getBoolean()); //turn screenSaver back on if it was only disable by the Timer
             }
             return true;
-        }, true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
-        toolbar.setBackCommand(backCommand); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
+        });
 
         //Create an interrupt task and start the timer on it
 //        toolbar.addCommandToRightBar(makeInterruptCommand());
@@ -189,6 +211,7 @@ public class ScreenTimer6 extends MyForm {
 //            previousValues = new SaveEditedValuesLocally("Timer-" + timedItem.getObjectIdP());
 //            initLocalSaveOfEditedValues("Timer-" + timedItem.getObjectIdP());
 //</editor-fold>
+                ASSERT.that(timedItem.getObjectIdP() != null, "Timer should never be called on a not saved task");
                 this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + timedItem.getObjectIdP());
 //        TimerStack.buildContentPaneFullScreen(ScreenTimer6.this, timerContentainer,  previousValues); //also removes previous content of contentPane
                 Container contentPane = getContentPane();
@@ -222,7 +245,6 @@ public class ScreenTimer6 extends MyForm {
 ////        super.showPreviousScreenOrDefault(previousForm, callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
 //        super.showPreviousScreen(callRefreshAfterEdit); //need to refreshTimersFromParseServer whenever returning from Timer since tasks may have been closed
 //    }
-    
 //    static void showPreviousScreenOrDefault(boolean callRefreshAfterEdit) {
 //        Form f = Display.getInstance().getCurrent();
 //        if (f instanceof MyForm) {

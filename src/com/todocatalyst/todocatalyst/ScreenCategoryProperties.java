@@ -149,7 +149,8 @@ public class ScreenCategoryProperties extends MyForm {
 //</editor-fold>
 //        toolbar.setBackCommand(backCommand = makeDoneUpdateWithParseIdMapCommand());
 //        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+        addStandardBackCommand();
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
             toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
@@ -299,8 +300,8 @@ public class ScreenCategoryProperties extends MyForm {
 //            v.setShowErrorMessageForFocusedComponent(true);
 //        }
 //</editor-fold>
-        if (MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
-            Label itemObjectId = new Label(category.getObjectIdP() == null ? "<set on save>" : category.getObjectIdP(), "LabelFixed");
+        if (MyPrefs.enableShowingSystemInfo.getBoolean()&&MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
+            Label itemObjectId = new Label(category.getObjectIdP() == null ? "<set on save>" : category.getObjectIdP(), "ScreenItemValueUneditable");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 

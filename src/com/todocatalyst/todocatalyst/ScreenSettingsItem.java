@@ -37,6 +37,7 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
     protected void buildContentPane(Container content) {
 //        cont.setScrollableY(true);
 //        addSettingInt(content, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 60, 1);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes); //TODO!!!! below setting to depend on this one
         addSettingInt(content, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 120, 1);
 
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemEditEnableSwipeBetweenTabs);
@@ -47,14 +48,17 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
 
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer);
+        content.add(makeSpacer());
+        addSettingBoolean(content, parseIdMap2, MyPrefs.showTemplateListAfterCreatingNewTemplateFromExistingProject);
 
         addSettingInt(content, parseIdMap2, MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation, 0, 10, 1);
         addSettingBoolean(content, parseIdMap2, MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress);
 
+        content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectProperties);
         //TODO!!! only show below settings when MyPrefs.itemInheritOwnerProjectProperties is true or just set true
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectChallenge);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerStarredProperties);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectStarred);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectPriority);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectDreadFun);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectImportance);

@@ -9,7 +9,7 @@ import com.codename1.io.FileSystemStorage;
 import com.codename1.io.Log;
 import com.codename1.ui.Form;
 import com.codename1.ui.Toolbar;
-import com.codename1.ui.layouts.MyBorderLayout;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.tree.Tree;
 import com.codename1.ui.tree.TreeModel;
 import java.io.IOException;
@@ -26,7 +26,7 @@ public class ScreenFileSystemTree extends MyForm {
     ScreenFileSystemTree() {
         super("FileSystemTree", getCurrentFormAfterClosingDialogOrMenu(), () -> {
         });
-        setLayout(new MyBorderLayout());
+        setLayout(new BorderLayout());
         TreeModel tm = new TreeModel() {
             @Override
             public Vector getChildren(Object parent) {
@@ -68,7 +68,7 @@ public class ScreenFileSystemTree extends MyForm {
             }
         };
 
-        add(MyBorderLayout.CENTER, t);
+        add(BorderLayout.CENTER, t);
         addCommandsToToolbar();
     }
 
@@ -83,7 +83,8 @@ public class ScreenFileSystemTree extends MyForm {
         public void addCommandsToToolbar() {
         Toolbar toolbar = getToolbar();
         //DONE/BACK
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+        addStandardBackCommand();
 //        toolbar.addCommandToOverflowMenu(makeCancelCommand());
 //        toolbar.addCommandToOverflowMenu(new Command("Reset to default")); //reset to default values
     }

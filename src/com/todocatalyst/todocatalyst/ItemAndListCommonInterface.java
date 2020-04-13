@@ -955,7 +955,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //</editor-fold>
 //        WorkTimeSlices wt = getAllocatedWorkTimeN();
 //        return wt != null ? wt.getFinishTimeD() : new Date(MyDate.MIN_DATE);
-        return new Date(getFinishTime());
+        return new MyDate(getFinishTime());
     }
 
     /**
@@ -1124,7 +1124,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * force the calculation of worktime for every subtask - is this really
      * necessary??
      */
-    default public void forceCalculationOfWorkTime() {
+    default public void forceCalculationOfWorkTimeXXX() {
         List<? extends ItemAndListCommonInterface> subtasks = getList();
         if (subtasks != null) {
             int size = subtasks.size();
@@ -1149,6 +1149,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return hardcodedFilter;
     }
 
+    public void setFilterSortDef(FilterSortDef filterSortDef);
+
     /**
      * return a defined filter, null if none defined, for Items, returns a
      * filter for the subtasks. Will reuse a filter defined by the owner of an
@@ -1157,9 +1159,15 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      *
      * @return
      */
-    public FilterSortDef getFilterSortDef();
-
-    public void setFilterSortDef(FilterSortDef filterSortDef);
+    public FilterSortDef getFilterSortDefN();
+    
+    default public FilterSortDef getFilterSortDef(boolean returnDefaultFilterIfNoneDefined) {
+        FilterSortDef filterSortDef = getFilterSortDefN();
+        if (filterSortDef == null && returnDefaultFilterIfNoneDefined) {
+            return FilterSortDef.getDefaultFilter();
+        }
+        return filterSortDef;
+    }
 
     default public Iterator iterator() {
         return new Iterator() {

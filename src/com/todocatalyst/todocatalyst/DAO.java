@@ -9,12 +9,16 @@ import ca.weblite.codename1.json.JSONObject;
 import com.codename1.components.InfiniteProgress;
 import com.codename1.io.CacheMap;
 import com.codename1.io.Log;
+import static com.codename1.io.Log.e;
+import static com.codename1.io.Log.p;
 import com.codename1.io.Storage;
 import com.codename1.io.Util;
+import com.codename1.messaging.Message;
 import com.codename1.ui.CN;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.Form;
+import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.util.UITimer;
 import com.codename1.util.EasyThread;
 import com.codename1.util.RunnableWithResult;
@@ -28,6 +32,7 @@ import com.parse4cn1.ParseUser;
 import com.parse4cn1.callback.GetCallback;
 import com.parse4cn1.util.Logger;
 import static com.todocatalyst.todocatalyst.Item.PARSE_OWNER_ITEM;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -912,7 +917,7 @@ public class DAO {
 
         ParseQuery<Item> query = null;
 
-        Date startOfToday = MyDate.getStartOfDay(new MyDate());
+        Date startOfToday = MyDate.getStartOfDay(new Date());
         Date startOfTomorrow = new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS);
 
         Date startDate = new Date(MyDate.currentTimeMillis() - MyPrefs.todayViewIncludeOverdueFromThisManyPastDays.getInt() * MyDate.DAY_IN_MILLISECONDS);
@@ -1848,7 +1853,9 @@ public class DAO {
         if (results.size() > 0) {
             return (FilterSortDef) fetchIfNeededReturnCachedIfAvail(results.get(0));
         } else {
-            return FilterSortDef.getDefaultFilter();
+            FilterSortDef newSystemFilter = FilterSortDef.getDefaultFilter();
+            newSystemFilter.setSystemName(systemName);
+            return newSystemFilter;
         }
     }
 
@@ -1893,7 +1900,7 @@ public class DAO {
                 return newInbox;
             } else { //check if list is already cached, use that object instance instead of the one returned by getSpecialNamedItemListFromParse
                 Object temp2 = cacheGet(inbox);
-                ASSERT.that(temp2 instanceof ItemList, "cached Inbox is NOT an ItemList, inbox=" + temp2);
+                ASSERT.that(temp2 instanceof ItemList||temp2==null, "cached Inbox is NOT an ItemList, inbox=" + temp2);
                 if (temp2 instanceof ItemList) {
                     inbox = (ItemList) temp2; //reuse an already cached list
                     cache.put(name, inbox.getObjectIdP()); //can't be sure it's already cached under name "Inbox"
@@ -1968,7 +1975,7 @@ public class DAO {
                 temp.setSystemName(name);
                 temp.setFilterSortDef(filterSortDef);
 //                saveNew(true, filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
-                saveNew( filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+                saveNew(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
                 saveNewExecuteUpdate();
 //                cache.put(name, temp);
                 cache.put(name, temp.getObjectIdP());
@@ -3529,7 +3536,7 @@ public class DAO {
 
     private void addToBatchRunAfterCreation(Runnable runAfterCreationBatch) {
 //        if ( !batchUpdateList.contains(runAfterCreationBatch)) { //only add if dirty and not already added
-            batchRunAfterCreation.add(runAfterCreationBatch);
+        batchRunAfterCreation.add(runAfterCreationBatch);
 //        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        else if (p.getObjectIdP() == null) {
@@ -3767,60 +3774,62 @@ public class DAO {
 //        saveImpl(anyParseObject, true);
 //    }
 //</editor-fold>
-    private synchronized void saveAndCacheImplXXX(ParseObject anyParseObject, boolean saveToCache) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        saveAndCacheImpl(anyParseObject, saveToCache, false);
+//    private synchronized void saveAndCacheImplXXX(ParseObject anyParseObject, boolean saveToCache) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        saveAndCacheImpl(anyParseObject, saveToCache, false);
+////    }
+////
+////    private synchronized void saveAndCacheImpl(ParseObject anyParseObject, boolean saveToCache, boolean wait) {
+////        if (wait) {
+////            Log.p(">>>SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
+////
+////            if (Config.TEST && anyParseObject instanceof ItemAndListCommonInterface) {
+////                String refErrorStr = ((ItemAndListCommonInterface) anyParseObject).hasReferencesToUnsavedParseObjects();
+////                if (!refErrorStr.isEmpty()) {
+////                    Log.p("    BUT SAVE-DAO.saveAndCacheImpl: anyParseObject=\"" + anyParseObject + "\" has references to unsaved parseObjects:" + refErrorStr);
+////                }
+////            }
+////            try {
+////                anyParseObject.save();
+////            } catch (ParseException ex) {
+////                Log.e(ex);
+////            }
+////            Log.p("    DONE SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
+////            if (anyParseObject.getDate(Item.PARSE_DELETED_DATE) != null) {//if an object is soft-deleted, then remove it from cache (shouldn't strictly be necessary as all pointers should have been removed, but also cleans up local cache)
+////                cacheDelete(anyParseObject);
+////            } else if (saveToCache) {
+////                cachePut(anyParseObject); //must save first to get the objectId before saving to local cache/storage
+////            }
+////        } else {
+////            Display.getInstance().callSerially(() -> {
+////</editor-fold>
+//
+//        if (Config.TEST_BACKGR && anyParseObject instanceof ItemAndListCommonInterface) {
+//            String refErrorStr = ((ItemAndListCommonInterface) anyParseObject).hasReferencesToUnsavedParseObjects();
+//            if (!refErrorStr.isEmpty()) {
+//                Log.p("    BUT SAVE-DAO.saveAndCacheImpl: anyParseObject=\"" + anyParseObject + "\" has references to unsaved parseObjects:" + refErrorStr);
+//            }
+//        }
+//        try {
+//            if (Config.TEST_BACKGR) {
+//                Log.p(">>>>>>> ------ executing parseObject.save()" + anyParseObject);
+//            }
+//            anyParseObject.save();
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//        if (Config.TEST_BACKGR) {
+//            Log.p(">>>>>>> ------ DONE executing parseObject.save()" + anyParseObject);
+//        }
+//        if (anyParseObject.getDate(Item.PARSE_DELETED_DATE) != null) {//if an object is soft-deleted, then remove it from cache (shouldn't strictly be necessary as all pointers should have been removed, but also cleans up local cache)
+//            cacheDelete(anyParseObject);
+//        } else if (saveToCache) {
+//            cachePut(anyParseObject); //must save first to get the objectId before saving to local cache/storage
+//        }
 //    }
-//
-//    private synchronized void saveAndCacheImpl(ParseObject anyParseObject, boolean saveToCache, boolean wait) {
-//        if (wait) {
-//            Log.p(">>>SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
-//
-//            if (Config.TEST && anyParseObject instanceof ItemAndListCommonInterface) {
-//                String refErrorStr = ((ItemAndListCommonInterface) anyParseObject).hasReferencesToUnsavedParseObjects();
-//                if (!refErrorStr.isEmpty()) {
-//                    Log.p("    BUT SAVE-DAO.saveAndCacheImpl: anyParseObject=\"" + anyParseObject + "\" has references to unsaved parseObjects:" + refErrorStr);
-//                }
-//            }
-//            try {
-//                anyParseObject.save();
-//            } catch (ParseException ex) {
-//                Log.e(ex);
-//            }
-//            Log.p("    DONE SAVING--->>>DAO.saveAndCacheImpl() saving: " + anyParseObject);
-//            if (anyParseObject.getDate(Item.PARSE_DELETED_DATE) != null) {//if an object is soft-deleted, then remove it from cache (shouldn't strictly be necessary as all pointers should have been removed, but also cleans up local cache)
-//                cacheDelete(anyParseObject);
-//            } else if (saveToCache) {
-//                cachePut(anyParseObject); //must save first to get the objectId before saving to local cache/storage
-//            }
-//        } else {
-//            Display.getInstance().callSerially(() -> {
 //</editor-fold>
-
-        if (Config.TEST_BACKGR && anyParseObject instanceof ItemAndListCommonInterface) {
-            String refErrorStr = ((ItemAndListCommonInterface) anyParseObject).hasReferencesToUnsavedParseObjects();
-            if (!refErrorStr.isEmpty()) {
-                Log.p("    BUT SAVE-DAO.saveAndCacheImpl: anyParseObject=\"" + anyParseObject + "\" has references to unsaved parseObjects:" + refErrorStr);
-            }
-        }
-        try {
-            if (Config.TEST_BACKGR) {
-                Log.p(">>>>>>> ------ executing parseObject.save()" + anyParseObject);
-            }
-            anyParseObject.save();
-        } catch (ParseException ex) {
-            Log.e(ex);
-        }
-        if (Config.TEST_BACKGR) {
-            Log.p(">>>>>>> ------ DONE executing parseObject.save()" + anyParseObject);
-        }
-        if (anyParseObject.getDate(Item.PARSE_DELETED_DATE) != null) {//if an object is soft-deleted, then remove it from cache (shouldn't strictly be necessary as all pointers should have been removed, but also cleans up local cache)
-            cacheDelete(anyParseObject);
-        } else if (saveToCache) {
-            cachePut(anyParseObject); //must save first to get the objectId before saving to local cache/storage
-        }
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * saves the list of ParseObjects in the background but in sequential order
      * so that each list is saved before the next one (to ensure that references
@@ -3832,415 +3841,415 @@ public class DAO {
      * the preceding objects have been saved
      * @param parseObjects non-null (but possibly empty) list
      */
-    private void addToSaveQueueXXX(List<ParseObject> parseObjects, Runnable postSaveActionN) {
-        if (Config.TEST_BACKGR) {
-            Log.p("==========>>>    addToSaveQueue(" + parseObjects + ", " + postSaveActionN + ")");
-        }
-        if (parseObjects != null) {
-            for (ParseObject p : parseObjects) {
-                saveList.add(p);
-            }
-        }
-
-        if (postSaveActionN != null) {
-            if (Config.TEST_BACKGR) {
-                Log.p("==========>>>    adding postSaveAction[" + postSaveActionN + "] to savelist(" + saveList.size() + ")=" + saveList);
-            }
-            saveList.add(postSaveActionN);
-        }
-
-        if (backgroundSaveThread == null) {
-            backgroundSaveThread = new Thread(() -> {
-                if (Config.TEST) {
-                    Log.p(">>>>>>> BACKGROUND1 new THREAD starting");
-                }
-                while (true) {
-                    synchronized (LOCK_SAVELIST) {
-                        if (Config.TEST_BACKGR) {
-                            Log.p(">>>>>>> BACKGROUND2 backgroundSaveThread - LOCK acquired***********");
-                        }
-                        while (!saveList.isEmpty()) {
-                            if (saveList.get(0) instanceof Runnable) { //execute Runnables
-                                Runnable runnable = (Runnable) saveList.remove(0);
-                                if (Config.TEST_BACKGR) {
-                                    Log.p(">>>>>>> BACKGROUND3 - executing Runnable [" + runnable + "]");
-                                }
-                                Display.getInstance().callSerially(runnable);
-                            } else if (saveList.get(0) instanceof ParseObject) {
-                                ParseObject p = ((ParseObject) saveList.get(0));
-                                if ((p.getObjectIdP() != null && !p.isDirty())
-                                        || (p instanceof ItemAndListCommonInterface && !((ItemAndListCommonInterface) p).isNoSave())) {
-                                    //skip objects which don't need to be saved
-                                } else if (p.getObjectIdP() == null) { //if previously unsaved, then save alone (not batch ensure references are OK)
-                                    ParseObject parseObject = (ParseObject) saveList.remove(0);
-                                    if (Config.TEST_BACKGR) {
-                                        Log.p(">>>>>>> BACKGROUND4 - saveAndWait parseObject=" + parseObject);
-                                    }
-                                    Display.getInstance().callSeriallyAndWait(() -> saveAndCacheImplXXX(parseObject, true)); //must save to cache (in case there are new created objects)
-                                } else { //already saved so has its objId already
-                                    List<ParseObject> batchSaveList = new ArrayList();
-                                    //automatically group together all ParseObjects of same parseClass for batch save
-                                    String parseClass = p.getClassName();
-                                    batchSaveList.add(p);
-                                    //batch together all saves of same parseClass, for already saved objects only
-                                    while (!saveList.isEmpty() && saveList.get(0) instanceof ParseObject
-                                            && parseClass.equals(((ParseObject) saveList.get(0)).getClassName())
-                                            && ((ParseObject) saveList.get(0)).getObjectIdP() != null) { //loop condition always met for first element => will remove at least one elt from saveList, so loop termination guaranteed
-                                        p = (ParseObject) saveList.remove(0);
-                                        if (p.isDirty()) { //don't save non-dirty elements (already tested in parse4cn1.batchsave?)
-                                            batchSaveList.add(p);
-                                        } //else: skip saving the object
-                                    }
-
-                                    if (batchSaveList.size() > 1) { //there are multiple parseObjects with same class to batch save
-                                        if (Config.TEST_BACKGR) {
-                                            Log.p(">>>>>>> BACKGROUND5 - batchsaveList(" + batchSaveList.size() + ")=" + batchSaveList);
-                                        }
-                                        Display.getInstance().callSerially(() -> saveBatch(batchSaveList, true)); //must save to cache (in case there are new created objects)
-                                    } else if (batchSaveList.size() == 1) { //there is only ONE parseObject to save
-                                        ParseObject parseObject = batchSaveList.remove(0);
-                                        if (Config.TEST_BACKGR) {
-                                            Log.p(">>>>>>> BACKGROUND6 - batchsaveList(" + batchSaveList.size() + ")=" + parseObject);
-                                        }
-                                        Display.getInstance().callSerially(() -> saveAndCacheImplXXX(parseObject, true)); //must save to cache (in case there are new created objects)
-                                    } // else (batchSaveList.size() ==0) <=> do nothing
-                                }
-                            } else { //ERROR: object other than Runnable or ParseObject in list (could be a null object)
-                                Object x = saveList.remove(0); //ensure to empty the saveList
-                                ASSERT.that(false, () -> (">>>>>>> BACKGROUND7 - UNKNOWN type in saveList, object=" + x + ", saveList(" + saveList.size() + ")=" + saveList));
-                            }
-                        } //while (!saveList.isEmpty())
-                        if (Config.TEST_BACKGR) {
-                            Log.p(">>>>>>> BACKGROUND8 - LOCK.wait() ************");
-                        }
-                        try {
-                            LOCK_SAVELIST.wait(); //saveList is empty, so wait
-                        } catch (InterruptedException e) {
-                            if (Config.TEST_BACKGR) {
-                                Log.p(">>>>>>> BACKGROUND9 - InterruptedException = " + e);
-                            }
-                        }
-                    }
-                }
-            }, "SAVE-DAO.backgroundSave"); //initialize on first use
-            backgroundSaveThread.start();
-        }
-
-        //start a timer to only initiate save after a certain delay to ensure all updates to e.g. an Item have been done, e.g. if inheriting multiple values
-        if (t != null) {
-            t.cancel();
-        }
-        t = new Timer(); //"BackgroundSaveTimer");
-
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                if (Config.TEST_BACKGR) {
-                    Log.p(">>>>>>> TimerTask-run(): trying to get LOCK");
-                }
-                synchronized (LOCK_SAVELIST) {
-                    if (t != null) {
-                        t.cancel();
-                        t = null;
-                    }
-                    if (Config.TEST_BACKGR) {
-                        Log.p(">>>>>>> TimerTask: got LOCK, calling LOCK.notify(). saveList=" + saveList);
-                    }
-                    LOCK_SAVELIST.notifyAll();
-                }
-            }
-        };
-        if (Config.TEST_BACKGR) {
-            Log.p(">>>>>>> TimerTask.schedule(timerTask, 200)");
-        }
-        t.schedule(timerTask, 400); //wait 200ms before initiate saving to 'batch' together as many saves as possible
-    }
-
-    private void addToSaveQueueOLD(List<ParseObject> parseObjects, Runnable postSaveAction) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        saveImpl(anyParseObject);
-//        Log.p("Calling DAO.saveInBackground() with list=" + parseObjects + ", postSaveAction defined=" + ((Boolean) (postSaveAction != null)).toString());
-//        if (false) {
-//            Log.p("SAVE-Calling DAO.addToSaveInBackgroundQueue() with list=" + parseObjects + ", postSaveAction=" + postSaveAction);
+//    private void addToSaveQueueXXX(List<ParseObject> parseObjects, Runnable postSaveActionN) {
+//        if (Config.TEST_BACKGR) {
+//            Log.p("==========>>>    addToSaveQueue(" + parseObjects + ", " + postSaveActionN + ")");
 //        }
-//        if (false && (parseObjects == null || parseObjects.size() == 0)) {
-////            Log.p("DAO.saveInBackground() - RETURN doing nothing");
-//            ASSERT.that(true, "SAVE-DAO.saveInBackground() - RETURN doing nothing");
-//            return;
-//        }
-//        for (ParseObject p : parseObjects) {
-//            if (p instanceof ItemAndListCommonInterface) {
-//                ((ItemAndListCommonInterface) p).updateBeforeSave();
-//            }
-//        }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (backgroundSaveThread == null) {
-//            backgroundSaveThread = EasyThread.start("DAO.backgroundSave");
-//        }
-//        if (false) {
-////        Vector vector = new Vector(); //make copy
-//            List<ParseObject> vector = new ArrayList(); //make copy
+//        if (parseObjects != null) {
 //            for (ParseObject p : parseObjects) {
-//                if ((p.getObjectIdP() == null || p.isDirty())) {// && !vector.contains(p)) //only save unsaved or dirty objects, and only add object if not already in list
-//                    boolean alreadyInList = false;
-//                    for (ParseObject x : vector) {
-//                        if (x == p) alreadyInList = true;
+//                saveList.add(p);
+//            }
+//        }
+//
+//        if (postSaveActionN != null) {
+//            if (Config.TEST_BACKGR) {
+//                Log.p("==========>>>    adding postSaveAction[" + postSaveActionN + "] to savelist(" + saveList.size() + ")=" + saveList);
+//            }
+//            saveList.add(postSaveActionN);
+//        }
+//
+//        if (backgroundSaveThread == null) {
+//            backgroundSaveThread = new Thread(() -> {
+//                if (Config.TEST) {
+//                    Log.p(">>>>>>> BACKGROUND1 new THREAD starting");
+//                }
+//                while (true) {
+//                    synchronized (LOCK_SAVELIST) {
+//                        if (Config.TEST_BACKGR) {
+//                            Log.p(">>>>>>> BACKGROUND2 backgroundSaveThread - LOCK acquired***********");
+//                        }
+//                        while (!saveList.isEmpty()) {
+//                            if (saveList.get(0) instanceof Runnable) { //execute Runnables
+//                                Runnable runnable = (Runnable) saveList.remove(0);
+//                                if (Config.TEST_BACKGR) {
+//                                    Log.p(">>>>>>> BACKGROUND3 - executing Runnable [" + runnable + "]");
+//                                }
+//                                Display.getInstance().callSerially(runnable);
+//                            } else if (saveList.get(0) instanceof ParseObject) {
+//                                ParseObject p = ((ParseObject) saveList.get(0));
+//                                if ((p.getObjectIdP() != null && !p.isDirty())
+//                                        || (p instanceof ItemAndListCommonInterface && !((ItemAndListCommonInterface) p).isNoSave())) {
+//                                    //skip objects which don't need to be saved
+//                                } else if (p.getObjectIdP() == null) { //if previously unsaved, then save alone (not batch ensure references are OK)
+//                                    ParseObject parseObject = (ParseObject) saveList.remove(0);
+//                                    if (Config.TEST_BACKGR) {
+//                                        Log.p(">>>>>>> BACKGROUND4 - saveAndWait parseObject=" + parseObject);
+//                                    }
+//                                    Display.getInstance().callSeriallyAndWait(() -> saveAndCacheImplXXX(parseObject, true)); //must save to cache (in case there are new created objects)
+//                                } else { //already saved so has its objId already
+//                                    List<ParseObject> batchSaveList = new ArrayList();
+//                                    //automatically group together all ParseObjects of same parseClass for batch save
+//                                    String parseClass = p.getClassName();
+//                                    batchSaveList.add(p);
+//                                    //batch together all saves of same parseClass, for already saved objects only
+//                                    while (!saveList.isEmpty() && saveList.get(0) instanceof ParseObject
+//                                            && parseClass.equals(((ParseObject) saveList.get(0)).getClassName())
+//                                            && ((ParseObject) saveList.get(0)).getObjectIdP() != null) { //loop condition always met for first element => will remove at least one elt from saveList, so loop termination guaranteed
+//                                        p = (ParseObject) saveList.remove(0);
+//                                        if (p.isDirty()) { //don't save non-dirty elements (already tested in parse4cn1.batchsave?)
+//                                            batchSaveList.add(p);
+//                                        } //else: skip saving the object
+//                                    }
+//
+//                                    if (batchSaveList.size() > 1) { //there are multiple parseObjects with same class to batch save
+//                                        if (Config.TEST_BACKGR) {
+//                                            Log.p(">>>>>>> BACKGROUND5 - batchsaveList(" + batchSaveList.size() + ")=" + batchSaveList);
+//                                        }
+//                                        Display.getInstance().callSerially(() -> saveBatch(batchSaveList, true)); //must save to cache (in case there are new created objects)
+//                                    } else if (batchSaveList.size() == 1) { //there is only ONE parseObject to save
+//                                        ParseObject parseObject = batchSaveList.remove(0);
+//                                        if (Config.TEST_BACKGR) {
+//                                            Log.p(">>>>>>> BACKGROUND6 - batchsaveList(" + batchSaveList.size() + ")=" + parseObject);
+//                                        }
+//                                        Display.getInstance().callSerially(() -> saveAndCacheImplXXX(parseObject, true)); //must save to cache (in case there are new created objects)
+//                                    } // else (batchSaveList.size() ==0) <=> do nothing
+//                                }
+//                            } else { //ERROR: object other than Runnable or ParseObject in list (could be a null object)
+//                                Object x = saveList.remove(0); //ensure to empty the saveList
+//                                ASSERT.that(false, () -> (">>>>>>> BACKGROUND7 - UNKNOWN type in saveList, object=" + x + ", saveList(" + saveList.size() + ")=" + saveList));
+//                            }
+//                        } //while (!saveList.isEmpty())
+//                        if (Config.TEST_BACKGR) {
+//                            Log.p(">>>>>>> BACKGROUND8 - LOCK.wait() ************");
+//                        }
+//                        try {
+//                            LOCK_SAVELIST.wait(); //saveList is empty, so wait
+//                        } catch (InterruptedException e) {
+//                            if (Config.TEST_BACKGR) {
+//                                Log.p(">>>>>>> BACKGROUND9 - InterruptedException = " + e);
+//                            }
+//                        }
 //                    }
-//                    if (!alreadyInList)
-//                        vector.add(p);
+//                }
+//            }, "SAVE-DAO.backgroundSave"); //initialize on first use
+//            backgroundSaveThread.start();
+//        }
+//
+//        //start a timer to only initiate save after a certain delay to ensure all updates to e.g. an Item have been done, e.g. if inheriting multiple values
+//        if (t != null) {
+//            t.cancel();
+//        }
+//        t = new Timer(); //"BackgroundSaveTimer");
+//
+//        TimerTask timerTask = new TimerTask() {
+//            @Override
+//            public void run() {
+//                if (Config.TEST_BACKGR) {
+//                    Log.p(">>>>>>> TimerTask-run(): trying to get LOCK");
+//                }
+//                synchronized (LOCK_SAVELIST) {
+//                    if (t != null) {
+//                        t.cancel();
+//                        t = null;
+//                    }
+//                    if (Config.TEST_BACKGR) {
+//                        Log.p(">>>>>>> TimerTask: got LOCK, calling LOCK.notify(). saveList=" + saveList);
+//                    }
+//                    LOCK_SAVELIST.notifyAll();
 //                }
 //            }
+//        };
+//        if (Config.TEST_BACKGR) {
+//            Log.p(">>>>>>> TimerTask.schedule(timerTask, 200)");
+//        }
+//        t.schedule(timerTask, 400); //wait 200ms before initiate saving to 'batch' together as many saves as possible
+//    }
+//
+//    private void addToSaveQueueOLD(List<ParseObject> parseObjects, Runnable postSaveAction) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        saveImpl(anyParseObject);
+////        Log.p("Calling DAO.saveInBackground() with list=" + parseObjects + ", postSaveAction defined=" + ((Boolean) (postSaveAction != null)).toString());
 ////        if (false) {
-//        } else {
-//        List<ParseObject> saveList = new ArrayList();
-//        List<Object> saveList = new ArrayList();
-        //copy all objects into save list:
-//        Log.p("BACKGROUND GETTING LOCK objects=[" + parseObjects + "]");
-//        synchronized (LOCK_SAVELIST) {
-//            Log.p("BACKGROUND ADDING objects=[" + parseObjects + "]");
-//        Log.p("BACKGROUND GOT Lock");
-//</editor-fold>
-        if (Config.TEST_BACKGR) {
-            Log.p("==========>>>    addToSaveQueue(" + parseObjects + ", " + postSaveAction + ")");
-        }
-        if (parseObjects != null) {
-            for (ParseObject p : parseObjects) {
-//                if (p instanceof ItemAndListCommonInterface)
-//                    ((ItemAndListCommonInterface)p).updateBeforeSave();
-//                if ((p.getObjectIdP() == null || p.isDirty()) && !saveList.contains(p)) {//only save unsaved or dirty objects
-                if (p instanceof ItemList && ((ItemList) p).isNoSave()) { //only save unsaved or dirty objects
-                    //do nothing   
-                } else if (p.getObjectIdP() == null) { //only save unsaved or dirty objects
-                    if (saveList.contains(p)) {
-                        if (Config.TEST_BACKGR) {
-                            Log.p("==========>>>    ObjId==null, BUT already in savelist(" + saveList.size() + ")=" + saveList);
-                        }
-                    } else {
-                        saveList.add(p);
-                        if (Config.TEST_BACKGR) {
-                            Log.p("==========>>>    ObjId==null, added to savelist(" + saveList.size() + ")=" + saveList);
-                        }
-                    }
-                } else if (p.isDirty()) {//only save unsaved or dirty objects
-                    if (saveList.contains(p)) {
-                        if (Config.TEST_BACKGR) {
-                            Log.p("==========>>>    dirty, BUT already in savelist(" + saveList.size() + ")=" + saveList);
-                        }
-                    } else {
-                        saveList.add(p);
-                        if (Config.TEST_BACKGR) {
-                            Log.p("==========>>>    dirty, added to savelist(" + saveList.size() + ")=" + saveList);
-                        }
-                    }
-                } else if (saveList.contains(p)) {//only save unsaved or dirty objects
-                    if (Config.TEST_BACKGR) {
-                        Log.p("==========>>>    !dirty, HAS ObjdId, AND already in savelist(" + saveList.size() + ")=" + saveList);
-                    }
-                } else {
-                    if (Config.TEST_BACKGR) {
-                        Log.p("==========>>>    ERROR !dirty, HAS ObjdId, but NOT already in savelist, p=" + p + " list=(" + saveList.size() + ")=" + saveList);
-                    }
-                }
-            }
-        }
-
-        if (postSaveAction != null) {
-            if (Config.TEST_BACKGR) {
-                Log.p("==========>>>    adding postSaveAction[" + postSaveAction + "] to savelist(" + saveList.size() + ")=" + saveList);
-            }
-            saveList.add(postSaveAction);
-        }
-        if (false) {
-            LOCK_SAVELIST.notifyAll();
-        }
-
-        if (backgroundSaveThread == null) {
-//            backgroundSaveThread = EasyThread.start("DAO.backgroundSave"); //initialize on first use
-//            backgroundSaveThread.run(() -> {
-            backgroundSaveThread = new Thread(() -> {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (false) {
-//                ParseObject parseObject;
-//                while (!vector.isEmpty()) {
-//                    parseObject = (ParseObject) vector.remove(0);
-//                    if (parseObject instanceof ItemList && ((ItemList) parseObject).isNoSave())
-//                        Log.p("BACKGROUND saving IGNORE: " + parseObject);
-//                    else {
-////                    Log.p("BACKGROUND saving: " + parseObject);
-//                        ParseObject parseObject2 = parseObject;
-//                        Display.getInstance().callSerially(() -> saveImpl((ParseObject) parseObject2, true)); //must run on EDT to avoid conflicts with other ParseObject operations
+////            Log.p("SAVE-Calling DAO.addToSaveInBackgroundQueue() with list=" + parseObjects + ", postSaveAction=" + postSaveAction);
+////        }
+////        if (false && (parseObjects == null || parseObjects.size() == 0)) {
+//////            Log.p("DAO.saveInBackground() - RETURN doing nothing");
+////            ASSERT.that(true, "SAVE-DAO.saveInBackground() - RETURN doing nothing");
+////            return;
+////        }
+////        for (ParseObject p : parseObjects) {
+////            if (p instanceof ItemAndListCommonInterface) {
+////                ((ItemAndListCommonInterface) p).updateBeforeSave();
+////            }
+////        }
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (backgroundSaveThread == null) {
+////            backgroundSaveThread = EasyThread.start("DAO.backgroundSave");
+////        }
+////        if (false) {
+//////        Vector vector = new Vector(); //make copy
+////            List<ParseObject> vector = new ArrayList(); //make copy
+////            for (ParseObject p : parseObjects) {
+////                if ((p.getObjectIdP() == null || p.isDirty())) {// && !vector.contains(p)) //only save unsaved or dirty objects, and only add object if not already in list
+////                    boolean alreadyInList = false;
+////                    for (ParseObject x : vector) {
+////                        if (x == p) alreadyInList = true;
+////                    }
+////                    if (!alreadyInList)
+////                        vector.add(p);
+////                }
+////            }
+//////        if (false) {
+////        } else {
+////        List<ParseObject> saveList = new ArrayList();
+////        List<Object> saveList = new ArrayList();
+//        //copy all objects into save list:
+////        Log.p("BACKGROUND GETTING LOCK objects=[" + parseObjects + "]");
+////        synchronized (LOCK_SAVELIST) {
+////            Log.p("BACKGROUND ADDING objects=[" + parseObjects + "]");
+////        Log.p("BACKGROUND GOT Lock");
+////</editor-fold>
+//        if (Config.TEST_BACKGR) {
+//            Log.p("==========>>>    addToSaveQueue(" + parseObjects + ", " + postSaveAction + ")");
+//        }
+//        if (parseObjects != null) {
+//            for (ParseObject p : parseObjects) {
+////                if (p instanceof ItemAndListCommonInterface)
+////                    ((ItemAndListCommonInterface)p).updateBeforeSave();
+////                if ((p.getObjectIdP() == null || p.isDirty()) && !saveList.contains(p)) {//only save unsaved or dirty objects
+//                if (p instanceof ItemList && ((ItemList) p).isNoSave()) { //only save unsaved or dirty objects
+//                    //do nothing
+//                } else if (p.getObjectIdP() == null) { //only save unsaved or dirty objects
+//                    if (saveList.contains(p)) {
+//                        if (Config.TEST_BACKGR) {
+//                            Log.p("==========>>>    ObjId==null, BUT already in savelist(" + saveList.size() + ")=" + saveList);
+//                        }
+//                    } else {
+//                        saveList.add(p);
+//                        if (Config.TEST_BACKGR) {
+//                            Log.p("==========>>>    ObjId==null, added to savelist(" + saveList.size() + ")=" + saveList);
+//                        }
+//                    }
+//                } else if (p.isDirty()) {//only save unsaved or dirty objects
+//                    if (saveList.contains(p)) {
+//                        if (Config.TEST_BACKGR) {
+//                            Log.p("==========>>>    dirty, BUT already in savelist(" + saveList.size() + ")=" + saveList);
+//                        }
+//                    } else {
+//                        saveList.add(p);
+//                        if (Config.TEST_BACKGR) {
+//                            Log.p("==========>>>    dirty, added to savelist(" + saveList.size() + ")=" + saveList);
+//                        }
+//                    }
+//                } else if (saveList.contains(p)) {//only save unsaved or dirty objects
+//                    if (Config.TEST_BACKGR) {
+//                        Log.p("==========>>>    !dirty, HAS ObjdId, AND already in savelist(" + saveList.size() + ")=" + saveList);
+//                    }
+//                } else {
+//                    if (Config.TEST_BACKGR) {
+//                        Log.p("==========>>>    ERROR !dirty, HAS ObjdId, but NOT already in savelist, p=" + p + " list=(" + saveList.size() + ")=" + saveList);
 //                    }
 //                }
-//                if (postSaveAction != null)
-//                    Display.getInstance().callSerially(postSaveAction);
-//            } else { //copied from CN1.EasyThread
-//</editor-fold>
-                if (Config.TEST) {
-                    Log.p(">>>>>>> BACKGROUND1 new THREAD starting");
-                }
-                while (true) {
-                    synchronized (LOCK_SAVELIST) {
-                        if (Config.TEST_BACKGR) {
-                            Log.p(">>>>>>> BACKGROUND2 backgroundSaveThread - LOCK acquired***********");
-                        }
-                        while (!saveList.isEmpty()) {
-                            if (saveList.get(0) instanceof Runnable) { //execute Runnables
-                                Runnable runnable = (Runnable) saveList.remove(0);
-                                if (Config.TEST_BACKGR) {
-                                    Log.p(">>>>>>> BACKGROUND3 - executing Runnable [" + runnable + "]");
-                                }
-//                                Display.getInstance().callSeriallyAndWait(runnable);
-                                Display.getInstance().callSerially(runnable);
-//                                runnable.run();
-                            } else if (saveList.get(0) instanceof ParseObject) {
-                                if (((ParseObject) saveList.get(0)).getObjectIdP() == null) { //if previously unsaved, then save alone (not batch ensure references are OK)
-                                    ParseObject parseObject = (ParseObject) saveList.remove(0);
-                                    if (Config.TEST_BACKGR) {
-                                        Log.p(">>>>>>> BACKGROUND4 - saveAndWait parseObject=" + parseObject);
-                                    }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                                    Display.getInstance().callSerially(() -> saveAndCacheImpl((ParseObject) saveList.remove(0), true)); //must save to cache (in case there are new created objects)
-//                                    Display.getInstance().callSeriallyAndWait(() -> saveAndCacheImpl(parseObject, true)); //must save to cache (in case there are new created objects)
-//                                    Display.getInstance().invokeAndBlock(() -> saveAndCacheImpl(parseObject, true)); //NOT good, BLOCKS the app completely!!!
-//                                    Display.getInstance().callSeriallyAndWait(() -> saveAndCacheImpl(parseObject, true)); //must save to cache (in case there are new created objects)
-//                                    saveAndCacheImpl(parseObject, true); //must save to cache (in case there are new created objects)
-//</editor-fold>
-//                                    Display.getInstance().callSerially(() -> saveAndCacheImpl(parseObject, true)); //must save to cache (in case there are new created objects)
-                                    Display.getInstance().callSeriallyAndWait(() -> saveAndCacheImplXXX(parseObject, true)); //must save to cache (in case there are new created objects)
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                                    saveAndCacheImpl(parseObject, true, true); //must save to cache (in case there are new created objects)
-//                                    while (parseObject.getObjectIdP() == null) {
-//                                    if (false) {
-//                                        int i = 0;
-//                                        do { //use do while instead of while () since it is unlikely that the save above will succeed immediately
-//                                            try {
-//                                                if (Config.TEST && i % 125 == 0) {
-//                                                    Log.p("SAVE-BACKGROUN- backgroundSaveThread - SLEEP waiting for full save of new object=" + parseObject);
-////                                                Log.p("SAVE-BACKGROUN- backgroundSaveThread - EDT.hasNoSerialCallsPending()=" + Display.getInstance().hasNoSerialCallsPending()+", isProcessingSerialCalls()="+Display.getInstance().isProcessingSerialCalls());
-//                                                }
-////<editor-fold defaultstate="collapsed" desc="comment">
-////                                            try {
-////                                                LOCK_SAVELIST.wait();
-////                                            } catch (InterruptedException e) {
-////                                            }
-////</editor-fold>
-//                                                Thread.sleep(200); //the additional delay due to this sleep will on average be half, ie 50ms => 25ms
-//                                                i++;
-//                                            } catch (InterruptedException ex) {
-//                                                ex.printStackTrace();
-//                                            }
-//                                        } while (parseObject.getObjectIdP() == null);
-//                                    }
-//</editor-fold>
-                                } else { //already saved so has its objId already
-                                    List<ParseObject> batchSaveList = new ArrayList();
-                                    //automatically group together all ParseObjects of same parseClass for batch save
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                                    String parseClass = ((ParseObject) saveList.get(0)).getClassName();
-//                                    while (!saveList.isEmpty() && parseClass.equals(((ParseObject) saveList.get(0)).getClassName())) { //loop condition always met for first element => will remove at least one elt from saveList, so loop termination guaranteed
-//                                        ParseObject p = (ParseObject) saveList.remove(0);
-//</editor-fold>
-                                    String parseClass = ((ParseObject) saveList.get(0)).getClassName();
-                                    //batch together all saves of same parseClass, for already saved objects only
-                                    while (!saveList.isEmpty() && saveList.get(0) instanceof ParseObject
-                                            && parseClass.equals(((ParseObject) saveList.get(0)).getClassName())
-                                            && ((ParseObject) saveList.get(0)).getObjectIdP() != null) { //loop condition always met for first element => will remove at least one elt from saveList, so loop termination guaranteed
-                                        ParseObject p = (ParseObject) saveList.remove(0);
-                                        if (true || p.isDirty()) { //don't save non-dirty elements (already tested in parse4cn1.batchsave?)
-                                            batchSaveList.add(p);
-                                        }
-                                    }
-
-                                    if (batchSaveList.size() > 1) { //there are multiple parseObjects with same class to batch save
-                                        if (Config.TEST_BACKGR) {
-                                            Log.p(">>>>>>> BACKGROUND5 - batchsaveList(" + batchSaveList.size() + ")=" + batchSaveList);
-                                        }
-//                                        Display.getInstance().callSeriallyAndWait(() -> saveBatch(batchSaveList, true)); //must save to cache (in case there are new created objects)
-                                        Display.getInstance().callSerially(() -> saveBatch(batchSaveList, true)); //must save to cache (in case there are new created objects)
-//                                        saveBatch(batchSaveList, true); //must save to cache (in case there are new created objects)
-                                    } else if (batchSaveList.size() == 1) { //there is only ONE parseObject to save
-                                        ParseObject parseObject = batchSaveList.remove(0);
-                                        if (false && parseObject instanceof ItemList && ((ItemList) parseObject).isNoSave()) {
-                                        } else {
-                                            if (Config.TEST_BACKGR) {
-                                                Log.p(">>>>>>> BACKGROUND6 - batchsaveList(" + batchSaveList.size() + ")=" + parseObject);
-                                            }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                                            Display.getInstance().callSerially(() -> saveImpl((ParseObject) batchSaveList.get(0), true)); //must save to cache (in case there are new created objects)
-//                                            Display.getInstance().callSeriallyAndWait(() -> saveAndCacheImpl(parseObject, true)); //must save to cache (in case there are new created objects)
-//                                            saveAndCacheImpl(parseObject, true); //must save to cache (in case there are new created objects)
-//</editor-fold>
-                                            Display.getInstance().callSerially(() -> saveAndCacheImplXXX(parseObject, true)); //must save to cache (in case there are new created objects)
-//                                            saveAndCacheImpl(parseObject, true); //must save to cache (in case there are new created objects)
-                                        }
-                                    } // else (batchSaveList.size() ==0) <=> do nothing
-                                }
-                            } else { //ERROR: object other than Runnable or ParseObject in list
-                                Object x = saveList.remove(0); //ensure to empty the saveList
-                                assert false : ">>>>>>> BACKGROUND7 - UNKNOWN type in saveList, object=" + x + ", saveList(" + saveList.size() + ")=" + saveList;
-                            }
-                        } //while (!saveList.isEmpty())
-                        if (Config.TEST_BACKGR) {
-                            Log.p(">>>>>>> BACKGROUND8 - LOCK.wait() ************");
-                        }
-                        try {
-                            LOCK_SAVELIST.wait(); //saveList is empty, so wait
-                        } catch (InterruptedException e) {
-                            if (Config.TEST_BACKGR) {
-                                Log.p(">>>>>>> BACKGROUND9 - InterruptedException = " + e);
-                            }
-                        }
-                    }
-                }
-            }, "SAVE-DAO.backgroundSave"); //initialize on first use
-            backgroundSaveThread.start();
-        }
-
-//        synchronized (LOCK_SAVELIST) { //prevent the timer from executing run will the timer is being restarted (seems to lead to t.schedule(timerTask, 1000); getting a nullPointer exception)
-        //start a timer to only initiate save after a certain delay to ensure all updates to e.g. an Item have been done, e.g. if inheriting multiple values
-        if (t != null) {
-            t.cancel();
-        }
-        t = new Timer(); //"BackgroundSaveTimer");
-
-        TimerTask timerTask = new TimerTask() {
-            @Override
-            public void run() {
-                if (Config.TEST_BACKGR) {
-                    Log.p(">>>>>>> TimerTask-run(): trying to get LOCK");
-                }
-                synchronized (LOCK_SAVELIST) {
-                    if (t != null) {
-                        t.cancel();
-                        t = null;
-                    }
-                    if (Config.TEST_BACKGR) {
-                        Log.p(">>>>>>> TimerTask: got LOCK, calling LOCK.notify(). saveList=" + saveList);
-                    }
-                    LOCK_SAVELIST.notifyAll();
-                }
-            }
-        };
-        if (Config.TEST_BACKGR) {
-            Log.p(">>>>>>> TimerTask.schedule(timerTask, 200)");
-        }
-        t.schedule(timerTask, 400); //wait 200ms before initiate saving to 'batch' together as many saves as possible
+//            }
 //        }
-    }
-
-    private void addToSaveQueueXXX(List<ParseObject> parseObjects) {
-        addToSaveQueueXXX(parseObjects, null);
-    }
-
-    private void addToSaveQueueXXX(ParseObject parseObject, Runnable postSaveActionN) {
-        addToSaveQueueXXX(new ArrayList(Arrays.asList(parseObject)), postSaveActionN);
-    }
-
-    private void addToSaveQueueXXX(ParseObject parseObject) {
-        addToSaveQueueXXX(parseObject, null);
-    }
-
+//
+//        if (postSaveAction != null) {
+//            if (Config.TEST_BACKGR) {
+//                Log.p("==========>>>    adding postSaveAction[" + postSaveAction + "] to savelist(" + saveList.size() + ")=" + saveList);
+//            }
+//            saveList.add(postSaveAction);
+//        }
+//        if (false) {
+//            LOCK_SAVELIST.notifyAll();
+//        }
+//
+//        if (backgroundSaveThread == null) {
+////            backgroundSaveThread = EasyThread.start("DAO.backgroundSave"); //initialize on first use
+////            backgroundSaveThread.run(() -> {
+//            backgroundSaveThread = new Thread(() -> {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            if (false) {
+////                ParseObject parseObject;
+////                while (!vector.isEmpty()) {
+////                    parseObject = (ParseObject) vector.remove(0);
+////                    if (parseObject instanceof ItemList && ((ItemList) parseObject).isNoSave())
+////                        Log.p("BACKGROUND saving IGNORE: " + parseObject);
+////                    else {
+//////                    Log.p("BACKGROUND saving: " + parseObject);
+////                        ParseObject parseObject2 = parseObject;
+////                        Display.getInstance().callSerially(() -> saveImpl((ParseObject) parseObject2, true)); //must run on EDT to avoid conflicts with other ParseObject operations
+////                    }
+////                }
+////                if (postSaveAction != null)
+////                    Display.getInstance().callSerially(postSaveAction);
+////            } else { //copied from CN1.EasyThread
+////</editor-fold>
+//                if (Config.TEST) {
+//                    Log.p(">>>>>>> BACKGROUND1 new THREAD starting");
+//                }
+//                while (true) {
+//                    synchronized (LOCK_SAVELIST) {
+//                        if (Config.TEST_BACKGR) {
+//                            Log.p(">>>>>>> BACKGROUND2 backgroundSaveThread - LOCK acquired***********");
+//                        }
+//                        while (!saveList.isEmpty()) {
+//                            if (saveList.get(0) instanceof Runnable) { //execute Runnables
+//                                Runnable runnable = (Runnable) saveList.remove(0);
+//                                if (Config.TEST_BACKGR) {
+//                                    Log.p(">>>>>>> BACKGROUND3 - executing Runnable [" + runnable + "]");
+//                                }
+////                                Display.getInstance().callSeriallyAndWait(runnable);
+//                                Display.getInstance().callSerially(runnable);
+////                                runnable.run();
+//                            } else if (saveList.get(0) instanceof ParseObject) {
+//                                if (((ParseObject) saveList.get(0)).getObjectIdP() == null) { //if previously unsaved, then save alone (not batch ensure references are OK)
+//                                    ParseObject parseObject = (ParseObject) saveList.remove(0);
+//                                    if (Config.TEST_BACKGR) {
+//                                        Log.p(">>>>>>> BACKGROUND4 - saveAndWait parseObject=" + parseObject);
+//                                    }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                                    Display.getInstance().callSerially(() -> saveAndCacheImpl((ParseObject) saveList.remove(0), true)); //must save to cache (in case there are new created objects)
+////                                    Display.getInstance().callSeriallyAndWait(() -> saveAndCacheImpl(parseObject, true)); //must save to cache (in case there are new created objects)
+////                                    Display.getInstance().invokeAndBlock(() -> saveAndCacheImpl(parseObject, true)); //NOT good, BLOCKS the app completely!!!
+////                                    Display.getInstance().callSeriallyAndWait(() -> saveAndCacheImpl(parseObject, true)); //must save to cache (in case there are new created objects)
+////                                    saveAndCacheImpl(parseObject, true); //must save to cache (in case there are new created objects)
+////</editor-fold>
+////                                    Display.getInstance().callSerially(() -> saveAndCacheImpl(parseObject, true)); //must save to cache (in case there are new created objects)
+//                                    Display.getInstance().callSeriallyAndWait(() -> saveAndCacheImplXXX(parseObject, true)); //must save to cache (in case there are new created objects)
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                                    saveAndCacheImpl(parseObject, true, true); //must save to cache (in case there are new created objects)
+////                                    while (parseObject.getObjectIdP() == null) {
+////                                    if (false) {
+////                                        int i = 0;
+////                                        do { //use do while instead of while () since it is unlikely that the save above will succeed immediately
+////                                            try {
+////                                                if (Config.TEST && i % 125 == 0) {
+////                                                    Log.p("SAVE-BACKGROUN- backgroundSaveThread - SLEEP waiting for full save of new object=" + parseObject);
+//////                                                Log.p("SAVE-BACKGROUN- backgroundSaveThread - EDT.hasNoSerialCallsPending()=" + Display.getInstance().hasNoSerialCallsPending()+", isProcessingSerialCalls()="+Display.getInstance().isProcessingSerialCalls());
+////                                                }
+//////<editor-fold defaultstate="collapsed" desc="comment">
+//////                                            try {
+//////                                                LOCK_SAVELIST.wait();
+//////                                            } catch (InterruptedException e) {
+//////                                            }
+//////</editor-fold>
+////                                                Thread.sleep(200); //the additional delay due to this sleep will on average be half, ie 50ms => 25ms
+////                                                i++;
+////                                            } catch (InterruptedException ex) {
+////                                                ex.printStackTrace();
+////                                            }
+////                                        } while (parseObject.getObjectIdP() == null);
+////                                    }
+////</editor-fold>
+//                                } else { //already saved so has its objId already
+//                                    List<ParseObject> batchSaveList = new ArrayList();
+//                                    //automatically group together all ParseObjects of same parseClass for batch save
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                                    String parseClass = ((ParseObject) saveList.get(0)).getClassName();
+////                                    while (!saveList.isEmpty() && parseClass.equals(((ParseObject) saveList.get(0)).getClassName())) { //loop condition always met for first element => will remove at least one elt from saveList, so loop termination guaranteed
+////                                        ParseObject p = (ParseObject) saveList.remove(0);
+////</editor-fold>
+//                                    String parseClass = ((ParseObject) saveList.get(0)).getClassName();
+//                                    //batch together all saves of same parseClass, for already saved objects only
+//                                    while (!saveList.isEmpty() && saveList.get(0) instanceof ParseObject
+//                                            && parseClass.equals(((ParseObject) saveList.get(0)).getClassName())
+//                                            && ((ParseObject) saveList.get(0)).getObjectIdP() != null) { //loop condition always met for first element => will remove at least one elt from saveList, so loop termination guaranteed
+//                                        ParseObject p = (ParseObject) saveList.remove(0);
+//                                        if (true || p.isDirty()) { //don't save non-dirty elements (already tested in parse4cn1.batchsave?)
+//                                            batchSaveList.add(p);
+//                                        }
+//                                    }
+//
+//                                    if (batchSaveList.size() > 1) { //there are multiple parseObjects with same class to batch save
+//                                        if (Config.TEST_BACKGR) {
+//                                            Log.p(">>>>>>> BACKGROUND5 - batchsaveList(" + batchSaveList.size() + ")=" + batchSaveList);
+//                                        }
+////                                        Display.getInstance().callSeriallyAndWait(() -> saveBatch(batchSaveList, true)); //must save to cache (in case there are new created objects)
+//                                        Display.getInstance().callSerially(() -> saveBatch(batchSaveList, true)); //must save to cache (in case there are new created objects)
+////                                        saveBatch(batchSaveList, true); //must save to cache (in case there are new created objects)
+//                                    } else if (batchSaveList.size() == 1) { //there is only ONE parseObject to save
+//                                        ParseObject parseObject = batchSaveList.remove(0);
+//                                        if (false && parseObject instanceof ItemList && ((ItemList) parseObject).isNoSave()) {
+//                                        } else {
+//                                            if (Config.TEST_BACKGR) {
+//                                                Log.p(">>>>>>> BACKGROUND6 - batchsaveList(" + batchSaveList.size() + ")=" + parseObject);
+//                                            }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                                            Display.getInstance().callSerially(() -> saveImpl((ParseObject) batchSaveList.get(0), true)); //must save to cache (in case there are new created objects)
+////                                            Display.getInstance().callSeriallyAndWait(() -> saveAndCacheImpl(parseObject, true)); //must save to cache (in case there are new created objects)
+////                                            saveAndCacheImpl(parseObject, true); //must save to cache (in case there are new created objects)
+////</editor-fold>
+//                                            Display.getInstance().callSerially(() -> saveAndCacheImplXXX(parseObject, true)); //must save to cache (in case there are new created objects)
+////                                            saveAndCacheImpl(parseObject, true); //must save to cache (in case there are new created objects)
+//                                        }
+//                                    } // else (batchSaveList.size() ==0) <=> do nothing
+//                                }
+//                            } else { //ERROR: object other than Runnable or ParseObject in list
+//                                Object x = saveList.remove(0); //ensure to empty the saveList
+//                                assert false : ">>>>>>> BACKGROUND7 - UNKNOWN type in saveList, object=" + x + ", saveList(" + saveList.size() + ")=" + saveList;
+//                            }
+//                        } //while (!saveList.isEmpty())
+//                        if (Config.TEST_BACKGR) {
+//                            Log.p(">>>>>>> BACKGROUND8 - LOCK.wait() ************");
+//                        }
+//                        try {
+//                            LOCK_SAVELIST.wait(); //saveList is empty, so wait
+//                        } catch (InterruptedException e) {
+//                            if (Config.TEST_BACKGR) {
+//                                Log.p(">>>>>>> BACKGROUND9 - InterruptedException = " + e);
+//                            }
+//                        }
+//                    }
+//                }
+//            }, "SAVE-DAO.backgroundSave"); //initialize on first use
+//            backgroundSaveThread.start();
+//        }
+//
+////        synchronized (LOCK_SAVELIST) { //prevent the timer from executing run will the timer is being restarted (seems to lead to t.schedule(timerTask, 1000); getting a nullPointer exception)
+//        //start a timer to only initiate save after a certain delay to ensure all updates to e.g. an Item have been done, e.g. if inheriting multiple values
+//        if (t != null) {
+//            t.cancel();
+//        }
+//        t = new Timer(); //"BackgroundSaveTimer");
+//
+//        TimerTask timerTask = new TimerTask() {
+//            @Override
+//            public void run() {
+//                if (Config.TEST_BACKGR) {
+//                    Log.p(">>>>>>> TimerTask-run(): trying to get LOCK");
+//                }
+//                synchronized (LOCK_SAVELIST) {
+//                    if (t != null) {
+//                        t.cancel();
+//                        t = null;
+//                    }
+//                    if (Config.TEST_BACKGR) {
+//                        Log.p(">>>>>>> TimerTask: got LOCK, calling LOCK.notify(). saveList=" + saveList);
+//                    }
+//                    LOCK_SAVELIST.notifyAll();
+//                }
+//            }
+//        };
+//        if (Config.TEST_BACKGR) {
+//            Log.p(">>>>>>> TimerTask.schedule(timerTask, 200)");
+//        }
+//        t.schedule(timerTask, 400); //wait 200ms before initiate saving to 'batch' together as many saves as possible
+////        }
+//    }
+//
+//    private void addToSaveQueueXXX(List<ParseObject> parseObjects) {
+//        addToSaveQueueXXX(parseObjects, null);
+//    }
+//
+//    private void addToSaveQueueXXX(ParseObject parseObject, Runnable postSaveActionN) {
+//        addToSaveQueueXXX(new ArrayList(Arrays.asList(parseObject)), postSaveActionN);
+//    }
+//
+//    private void addToSaveQueueXXX(ParseObject parseObject) {
+//        addToSaveQueueXXX(parseObject, null);
+//    }
+//</editor-fold>
     boolean isSavesPending() {
         return (saveList != null && !saveList.isEmpty());
     }
@@ -4818,7 +4827,7 @@ public class DAO {
 
         //Filter has no references back to Item, so can always be saved
         {
-            FilterSortDef filter = item.getFilterSortDef();
+            FilterSortDef filter = item.getFilterSortDefN();
             if (filter != null && !filter.isNoSave()) {
                 if (filter.getObjectIdP() == null) {
                     item.setFilterSortDef(null);
@@ -4957,7 +4966,7 @@ public class DAO {
         }
 
         //Filter has no references back to Item, so can always be saved
-        FilterSortDef filter = item.getFilterSortDef();
+        FilterSortDef filter = item.getFilterSortDefN();
         if (filter != null && !filter.isNoSave()) {
             if (filter.getObjectIdP() == null) {
                 item.setFilterSortDef(null);
@@ -5202,7 +5211,7 @@ public class DAO {
             Log.p("==========>>> DAO.saveItemListInBackground(elt=" + testShowMissingRefs(itemList) + ")");
         }
         //save a filter before saving the element referencing it
-        FilterSortDef filter = itemList.getFilterSortDef();
+        FilterSortDef filter = itemList.getFilterSortDefN();
         if (filter != null && !filter.isNoSave()) {
             if (filter.getObjectIdP() == null) {
                 itemList.setFilterSortDef(null);
@@ -5239,7 +5248,7 @@ public class DAO {
             Log.p("==========>>> DAO.saveItemListInBackground(elt=" + testShowMissingRefs(itemList) + ")");
         }
         //save a filter before saving the element referencing it
-        FilterSortDef filter = itemList.getFilterSortDef();
+        FilterSortDef filter = itemList.getFilterSortDefN();
         if (filter != null && !filter.isNoSave()) {
             if (filter.getObjectIdP() == null) {
                 itemList.setFilterSortDef(null);
@@ -5775,7 +5784,11 @@ public class DAO {
                 continue;
             }
             if (p instanceof ItemAndListCommonInterface) {
-                ((ItemAndListCommonInterface) p).updateBeforeSave();
+                if (((ItemAndListCommonInterface) p).isNoSave()) {
+                    continue; //skip nosave elements
+                } else {
+                    ((ItemAndListCommonInterface) p).updateBeforeSave();
+                }
             }
             if (Config.TEST) {
                 testShowMissingRefs(p);
@@ -5798,7 +5811,8 @@ public class DAO {
             }
         }
 //        triggerParseUpdate(); //once all 
-        if (triggerSave) {assert false;
+        if (triggerSave) {
+            assert false;
             triggerParseUpdate();
         }
     }
@@ -5810,6 +5824,9 @@ public class DAO {
     public void saveNew(Collection<ParseObject> parseObjects, boolean triggerSave) {
         saveNewImpl(parseObjects, null, triggerSave);
     }
+//    public void saveNew(Collection<ItemAndListCommonInterface> parseObjects) {
+//        saveNewImpl(parseObjects, null, false);
+//    }
 
     public void saveNew(Collection<ParseObject> parseObjects) {
         saveNewImpl(parseObjects, null, false);
@@ -6656,7 +6673,7 @@ public class DAO {
 
             if (resultsNextAlarm != null && resultsNextAlarm.size() >= 1) {
                 if (resultsNextWaiting != null && resultsNextWaiting.size() >= 1) {
-                    if (resultsNextAlarm.get(0).getAlarmDateD().getTime() < resultsNextWaiting.get(0).getWaitingAlarmDateD().getTime()) {
+                    if (resultsNextAlarm.get(0).getAlarmDateD().getTime() < resultsNextWaiting.get(0).getWaitingAlarmDate().getTime()) {
 //                        return resultsNextAlarm.get(0);
                         nextItemWithAlarm = resultsNextAlarm.get(0);
 
@@ -7987,5 +8004,43 @@ public class DAO {
 
     boolean cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup, boolean cleanupItems) {
         return new CleanUpDataInconsistencies(this).cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, cleanupItems);
+    }
+
+    static void emailLog(ActionEvent evt) {
+        p("Exception in " + Display.getInstance().getProperty("AppName", "app") + " version " + Display.getInstance().getProperty("AppVersion", "Unknown"));
+        p("OS " + Display.getInstance().getPlatformName());
+        p("Error " + evt.getSource());
+        if (Display.getInstance().getCurrent() != null) {
+            p("Current Form " + Display.getInstance().getCurrent().getName());
+        } else {
+            p("Before the first form!");
+        }
+        if (evt != null && evt.getSource() instanceof Throwable) {
+            e((Throwable) evt.getSource());
+        }
+        byte[] read = new byte[]{(byte) 0xe0};//['a'];
+        try {
+            //                sendLog();
+            read = com.codename1.io.Util.readInputStream(Storage.getInstance().createInputStream("CN1Log__$"));
+//                        read.toString();
+
+            Message m = new Message("Body of message"
+                    + "DeviceId: " + Log.getUniqueDeviceId()
+                    + "\nBuilt by user: " + Display.getInstance().getProperty("built_by_user", "")
+                    + "\nPackage name: " + Display.getInstance().getProperty("package_name", "")
+                    + "\nAppVersion: " + Display.getInstance().getProperty("AppVersion", "0.1")
+                    + "\nLOG:\n---------------------------------\n"
+                    //                            + Storage.getInstance().readObject("CN1Log__$")
+                    //                            + new String(read)
+                    //                            + MyUtil.hexStringToByteArray(read)
+                    + new String(read, "BaSE64") // for UTF-8 encoding, https://stackoverflow.com/questions/1536054/how-to-convert-byte-array-to-string-and-vice-versa
+            );
+//            m.getAttachments().put(textAttachmentUri, "text/plain");
+//            m.getAttachments().put(imageAttachmentUri, "image/png");
+            Display.getInstance().sendMessage(new String[]{"crashreport@todocatalyst.com"}, "TodoCatalyst crash report", m);
+        } catch (IOException ex) {
+//                        java.util.logging.Logger.getLogger(TodoCatalyst.class.getName()).log(Level.SEVERE, null, ex);
+            Log.p(TodoCatalyst.class.getName(), Log.ERROR);
+        }
     }
 }

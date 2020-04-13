@@ -30,6 +30,7 @@ import com.codename1.ui.SideMenuBar;
 import com.codename1.ui.StickyHeader;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
+import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.animations.ComponentAnimation;
 //import com.codename1.ui.Toolbar;
@@ -231,7 +232,7 @@ public class MyForm extends Form {
 //        setEditOnShowOrRefresh(editFieldOnShowOrRefresh, null);
 //    }
 //</editor-fold>
-    String SCREEN_TITLE = "";
+//    String SCREEN_TITLE = "";
     //TODO: move titles into Screens
     static final String SCREEN_LISTS_TITLE = "Lists";
     static final String SCREEN_ALL_TASKS_TITLE = "All tasks";
@@ -351,12 +352,12 @@ public class MyForm extends Form {
             setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
         }
 //        ReplayLog.getInstance().deleteAllReplayCommandsFromPreviousScreen(title);
-        SCREEN_TITLE = title;
+//        SCREEN_TITLE = title;
 //        if (false) {
 //            getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
 //            setTitle(title); //do again since super(title)
 //        }
-        setScrollVisible(true); //show scroll bar(?)
+        if (false)setScrollVisible(true); //show scroll bar(?)
 
 //        getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
         if (false) { //NOT good UI since we have commands in the toolbar
@@ -845,7 +846,7 @@ public class MyForm extends Form {
      * @return
      */
     static Container createLeftRightAdjustedContainer(Component left, Component right) {
-        return MyBorderLayout.west(left).add(MyBorderLayout.EAST, right);
+        return BorderLayout.west(left).add(BorderLayout.EAST, right);
     }
 
     /**
@@ -857,7 +858,7 @@ public class MyForm extends Form {
 //    static void dialogSetWaitingDateAndAlarm(Item item, Map<Object, UpdateField> parseIdMap2) {
     static void showDialogSetWaitingDateAndAlarm(Item item) {
         if (!MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting.getBoolean()
-                || (item.getWaitingTillDateD().getTime() != 0 && item.getWaitingAlarmDateD().getTime() != 0)) {
+                || (item.getWaitingTillDate().getTime() != 0 && item.getWaitingAlarmDate().getTime() != 0)) {
             return; //do nothing if both waiting dates are already set
         }
 //        Map<Object, Runnable> parseIdMap2 = new HashMap<Object, Runnable>();
@@ -880,7 +881,7 @@ public class MyForm extends Form {
 //            item.setWaitingTillDate(d);
 //        });
 //</editor-fold>
-        MyDatePicker waitingDatePicker = new MyDatePicker(item.getWaitingTillDateD());
+        MyDatePicker waitingDatePicker = new MyDatePicker(item.getWaitingTillDate());
         waitingDatePicker.addActionListener((e) -> item.setWaitingTillDate(waitingDatePicker.getDate()));
 //        cont.add(new Label("Wait until")).add(waitingDatePicker).add("When you set a date, waiting tasks can automatically be hidden until that date.");
         cont.add(new Label(Item.WAIT_UNTIL_DATE)).add(waitingDatePicker).add(new SpanLabel("Waiting tasks are automatically hidden until the set date."));
@@ -893,7 +894,7 @@ public class MyForm extends Form {
 //            item.setWaitingAlarmDate(d); //NB. only called if date is edited to sth different than 0
 //        });
 //</editor-fold>
-        MyDateAndTimePicker waitingAlarmPicker = new MyDateAndTimePicker(item.getWaitingAlarmDateD());
+        MyDateAndTimePicker waitingAlarmPicker = new MyDateAndTimePicker(item.getWaitingAlarmDate());
         waitingAlarmPicker.addActionListener((e) -> item.setWaitingAlarmDate(waitingAlarmPicker.getDate()));
 //        cont.add(new Label("Waiting alarm")).add(waitingAlarmPicker).add("Set a special alarm for waiting tasks.");
         cont.add(new Label(Item.WAITING_ALARM_DATE)).add(waitingAlarmPicker).add(new SpanLabel("Set a reminder to follow up on a waiting task."));
@@ -1411,7 +1412,7 @@ public class MyForm extends Form {
     }
 
     void addToContentContainer(Component content) {
-        getContentPane().add(MyBorderLayout.CENTER, content);
+        getContentPane().add(BorderLayout.CENTER, content);
     }
 
     /**
@@ -1491,6 +1492,14 @@ public class MyForm extends Form {
 ////        revalidate();
 //    }
     protected boolean isDragAndDropEnabled() {
+        return false;
+    }
+    
+    /**
+     * if returning true a warning will be shown to the user that drag and drop is not possible, otherwise nothing happens
+     * @return 
+     */
+    protected boolean isShowDragAndDropWarning() {
         return false;
     }
 
@@ -1600,12 +1609,16 @@ public class MyForm extends Form {
     }
 
     public String makeUniqueIdForExpandedObjects(ItemAndListCommonInterface elt, String defaultString) {
-        String s = "";
+//        String s = "";
         if (elt.getObjectIdP() != null) {
             ASSERT.that(!elt.isNoSave());
             return elt.getObjectIdP();
-        } else if (elt instanceof ItemList && ((ItemList) elt).getSystemName() != null) {
+        } else if (elt instanceof ItemList) { 
+            if(!((ItemList) elt).getSystemName().equals("")) {
             return ((ItemList) elt).getSystemName();
+        } else if( elt instanceof CategoryList) {
+            return ((ItemList) elt).getSystemName();
+        }
         }
 //            else if (elt.isNoSave())
         return defaultString;
@@ -1719,7 +1732,18 @@ public class MyForm extends Form {
 //    protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemList itemListOrg, ComponentListForSearch getCompList) {
     protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemAndListCommonInterface itemListOrg, ComponentListForSearch getCompList) {
         return (e) -> {
-            String text = (String) e.getSource();
+            String text;
+            if (e != null) {
+                text = (String) e.getSource();
+            } else {
+                //get TextField with search string
+                Component titleComp = getToolbar().getTitleComponent();
+                if (titleComp instanceof TextField) {
+                    text = ((TextField) titleComp).getText();
+                } else {
+                    text = ""; //if ever the implementation with TextField is changed, simply reset the search when coming back to a Form
+                }
+            }
 //            Container compList = null;
 //            compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
             Container compList = getCompList.get();
@@ -1823,7 +1847,7 @@ public class MyForm extends Form {
     }
 
     protected ActionListener makeSearchFunctionSimple(ItemList itemListList) {
-        return makeSearchFunctionUpperLowerStickyHeaders(itemListList, () -> (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter());
+        return makeSearchFunctionUpperLowerStickyHeaders(itemListList, () -> (Container) ((BorderLayout) getContentPane().getLayout()).getCenter());
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1879,6 +1903,8 @@ public class MyForm extends Form {
             }
         };
         cmd.setMaterialIcon(Icons.iconBackToPreviousScreen);
+        cmd.setMaterialIconSize(MyPrefs.defaultIconSizeInMM.getFloat());
+        cmd.setIconGapMM(MyPrefs.defaultIconGapInMM.getFloat());
         cmd.putClientProperty("android:showAsAction", "withText");
         return cmd;
     }
@@ -1916,6 +1942,14 @@ public class MyForm extends Form {
 
     public Command makeDoneUpdateWithParseIdMapCommand() {
         return makeDoneUpdateWithParseIdMapCommand("", true, null, true); //false); //default false since otherwise edited values will be lost
+    }
+
+    public Command addStandardBackCommand() {
+        Command backCmd = makeDoneUpdateWithParseIdMapCommand();
+        backCmd.putClientProperty("android:showAsAction", "withText");
+//            getToolbar().setBackCommand(makeDoneUpdateWithParseIdMapCommand(),Toolbar.BackCommandPolicy.AS_ARROW,MyPrefs.defaultIconSizeInMM.getFloat());
+        getToolbar().setBackCommand(backCmd, Toolbar.BackCommandPolicy.AS_ARROW, MyPrefs.defaultIconSizeInMM.getFloat());
+        return backCmd;
     }
 
 //    public Command makeDoneUpdateWithParseIdMapCommand(CheckIfDataIsComplete getCheckOnExit) {
@@ -1985,8 +2019,8 @@ public class MyForm extends Form {
 //        return MyReplayCommand.create(TimerStack.TIMER_REPLAY, title, icon, (e) -> {
 //        return CommandTracked.create("", icon, (e) -> {
         return CommandTracked.create(includeText ? "Time interrupt" : "", Icons.iconInterrupt, (e) -> {
-            Item newInterruptItem = new Item();
-            newInterruptItem.setRemaining(0);//remove default estimate for interrupt tasks
+            Item newInterruptItem = new Item(false);
+//            newInterruptItem.setRemaining(0);//remove default estimate for interrupt tasks
             newInterruptItem.setInteruptOrInstantTask(true);
 //            DAO.getInstance().saveNew(newInterruptItem, true);
             DAO.getInstance().saveNew(newInterruptItem); //TODO!!!!: don't save until exeting the Timer to allow for Cancel in Timer?!!
@@ -2009,7 +2043,7 @@ public class MyForm extends Form {
 
     public Command makeStartTimerCommand(boolean includeText, ItemAndListCommonInterface itemListOrg) {
 //        return CommandTracked.create(TimerStack.getInstance().isTimerActive() ? "Open Timer" : "Start Timer on list",
-        return CommandTracked.create("Timer",
+        return CommandTracked.create("Start Timer",
                 //                    TimerStack.getInstance().isTimerActive() ? Icons.iconLaunchTimerAlreadyRunning : Icons.iconLaunchTimer,
                 Icons.iconLaunchTimer,
                 (e) -> {
@@ -2116,7 +2150,7 @@ public class MyForm extends Form {
     public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText, Image icon) {
 
         Command cmd = MyReplayCommand.createKeep("CreateNewItem", cmdText, icon, (e) -> {
-            Item item = new Item();
+            Item item = new Item(true);
             item.setOwner(itemListOrg); //need to set owner here (even if cancelled) for repeatRule
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenItem2(item, (MyForm) getComponentForm(), () -> {
@@ -2130,7 +2164,7 @@ public class MyForm extends Form {
 //                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
                     itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
 //                    DAO.getInstance().saveNew(true, (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                    DAO.getInstance().saveNew( (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew((ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     DAO.getInstance().saveNewExecuteUpdate();
 
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
@@ -2150,7 +2184,7 @@ public class MyForm extends Form {
     public Command makeCommandNewItemSaveToItemList(ItemAndListCommonInterface itemListOrg, String cmdUniqueID, String cmdText, char icon) {
 
         Command cmd = MyReplayCommand.createKeep(cmdUniqueID, cmdText, icon, (e) -> {
-            Item newItem = new Item();
+            Item newItem = new Item(true);
             //first insert owner / category into Item before editing
             if (itemListOrg instanceof Category) {
                 newItem.setOwner(Inbox.getInstance());
@@ -2172,17 +2206,17 @@ public class MyForm extends Form {
                     ((Category) itemListOrg).addItemToCategory(newItem, null, false, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
                     Inbox.getInstance().addToList(newItem, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
 //                    DAO.getInstance().saveNew(true, newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                    DAO.getInstance().saveNew( newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew(newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     DAO.getInstance().saveNewExecuteUpdate();
                 } else if (itemListOrg instanceof ItemList) {
                     itemListOrg.addToList(newItem, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
 //                    DAO.getInstance().saveNew(true, newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                    DAO.getInstance().saveNew( newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew(newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     DAO.getInstance().saveNewExecuteUpdate();
                 } else if (itemListOrg instanceof Item) {
                     itemListOrg.addToList(newItem, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
 //                    DAO.getInstance().saveNew(true, newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                    DAO.getInstance().saveNew( newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew(newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     DAO.getInstance().saveNewExecuteUpdate();
                 } else {
                     ASSERT.that(false);
@@ -2207,7 +2241,7 @@ public class MyForm extends Form {
     public Command makeCommandNewItemSaveToItemListORG(ItemList itemListOrg, String cmdText, char icon) {
 
         Command cmd = MyReplayCommand.createKeep("CreateNewItem", cmdText, icon, (e) -> {
-            Item item = new Item();
+            Item item = new Item(true);
             item.setOwner(itemListOrg);
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenItem2(item, (MyForm) getComponentForm(), () -> {
@@ -2221,7 +2255,7 @@ public class MyForm extends Form {
 //                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
                     itemListOrg.addToList(item, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
 //                    DAO.getInstance().saveNew(true, (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                    DAO.getInstance().saveNew( (ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                    DAO.getInstance().saveNew((ParseObject) item, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     DAO.getInstance().saveNewExecuteUpdate();
 
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
@@ -2237,29 +2271,59 @@ public class MyForm extends Form {
         return cmd;
     }
 
-    public Command makeCommandNewItemSaveToInbox() {
-        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), "");
+    public Command makeCommandNewItemSaveToInboxXXX(String cmdText) {
+        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), cmdText);
     }
+    public Command makeCommandNewItemSaveToInbox(boolean useStdCmdText) {
+        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), useStdCmdText?"Add task to Inbox":"");
+    }
+    public Command makeCommandNewItemSaveToInbox() {
+//        return makeCommandNewItemSaveToInbox(true);
+        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), "CreateNewItemInInbox", "Add task to Inbox", Icons.iconNewTaskToInbox);
+    }
+    
+
 
     public MyReplayCommand makeEditFilterSortCommand(ItemAndListCommonInterface itemListOrItem) {
         return MyReplayCommand.createKeep("FilterSortSettings", "Edit filter/sort", Icons.iconFilterSettings, (e) -> {
-            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDef() == null
-                    ? new FilterSortDef()
-                    : (itemListOrItem.getFilterSortDef().equals(FilterSortDef.getDefaultFilter())
-                    ? new FilterSortDef(itemListOrItem.getFilterSortDef()) : itemListOrItem.getFilterSortDef()); //need this construct due to use in lambda below
-//            if ( filterSortDef.equals(FilterSortDef.getDefaultFilter()))
-//                filterSortDef = new FilterSortDef(filterSortDef);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDefN() == null
+//                    ? new FilterSortDef()
+//                    : (itemListOrItem.getFilterSortDefN().equals(FilterSortDef.getDefaultFilter())
+//                    ? new FilterSortDef(itemListOrItem.getFilterSortDefN()) : itemListOrItem.getFilterSortDefN()); //need this construct due to use in lambda below
+//            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDefN() == null
+//                    ? new FilterSortDef() //if no filter defined, create a new one to edit
+//                    : new FilterSortDef(itemListOrItem.getFilterSortDefN()); //always edit a *copy* of the filter
+//            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDefN() ;
+//            boolean newFilterEdited=false;
+//            if (filterSortDef==null){
+//                filterSortDef=itemListOrItem.getDefaultFilterSortDef();
+//                newFilterEdited=true;
+//            }
+//</editor-fold>
+            //need this construct due to use in lambda below
+            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDefN() != null
+                    ? itemListOrItem.getFilterSortDefN() : itemListOrItem.getFilterSortDef(true);
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenFilter(filterSortDef, MyForm.this, () -> {
-                if (!filterSortDef.equals(itemListOrItem.getFilterSortDef())) { //if filter edited
-                    DAO.getInstance().saveNew(filterSortDef, false); //now done in DAO?
-                    itemListOrItem.setFilterSortDef(filterSortDef);
-//                    DAO.getInstance().saveNew((ParseObject) itemListOrItem, true);
-                    DAO.getInstance().saveNew((ParseObject) itemListOrItem);
-                    DAO.getInstance().saveNewExecuteUpdate();
-                    //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
-                    refreshAfterEdit(); //TODO optimize the application of a filter? 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                if (itemListOrItem.getFilterSortDefN() == null) {
+//                    if (!filterSortDef.equals(itemListOrItem.getDefaultFilterSortDef())) { //if filter edited
+//                        itemListOrItem.setFilterSortDef(filterSortDef); //save a copy of the new edited filter
+//                    }
+//                } else if (filterSortDef.isDirty()) { //if filter edited
+//                    itemListOrItem.setFilterSortDef(filterSortDef); //save a copy of the new edited filter
+//                }
+//</editor-fold>
+                if ((itemListOrItem.getFilterSortDefN() == null && !filterSortDef.equals(itemListOrItem.getFilterSortDef(true))) //if new default filter was edited
+                        || (itemListOrItem.getFilterSortDefN() != null && filterSortDef.isDirty())) { //or if existing filter was edited
+                    itemListOrItem.setFilterSortDef(filterSortDef); //update with edited filter
                 }
+                DAO.getInstance().saveNew(filterSortDef); //save updates
+                DAO.getInstance().saveNew((ParseObject) itemListOrItem);
+                DAO.getInstance().saveNewExecuteUpdate();
+                //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
+                refreshAfterEdit(); //TODO optimize the application of a filter? 
             }).show();
         }
         );
@@ -2295,7 +2359,7 @@ public class MyForm extends Form {
         Button oldCmdButton = getToolbar().findCommandComponent(cmd);
         if (oldCmdButton != null) {
 
-            MyButtonLongPress newLongPressButton = new MyButtonLongPress(cmd, longPressCmd);
+            MyButtonLongPressXXX newLongPressButton = new MyButtonLongPressXXX(cmd, longPressCmd);
 
             newLongPressButton.setUIID(oldCmdButton.getUIID()); //keep the same UIID
             newLongPressButton.putClientProperty("TitleCommand", oldCmdButton.getClientProperty("TitleCommand")); //keep the same values as set in addCommandToLeft/Right/Bar
@@ -2422,10 +2486,10 @@ public class MyForm extends Form {
         }
         Component spanB;
         if (makeSpanButton) {
-            spanB = new SpanButton(label, "LabelField");
+            spanB = new SpanButton(label, "ScreenItemFieldLabel");
             spanB.setUIID("Container"); //avoid adding additional white space by setting the Container UIID to LabelField
         } else {
-            spanB = new Button(label, "LabelField");
+            spanB = new Button(label, "ScreenItemFieldLabel");
         }
 
         if (helpText != null && !helpText.isEmpty()) {
@@ -2581,6 +2645,10 @@ public class MyForm extends Form {
      */
     protected static Component layoutN(String fieldLabelTxt, MyComponentGroup group, String help) {
         return layoutN(fieldLabelTxt, group, help, null, true, false, false, true);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, MyToggleButton toggleButton, String help) {
+        return layoutN(fieldLabelTxt, toggleButton, help, null, true, false, false, true);
     }
 
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help) {
@@ -2773,10 +2841,10 @@ public class MyForm extends Form {
         } else {
             if (field instanceof MySpanButton) {
 //                ((SpanButton) field).setTextUIID(showAsUneditableField ? "LabelFixed" : "SpanButtonTextAreaValueRight");
-                ((MySpanButton) field).setTextUIID(makeFieldUneditable ? "LabelFixed" : "LabelValue");
+                ((MySpanButton) field).setTextUIID(makeFieldUneditable ? "ScreenItemValueUneditable" : "ScreenItemEditableValue");
                 ((MySpanButton) field).setUIID("Container");
             } else {
-                field.setUIID(makeFieldUneditable ? "LabelFixed" : "LabelValue");
+                field.setUIID(makeFieldUneditable ? "ScreenItemValueUneditable" : "ScreenItemEditableValue");
             }
         }
 
@@ -2886,7 +2954,7 @@ public class MyForm extends Form {
     protected static Component layoutSetting(String fieldLabelTxt, Component field, String help) {
 
         if (!(field instanceof MyOnOffSwitch) && field != null) {
-            field.setUIID("LabelValue");
+            field.setUIID("ScreenItemEditableValue");
         }
 
         MyBorderLayout layout = MyBorderLayout.center();
@@ -3654,7 +3722,9 @@ public class MyForm extends Form {
             Form prevForm = Display.getInstance().getCurrent();
 //            MyAnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
 //            MyAnalyticsService.visit(getUniqueFormId(), prevForm != null ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
-            MyAnalyticsService.visit(getUniqueFormId(), prevForm instanceof MyForm ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
+            if (MyAnalyticsService.isEnabled()) {
+                MyAnalyticsService.visit(getUniqueFormId(), prevForm instanceof MyForm ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
+            }
             //restore scroll position on replay
             if (previousValues != null) {
                 previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
@@ -3943,9 +4013,9 @@ public class MyForm extends Form {
         if (this instanceof ScreenListOfItems) {
             ItemAndListCommonInterface ownerList = ((ScreenListOfItems) this).itemListOrg;
             if (ownerList instanceof Category) {
-                createAndAddInsertIntoEmptyContainer(getContentContainer(), new Item(), null, (Category) ownerList); //NB: createAndAddInsertContainer checks for null values
+                createAndAddInsertIntoEmptyContainer(getContentContainer(), new Item(false), null, (Category) ownerList); //NB: createAndAddInsertContainer checks for null values
             } else if (ownerList instanceof ItemList || ownerList instanceof Item) {
-                createAndAddInsertIntoEmptyContainer(getContentContainer(), new Item(), ownerList, null); //NB: createAndAddInsertContainer checks for null values
+                createAndAddInsertIntoEmptyContainer(getContentContainer(), new Item(false), ownerList, null); //NB: createAndAddInsertContainer checks for null values
             }
         } else if (this instanceof ScreenListOfItemLists) {
             createAndAddInsertIntoEmptyContainer(getContentContainer(), new ItemList(), ItemListList.getInstance(), null); //NB: createAndAddInsertContainer checks for null values

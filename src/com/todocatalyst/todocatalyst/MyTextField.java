@@ -44,7 +44,9 @@ class MyTextField extends TextField {
         if (false) {
             TextComponent description = new TextComponent().label("Description").multiline(true);
         }
-        putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
+//        setIgnorePointerEvents(true);xxx;
+        setBlockLead(false);//xxx;
+        if(false)putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
 
         setAlignment(alignment);
         setAutoDegradeMaxSize(true);
@@ -70,7 +72,7 @@ class MyTextField extends TextField {
             parseIdMap.put(this, () -> setValue.accept(getText()));
     }
 
-};
+}
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //class MyTextField extends TextField {

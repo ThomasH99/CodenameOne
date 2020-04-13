@@ -34,7 +34,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
     private HashMap<Object, Object> previousValues = new HashMap<Object, Object>();
     private final static String PREFIX = "SAVED-EDITS-";
     final static String SCROLL_VALUE_KEY = "SCROLL-Y-VAL";
-    private final static int SCROLL_VALUE_TIMEOUT_MS = 500; //how long after last scroll should the scroll value be saved
+    private final static int SCROLL_VALUE_TIMEOUT_MS = 300; //how long after last scroll should the scroll value be saved
     private String filename;
     private MyForm myForm;
     private int scrollY;
@@ -77,10 +77,14 @@ public class SaveEditedValuesLocally {//extends HashMap {
             if (false && (filename == null || filename.length() == 0)) {
                 filename = "NewItem";
             }
+            String uniquePostFix = "";
 //        ASSERT.that(filename != null && !filename.isEmpty());
-            this.filename = PREFIX + filename;
-            if (Storage.getInstance().exists(this.filename)) {
-                previousValues.putAll((Map) Storage.getInstance().readObject(this.filename));
+            this.filename = PREFIX + filename ;
+//            if (Storage.getInstance().exists(this.filename)) {
+            while (Storage.getInstance().exists(this.filename)) {
+//                previousValues.putAll((Map) Storage.getInstance().readObject(this.filename)); //merge values
+                uniquePostFix += "+1";
+                this.filename = PREFIX + filename + uniquePostFix;
             }
         }
     }
@@ -107,7 +111,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
                 }
                 if (newY != oldY) {
                     scrollY = newY;
-                    saveScrollTimer.schedule(500, false, myForm);
+                    saveScrollTimer.schedule(SCROLL_VALUE_TIMEOUT_MS, false, myForm);
                 }
             };
             scrollableN.addScrollListener(lastScrollListener);

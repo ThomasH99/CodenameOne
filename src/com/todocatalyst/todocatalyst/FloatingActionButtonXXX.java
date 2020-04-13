@@ -7,7 +7,7 @@ package com.todocatalyst.todocatalyst;
 
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
-import com.codename1.ui.layouts.MyBorderLayout;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 
 /**
@@ -27,9 +27,9 @@ public class FloatingActionButtonXXX {
         f.setDialogUIID("Container");
 
         f.getLayeredPane().removeAll();
-        f.showPacked(MyBorderLayout.CENTER, false);
-        f.getLayeredPane().setLayout(new MyBorderLayout());
-        f.getLayeredPane().add(MyBorderLayout.SOUTH, new Container(new MyBorderLayout()).add(MyBorderLayout.EAST, con));
+        f.showPacked(BorderLayout.CENTER, false);
+        f.getLayeredPane().setLayout(new BorderLayout());
+        f.getLayeredPane().add(BorderLayout.SOUTH, new Container(new BorderLayout()).add(BorderLayout.EAST, con));
 
         con.animateLayoutAndWait(10);
 

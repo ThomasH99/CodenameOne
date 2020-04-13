@@ -170,7 +170,7 @@ public class MyAnalyticsService {
             }
 //            Log.p("Analytics VISIT: " + req.getRequestBody());
             Log.p("Analytics VISIT: " + "Page=" + cleanedPageId);// + " Ref=" + cleanReferer);
-            if (!Config.PARSE_OFFLINE)
+//            if (!Config.FULLY_LOCAL_STORAGE)
                 NetworkManager.getInstance().addToQueue(req);
         } else {
             String url = Display.getInstance().getProperty("cloudServerURL", "https://codename-one.appspot.com/") + "anal";
@@ -191,7 +191,7 @@ public class MyAnalyticsService {
             r.addArgument("utmr", referer);
             r.addArgument("d", instance.domain);
             r.setPriority(ConnectionRequest.PRIORITY_LOW);
-            if (!Config.PARSE_OFFLINE)
+//            if (!Config.FULLY_LOCAL_STORAGE)
                 NetworkManager.getInstance().addToQueue(r);
         }
     }
@@ -237,7 +237,7 @@ public class MyAnalyticsService {
 
 //        Log.p("Analytics EVENT: " + req.getRequestBody()); //return null
         Log.p("Analytics EVENT: " + "Cat=" + ecCleaned + " Act=" + eaCleaned + " Lab=" + elCleaned + " Val=" + eventValue);
-        if (!Config.PARSE_OFFLINE)
+//        if (!Config.FULLY_LOCAL_STORAGE)
             NetworkManager.getInstance().addToQueue(req);
     }
 
@@ -289,7 +289,7 @@ public class MyAnalyticsService {
 
 //        Log.p("Analytics CRASH: " + req.getRequestBody());
         Log.p("Analytics CRASH: " + "Throwable=\"" + t + "\", Msg (len=" + messageCleaned.length() + ")=\"" + messageCleaned + "\", Fatal=\"" + (fatal ? "YES\"" : "no\""));
-        if (!Config.PARSE_OFFLINE)
+//        if (!Config.FULLY_LOCAL_STORAGE)
             NetworkManager.getInstance().addToQueue(req);
     }
 

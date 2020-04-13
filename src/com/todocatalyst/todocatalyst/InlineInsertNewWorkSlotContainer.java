@@ -14,7 +14,7 @@ import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
-import com.codename1.ui.layouts.MyBorderLayout;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 import java.util.Date;
@@ -85,7 +85,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         this.insertBeforeRefElement = insertBeforeRefElement;
         continueAddingNewWorkSlots = MyPrefs.workSlotContinueAddingInlineWorkslots.getBoolean();
 
-        Container contForTextEntry = new Container(new MyBorderLayout());
+        Container contForTextEntry = new Container(new BorderLayout());
 
         SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
         add(swipC);
@@ -115,10 +115,10 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         }
         AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
-        contForTextEntry.add(MyBorderLayout.CENTER, textEntryField);
+        contForTextEntry.add(BorderLayout.CENTER, textEntryField);
 
         //close insert container
-        contForTextEntry.add(MyBorderLayout.WEST, westCont);
+        contForTextEntry.add(BorderLayout.WEST, westCont);
 //        if (refWorkSlot != null && refWorkSlot.size() > 0) { //only add close button if in a non-empty list
         if (refWorkSlotN != null) { //only add close button if in a non-empty list, which is the case if there is a refWorkSlot
             westCont.add(new Button(CommandTracked.create(null, Icons.iconCloseCircle, (ev) -> {
@@ -148,7 +148,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
             }
         }, "InlineEditWorkSlot");
         //Enter full screen edit of the new WorkSlot:
-        contForTextEntry.add(MyBorderLayout.EAST, new Button(editNewCmd));
+        contForTextEntry.add(BorderLayout.EAST, new Button(editNewCmd));
     }
 
     public MyTextField2 getTextField() {
@@ -170,11 +170,11 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         WorkSlot newWorkSlot = new WorkSlot(); //true: interpret textual values
         newWorkSlot.setText(text); //will interpret a textual duration like "5m" as 5 minutes
         if (newWorkSlot.getDurationInMillis() == 0) {
-            newWorkSlot.setDurationInMinutes(MyPrefs.workSlotDefaultDurationInMinutes.getInt()); //UI: if no textual definition, use normal default value
+            newWorkSlot.setDurationInMinutes(MyPrefs.workSlotDefaultDurationInMinutes.getInt()*MyDate.MINUTE_IN_MILLISECONDS); //UI: if no textual definition, use normal default value
         }//        if (true || createEvenIfNoTextInField || (text != null && text.length() > 0)) {
         if (refWorkSlotN != null && refWorkSlotN.getStartTimeD() != null) {
             if (insertBeforeRefElement) {
-                newWorkSlot.setStartTime(new Date(refWorkSlotN.getStartTimeD().getTime() - newWorkSlot.getDurationInMillis())); //UI: set pinchInserted workslot to start 'duration' before the startTime of the next workslot
+                newWorkSlot.setStartTime(new MyDate(refWorkSlotN.getStartTimeD().getTime() - newWorkSlot.getDurationInMillis())); //UI: set pinchInserted workslot to start 'duration' before the startTime of the next workslot
             } else {
                 newWorkSlot.setStartTime(refWorkSlotN.getEndTimeD()); //UI: set pinchInserted workslot to start at the end of the previous
             }

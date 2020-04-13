@@ -12,7 +12,6 @@ import com.codename1.l10n.L10NManager;
 import com.codename1.ui.CN;
 import com.codename1.ui.*;
 import com.codename1.ui.events.ActionEvent;
-import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.Component;
 import com.codename1.ui.animations.ComponentAnimation;
@@ -103,6 +102,7 @@ public class ScreenListOfItems extends MyForm {
 //    private ItemList itemListOrg;
     protected ItemAndListCommonInterface itemListOrg; //accessed when inserting inlinecontainer
     private GetItemListFct getItemListFct;
+    private ActionListener searchListener = null;
 //    private ItemList itemListFilteredSorted;
 //    private java.util.List workSlotList;
 //    private WorkTimeDefinition wtd;
@@ -350,7 +350,7 @@ public class ScreenListOfItems extends MyForm {
         }//        super(title, previousForm, null);
         setOptions(options);
         setPinchInsertEnabled(true);
-        getComponentForm().getLayeredPane().setLayout(new MyBorderLayout()); //needed for StickyHeaderMod
+        getComponentForm().getLayeredPane().setLayout(new BorderLayout()); //needed for StickyHeaderMod
 //        MyDragAndDropSwipeableContainer.dragEnabled = false; //always disable before setting up a new screen
 //        this.itemListOrg = itemList;
         getItemListFct = itemListFct;
@@ -370,8 +370,8 @@ public class ScreenListOfItems extends MyForm {
 //        workSlotList = itemListOrg.getWorkSlotListN(); //expensive operation, only do once for the screen, or after editing WorkSlots
 
         setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
-        if (!(getLayout() instanceof MyBorderLayout)) {
-            setLayout(new MyBorderLayout());
+        if (!(getLayout() instanceof BorderLayout)) {
+            setLayout(new BorderLayout());
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        addShowListener((e) -> { //DOESN'T WORK since animate doesn't trigger onShow
@@ -394,12 +394,15 @@ public class ScreenListOfItems extends MyForm {
 //        expandedObjects = new ExpandedObjects("ScreenListOfItems", itemListOrg);
 //</editor-fold>
 
+//        String prevValId = itemListOrg.getObjectIdP() != null ? itemListOrg.getObjectIdP() : ("ForList-" + previousForm.getUniqueFormId());
+//        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-"
+//                + (itemListOrg.getObjectIdP() != null ? itemListOrg.getObjectIdP() : "$NewItem$"), true); //use text for unsaved lists like Log/Diary
         previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-"
                 + (itemListOrg.getObjectIdP() != null ? itemListOrg.getObjectIdP() : "$NewItem$"), true); //use text for unsaved lists like Log/Diary
-        String expandedObjectsFileName = makeUniqueIdForExpandedObjects(itemListOrg, null);
+        String expandedObjectsFileName = makeUniqueIdForExpandedObjects(itemListOrg, "$NoListName");
 //        String expandedObjectsFileName = itemListOrg.isNoSave() ? "" : (getUniqueFormId() + (itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
         if (expandedObjectsFileName != null) {
-            expandedObjects = new ExpandedObjects(getUniqueFormId() + expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
+            expandedObjects = new ExpandedObjects(getUniqueFormId() + "-" + expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         }
         this.stickyHeaderGen = stickyHeaderGen;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -415,81 +418,81 @@ public class ScreenListOfItems extends MyForm {
 //        });
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
-        if (false) {
-            getToolbar().addSearchCommand((e) -> {
-                String text = (String) e.getSource();
-                Container compList = null;
-                compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
-                if (compList != null) {
-//            boolean showAll = text == null || text.length() == 0;
-                    int labelCount = 0;
-                    int nonLabelCount = 0;
-//                int prevLabelPos = 0;
-                    boolean searchOnLowerCaseOnly;
-//                Label lastLabel = null;
-                    Component lastLabel = null;
-                    boolean hide;
-//                for (int i = 0, size = this.itemListFilteredSorted.size(); i < size; i++) {
-                    for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
-                        //TODO!!! compare same case (upper/lower)
-                        //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                        searchOnLowerCaseOnly = text.equals(text.toLowerCase()); //UI: if search string is all lower case, then search on lower case only, otherwise search on
-
-                        Component comp = compList.getComponentAt(i);
-                        if (comp instanceof Label || comp instanceof StickyHeader) {
-                            if (lastLabel != null) {
-//                            if (nonLabelCount == 0) {
-//                                lastLabel.setHidden(true); //hide previous label if nothing is shown after it
-//                            } else {
-//                                lastLabel.setHidden(false); //hide previous label if nothing is shown after it
+//        if (false) {
+//            getToolbar().addSearchCommand((e) -> {
+//                String text = (String) e.getSource();
+//                Container compList = null;
+//                compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
+//                if (compList != null) {
+////            boolean showAll = text == null || text.length() == 0;
+//                    int labelCount = 0;
+//                    int nonLabelCount = 0;
+////                int prevLabelPos = 0;
+//                    boolean searchOnLowerCaseOnly;
+////                Label lastLabel = null;
+//                    Component lastLabel = null;
+//                    boolean hide;
+////                for (int i = 0, size = this.itemListFilteredSorted.size(); i < size; i++) {
+//                    for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
+//                        //TODO!!! compare same case (upper/lower)
+//                        //https://www.codenameone.com/blog/toolbar-search-mode.html:
+//                        searchOnLowerCaseOnly = text.equals(text.toLowerCase()); //UI: if search string is all lower case, then search on lower case only, otherwise search on
+//
+//                        Component comp = compList.getComponentAt(i);
+//                        if (comp instanceof Label || comp instanceof StickyHeader) {
+//                            if (lastLabel != null) {
+////                            if (nonLabelCount == 0) {
+////                                lastLabel.setHidden(true); //hide previous label if nothing is shown after it
+////                            } else {
+////                                lastLabel.setHidden(false); //hide previous label if nothing is shown after it
+////                            }
+//                                lastLabel.setHidden(nonLabelCount == 0); //hide previous label if nothing is shown after it
 //                            }
-                                lastLabel.setHidden(nonLabelCount == 0); //hide previous label if nothing is shown after it
-                            }
-//                        lastLabel.setHidden(nonLabelCount == 0 && lastLabel != null); //hide previous label if nothing is shown after it
-                            nonLabelCount = 0; //reset count on every Label
-                            labelCount++; //hack: StickyHeaders are Labels, so count them and add to count
-//                        prevLabelPos=i;
-//                        lastLabel = (Label) comp;
-                            lastLabel = comp;
-                        } else {
-//                        nonLabelCount++;
-                            if (searchOnLowerCaseOnly) {
-//                            compList.getComponentAt(i).setHidden(((String) list.get(i)).toLowerCase().indexOf(txt) < 0);
-//                            comp.setHidden(((Item) itemListFilteredSorted.get(i - labelCount)).getText().toLowerCase().indexOf(text) < 0);
-//                            hide = ((Item) itemListFilteredSorted.get(i - labelCount)).getText().toLowerCase().indexOf(text) < 0;
-                                hide = ((Item) itemListOrg.get(i - labelCount)).getText().toLowerCase().indexOf(text) < 0;
-                            } else {
-//                            compList.getComponentAt(i).setHidden(((String) list.get(i)).indexOf(txt) < 0);
-//                            comp.setHidden(((Item) itemListFilteredSorted.get(i - labelCount)).getText().indexOf(text) < 0);
-//                            hide = ((Item) itemListFilteredSorted.get(i - labelCount)).getText().indexOf(text) < 0;
-                                hide = ((Item) itemListOrg.get(i - labelCount)).getText().indexOf(text) < 0;
-                            }
-                            comp.setHidden(hide);
-                            if (!hide) {
-                                nonLabelCount++;
-                            }
-                        }
-                    }
-                    if (nonLabelCount == 0 && lastLabel != null) {
-                        lastLabel.setHidden(true); //hide previous label if nothing is shown after it
-                    }
-                } else {
-//                compList = getContentPane();
-                    for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
-                        //TODO!!! compare same case (upper/lower)
-                        //https://www.codenameone.com/blog/toolbar-search-mode.html:
-//                compList.getComponentAt(i).setHidden(((Item) itemListFilteredSorted.get(i)).getText().toLowerCase().indexOf(text) < 0);
-                        Component comp = compList.getComponentAt(i);
-//                    Object sourceObj = comp.getClientProperty(SOURCE_OBJECT);
-                        Object sourceObj = comp.getClientProperty(KEY_OBJECT);
-                        comp.setHidden(sourceObj != null && sourceObj instanceof Item && ((Item) sourceObj).getText().toLowerCase().indexOf(text) < 0);
-                    }
-                }
-                if (compList != null) {
-                    compList.animateLayout(ANIMATION_TIME_FAST);
-                }
-            });
-        }
+////                        lastLabel.setHidden(nonLabelCount == 0 && lastLabel != null); //hide previous label if nothing is shown after it
+//                            nonLabelCount = 0; //reset count on every Label
+//                            labelCount++; //hack: StickyHeaders are Labels, so count them and add to count
+////                        prevLabelPos=i;
+////                        lastLabel = (Label) comp;
+//                            lastLabel = comp;
+//                        } else {
+////                        nonLabelCount++;
+//                            if (searchOnLowerCaseOnly) {
+////                            compList.getComponentAt(i).setHidden(((String) list.get(i)).toLowerCase().indexOf(txt) < 0);
+////                            comp.setHidden(((Item) itemListFilteredSorted.get(i - labelCount)).getText().toLowerCase().indexOf(text) < 0);
+////                            hide = ((Item) itemListFilteredSorted.get(i - labelCount)).getText().toLowerCase().indexOf(text) < 0;
+//                                hide = ((Item) itemListOrg.get(i - labelCount)).getText().toLowerCase().indexOf(text) < 0;
+//                            } else {
+////                            compList.getComponentAt(i).setHidden(((String) list.get(i)).indexOf(txt) < 0);
+////                            comp.setHidden(((Item) itemListFilteredSorted.get(i - labelCount)).getText().indexOf(text) < 0);
+////                            hide = ((Item) itemListFilteredSorted.get(i - labelCount)).getText().indexOf(text) < 0;
+//                                hide = ((Item) itemListOrg.get(i - labelCount)).getText().indexOf(text) < 0;
+//                            }
+//                            comp.setHidden(hide);
+//                            if (!hide) {
+//                                nonLabelCount++;
+//                            }
+//                        }
+//                    }
+//                    if (nonLabelCount == 0 && lastLabel != null) {
+//                        lastLabel.setHidden(true); //hide previous label if nothing is shown after it
+//                    }
+//                } else {
+////                compList = getContentPane();
+//                    for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
+//                        //TODO!!! compare same case (upper/lower)
+//                        //https://www.codenameone.com/blog/toolbar-search-mode.html:
+////                compList.getComponentAt(i).setHidden(((Item) itemListFilteredSorted.get(i)).getText().toLowerCase().indexOf(text) < 0);
+//                        Component comp = compList.getComponentAt(i);
+////                    Object sourceObj = comp.getClientProperty(SOURCE_OBJECT);
+//                        Object sourceObj = comp.getClientProperty(KEY_OBJECT);
+//                        comp.setHidden(sourceObj != null && sourceObj instanceof Item && ((Item) sourceObj).getText().toLowerCase().indexOf(text) < 0);
+//                    }
+//                }
+//                if (compList != null) {
+//                    compList.animateLayout(ANIMATION_TIME_FAST);
+//                }
+//            });
+//        }
 //        getToolbar().addSearchCommand(makeSearchFunctionUpperLowerStickyHeaders(itemListOrg));
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -504,7 +507,8 @@ public class ScreenListOfItems extends MyForm {
 //        getContentPane().add(CENTER, dragAndDropContainer);
 //        setupList();
 //</editor-fold>
-        getToolbar().addSearchCommand(makeSearchFunctionUpperLowerStickyHeaders(itemListOrg));
+        searchListener = makeSearchFunctionUpperLowerStickyHeaders(itemListOrg);
+        getToolbar().addSearchCommand(searchListener, MyPrefs.defaultIconSizeInMM.getFloat());
         addCommandsToToolbar(getToolbar());
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                removeShowListener(startAsyncListener);
@@ -597,6 +601,10 @@ public class ScreenListOfItems extends MyForm {
         }
 
         setTitleAnimation(contentContainer); //MUST do this here since we create a new container on each refresh
+
+        if (searchListener != null && getToolbar().getTitleComponent() instanceof TextField) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
+            searchListener.actionPerformed(null); //refresh search, eg when returning to screen
+        }
 
         if (false) { //TODO!!! re-activate (currently clashes with drag&drop: when trying to drag an element at the top of the list, it also activates pullToRefresh) -> consume the dragged event?!
             contentContainer.addPullToRefresh(() -> {
@@ -706,12 +714,21 @@ public class ScreenListOfItems extends MyForm {
             fab.bindFabToContainer(getContentPane());
         }
         super.addCommandsToToolbar(toolbar);
+
+        //BACK
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(),Toolbar.BackCommandPolicy.AS_ARROW,MyPrefs.defaultIconSizeInMM.getFloat());
+        addStandardBackCommand();
+
+//NEW TASK to Inbox
+        toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
+
         //NEW ITEM
 //        Command newCmd = new Command("OldCmd", Icons.iconNewToolbarStyle) {
         if (!optionNoNewButton) {
 //            if (itemListOrg.isNoSave()) {
 //            toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox());
 
+//            toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList(Inbox.getInstance(), "CreateNewItemInInbox", "Add task to Inbox", Icons.iconNewTaskToInbox));
             if (itemListOrg instanceof Category && !itemListOrg.isNoSave() && !optionTemplateEditMode) {
                 toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrg, "Add task", Icons.iconNew));
             } else if ((itemListOrg instanceof ItemList && !itemListOrg.isNoSave() && !optionTemplateEditMode)) {
@@ -720,7 +737,6 @@ public class ScreenListOfItems extends MyForm {
                 toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((Item) itemListOrg, "Add task", Icons.iconNew));
             }
 //            toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
-            toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList(Inbox.getInstance(), "CreateNewItemInInbox", "Add task to Inbox", Icons.iconNewTaskToInbox));
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            } else {
@@ -834,32 +850,36 @@ public class ScreenListOfItems extends MyForm {
         }
 
         if (optionTemplateEditMode) {
-            Command newCmd = MyReplayCommand.createKeep("CreateNewTemplate", "Add template", Icons.iconNew, (e) -> {
-                Item newTemplate = new Item();
-                newTemplate.setTemplate(true); //always template here
-                newTemplate.setOwner(itemListOrg);
+
+            if (true) {
+                //Create a new template manually in screen with list of Template
+                Command newCmd = MyReplayCommand.createKeep("CreateNewTemplate", "Add template", Icons.iconNew, (e) -> {
+                    Item newTemplate = new Item(false);
+                    newTemplate.setTemplate(true); //always template here
+                    newTemplate.setOwner(itemListOrg);
 //                    addNewTaskToListAndSave(template, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
-                setKeepPos(new KeepInSameScreenPosition());
-                new ScreenItem2(newTemplate, ScreenListOfItems.this, () -> {
+                    setKeepPos(new KeepInSameScreenPosition());
+                    new ScreenItem2(newTemplate, ScreenListOfItems.this, () -> {
 //                        if (template.hasSaveableData() || Dialog.show("INFO", "No key data in this task, save anyway?", "Save", "Don't save")) {
-                    //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
+                        //TODO!!!! this test is not in the right place - it should be tested inside ScreenItem before exiting
 //                        addNewTaskToListAndSave(template, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
 //                        addNewTaskToListAndSave(newTemplate, null, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
-                    itemListOrg.addToList(newTemplate, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+                        itemListOrg.addToList(newTemplate, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
 //                    DAO.getInstance().saveNew(true, (ParseObject) newTemplate, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                    DAO.getInstance().saveNew((ParseObject) newTemplate, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                    DAO.getInstance().saveNewExecuteUpdate();
+                        DAO.getInstance().saveNew((ParseObject) newTemplate, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                        DAO.getInstance().saveNewExecuteUpdate();
 //                            DAO.getInstance().saveInBackground(template); //must save item since adding it to itemListOrg changes its owner
-                    refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
+                        refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
 //                        } 
 //                        else {
 //                            itemListOrg.removeFromList(template); //if no saveable data, undo the 
 //                            //TODO!!!! how to remove from eg Categories if finally the task is not saved??
 //                        }
-                }, optionTemplateEditMode, null).show();
+                    }, optionTemplateEditMode, null).show();
+                }
+                );
+                toolbar.addCommandToOverflowMenu(newCmd);
             }
-            );
-            toolbar.addCommandToOverflowMenu(newCmd);
         }
 
         if (false) {
@@ -897,8 +917,42 @@ public class ScreenListOfItems extends MyForm {
         //TODO!!! create template by longpress on (+)
         if (!optionTemplateEditMode) {
 //            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "Add from template", Icons.iconAddFromTemplate, (e) -> {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "Add template", Icons.iconAddFromTemplate, (e) -> {
-                //select appropriate template
+
+            if (true) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
+                //INSERT TEMPLATE(S!) UNDER A PROJECT OR IN A LIST
+                toolbar.addCommandToOverflowMenu(CommandTracked.create("Insert templates", Icons.iconAddFromTemplate, (e) -> {
+                    //TODO!! Add "don't show again + setting to all these info popups
+                    if (!MyPrefs.askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem.getBoolean()
+                            || Dialog.show("INFO", "Inserting a template into a task will add the values and subtasks from the template to the task. It will not overwrite any fields already defined manually in the task", "OK", "Cancel")) {
+                        //TODO enable user to select which fields to exclude
+                        parseIdMap2.update(); //save any already edited values before inserting the template to avoid overwriting values only entered into the screen but not stored in the Item itself (yet)
+//                        List<Item> selectedTemplates = new ArrayList();
+                        List selectedTemplates = new ArrayList();
+                        List newTemplateCopies = new ArrayList();
+                        int maxTemplatesToSelect = MyPrefs.maxNbTemplatesAllowedToChoseForInsertion.getInt(); //TODO make this a setting (>1 a paid option?)
+                        new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), null, selectedTemplates, ScreenListOfItems.this, () -> {
+                            for (Object templ : selectedTemplates) {
+                                Item newTemplateCopy = ((Item) templ).cloneMe(); //also sets source
+                                ((ItemAndListCommonInterface) itemListOrg).addToList(newTemplateCopy); //also sets source
+                                newTemplateCopies.add(newTemplateCopy);
+                            }
+                            DAO.getInstance().saveNew(newTemplateCopies, false);
+                            DAO.getInstance().saveNew((ParseObject) itemListOrg);
+                            DAO.getInstance().saveNewExecuteUpdate();
+                        }, (obj) -> {
+                            if (obj instanceof Item) {
+                                return ((Item) obj).getText(); //label to show for each pickable element, only Items allowed as templates
+                            } else {
+                                return obj.toString();
+                            }
+                        }, 0, maxTemplatesToSelect, true, false, false).show(); //0: Ok to not select any template => nothing inserted
+                    };
+                }, "CreateFromTemplate"));
+            }
+
+            if (false) {
+                toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "Add template", Icons.iconAddFromTemplate, (e) -> {
+                    //select appropriate template
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                List<Item> templateList = DAO.getInstance().getAllTemplates();
 //                Picker templatePicker = new Picker();
@@ -923,16 +977,17 @@ public class ScreenListOfItems extends MyForm {
 //                }
 //</editor-fold>
 //                Item selectedTemplate = pickTemplateOLD();
-                Item selectedTemplate = null; //pickTemplate();
-                if (selectedTemplate != null) { //null if user cancelled
-                    Item newTemplateInstantiation = new Item();
-                    if (itemListOrg instanceof ParseObject) { //itemListOrg can be a temporary list like Today
-                        newTemplateInstantiation.setOwner(itemListOrg); //necessary to have an owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
-                    }
+                    Item selectedTemplate = null; //pickTemplate();
+                    if (selectedTemplate != null) { //null if user cancelled
+                        Item newTemplateInstantiation = new Item(false);
+                        if (itemListOrg instanceof ParseObject) { //itemListOrg can be a temporary list like Today
+                            newTemplateInstantiation.setOwner(itemListOrg); //necessary to have an owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
+                        }
 //                        setKeepPos(new KeepInSameScreenPosition()); //NO, move to position of new item
-                    selectedTemplate.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
-                    newTemplateInstantiation.updateValuesInheritedFromOwner(itemListOrg);
-                    new ScreenItem2(newTemplateInstantiation, ScreenListOfItems.this, () -> {
+                        selectedTemplate.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK);
+                        newTemplateInstantiation.updateValuesInheritedFromOwner(itemListOrg);
+                        new ScreenItem2(newTemplateInstantiation, ScreenListOfItems.this, () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                        DAO.getInstance().save(newTemplateInstance); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            newTemplateInstance.setOwner(itemListOrg); //works for any type of owner
 //                            DAO.getInstance().save(newTemplateInstance); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
@@ -948,17 +1003,19 @@ public class ScreenListOfItems extends MyForm {
 //                                assert false : "should not happen: itemListOrg == null || itemListOrg.getObjectId()==null";
 //                            }
 //                        }
-                        newTemplateInstantiation.setTemplate(false);
+//</editor-fold>
+                            newTemplateInstantiation.setTemplate(false);
 //                        addNewTaskToListAndSave(newTemplateInstantiation, MyPrefs.insertNewItemsInStartOfLists.getBoolean() ? 0 : itemListOrg.getSize(), itemListOrg);
-                        itemListOrg.addToList(newTemplateInstantiation, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-                        DAO.getInstance().saveNew((ParseObject) newTemplateInstantiation, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                        DAO.getInstance().saveNewExecuteUpdate();
-                        setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation)); //scroll to position of new item, whereever it is inserted
-                        refreshAfterEdit();
-                    }, false, null).show();
+                            itemListOrg.addToList(newTemplateInstantiation, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+                            DAO.getInstance().saveNew((ParseObject) newTemplateInstantiation, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                            DAO.getInstance().saveNewExecuteUpdate();
+                            setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation)); //scroll to position of new item, whereever it is inserted
+                            refreshAfterEdit();
+                        }, false, null).show();
+                    }
                 }
+                ));
             }
-            ));
         }
 
         //EDIT PROPERTIES OF LIST
@@ -970,7 +1027,7 @@ public class ScreenListOfItems extends MyForm {
                 if (itemListOrg instanceof Category) {
                     new ScreenCategoryProperties((Category) itemListOrg, ScreenListOfItems.this, () -> {
 //                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg);
-                        DAO.getInstance().saveNew( (ParseObject) itemListOrg);
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg);
                         DAO.getInstance().saveNewExecuteUpdate();
                         setTitle(itemListOrg.getText()); //refrehs title of screen after edit of list name
 //                    previousForm.revalidate(); //refresh list to show new items(??)
@@ -978,7 +1035,7 @@ public class ScreenListOfItems extends MyForm {
                 } else {
                     new ScreenItemListProperties((ItemList) itemListOrg, ScreenListOfItems.this, () -> {
 //                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg);
-                        DAO.getInstance().saveNew( (ParseObject) itemListOrg);
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg);
                         DAO.getInstance().saveNewExecuteUpdate();
                         setTitle(itemListOrg.getText()); //refrehs title of screen after edit of list name
 //                    previousForm.revalidate(); //refresh list to show new items(??)
@@ -1026,7 +1083,7 @@ public class ScreenListOfItems extends MyForm {
         );
 
         //FILTER / SORT
-        if (!optionTemplateEditMode && !optionUnmodifiableFilter && itemListOrg.getFilterSortDef() != null) { //UI: !=null: must define filter before sorting can be turned on/off
+        if (!optionTemplateEditMode && !optionUnmodifiableFilter) {// && itemListOrg.getFilterSortDefN() != null) { //UI: !=null: must define filter before sorting can be turned on/off
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", "Edit filter", Icons.iconFilterSettings, (e) -> {
 //                FilterSortDef filterSortDef = itemListOrg.getFilterSortDef() == null ? new FilterSortDef() : itemListOrg.getFilterSortDef();
@@ -1041,7 +1098,54 @@ public class ScreenListOfItems extends MyForm {
 //            }
 //            ));
 //</editor-fold>
-            toolbar.addCommandToOverflowMenu(makeEditFilterSortCommand(itemListOrg));
+
+//            Command hideShowDone = new CommandTracked("", Icons.iconShowDoneTasks, "HideShowDoneTasks") {
+            Command hideShowDone = new CommandTracked("Show zzz",
+                    itemListOrg.getFilterSortDef(true).isShowDoneTasks()
+                    ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks,
+                    "HideShowDoneTasks") {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    FilterSortDef filterSortDef = itemListOrg.getFilterSortDef(true);
+
+                    filterSortDef.setShowDoneTasks(!filterSortDef.isShowDoneTasks());
+//                    Button b = (Button) e.getComponent();
+//                    b.setMaterialIcon((itemListOrg.getFilterSortDef(true).isShowDoneTasks() ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks));
+//                    b.updateCommand();
+                    DAO.getInstance().saveNew(filterSortDef);
+                    DAO.getInstance().saveNew((ParseObject) itemListOrg);
+                    DAO.getInstance().saveNewExecuteUpdate();
+                    refreshAfterEdit();
+                    super.actionPerformed(e);
+                }
+
+                @Override
+                public String getCommandName() {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    if (!itemListOrg.getFilterSortDef(true).isShowDoneTasks()) {
+//                        return Format.f("Hide {0}", ItemStatus.DONE.getName());
+//                    } else {
+//                        return Format.f("Show {0}", ItemStatus.DONE.getName());
+//                    }
+//</editor-fold>
+                    return Format.f(itemListOrg.getFilterSortDef(true).isShowDoneTasks() ? "Hide {0 completed}" : "Show {0 completed}", ItemStatus.DONE.getName());
+                }
+
+            };
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            Button hideShowDoneButton = new Button(hideShowDone);
+//            toolbar.addCommandToRightBar(hideShowDone);
+//            toolbar.addMaterialCommandToRightBar("",itemListOrg.getFilterSortDef().isShowDoneTasks() ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks,(e)-> {
+//                    FilterSortDef filterSortDef = itemListOrg.getFilterSortDef();
+//                    filterSortDef.setShowDoneTasks(!filterSortDef.isShowDoneTasks());
+//                    setMaterialIcon((itemListOrg.getFilterSortDef().isShowDoneTasks() ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks));
+////                    updateCommand();
+//                    DAO.getInstance().saveNew(filterSortDef, true);
+//                    refreshAfterEdit();
+//                    super.actionPerformed(e);
+//                });
+//</editor-fold>
+            toolbar.addCommandToOverflowMenu(hideShowDone);
 
 //            toolbar.addCommandToOverflowMenu(sortOnOff = new Command("Sort ON/OFF", Icons.iconCmdSortOnOff) { //this title never shown
             Command sortOnOff = new CommandTracked("Sort XXX", Icons.iconFilter, "SortOnOff") {
@@ -1059,10 +1163,12 @@ public class ScreenListOfItems extends MyForm {
 //                        }
 //                    }
 //</editor-fold>
-                    FilterSortDef filterSortDef = itemListOrg.getFilterSortDef();
+                    FilterSortDef filterSortDef = itemListOrg.getFilterSortDef(true);
                     filterSortDef.setSortOn(!filterSortDef.isSortOn());
+                    itemListOrg.setFilterSortDef(filterSortDef);
 //                    DAO.getInstance().saveNew(filterSortDef, true);
                     DAO.getInstance().saveNew(filterSortDef);
+                    DAO.getInstance().saveNew((ParseObject) itemListOrg);
                     DAO.getInstance().saveNewExecuteUpdate();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    sortOnOff.setCommandName("Sort " + ((itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "ON" : "OFF"));
@@ -1080,36 +1186,13 @@ public class ScreenListOfItems extends MyForm {
                 public String getCommandName() {
 //                    return "Sort " + ((filterSortDef == null || !filterSortDef.isSortOn()) ? "ON" : "OFF");
 //                    return "Sort " + ((itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "ON" : "OFF");
-                    return (itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "Show sorted" : "Show unsorted"; //"Show manual sort"
+                    return (itemListOrg.getFilterSortDefN() == null || !itemListOrg.getFilterSortDefN().isSortOn()) ? "Show sorted" : "Show unsorted"; //"Show manual sort"
                 }
             };
             toolbar.addCommandToOverflowMenu(sortOnOff);
 
-            Command hideShowDone = new CommandTracked("", Icons.iconShowDoneTasks, "HideShowDoneTasks") {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    FilterSortDef filterSortDef = itemListOrg.getFilterSortDef();
-                    filterSortDef.setShowDoneTasks(!filterSortDef.isShowDoneTasks());
-                    Button b = (Button) e.getComponent();
-                    b.setMaterialIcon((itemListOrg.getFilterSortDef().isShowDoneTasks() ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks));
-//                    b.updateCommand();
-                    DAO.getInstance().saveNew(filterSortDef);
-                    DAO.getInstance().saveNewExecuteUpdate();
-                    refreshAfterEdit();
-                    super.actionPerformed(e);
-                }
-            };
-//            Button hideShowDoneButton = new Button(hideShowDone);
-            toolbar.addCommandToRightBar(hideShowDone);
-//            toolbar.addMaterialCommandToRightBar("",itemListOrg.getFilterSortDef().isShowDoneTasks() ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks,(e)-> {
-//                    FilterSortDef filterSortDef = itemListOrg.getFilterSortDef();
-//                    filterSortDef.setShowDoneTasks(!filterSortDef.isShowDoneTasks());
-//                    setMaterialIcon((itemListOrg.getFilterSortDef().isShowDoneTasks() ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks));
-////                    updateCommand();
-//                    DAO.getInstance().saveNew(filterSortDef, true);
-//                    refreshAfterEdit();
-//                    super.actionPerformed(e);
-//                });
+            toolbar.addCommandToOverflowMenu(makeEditFilterSortCommand(itemListOrg));
+
         }
 
         //SELECTION MODE
@@ -1177,7 +1260,7 @@ public class ScreenListOfItems extends MyForm {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
-                        Item itemWithNewValues = new Item();
+                        Item itemWithNewValues = new Item(false);
                         setKeepPos(new KeepInSameScreenPosition());
                         new ScreenItem2(itemWithNewValues, ScreenListOfItems.this, () -> {
 //                        MultipleSelection.performOnAll(itemListFilteredSorted, MultipleSelection.setAnything(itemWithNewValues));
@@ -1216,7 +1299,7 @@ public class ScreenListOfItems extends MyForm {
 //                    selectedObjects.clear(); //DO NOT unselect objects to allow for additional operations on selection
 //                    setupList(); //TODO optimize the application of a filter?
 //                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg); //save after having moved items around
-                        DAO.getInstance().saveNew( (ParseObject) itemListOrg); //save after having moved items around
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
                         DAO.getInstance().saveNewExecuteUpdate();
                         refreshAfterEdit(); //TODO optimize the application of a filter?
                     } else {
@@ -1328,7 +1411,7 @@ public class ScreenListOfItems extends MyForm {
                     public void actionPerformed(ActionEvent evt) {
                         DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, true, true);
 //                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg);
-                        DAO.getInstance().saveNew( (ParseObject) itemListOrg);
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg);
                         DAO.getInstance().saveNewExecuteUpdate();
                         refreshAfterEdit();
                     }
@@ -1337,8 +1420,6 @@ public class ScreenListOfItems extends MyForm {
             }
 
         }
-        //BACK
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
 
         if (!optionTemplateEditMode) {
             toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemsSettings", "Settings", Icons.iconSettings, (e) -> {
@@ -1632,7 +1713,7 @@ public class ScreenListOfItems extends MyForm {
 //        return filterSortDef != null && filterSortDef.isSortOn();
 //        return itemListFilteredSorted != itemListOrg; //NO - since list may be filtered and it's still possible to drag & drop
 //        return filterSortDef != null && filterSortDef.isSortOn(); //
-        return itemListOrg.getFilterSortDef() != null && itemListOrg.getFilterSortDef().isSortOn(); //
+        return itemListOrg.getFilterSortDefN() != null && itemListOrg.getFilterSortDefN().isSortOn(); //
     }
 
     @Override
@@ -1834,7 +1915,7 @@ public class ScreenListOfItems extends MyForm {
         boolean showInDetails = true;
         boolean isDone = item.isDone();
 //    public static Container buildItemContainer(Item item, List itemList, MyForm.GetBoolean isDragEnabled, MyForm.Action refreshOnItemEdits, boolean selectionModeAllowed, HashSet<Item> selectedObjects) {
-        Container mainCont = new Container(new MyBorderLayout());
+        Container mainCont = new Container(new BorderLayout());
         mainCont.setUIID("ItemContainer");
 
 //        Container swipeActionContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -1922,7 +2003,7 @@ public class ScreenListOfItems extends MyForm {
 
         Container west = new Container(BoxLayout.x(), "ListOfItemsStatusCont");
         if (oldFormat) {
-            mainCont.addComponent(MyBorderLayout.WEST, west);
+            mainCont.addComponent(BorderLayout.WEST, west);
         }
 
         Container southDetailsContainer = new Container(new FlowLayout());
@@ -1935,7 +2016,7 @@ public class ScreenListOfItems extends MyForm {
 //        south.setHidden(!showDetailsForAllTasks || (tasksWithDetailsShown!=null && !tasksWithDetailsShown.contains(item))); //hide details by default
         southDetailsContainer.setHidden(!showDetails); //hide details by default
         if (oldFormat) {
-            mainCont.addComponent(MyBorderLayout.SOUTH, southDetailsContainer);
+            mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);
         }
 
 //        expandSubTasksButton;// = null;//= new Button(); //null;
@@ -2018,7 +2099,11 @@ public class ScreenListOfItems extends MyForm {
 //                subTasksButton.setCommand(expandSubTasks);
             expandSubTasksButton.setText(numberUndoneSubtasks + "/" + totalNumberSubtasks);
 //            topContainer.putClientProperty("subTasksButton", subTasksButton);
-            swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandSubTasksButton);
+            if (numberUndoneSubtasks > 0) { //only activate/unfiltered expansion if active subtasks to show
+                swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandSubTasksButton);
+            } else if (expandedObjects != null && expandedObjects.contains(item)) { //if nothing to expand, but already expanded
+                expandedObjects.remove(item);
+            }
 //            east.addComponent(subTasksButton);
             if (oldFormat) {
 //                    east.addComponent(subTasksButton);
@@ -2062,7 +2147,7 @@ public class ScreenListOfItems extends MyForm {
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && TimerStack.getInstance().getCurrentlyTimedItemN() == item ? " [Timed]" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isTemplate() ? "%" : "")
-                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getSource() != null && item.getSource().isTemplate() ? "/C" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getSource() != null && item.getSource().isTemplate() ? "/T" : "")
                 //if showing Item
                 //                + (item.getOwner() != null && !(item.getOwner().equals(orgList)) ? " /[" + item.getOwner().getText() + "]" : ""
                 + (Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean() && item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
@@ -2232,7 +2317,7 @@ public class ScreenListOfItems extends MyForm {
 //                            refreshOnItemEdits.launchAction();
 //                        }
 //                DAO.getInstance().saveNew(true, item);
-                DAO.getInstance().saveNew( item);
+                DAO.getInstance().saveNew(item);
                 DAO.getInstance().saveNewExecuteUpdate();
                 myForm.refreshAfterEdit(); //refresh after save as it may update sub/supertasks etc
                 //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
@@ -2294,6 +2379,7 @@ public class ScreenListOfItems extends MyForm {
         Label dueDateLabel = null; //new Label(); //null;
         Label completedDateLabel = null;//new Label(); //null;
         Label remainingEffortLabel = null; //new Label(); //null;
+        Label projectsOwnRemainingLabel = null; //new Label(); //null;
         Button showSubtasksXXX = new Button(); //null;
 //        Label remainingEffortLabel = null;
 
@@ -2318,7 +2404,7 @@ public class ScreenListOfItems extends MyForm {
                 }
             }
         } else { //if task not done, show Actual in details
-            if (showInDetails) {
+            if (actualEffort != 0 && showInDetails) {
                 actualEffortLabel = new Label(MyDate.formatDurationShort(actualEffort, true).toString());
                 actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
                 actualEffortLabel.setUIID("ListOfItemsActualEffort");
@@ -2357,10 +2443,11 @@ public class ScreenListOfItems extends MyForm {
                 if (oldFormat) {
                     east.add(finishTimeLabel);
                 }
-            } else if (due != 0) {
+            }
+            if (due != 0) {
 //                    dueDateLabel = new Label("D:" + MyDate.formatDateSmart(new Date(due)),Icons.iconSetDueDateToToday(),
 //                dueDateLabel = new Label(MyDate.formatDateSmart(new Date(due)), Icons.iconSetDueDateToToday(),
-                dueDateLabel = new Label(MyDate.formatDateSmart(new Date(due)), due < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
+                dueDateLabel = new Label(MyDate.formatDateSmart(new MyDate(due)), due < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
                 dueDateLabel.setMaterialIcon(Icons.iconSetDueDateToTodayFontImageMaterial);
                 if (item.isDueDateInherited()) {
                     dueDateLabel.setUIID("ListOfItemsDueDateInherited");
@@ -2388,7 +2475,7 @@ public class ScreenListOfItems extends MyForm {
         } else {
             long due = item.getDueDate();
             if (due != 0) {
-                dueDateLabel = new Label(MyDate.formatDateSmart(new Date(due)), due < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
+                dueDateLabel = new Label(MyDate.formatDateSmart(new MyDate(due)), due < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
                 dueDateLabel.setMaterialIcon(Icons.iconSetDueDateToTodayFontImageMaterial);
                 if (item.isDueDateInherited()) {
                     dueDateLabel.setUIID("ListOfItemsDueDateInherited");
@@ -2426,7 +2513,7 @@ public class ScreenListOfItems extends MyForm {
         };
 
 //        final Image editItemIcon = FontImage.createMaterial(FontImage.MATERIAL_CHEVRON_RIGHT, UIManager.getInstance().getComponentStyle("ListOfItemsEditItemIcon"));
-        Command editItemCmd = MyReplayCommand.create("EditItem-" + item.getObjectIdP(), "", Icons.iconEdit, (e) -> {
+        MyReplayCommand editItemCmd = MyReplayCommand.create("EditItem-" + item.getObjectIdP(), "", Icons.iconEdit, (e) -> {
             //TODO!!!! if same item appears in category, both as top-level item (added directly to category) AND as expanded subtask, two identical commands get created
 //                Item item = (Item) mainCont.getClientProperty("item"); //TODO!!!! is this needed, why notjust access 'item'??
 //                ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
@@ -2453,7 +2540,7 @@ public class ScreenListOfItems extends MyForm {
                     myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
                 }
 //                DAO.getInstance().saveNew(true, item);
-                DAO.getInstance().saveNew( item);
+                DAO.getInstance().saveNew(item);
                 DAO.getInstance().saveNewExecuteUpdate();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //NB. replacing swipCont will work even if swipCont is not updated since each container that replaces creates its own new
@@ -2470,21 +2557,21 @@ public class ScreenListOfItems extends MyForm {
             }, false, null).show();
 //                new ScreenItem(item, thisScreen).show();
         });
+        editItemCmd.setAnalyticsActionId("EditItemFromListOfItems");
         Button editItemButton = new Button(editItemCmd);
         editItemButton.setUIID("ListOfItemsEditItemIcon");
-
+        editItemButton.setName("EditTask");
 //        mainCont.putClientProperty("item", item);
 //        swipCont.putClientProperty(DISPLAYED_ELEMENT, item);
 //        editItemButton.setUIID("IconEdit");
-        editItemButton.setUIID("ListOfItemsEditItemIcon");
-        editItemButton.setName("EditTask");
+//        editItemButton.setUIID("ListOfItemsEditItemIcon");
 //        editItemButton.setGrabsPointerEvents(true);
         if (oldFormat) {
             east.addComponent(editItemButton);
         }
 
         if (oldFormat) {
-            mainCont.addComponent(MyBorderLayout.EAST, east);
+            mainCont.addComponent(BorderLayout.EAST, east);
         }
 
         //SOUTH
@@ -2522,7 +2609,7 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
         if (false && !isDone && finishTime != MyDate.MAX_DATE) { //TODO optimization: get index as a parameter instead of calculating each time, or index w hashtable on item itself
 //            south.add("F:" + L10NManager.getInstance().formatDateTimeShort(item.getFinishTime()));
-            southDetailsContainer.add("F:" + MyDate.formatDateTimeNew(new Date(finishTime)));
+            southDetailsContainer.add("F:" + MyDate.formatDateTimeNew(new MyDate(finishTime)));
         }
         //PRIORITY
         Label priorityLabel = null;
@@ -2684,10 +2771,10 @@ public class ScreenListOfItems extends MyForm {
 
         //EXPIRE BY
         Label expireByLabel = new Label();
-        if (item.getExpiresOnDateD().getTime() != 0 && MyPrefs.itemListExpiresByDate.getBoolean()) {
+        if (item.getExpiresOnDate().getTime() != 0 && MyPrefs.itemListExpiresByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            expireByLabel = new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD()), "ItemDetailsLabel");
-            expireByLabel = new Label(MyDate.formatDateSmart(item.getExpiresOnDateD()), "ItemDetailsLabel");
+            expireByLabel = new Label(MyDate.formatDateSmart(item.getExpiresOnDate()), "ItemDetailsLabel");
             expireByLabel.setMaterialIcon(Icons.iconExpireByDate);
             if (Config.TEST) {
                 expireByLabel.setName("ExpireBy");
@@ -2699,12 +2786,12 @@ public class ScreenListOfItems extends MyForm {
 
         //WAITING
         Label waitingTillLabel = null;//new Label();
-        if (item.getWaitingTillDateD().getTime() != 0 && MyPrefs.itemListWaitingTillDate.getBoolean()) {
+        if (item.getWaitingTillDate().getTime() != 0 && MyPrefs.itemListWaitingTillDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            waitingTillLabel = new Label("W:" + MyDate.formatDateNew(item.getWaitingTillDateD()), "ItemDetailsLabel");
 //            waitingTillLabel = new Label(MyDate.formatDateNew(item.getWaitingTillDateD()), Icons.iconWaitingDate, "ItemDetailsLabel");
 //            waitingTillLabel = new Label(MyDate.formatDateNew(item.getWaitingTillDateD()), "ItemDetailsLabel");
-            waitingTillLabel = new Label(MyDate.formatDateSmart(item.getWaitingTillDateD()), "ItemDetailsLabel");
+            waitingTillLabel = new Label(MyDate.formatDateSmart(item.getWaitingTillDate()), "ItemDetailsLabel");
             waitingTillLabel.setMaterialIcon(Icons.iconWaitingDateMaterial);
             if (Config.TEST) {
                 waitingTillLabel.setName("WaitingTill");
@@ -2747,14 +2834,17 @@ public class ScreenListOfItems extends MyForm {
 //                            categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "<set>")); //"<click to set categories>"
 //</editor-fold>
         //CATEGORIES
-        List cats = item.getCategories();
-        if (cats != null && cats.size() > 0) {
+//        if (!(ownerItemOrItemList instanceof Category)) { //don't show categories in category lists
+        if (!(category instanceof Category)) { //don't show categories in category lists
+            List cats = item.getCategories();
+            if (cats != null && cats.size() > 0) {
 //            SpanLabel catsLabel = new SpanLabel("Cat: " + getListAsCommaSeparatedString(cats), "ItemDetailsLabel");
-            SpanLabel catsLabel = new SpanLabel(getListAsCommaSeparatedString(cats), "ListOfItemsCategories");
-            if (Config.TEST) {
-                catsLabel.setName("Categories");
+                SpanLabel catsLabel = new SpanLabel(getListAsCommaSeparatedString(cats), "ListOfItemsCategories");
+                if (Config.TEST) {
+                    catsLabel.setName("Categories");
+                }
+                southDetailsContainer.addComponent(catsLabel);
             }
-            southDetailsContainer.addComponent(catsLabel);
         }
 
 //        Component effortCont = isDone ? actualEffortLabel : BoxLayout.encloseX(remainingEffortLabel, actualEffortLabel);
@@ -2762,26 +2852,27 @@ public class ScreenListOfItems extends MyForm {
 //        Component prioCont = BoxLayout.encloseX(priorityLabel, impUrgLabel);
 //        Component expandSubsCont = expandSubTasksButton != null ? expandSubTasksButton : new Label();
         //BUILD CONTAINER
-        Container itemContent = new Container(new MyBorderLayout(), "ListOfItemsItemContent");
-        Container bottomContent = new Container(new MyBorderLayout(), "ListOfItemsBottomContent");
+        Container itemContent = new Container(new BorderLayout(), "ListOfItemsItemContent");
+        Container bottomContent = new Container(new BorderLayout(), "ListOfItemsBottomContent");
 //        Container mainItemCont = new Container(new BorderLayout())
 
         Container itemStatusCont = BoxLayout.encloseX(selected, status);
         itemStatusCont.setUIID("ListOfItemsItemStatusCont");
-        mainCont.add(MyBorderLayout.WEST, itemStatusCont);
+        mainCont.add(BorderLayout.WEST, itemStatusCont);
 
 //        Container itemTextStarredCont = BoxLayout.encloseX(starButton, editItemButton);
 //        itemTextStarredCont.setUIID("ListOfItemsItemTextStar");
 //        mainCont.add(BorderLayout.EAST, itemTextStarredCont);
-        mainCont.add(MyBorderLayout.EAST, editItemButton);
+        mainCont.add(BorderLayout.EAST, editItemButton);
 //        Container itemTextStar = BorderLayout.centerCenterEastWest(null, starButton, itemLabel);
         Component itemTextStar = itemLabel;
         itemTextStar.setUIID("ListOfItemsItemTextStar");
 
-        mainCont.add(MyBorderLayout.CENTER, itemContent.add(MyBorderLayout.CENTER, itemTextStar)); //item text + expand subtasks
-        itemContent.add(MyBorderLayout.SOUTH, bottomContent);
+        mainCont.add(BorderLayout.CENTER, itemContent.add(BorderLayout.CENTER, itemTextStar)); //item text + expand subtasks
+        itemContent.add(BorderLayout.SOUTH, bottomContent);
         //                                                .add(WEST, BorderLayout.centerEastWest(null, null, BoxLayout.encloseX(prioCont, dateCont,effortCont) ))
 
+//        Container westCont = new Container(new FlowLayout());
         Container westCont = new Container(new BoxLayout(BoxLayout.X_AXIS));
         westCont.setUIID("ListOfItemsItemDetailsWest");
 //        bottomContent.add(BorderLayout.WEST, BoxLayout.encloseX(prioCont, effortCont, dateCont));
@@ -2805,6 +2896,9 @@ public class ScreenListOfItems extends MyForm {
                 westCont.add(waitingTillLabel);
             } else if (finishTimeLabel != null) {
                 westCont.add(finishTimeLabel);
+                if (dueDateLabel != null) {
+                    southDetailsContainer.add(dueDateLabel);
+                }
             } else if (dueDateLabel != null) {
                 westCont.add(dueDateLabel);
             }
@@ -2822,16 +2916,20 @@ public class ScreenListOfItems extends MyForm {
                 myForm.showDetails.add(item); //UI: always show details (with alarm time) in alarm screen
             }
         }
-        if (Config.TEST) { //show owner directly in list to facilitate debug
+        if (true || Config.TEST) { //show owner directly in list to facilitate debug
 //            myForm.showDetails.add(new Label(item.getOwner() != null ? ("=:" + item.getOwner().getText()) : "<owner>"));
-            southDetailsContainer.addComponent(new Label(item.getOwner() != null ? ("O:" + item.getOwner().getText()) : "<null>", "ListOfItemsRemaining"));
+//            southDetailsContainer.addComponent(new Label(item.getOwner() != null ? ("O:" + item.getOwner().getText()) : "<null>", "ListOfItemsOwner"));
+//            if ((category instanceof Category)&&item.getOwner() != null && item.getOwner() != ownerItemOrItemList) {
+            if (category instanceof Category && item.getOwner() != null) {
+                southDetailsContainer.addComponent(new Label(item.getOwner().getText(), "ListOfItemsOwner"));
+            }
         }
-        bottomContent.add(MyBorderLayout.WEST, westCont);
+        bottomContent.add(BorderLayout.WEST, westCont);
 //        bottomContent.add(BorderLayout.EAST, expandSubsCont);
         if (expandSubTasksButton != null) {
-            bottomContent.add(MyBorderLayout.EAST, expandSubTasksButton);
+            bottomContent.add(BorderLayout.EAST, expandSubTasksButton);
         }
-        bottomContent.add(MyBorderLayout.SOUTH, southDetailsContainer);
+        bottomContent.add(BorderLayout.SOUTH, southDetailsContainer);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Container eastCont = new Container(BoxLayout.x())
 //                .add(BorderLayout.east(BoxLayout.encloseX(
@@ -3079,11 +3177,11 @@ refreshAfterEdit();
 //                Date tomorrow = new Date(new Date().getTime() + MyDate.DAY_IN_MILLISECONDS);
                 if (MyDate.isToday(item.getDueDateD())) {
 //                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
-                    item.setDueDate((new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow same time as it was today
-                } else if (MyDate.isToday(item.getWaitingTillDateD())) {
-                    item.setWaitingTillDate((new Date(item.getWaitingTillDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if WaitingTillDate is today, then set to tomorrow
+                    item.setDueDate((new MyDate(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow same time as it was today
+                } else if (MyDate.isToday(item.getWaitingTillDate())) {
+                    item.setWaitingTillDate((new MyDate(item.getWaitingTillDate().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if WaitingTillDate is today, then set to tomorrow
                 } else if (MyDate.isToday(item.getStartByDateD())) {
-                    item.setStartByDate((new Date(item.getStartByDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if startBy is today, then set due day to tomorrow
+                    item.setStartByDate((new MyDate(item.getStartByDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if startBy is today, then set due day to tomorrow
                 } else {
 //                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date())); //UI: if due is NOT already today, then set due day to today
                     item.setDueDate(MyDate.setDateToTodayKeepTime(item.getDueDateD())); //UI: if due is NOT already today, then set due day to today
@@ -3123,7 +3221,8 @@ refreshAfterEdit();
 //        bottomLeft.add(new Button(Icons.get().iconTimerSymbolLabelStyle)); //Start Timer on this
 //            if (!item.isTemplate() && !item.isDone()) {
 //</editor-fold>
-        if (true || myFormScreenListOfItems == null || !myFormScreenListOfItems.projectEditMode) {
+//        if (true || myFormScreenListOfItems == null || !myFormScreenListOfItems.projectEditMode) {
+        if (!item.isTemplate()) {
 //                    buttonSwipeContainer.add(new Button(new Command(null, Icons.iconTimerSymbolToolbarStyle) {
 //            Button startTimer = new Button(MyReplayCommand.create("StartTimer-" + item.getObjectIdP(), null, Icons.iconTimerSymbolToolbarStyle, (ev) -> {
 //            Button startTimer = new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconTimerSymbolToolbarStyle(), (ev) -> {
@@ -3148,8 +3247,8 @@ refreshAfterEdit();
         } else { // item.isTemplate()
 //            Button newFromTemplate = new Button(MyReplayCommand.create("NewItemFromTemplate", null, Icons.iconNewItemFromTemplate, (e) -> {
             Button newFromTemplate = new Button(MyReplayCommand.create("NewItemFromTemplate", null, null, (e) -> {
-                Item newTemplateInstantiation = new Item();
-                item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
+                Item newTemplateInstantiation = new Item(false);
+                item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK);
                 new ScreenItem2(newTemplateInstantiation, (MyForm) swipCont.getComponentForm(), () -> {
 //                    DAO.getInstance().saveNew(newTemplateInstantiation, true); //must save item since adding it to itemListOrg changes its owner, saved to 'inbox'
                     DAO.getInstance().saveNew(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner, saved to 'inbox'
@@ -3195,6 +3294,7 @@ refreshAfterEdit();
 //                    DAO.getInstance().saveNew(item, true);
                     DAO.getInstance().saveNew(item);
                     DAO.getInstance().saveNewExecuteUpdate();
+                    myForm.refreshAfterEdit(); //update inherited values
                 });
                 starredSwipeableButton.setUIID(item.isStarred() ? "SwipeButtonStarActive" : "SwipeButtonStarInactive");
                 buttonSwipeContainer.add(starredSwipeableButton);

@@ -172,6 +172,11 @@ public class MyBorderLayout extends BorderLayout {
     public MyBorderLayout(int behavior) {
         setCenterBehavior(behavior);
     }
+    
+    public MyBorderLayout(int behavior, int eastWestSizeApproach) {
+        setSizeEastWestMode(eastWestSizeApproach);
+        setCenterBehavior(behavior);
+    }
 
     /**
      * Shorthand for

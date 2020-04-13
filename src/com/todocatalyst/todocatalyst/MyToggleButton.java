@@ -44,7 +44,7 @@ public class MyToggleButton extends Container {
 //                        selectedValue = valuesFinal[i];
 //                        selectedValue = MyToggleButton.this.values[i];
 //                    flipSelectedIndex(i); //toggle
-                    selectionListener.fireSelectionEvent(oldIndex, i);
+                    if(selectionListener!=null) selectionListener.fireSelectionEvent(oldIndex, i);
                     oldIndex = i; //keep track of previous selected index to fire selectionLIstener correctly
                 }
             }
@@ -424,7 +424,7 @@ public class MyToggleButton extends Container {
         int oldIndex = getSelectedIndex();
         if (onlySingleSelectionAllowed) { //shouldn't test on onlySingleSelectionAllowed here????
             ((RadioButton) buttonsArray[index]).setSelected(set);
-            selectionListener.fireSelectionEvent(oldIndex, index);
+            if(selectionListener!=null) selectionListener.fireSelectionEvent(oldIndex, index);
         } else {
             ((CheckBox) buttonsArray[index]).setSelected(set);
         }
@@ -494,8 +494,7 @@ public class MyToggleButton extends Container {
     }
 
     /**
-     * returns the selected logical value. NO: If no values are defined, then
-     * simply returns the selected index.
+     * returns the selected logical value. 
      *
      * @return
      */
@@ -552,12 +551,14 @@ public class MyToggleButton extends Container {
         ASSERT.that("ERROR in ComboBoxLogicalNames: illegal logicalValue=" + logicalValue + " not in list of values=" + values);
 //#enddebug
     }
-    private EventDispatcher selectionListener = new EventDispatcher();
+    private EventDispatcher selectionListener = null; //new EventDispatcher();
 
     /**
      * @inheritDoc
      */
     public void addSelectionListener(SelectionListener l) {
+        if(selectionListener == null)
+            selectionListener = new EventDispatcher();
         selectionListener.addListener(l);
     }
 
@@ -565,6 +566,7 @@ public class MyToggleButton extends Container {
      * @inheritDoc
      */
     public void removeSelectionListener(SelectionListener l) {
+        if(selectionListener != null)
         selectionListener.removeListener(l);
     }
 }

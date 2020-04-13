@@ -125,7 +125,7 @@ public class LocalNotificationsShadowList implements Externalizable {
                 AlarmType repeatType = (type == AlarmType.notification) ? AlarmType.notificationRepeat : AlarmType.waitingRepeat;
 //                    removeAlarmAndRepeatAlarm(objectId, NotificationType.notificationRepeat);
                 insertAndSetSingleBaseAlarmSorted(objectId, repeatType,
-                        new Date(newAlarm.getTime() + ((long) repeatInterval) * MyDate.MINUTE_IN_MILLISECONDS),
+                        new MyDate(newAlarm.getTime() + ((long) repeatInterval) * MyDate.MINUTE_IN_MILLISECONDS),
                         titleText, bodyText);
             }
 //            }
@@ -498,7 +498,7 @@ public class LocalNotificationsShadowList implements Externalizable {
 
         if (repeatInterval > 0 && (type != AlarmType.snoozedNotif && type != AlarmType.snoozedWaiting)) {
             insertAndSetSingleBaseAlarmSorted(objectId, type == AlarmType.notification ? AlarmType.notificationRepeat : AlarmType.waitingRepeat,
-                    new Date(newAlarm.getTime() + ((long) repeatInterval) * MyDate.MINUTE_IN_MILLISECONDS),
+                    new MyDate(newAlarm.getTime() + ((long) repeatInterval) * MyDate.MINUTE_IN_MILLISECONDS),
                     titleText, bodyText);
         }
     }
@@ -579,7 +579,7 @@ public class LocalNotificationsShadowList implements Externalizable {
             return activeLocalNotifsSorted.get(i).alarmTime;
         } else {
 //                return null;
-            return new Date(MyDate.MAX_DATE); //if 
+            return new MyDate(MyDate.MAX_DATE); //if 
         }
     }
 

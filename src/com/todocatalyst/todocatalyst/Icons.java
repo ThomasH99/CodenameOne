@@ -64,10 +64,12 @@ public class Icons {
 //        return makeT(FontImage.MATERIAL_EXPAND_MORE);
 //    }
 //    final static char iconShowMoreLabelStyleXXX = FontImage.MATERIAL_EXPAND_MORE; //MORE=v
-    final static char iconShowMore = FontImage.MATERIAL_EXPAND_MORE; //LESS=^MATERIAL_EXPAND_MORE
+    final static char iconShowMore = FontImage.MATERIAL_CHEVRON_RIGHT; //FontImage.MATERIAL_EXPAND_MORE;, LESS=^MATERIAL_EXPAND_MORE
+    public final static char iconExpandListStickyHeader = FontImage.MATERIAL_CHEVRON_RIGHT; //FontImage.MATERIAL_EXPAND_MORE;, LESS=^MATERIAL_EXPAND_MORE
 //    final static Image iconShowMoreLabelStyleXXX = FontImage.createMaterial(iconShowMore, labelStyle);
 
     final static char iconShowLess = FontImage.MATERIAL_EXPAND_LESS; //MORE=v, MATERIAL_EXPAND_LESS
+    public final static char iconCollapseListStickyHeader = FontImage.MATERIAL_EXPAND_MORE; //MORE=v, LESS=^  MATERIAL_EXPAND_LESS
 //    final static Image iconShowLessLabelStyle = FontImage.createMaterial(iconShowLess, labelStyle);
 
     final static char iconAddTimeStampToComment = FontImage.MATERIAL_ACCESS_TIME;
@@ -99,7 +101,7 @@ public class Icons {
 //    final static Image iconTimerAutoGotoNextTaskLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PAUSE_CIRCLE_FILLED, labelStyle);
 //    final static Image iconTimerAutoGotoNextTaskLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PAUSE_CIRCLE_FILLED, labelStyle);
 //    final static Image iconTimerStartLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PLAY_CIRCLE_OUTLINE, labelStyle);
-    final static char iconTimerStart = FontImage.MATERIAL_PLAY_CIRCLE_OUTLINE;
+    final static char iconTimerStart = FontImage.MATERIAL_PLAY_CIRCLE_FILLED; //FontImage.MATERIAL_PLAY_CIRCLE_OUTLINE;
 //    final static Image iconTimerPauseLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_PAUSE_CIRCLE_FILLED, labelStyle);
     final static char iconTimerPause = FontImage.MATERIAL_PAUSE_CIRCLE_FILLED;
 //    final static Image iconTimerBuzzerOnOffLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_TRENDING_FLAT, labelStyle); //Trending flat = long right arrow
@@ -150,8 +152,8 @@ public class Icons {
     final static char iconMainToday = FontImage.MATERIAL_TODAY;
     final static char iconMainNext = FontImage.MATERIAL_ASSIGNMENT_RETURNED;
     final static char iconMainInbox = FontImage.MATERIAL_INBOX;
-    final static char iconMainLists = FontImage.MATERIAL_FOLDER_OPEN;
-    final static char iconMainCategories = FontImage.MATERIAL_FOLDER_SPECIAL;
+    final static char iconMainLists = FontImage.MATERIAL_LIST; //_ALT; //FontImage.MATERIAL_FOLDER_OPEN;
+    final static char iconMainCategories = FontImage.MATERIAL_FOLDER_OPEN; //FontImage.MATERIAL_FOLDER_SPECIAL;
     final static char iconMainProjects = FontImage.MATERIAL_FORMAT_ALIGN_LEFT;
     final static char iconMainWorkSlots = FontImage.MATERIAL_NEXT_WEEK; //WORK;  //TODO: MATERIAL_WORK_OUTLINE
     final static char iconMainTemplates = FontImage.MATERIAL_BORDER_STYLE;
@@ -159,12 +161,18 @@ public class Icons {
     final static char iconMainCompletionLog = FontImage.MATERIAL_PLAYLIST_ADD_CHECK; //.MATERIAL_EVENT_AVAILABLE;  
     final static char iconMainCreationLog = FontImage.MATERIAL_PLAYLIST_ADD; //FontImage.MATERIAL_ASSESSMENT;  //   FontImage.MATERIAL_POLL;  
     final static char iconMainTouched = FontImage.MATERIAL_PLAYLIST_PLAY; //FontImage.MATERIAL_DATE_RANGE; 
-    final static char iconMainAllTasks = FontImage.MATERIAL_LIST;
+    final static char iconMainAllTasks = FontImage.MATERIAL_FORMAT_LIST_BULLETED; //FontImage.MATERIAL_LIST;
     final static char iconMainTutorial = FontImage.MATERIAL_HELP_OUTLINE;
     final static char iconMainInspirationLists = FontImage.MATERIAL_FAVORITE_BORDER; //TOUCH_APP
     final static char iconMainWeb = FontImage.MATERIAL_WEB;
     final static char iconMainAlarms = FontImage.MATERIAL_NOTIFICATIONS_ACTIVE; //TODO: MATERIAL_NOTIFICATION_IMPORTANT
     final static char iconInspiration = FontImage.MATERIAL_HIGHLIGHT; 
+    
+    //LIST/CATEGORY icons
+    final static char iconList = FontImage.MATERIAL_LIST;
+    final static char iconCategory = FontImage.MATERIAL_FOLDER;
+    final static char iconListNew = FontImage.MATERIAL_CREATE_NEW_FOLDER;
+    final static char iconCategoryNew = FontImage.MATERIAL_CREATE_NEW_FOLDER;
 
 //    final static char iconFilter = FontImage.MATERIAL_FILTER_LIST;
 //    final static Image iconSettingsLabelStyle = FontImage.createMaterial(iconSettings, labelStyle);
@@ -290,7 +298,8 @@ public class Icons {
     final static char iconEarnedValue = FontImage.MATERIAL_ATTACH_MONEY;
     final static char iconEarnedValuePerHour = FontImage.MATERIAL_MONETIZATION_ON;
 
-    final static char iconWorkSlot = FontImage.MATERIAL_WORK;
+    final static char iconWorkSlot = FontImage.MATERIAL_WORK_OUTLINE; //FontImage.MATERIAL_WORK;
+
 //    final static Image iconWorkSlotLabelStyle = FontImage.createMaterial(iconWorkSlot, labelStyle);
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_DONE, labelStyle);
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_EVENT, labelStyle);
@@ -337,7 +346,7 @@ public class Icons {
 //    final static Image iconEditSymbolLabelStyle = FontImage.createMaterial(iconEdit, labelStyle);
     final static char iconEditSymbol = FontImage.MATERIAL_CHEVRON_RIGHT;
 
-    final static char iconNewTaskToInbox = FontImage.MATERIAL_ADD_CIRCLE_OUTLINE;
+    final static char iconNewTaskToInbox = FontImage.MATERIAL_ADD_BOX;//FontImage.MATERIAL_ADD_CIRCLE_OUTLINE;
 
 //    static Image iconNewTaskToolbarStyle() {
 //        return makeT(iconNewTaskToInbox);

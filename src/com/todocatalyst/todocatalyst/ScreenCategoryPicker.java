@@ -103,7 +103,7 @@ public class ScreenCategoryPicker extends MyForm {
 //            compList.animateLayout(150);
 //        });
 //</editor-fold>
-        getToolbar().addSearchCommand(makeSearchFunctionSimple(listOfAllCategories,()->getContentPane()));
+        getToolbar().addSearchCommand(makeSearchFunctionSimple(listOfAllCategories,()->getContentPane()),MyPrefs.defaultIconSizeInMM.getFloat());
 //        buildContentPane(getContentPane(), listOfAllCategories); //, this.selectedCategories);
         refreshAfterEdit();
     }
@@ -182,16 +182,6 @@ public class ScreenCategoryPicker extends MyForm {
         super.addCommandsToToolbar(toolbar);
 
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
-////        tool.addCommandToLeftBar("Done", icon, (e) -> Log.p("Clicked"));
-//        toolbar.addCommandToRightBar("", icon, (e) -> {
-//            new ScreenCategory(new Category(), this).show();
-//        });
-//</editor-fold>
-//        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllCategories, ScreenCategoryPicker.this, () -> refreshAfterEdit()));
-        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllCategories, ScreenCategoryPicker.this, ()->{})); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
-
-//<editor-fold defaultstate="collapsed" desc="comment">
 //        icon = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle());
 //        toolbar.addCommandToLeftBar("", icon, (e) -> {
 ////                    item.setCategories(selectedCategories);
@@ -205,7 +195,8 @@ public class ScreenCategoryPicker extends MyForm {
 //</editor-fold>
 //backCommand = makeDoneUpdateWithParseIdMapCommand(true); //false);
 //        toolbar.setBackCommand(backCommand); //false: don't refresh ScreenItem when returning from Category selector
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //false: don't refresh ScreenItem when returning from Category selector
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //false: don't refresh ScreenItem when returning from Category selector
+        addStandardBackCommand();
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
             toolbar.addCommandToOverflowMenu(
@@ -223,6 +214,16 @@ public class ScreenCategoryPicker extends MyForm {
             );
         }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
+////        tool.addCommandToLeftBar("Done", icon, (e) -> Log.p("Clicked"));
+//        toolbar.addCommandToRightBar("", icon, (e) -> {
+//            new ScreenCategory(new Category(), this).show();
+//        });
+//</editor-fold>
+//        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllCategories, ScreenCategoryPicker.this, () -> refreshAfterEdit()));
+        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd("",listOfAllCategories, ScreenCategoryPicker.this, ()->{})); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
+
 //        addSearchToTitle();
 
 //        ADDITIONAL COMMANDS
@@ -236,6 +237,7 @@ public class ScreenCategoryPicker extends MyForm {
         for (int i = 0, size = categories.size(); i < size; i++) {
             Category cat = (Category) categories.get(i);
             CheckBox cmps = CheckBox.createToggle(cat.getText());
+            cmps.setUIID("CategoryPickerCategory");
             cmps.setSelected(selectedCategories.contains(cat));
             cmps.addActionListener((ActionEvent evt) -> {
                 if (((CheckBox) evt.getSource()).isSelected()) {

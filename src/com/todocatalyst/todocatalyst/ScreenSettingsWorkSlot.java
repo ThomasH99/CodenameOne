@@ -34,10 +34,10 @@ public class ScreenSettingsWorkSlot extends ScreenSettingsCommon {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
-        addSettingInt(content, parseIdMap2, MyPrefs.workSlotDefaultDurationInMinutes, 0, 120, 5);
+        addSettingInt(content, parseIdMap2, MyPrefs.workSlotDefaultDurationInMinutes, 0, 60*24, 5); //UI: workslots limited to 24h duration
         addSettingInt(content, parseIdMap2, MyPrefs.workSlotDurationStepIntervalInMinutes, 0, 30, 1);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.workSlotsMayBeCreatedInThePast);
         addSettingBoolean(content, parseIdMap2, MyPrefs.workSlotDefaultStartDateIsNow);
         addSettingBoolean(content, parseIdMap2, MyPrefs.workSlotContinueAddingInlineWorkslots);
-
     }
 }

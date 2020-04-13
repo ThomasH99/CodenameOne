@@ -14,7 +14,6 @@ import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
-import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyTree2.setIndent;
@@ -123,8 +122,8 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        addCommandsToToolbar(getToolbar(), theme);
 //        setScrollable(false); //disable scrolling of form, necessary to let lists handle their own scrolling 
 //        getContentPane().setScrollableY(true);
-        if (!(getLayout() instanceof MyBorderLayout)) { //enable small timer?!
-            setLayout(new MyBorderLayout());
+        if (!(getLayout() instanceof BorderLayout)) { //enable small timer?!
+            setLayout(new BorderLayout());
         }
         getContentPane().setScrollableY(false);
         expandedObjects = new ExpandedObjects(getUniqueFormId(), (ParseObject) owner); //no persistance if filename and is empty (e.g. like with list of project subtasks)
@@ -184,7 +183,7 @@ public class ScreenListOfWorkSlots extends MyForm {
         if (contentContainer instanceof MyTree2) {
             setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
         }
-        getContentPane().add(MyBorderLayout.CENTER, contentContainer);
+        getContentPane().add(BorderLayout.CENTER, contentContainer);
 //        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
 
@@ -205,11 +204,15 @@ public class ScreenListOfWorkSlots extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         super.addCommandsToToolbar(toolbar);
+
+        //NEW TASK to Inbox
+        toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
+
         //NEW WORKSLOT
         if (enableAddWorkSlots) { //TODO!!!! disable until possible to select owner
 //            toolbar.addCommandToRightBar(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNewToolbarStyle(), (e) -> {
 //            toolbar.addCommandToRightBar(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNew, (e) -> {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNew, (e) -> {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewWorkSlot", "Add " + WorkSlot.WORKSLOT, Icons.iconNew, (e) -> {
                 WorkSlot newWorkSlot = new WorkSlot();
                 newWorkSlot.setOwner(workSlotListOwner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
                 setKeepPos(new KeepInSameScreenPosition());
@@ -256,7 +259,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                    workSlotListOwner.setWorkSlotList(workSlotList);
                         workSlotListOwner.addWorkSlot(newWorkSlot);
 //                        DAO.getInstance().saveNew(true, newWorkSlot, (ParseObject) workSlotListOwner);
-                        DAO.getInstance().saveNew( newWorkSlot, (ParseObject) workSlotListOwner);
+                        DAO.getInstance().saveNew(newWorkSlot, (ParseObject) workSlotListOwner);
                         DAO.getInstance().saveNewExecuteUpdate();
 
                         refreshAfterEdit();
@@ -268,7 +271,9 @@ public class ScreenListOfWorkSlots extends MyForm {
 
         //BACK
 //        toolbar.addCommandToLeftBar(makeDoneCommand("", FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle())));
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true));
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true));
+        addStandardBackCommand();
+
         toolbar.addCommandToOverflowMenu(new Command("", null) {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -333,12 +338,12 @@ public class ScreenListOfWorkSlots extends MyForm {
         if (Config.TEST) {
             swipCont.setName("WSltMyDD:" + workSlot);
         }
-        cont.setLayout(new MyBorderLayout());
+        cont.setLayout(new BorderLayout());
 //        cont.addComponent(BorderLayout.CENTER, new Button(item.getText()));
         //EDIT items in category
 //        Button editItemButton = new Button(new Command(workSlot.getText()) {
 //        Button editWorkSlotButton = new Button(Icons.iconEditSymbolLabelStyle);
-        Button editWorkSlotButton = new Button(Icons.iconEditSymbol );
+        Button editWorkSlotButton = new Button(Icons.iconEditSymbol);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        editWorkSlotButton.addActionListener(new ActionListener() {
 //            @Override
@@ -378,7 +383,7 @@ public class ScreenListOfWorkSlots extends MyForm {
         }
         ));
 //        editItemButton.setUIID("Label");
-        cont.addComponent(MyBorderLayout.EAST, editWorkSlotButton);
+        cont.addComponent(BorderLayout.EAST, editWorkSlotButton);
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Button editItemPropertiesButton = new Button();
@@ -414,12 +419,33 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
 //        String startTimeStr = MyDate.formatDateTimeNew(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
 //</editor-fold>
-        String startTimeStr = MyDate.formatDateSmart(new Date(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
-        Label startTimeLabel = new Label(startTimeStr,
-                workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime() ? "WorkSlotStartTimeNow" : "WorkSlotStartTime");
- startTimeLabel.setMaterialIcon(Icons.iconWorkSlot);
+//        String startTimeStr = MyDate.formatDateSmart(new MyDate(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
+        String startTimeStr;
+        if (workSlot.isOngoing(now)) {
+            startTimeStr = MyDate.formatDateSmart(new MyDate(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
+        } else {
+            startTimeStr = MyDate.formatDateSmart(workSlot.getStartTimeD()); //UI: for ongoing workSlot, show 'now' instead of startTime
+        }//        String startTimeGUID = workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime() ? "WorkSlotStartTimeNow" : "WorkSlotStartTime";
+        String startTimeGUID;
+//        if (workSlot.getStartAdjusted(now) == workSlot.getStartTimeD().getTime()) {
+//            startTimeGUID = "WorkSlotStartTime"; //in the future
+//        } else if (workSlot.getStartAdjusted(now) < workSlot.getEndTimeD().getTime()) {
+//            startTimeGUID = "WorkSlotStartTimeNow"; //workslot is now
+//        } else {
+//            startTimeGUID = "WorkSlotStartTimePast"; //
+//        }
+        if (workSlot.isInTheFuture(now)) {
+            startTimeGUID = "WorkSlotStartTime"; //in the future
+        } else if (workSlot.isInThePast(now)) {
+            startTimeGUID = "WorkSlotStartTimePast"; //
+        } else {
+            startTimeGUID = "WorkSlotStartTimeNow"; //workslot is now
+        }
+        Label startTimeLabel = new Label(startTimeStr, startTimeGUID);
+        startTimeLabel.setMaterialIcon(Icons.iconWorkSlot);
 //        String endTimeStr = "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
-        String endTimeStr = " " + MyDate.formatDurationShort(workSlot.getDurationAdjusted(now))
+//        String endTimeStr = " " + MyDate.formatDurationShort(workSlot.getDurationAdjusted(now))
+        String endTimeStr = " " + MyDate.formatDurationShort(workSlot.getDurationInMillis())
                 + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
         Label endTimeLabel = new Label(endTimeStr, "WorkSlotEndTime");
 
@@ -434,7 +460,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getText() + (workSlot.getRepeatRule() != null ? "*" : "")));
 //</editor-fold>
         if (showOwner && workSlot.getOwner() != null) {
-            cont.addComponent(MyBorderLayout.CENTER, new Label(workSlot.getOwner().getText()));
+            cont.addComponent(BorderLayout.CENTER, new Label(workSlot.getOwner().getText()));
         }
 //        }
 //        east.addComponent(editItemPropertiesButton);
@@ -448,9 +474,9 @@ public class ScreenListOfWorkSlots extends MyForm {
         }
 
 //        east.addComponent(new Label(new SimpleDateFormat().format(new Date(itemList.getFinishTime(item, 0)))));
-        cont.addComponent(MyBorderLayout.WEST, west);
+        cont.addComponent(BorderLayout.WEST, west);
         Container south = new Container(BoxLayout.y());
-        cont.addComponent(MyBorderLayout.SOUTH, south);
+        cont.addComponent(BorderLayout.SOUTH, south);
 
 //        if (workSlot.getOwner() != null) {
 //            if(showOwner)south.addComponent(new Label("For: " + workSlot.getOwner().getText()));

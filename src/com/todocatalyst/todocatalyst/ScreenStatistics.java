@@ -9,7 +9,6 @@ import com.codename1.ui.Toolbar;
 import com.codename1.ui.Container;
 import com.codename1.ui.Component;
 import com.codename1.ui.layouts.BorderLayout;
-import com.codename1.ui.layouts.MyBorderLayout;
 import static com.todocatalyst.todocatalyst.MyTree2.setIndent;
 import java.util.List;
 import java.util.Collections;
@@ -47,8 +46,8 @@ public class ScreenStatistics extends MyForm {
 //        this.itemListList = itemListList;
         setUniqueFormId("ScreenStatistics");
         setScrollable(false);
-        if (!(getLayout() instanceof MyBorderLayout)) {
-            setLayout(new MyBorderLayout());
+        if (!(getLayout() instanceof BorderLayout)) {
+            setLayout(new BorderLayout());
         }
 //        expandedObjects = new HashSet();
         expandedObjects = new ExpandedObjects(getUniqueFormId()); //,null);
@@ -65,7 +64,7 @@ public class ScreenStatistics extends MyForm {
         SortStatsOn sortOn = SortStatsOn.valueOfDefault(MyPrefs.statisticsSortBy.getString());
         sortItems(doneItemsFromParseSortedOnDate, sortOn);
         itemListStats = buildStatisticsSortedByTime(doneItemsFromParseSortedOnDate, workSlots);
-        getContentPane().add(MyBorderLayout.CENTER, buildContentPane(itemListStats));
+        getContentPane().add(BorderLayout.CENTER, buildContentPane(itemListStats));
         revalidate();
         restoreKeepPos();
         super.refreshAfterEdit();
@@ -98,7 +97,7 @@ public class ScreenStatistics extends MyForm {
     }
 
     private void reloadData() {
-        Date startDate = new Date(MyDate.currentTimeMillis() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
+        Date startDate = new MyDate(MyDate.currentTimeMillis() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
         Date endDate = new MyDate();
 //        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
         workSlots = new WorkSlotList(null, DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted
@@ -113,7 +112,7 @@ public class ScreenStatistics extends MyForm {
         if (false) {
             getToolbar().addSearchCommand((e) -> {
                 String text = (String) e.getSource();
-                Container compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
+                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
                 boolean showAll = text == null || text.length() == 0;
                 for (int i = 0, size = this.doneItemsFromParseSortedOnDate.size(); i < size; i++) {
                     //TODO!!! compare same case (upper/lower)
@@ -121,11 +120,11 @@ public class ScreenStatistics extends MyForm {
                     compList.getComponentAt(i).setHidden(((Item) doneItemsFromParseSortedOnDate.get(i)).getText().toLowerCase().indexOf(text) < 0);
                 }
                 compList.animateLayout(ANIMATION_TIME_FAST);
-            });
+            },MyPrefs.defaultIconSizeInMM.getFloat());
         }
         //SEARCH
         if (false) //TODO!!!: seardh algo crashes on statistics and won't let you exit/remove the search field
-            getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats));
+            getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats),MyPrefs.defaultIconSizeInMM.getFloat());
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", null, Icons.iconSettings, (e) -> {
             int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
@@ -139,7 +138,8 @@ public class ScreenStatistics extends MyForm {
         ));
 
         //BACK
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+        addStandardBackCommand();
 
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }

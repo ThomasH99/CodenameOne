@@ -22,6 +22,12 @@ class WorkSlotSlice implements Work {
 
     WorkSlot workSlot;
 
+    private long startTime;// = Long.MIN_VALUE;
+    private long endTime;// = Long.MAX_VALUE;
+//    long missingDuration;// = 0;
+    private long now; //DEBUG: keep for the ASSERT statements
+    private ItemAndListCommonInterface allocatedToXXX;
+
     public WorkSlot getWorkSlot() {
         return workSlot;
     }
@@ -29,18 +35,15 @@ class WorkSlotSlice implements Work {
     public void setWorkSlot(WorkSlot workSlot) {
         this.workSlot = workSlot;
     }
-    long startTime;// = Long.MIN_VALUE;
-    long endTime;// = Long.MAX_VALUE;
-//    long missingDuration;// = 0;
-    long now; //DEBUG: keep for the ASSERT statements
-    private ItemAndListCommonInterface allocatedToXXX;
 
     @Override
     public String toString() {
-        return "Slice[" + MyDate.formatDateTimeNew(new Date(startTime)) + "-" + MyDate.formatTimeNew(new Date(endTime))
-                + " Dur=" + MyDate.formatDurationShort(getDurationInMillis(), true)
+        return "Slice[" + MyDate.formatDateTimeNew(new MyDate(startTime)) + "-" + MyDate.formatTimeNew(new MyDate(endTime))
+                + " " + MyDate.formatDurationShort(endTime - startTime, true)
                 //                + " Mis=" + MyDate.formatDurationShort(missingDuration, true)
-                + " Owner:" + (workSlot != null && workSlot.getOwner() != null ? workSlot.getOwner().getText() : "<null>")
+                + " WS:" + (workSlot != null ? workSlot.toString() : "NONE?!")
+                + " O:" + (workSlot != null && workSlot.getOwner() != null ? workSlot.getOwner().getText() : "<null>")
+                + " AllTo:" + (allocatedToXXX != null ? allocatedToXXX.getText() : "<null>")
                 //                + (allocatedToXXX != null ? ( " AllocTo:" +allocatedToXXX.getText() ): "")
                 + "]";
 //                + " of "
@@ -61,11 +64,18 @@ class WorkSlotSlice implements Work {
 //        this.missingDuration = missingDuration;
 //        ASSERT.that(startTime >= workSlot.getStartAdjusted(), "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted()));
         if (Config.WORKTIME_TEST) {
-            assert startTime >= workSlot.getStartAdjusted(now) : "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted(now));
+            ASSERT.that(startTime < this.endTime, "0 duration workSlice!!: startTime:" + new MyDate(startTime) + ", endTime=" + new MyDate(endTime) + ", workSlot.getStartAdjusted():" + new MyDate(workSlot.getStartAdjusted(now)));
         }
         if (Config.WORKTIME_TEST) {
-            assert endTime <= workSlot.getEndTime() : "endTime:" + new Date(endTime) + "must be less than workSlot.getEndTime():" + new Date(workSlot.getEndTime());
+            ASSERT.that(startTime >= workSlot.getStartAdjusted(now), "startTime:" + new MyDate(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new MyDate(workSlot.getStartAdjusted(now)));
         }
+        if (Config.WORKTIME_TEST) {
+            ASSERT.that(endTime <= workSlot.getEndTime(), "endTime:" + new MyDate(endTime) + "must be less than workSlot.getEndTime():" + new MyDate(workSlot.getEndTime()));
+        }
+        if (Config.WORKTIME_TEST) {
+            ASSERT.that(endTime >= startTime, "endTime < startTime!!, WorkSlotSlice=" + this);
+        }
+
 //        ASSERT.that(startTime != endTime, "zero duration workSlotSlice not allowed, startTime:" + new Date(startTime) + " endTime:" + new Date(endTime));
     }
 
@@ -76,21 +86,28 @@ class WorkSlotSlice implements Work {
 //        
 //    }
     /**
-    
-    @param workSlot
-    @param now ensure the same 'now' is used everywhere during the calculation
+     * create a workslice with the entire (available, starting from now) of the
+     * workslot
+     *
+     * @param workSlot
+     * @param now ensure the same 'now' is used everywhere during the
+     * calculation
      */
     WorkSlotSlice(WorkSlot workSlot, long now) {
 //            this.workSlot = workSlot;
 //            this(workSlot, Long.MIN_VALUE, Long.MAX_VALUE);
         this(workSlot, workSlot.getStartAdjusted(now), workSlot.getEndTime());
+        if (Config.WORKTIME_TEST) {
+            ASSERT.that(endTime >= startTime, "endTime < startTime!!, WorkSlotSlice=" + this);
+        }
+
 //        if (Config.WORKTIME_TEST) {
 //            this.now = now;
 //        }
     }
 
 //    private WorkSlotSlice getSlice(long startTime, long duration, ItemAndListCommonInterface allocatedTo) {
-    private WorkSlotSlice getSlice(long startTime, long duration, Item allocatedTo) {
+    private WorkSlotSlice getSliceN(long startTime, long duration, Item allocatedTo) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (startTime == MyDate.MIN_DATE) {
 //                startTime = workSlot.getStartAdjusted();
@@ -107,7 +124,7 @@ class WorkSlotSlice implements Work {
 //</editor-fold>
         //if either duration==0 or startTime==endTime, an empty slide will be allocated
         this.allocatedToXXX = allocatedTo;
-        workSlot.addItemWithSlice(allocatedTo);
+//        workSlot.addItemWithSlice(allocatedTo);
         long actualStartTime = Math.max(startTime, this.startTime);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long actualSliceEndTime = Math.min(startTime + duration, endTime); //endTime: only allocate to endTime if slice is too small to allocate full duration
@@ -117,10 +134,17 @@ class WorkSlotSlice implements Work {
 //                (startTime + duration) - actualSliceEndTime); //missing = desiredEndTime - actualEndTime
 //</editor-fold>
         long actualSliceEndTime = Math.min(actualStartTime + duration, endTime); //endTime: only allocate to endTime if slice is too small to allocate full duration
-        return new WorkSlotSlice(workSlot, actualStartTime, actualSliceEndTime
+
+        if (actualSliceEndTime > actualStartTime) { //if non-zero time was allocated
+            workSlot.addItemWithSlice(allocatedTo);
+//            return new WorkSlotSlice(workSlot, actualStartTime, actualSliceEndTime);
+//        } else {
+//            return null;
+        }
+            return new WorkSlotSlice(workSlot, actualStartTime, actualSliceEndTime); //NB. Alog doesn't work if returning null slices!!
         //                Math.max(0, (startTime + duration) - Math.min(startTime + duration, endTime))); //missing = desiredEndTime - actualEndTime
         //                (actualStartTime + duration) - actualSliceEndTime); //missing = desiredEndTime - actualEndTime
-        ); //missing = desiredEndTime - actualEndTime
+//        ); //missing = desiredEndTime - actualEndTime
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        }
 //        else {
@@ -134,11 +158,12 @@ class WorkSlotSlice implements Work {
      *
      * @param startTime (must be within the slice's interval) or MyDate.MIN_DATE
      * in which case the workSlots startTime is used
-     * @param duration if zero, then allocate a zero duration slice (stores where in a workSlot a zero duration task gets done)
+     * @param duration if zero, then allocate a zero duration slice (stores
+     * where in a workSlot a zero duration task gets done)
      * @return
      */
-    WorkSlotSlice getSlice(long startTime, long duration) {
-        return getSlice(startTime, duration, null);
+    WorkSlotSlice getSliceN(long startTime, long duration) {
+        return WorkSlotSlice.this.getSliceN(startTime, duration, null);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -220,27 +245,29 @@ class WorkSlotSlice implements Work {
 //    }
     @Override
     public long getDurationInMillis() {
+        ASSERT.that(endTime >= startTime, "endTime < startTime!!, WorkSlotSlice=" + this);
 //            return Math.max(0, getEndTime() - getStartTime());
 //            return Math.max(0, endTime - startTime);
         return endTime - startTime; //should always be positive, otherwise error elsewhere
     }
 
-    public long getDuration(long start) {
+    public long getDuration(long actualStart) {
 //            return Math.max(0, getEndTime() - getStartTime());
 //            return Math.max(0, endTime - startTime);
-        long actualStart = Math.max(start, startTime);
+        long actStart = Math.max(actualStart, startTime);
+        if (Config.WORKTIME_DETAILED_LOG) {
+            ASSERT.that(endTime - actStart >= 0, "error in WorkSlotSlice.getDuration, duration gets negative, workSlotSlice=" + this);
+        }
 //        return endTime - startTime; //should always be positive, otherwise error elsewhere
-        return endTime - actualStart; //should always be positive, otherwise error elsewhere
+        return endTime - actStart; //should always be positive, otherwise error elsewhere
     }
 
 //    public ItemAndListCommonInterface getAllocatedToXXX() {
 //        return allocatedToXXX;
 //    }
-
 //    public void setAllocatedToXXX(ItemAndListCommonInterface allocatedTo) {
 //        this.allocatedToXXX = allocatedTo;
 //    }
-
     private static Comparator<WorkSlot> getMultipleComparator(Comparator<WorkSlot>[] comparators) {
         Comparator<WorkSlot> comp1 = comparators.length >= 1 ? comparators[0] : null;
         Comparator<WorkSlot> comp2 = comparators.length >= 2 ? comparators[1] : null;
@@ -271,9 +298,11 @@ class WorkSlotSlice implements Work {
     }
 
     /**
-    sort on startTime, then on duration (put longest timeslots first if several starting at same time), 
-    @param sortOnEndTime
-    @return 
+     * sort on startTime, then on duration (put longest timeslots first if
+     * several starting at same time),
+     *
+     * @param sortOnEndTime
+     * @return
      */
     public static void sortWorkSlotList(List<WorkSlot> sortedWorkslotList) {
 //        boolean sortOnEndTime            }) {

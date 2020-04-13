@@ -13,7 +13,6 @@ import com.codename1.ui.Toolbar;
 import com.codename1.ui.Button;
 import com.codename1.ui.Label;
 import com.codename1.ui.layouts.BorderLayout;
-import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyTree2.KEY_EXPANDED;
@@ -87,37 +86,39 @@ public class ScreenListOfCategories extends MyForm {
 //        getContentPane().setScrollableY(true);
 //</editor-fold>
         setScrollable(false);
-        if (!(getLayout() instanceof MyBorderLayout)) {
-            setLayout(new MyBorderLayout());
+        if (!(getLayout() instanceof BorderLayout)) {
+            setLayout(new BorderLayout());
         }
         setPinchInsertEnabled(true);
         expandedObjects = new ExpandedObjects(getUniqueFormId());
         previousValues = new SaveEditedValuesLocally(this, getUniqueFormId(), true);
 
         addCommandsToToolbar(getToolbar());
-        if (false) {
-            getToolbar().addSearchCommand((e) -> {
-                String text = (String) e.getSource();
-                Container compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
-                boolean showAll = text == null || text.length() == 0;
-                for (int i = 0, size = this.categoryList.getSize(); i < size; i++) {
-                    //TODO!!! compare same case (upper/lower)
-                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                    compList.getComponentAt(i).setHidden(((Category) categoryList.get(i)).getText().toLowerCase().indexOf(text) < 0);
-                }
-//            getContentPane().animateLayout(150);
-//            compList.animateLayout(150);
-                animateMyForm();
-            });
-        }
-        getToolbar().addSearchCommand(makeSearchFunctionSimple(categoryList));
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            getToolbar().addSearchCommand((e) -> {
+//                String text = (String) e.getSource();
+//                Container compList = (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter();
+//                boolean showAll = text == null || text.length() == 0;
+//                for (int i = 0, size = this.categoryList.getSize(); i < size; i++) {
+//                    //TODO!!! compare same case (upper/lower)
+//                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
+//                    compList.getComponentAt(i).setHidden(((Category) categoryList.get(i)).getText().toLowerCase().indexOf(text) < 0);
+//                }
+////            getContentPane().animateLayout(150);
+////            compList.animateLayout(150);
+//                animateMyForm();
+//            });
+//        }
+//</editor-fold>
+        getToolbar().addSearchCommand(makeSearchFunctionSimple(categoryList), MyPrefs.defaultIconSizeInMM.getFloat());
 
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForListOfItems(this.categoryList));
         refreshAfterEdit();
     }
 
     protected void animateMyForm() {
-        ((Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(ANIMATION_TIME_FAST);
+        ((Container) ((BorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(ANIMATION_TIME_FAST);
     }
 
     @Override
@@ -126,7 +127,7 @@ public class ScreenListOfCategories extends MyForm {
         getContentPane().removeAll();
         categoryList.resetWorkTimeDefinition();
         Container cont = buildContentPaneForItemList(categoryList);
-        getContentPane().add(MyBorderLayout.CENTER, cont);
+        getContentPane().add(BorderLayout.CENTER, cont);
         if (cont instanceof MyTree2) {
 //            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
             InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
@@ -147,10 +148,11 @@ public class ScreenListOfCategories extends MyForm {
         super.refreshAfterEdit();
     }
 
-    static Command makeNewCategoryCmd(CategoryList categoryOwnerList, MyForm previousForm, MyForm.Action refreshOnItemEdits) { //static since reused in other screens
+    static Command makeNewCategoryCmd(String cmdName, CategoryList categoryOwnerList, MyForm previousForm, MyForm.Action refreshOnItemEdits) { //static since reused in other screens
         //NEW CATEGORY
 //public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, boolean keep) {
-        return MyReplayCommand.create("CreateNewCategory", "New Category", Icons.iconNew, (e) -> {
+//        return MyReplayCommand.create("CreateNewCategory", cmdName, Icons.iconNew, (e) -> {
+        return MyReplayCommand.create("CreateNewCategory", cmdName, Icons.iconCategoryNew, (e) -> {
 //        return MyReplayCommand.create("CreateNewCategory", "", Icons.iconNew, (e) -> {
             Category category = new Category();
 //                new ScreenCategory(category, ScreenListOfCategories.this, () -> {
@@ -174,8 +176,12 @@ public class ScreenListOfCategories extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         super.addCommandsToToolbar(toolbar);
+        
+                //NEW TASK to Inbox
+        toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox()); 
+
         //NEW CATEGORY
-        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd(categoryList, ScreenListOfCategories.this, () -> refreshAfterEdit()));
+        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("New Category", categoryList, ScreenListOfCategories.this, () -> refreshAfterEdit()));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToRightBar(MyReplayCommand.create("CreateNewCategory", "", Icons.iconNewToolbarStyle(), (e) -> {
 //            Category category = new Category();
@@ -208,7 +214,8 @@ public class ScreenListOfCategories extends MyForm {
 //</editor-fold>
         //BACK
 //        toolbar.addCommandToLeftBar(makeDoneCommand("", FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle())));
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+        addStandardBackCommand();
 
         //INTERRUPT TASK
         toolbar.addCommandToOverflowMenu(makeInterruptCommand(true));
@@ -257,7 +264,7 @@ public class ScreenListOfCategories extends MyForm {
 
     static Container buildCategoryContainer(Category category, CategoryList categoryList, KeepInSameScreenPosition keepPos, MyForm.Action refreshOnItemEdits, ExpandedObjects expandedObjects) {
 
-        Container mainCont = new Container(new MyBorderLayout());
+        Container mainCont = new Container(new BorderLayout());
         mainCont.setUIID("CategoryListContainer");
         if (Config.TEST) {
             mainCont.setName("CatCont-" + category.getText());
@@ -420,7 +427,8 @@ public class ScreenListOfCategories extends MyForm {
             return enabled;
         }); //D&D
 
-        categoryLabel.setMaterialIcon(' '); //FontImage.MATERIAL_LIST); //UI: ' '==blank icon?! Add white space to allow to customize list icons later
+//        categoryLabel.setMaterialIcon(' '); //FontImage.MATERIAL_LIST); //UI: ' '==blank icon?! Add white space to allow to customize list icons later
+        categoryLabel.setMaterialIcon(Icons.iconCategory); //FontImage.MATERIAL_LIST); //UI: ' '==blank icon?! Add white space to allow to customize list icons later
         categoryLabel.setUIID("CategoryListTextCont");
         categoryLabel.setTextUIID("CategoryListText");
         categoryLabel.setIconUIID("CategoryListIcon");
@@ -428,13 +436,13 @@ public class ScreenListOfCategories extends MyForm {
         if (Config.TEST) {
             expandCategorySubTasksButton.setName("CatExpand-" + category.getText());
         }
-        mainCont.addComponent(MyBorderLayout.CENTER, categoryLabel);
+        mainCont.addComponent(BorderLayout.CENTER, categoryLabel);
 
         Button editItemPropertiesButton = new Button();
         editItemPropertiesButton.setUIID("IconEdit");
 
 //        editItemPropertiesButton.setCommand(MyReplayCommand.create("EditCategory-", category.getObjectIdP(), "", Icons.iconEditPropertiesToolbarStyle, (e) -> {
-        editItemPropertiesButton.setCommand(MyReplayCommand.create("EditCategory-", category.getObjectIdP(), "", Icons.iconEdit, (e) -> {
+        MyReplayCommand editCategoryCmd = MyReplayCommand.create("EditCategory-", category.getObjectIdP(), "", Icons.iconEdit, (e) -> {
 //                new ScreenCategory(category, ScreenListOfCategories.this, 
 //                ()-> {}
 //                ).show();
@@ -456,8 +464,9 @@ public class ScreenListOfCategories extends MyForm {
 //                    refreshAfterEdit();
                 refreshOnItemEdits.launchAction(); //refresh when items have been edited
             }, 0).show();
-        }
-        ));
+        });
+        editCategoryCmd.setAnalyticsActionId("EditCategoryFromListOfCategories");
+        editItemPropertiesButton.setCommand(editCategoryCmd);
         if (Config.TEST) {
             editItemPropertiesButton.setName("CatEditItem-" + category.getText());
         }
@@ -465,7 +474,7 @@ public class ScreenListOfCategories extends MyForm {
 //        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
         Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW)); //NB. NO_GROW to avoid that eg expand sublist [3/5] grows in height
 //        Container east = new Container(BoxLayout.x());
-        mainCont.addComponent(MyBorderLayout.EAST, east);
+        mainCont.addComponent(BorderLayout.EAST, east);
 //        east.addComponent(new Label(MyDate.formatDurationStd(category.getRemaining()))); //TODO reactivate this once caching of sum of effort in category is implemented
 //        Button subTasksButton = new Button();
         if (category.getSize() > 0) {
@@ -526,7 +535,7 @@ public class ScreenListOfCategories extends MyForm {
 
 //        east.addComponent(editItemPropertiesButton);
         if (MyPrefs.showCategoryDescriptionInCategoryList.getBoolean() && !category.getComment().equals("")) {
-            mainCont.addComponent(MyBorderLayout.SOUTH,
+            mainCont.addComponent(BorderLayout.SOUTH,
                     new Container(BoxLayout.x()).add(
                             new Label("(" + category.getComment() + ")")));
         }

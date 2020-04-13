@@ -81,7 +81,8 @@ public class ScreenStatisticsLists extends MyForm {
         Toolbar toolbar = getToolbar();
         //DONE/BACK
 //        toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand());
-        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+//        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+        addStandardBackCommand();
 
 //        toolbar.addCommandToOverflowMenu(makeCancelCommand());
 

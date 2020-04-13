@@ -51,7 +51,7 @@ public interface Work {
     };
 
     default public Date getStartTimeD() {
-        return new Date(getStartTime());
+        return new MyDate(getStartTime());
     }
 
     public long getDurationInMillis();
@@ -59,7 +59,7 @@ public interface Work {
     public long getEndTime();
 
     default public Date getEndTimeD() {
-        return new Date(getEndTime());
+        return new MyDate(getEndTime());
     }
 
     /**

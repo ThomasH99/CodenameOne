@@ -12,6 +12,7 @@ import com.codename1.ui.events.ActionListener;
 
 /**
  * overrides CN1 command to intercept action event and track them via Analytics
+ *
  * @author thomashjelm
  */
 public class CommandTracked extends Command {
@@ -44,6 +45,7 @@ public class CommandTracked extends Command {
 //        super(command, icon);
         super(command);
         setMaterialIcon(icon);
+        setMaterialIconSize(MyPrefs.defaultIconSizeInMM.getFloat());
 //        actionId=analyticsActionId;
     }
 
@@ -56,17 +58,20 @@ public class CommandTracked extends Command {
 //        super(command, icon);
         super(command);
         setMaterialIcon(icon);
+        setMaterialIconSize(MyPrefs.defaultIconSizeInMM.getFloat());
         setAnalyticsActionId(analyticsActionId);
     }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        if (getActionId() != null) {
-            MyAnalyticsService.event(getActionId());
-        } else if (this instanceof MyReplayCommand) {
-            MyAnalyticsService.event(((MyReplayCommand) this).getCmdUniqueID());
-        } else {
-            MyAnalyticsService.event(getCommandName());
+        if (MyAnalyticsService.isEnabled()) {
+            if (getActionId() != null) {
+                MyAnalyticsService.event(getActionId());
+            } else if (this instanceof MyReplayCommand) {
+                MyAnalyticsService.event(((MyReplayCommand) this).getCmdUniqueID());
+            } else {
+                MyAnalyticsService.event(getCommandName());
+            }
         }
         super.actionPerformed(evt);
     }
@@ -85,7 +90,7 @@ public class CommandTracked extends Command {
         cmd.setAnalyticsActionId(analyticsActionId);
         return cmd;
     }
-    
+
     public static CommandTracked create(String name, char icon, final ActionListener ev, String analyticsActionId) {
 //        com.codename1.ui.CommandTracked cmd = new com.codename1.ui.CommandTracked(name) {
         CommandTracked cmd = new CommandTracked(name, icon) {

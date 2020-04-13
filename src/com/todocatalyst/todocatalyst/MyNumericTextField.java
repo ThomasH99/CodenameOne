@@ -54,8 +54,9 @@ class MyNumericTextField extends TextField {
 
     MyNumericTextField(String hint) {
         super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
-        putClientProperty("iosHideToolbar", Boolean.FALSE); //TRUE will hide the toolbar and only show Done button
-        if (Config.TEST) {
+        if (false&&Config.TEST) {
+            
+            putClientProperty("iosHideToolbar", Boolean.FALSE); //TRUE will hide the toolbar and only show Done button
             putClientProperty("ios.hideToolbar", Boolean.FALSE); //TRUE will hide the toolbar and only show Done button
             putClientProperty("ios.HideToolbar", Boolean.FALSE); //TRUE will hide the toolbar and only show Done button
             setDoneListener((e) -> Log.p("setDoneListener: Done on MyNumericTextField=" + this));
@@ -66,7 +67,6 @@ class MyNumericTextField extends TextField {
         setAlignment(Component.RIGHT);
 //            setSameWidth(new Label("9999"));
         setAutoDegradeMaxSize(true);
-
 //            setGrowLimit(maxRows);
 //            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
 //            setMaxSize(maxTextSize);
