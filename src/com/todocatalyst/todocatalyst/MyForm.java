@@ -11,7 +11,6 @@ import com.codename1.components.SpanLabel;
 import com.codename1.components.Switch;
 import com.codename1.components.ToastBar;
 import com.codename1.io.Log;
-import com.codename1.io.NetworkManager;
 import com.codename1.ui.Button;
 import static com.codename1.ui.CN.EAST;
 import static com.codename1.ui.CN.WEST;
@@ -42,6 +41,7 @@ import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.Layout;
+import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.ui.util.UITimer;
@@ -50,6 +50,7 @@ import static com.todocatalyst.todocatalyst.MyTree2.KEY_OBJECT;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
 
@@ -107,10 +108,14 @@ public class MyForm extends Form {
     private String showIfEmptyList = null; //holds Container with actual content, typically MyTree2
 
     SwipeableContainer openSwipeContainer = null; //stores the currently open SwipeContainer for this screen
-    final static int ANIMATION_TIME_DEFAULT = 300; //in milliseconds
+    public final static int ANIMATION_TIME_DEFAULT = 300; //in milliseconds
     final static int ANIMATION_TIME_FAST = 150; //in milliseconds
     private Container smallTimer = null;
 
+    protected void expandedObjectsInit(String objIdOrOtherUniqueName) {
+        expandedObjects = new ExpandedObjects(getUniqueFormId(),objIdOrOtherUniqueName); 
+    }
+    
     public CheckIfDataIsComplete getCheckIfSaveOnExit() {
         return checkDataIsCompleteBeforeExit;
     }
@@ -256,7 +261,7 @@ public class MyForm extends Form {
         PROJECTS(SCREEN_PROJECTS_TITLE), TEMPLATES(SCREEN_TEMPLATES_TITLE),
         COMPLETION_LOG(SCREEN_COMPLETION_LOG_TITLE), CREATION_LOG(SCREEN_CREATION_LOG_TITLE),
         NEXT(SCREEN_NEXT_TITLE), OVERDUE(SCREEN_OVERDUE_TITLE), TOUCHED(SCREEN_TOUCHED), STATISTICS(SCREEN_STATISTICS);
-        String screenTitle;
+        private String screenTitle;
 
         ScreenType(String title) {
             screenTitle = title;
@@ -357,8 +362,9 @@ public class MyForm extends Form {
 //            getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
 //            setTitle(title); //do again since super(title)
 //        }
-        if (false)setScrollVisible(true); //show scroll bar(?)
-
+        if (false) {
+            setScrollVisible(true); //show scroll bar(?)
+        }
 //        getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
         if (false) { //NOT good UI since we have commands in the toolbar
             getToolbar().setScrollOffUponContentPane(true);
@@ -441,7 +447,7 @@ public class MyForm extends Form {
 //        getProperties(); //get existing (previously saved) properties from Parse
 //</editor-fold>
         setMyShowAlarmsReplayCmd(makeAlarmsReplayCmd());
-        setSafeArea(true); //protect scrollbar at bottom of screen from swipe commands
+        setSafeArea(MyPrefs.enableSafeArea.getBoolean()); //protect scrollbar at bottom of screen from swipe commands
         if (false && Config.TEST) { //TODO!!!! Not sure this is a good idea since it makes the menu and Back button disappear --> maybe 
             //this only works if contentPane is scrollableY (and not BorderLayout as now)
             getToolbar().setScrollOffUponContentPane(MyPrefs.addNewCategoriesToBeginningOfCategoryList.getBoolean()); //see https://github.com/codenameone/CodenameOne/issues/2295
@@ -521,6 +527,38 @@ public class MyForm extends Form {
             getAnimationManager().onTitleScrollAnimation(scrollableComponent, title2);
         }
     }
+    
+        /**
+     * Allows subclasses to disable the global toolbar for a specific form by overriding this method
+     */
+    @Override
+    protected void initGlobalToolbar() {
+        if(Toolbar.isGlobalToolbar()) {
+            setToolbar(new Toolbar(){
+                    protected void initTitleBarStatus() {
+//        Form f = getComponentForm();
+//        if (f != null && !f.shouldPaintStatusBar()) {
+//            return;
+//        }
+//        if (getUIManager().isThemeConstant("paintsTitleBarBool", false)) {
+        if (!MyPrefs.hideStatusBar.getBoolean()) {
+            // check if its already added:
+            if (((BorderLayout) getLayout()).getNorth() == null) {
+                Container bar = new Container();
+                if(getUIManager().isThemeConstant("landscapeTitleUiidBool", false)) {
+                    bar.setUIID("StatusBar", "StatusBarLandscape");
+                } else {
+                    bar.setUIID("StatusBar");
+                }
+                addComponent(BorderLayout.NORTH, bar);
+            }
+        }
+    }
+
+            });
+        }
+    }
+
 
     protected void setKeepPos(KeepInSameScreenPosition keepPos) {
         this.keepPos = keepPos;
@@ -856,7 +894,7 @@ public class MyForm extends Form {
      * @return
      */
 //    static void dialogSetWaitingDateAndAlarm(Item item, Map<Object, UpdateField> parseIdMap2) {
-    static void showDialogSetWaitingDateAndAlarm(Item item) {
+    static void showDialogSetWaitingDateAndAlarmIfAppropriate(Item item) {
         if (!MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting.getBoolean()
                 || (item.getWaitingTillDate().getTime() != 0 && item.getWaitingAlarmDate().getTime() != 0)) {
             return; //do nothing if both waiting dates are already set
@@ -907,10 +945,11 @@ public class MyForm extends Form {
 //        return dia;
     }
 
-    static void showDialogUpdateActualTime(Item item) {
-        if (item.isDone()
+    static void showDialogUpdateActualTimeIfAppropriate(Item item) {
+        if (false&&(item.isDone()
                 || !(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()
-                || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero.getBoolean() && item.getActual() == 0))) {
+//                || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZeroXXX.getBoolean() && item.getActual() == 0)))
+                ))) {
             return; //do nothing if item is done, or settings/conditions not fulfilled
         }
 //        Map<Object, Runnable> parseIdMap2 = new HashMap<Object, Runnable>();
@@ -1396,6 +1435,8 @@ public class MyForm extends Form {
 //    }
 //</editor-fold>
     void setUpdateActionOnDone(Runnable updateActionOnDone) {
+        if (Config.TEST) ASSERT.that(updateActionOnDone==null|| this.updateActionOnDone==null, "Setting updateActionOnDone twice, old="
+                +this.updateActionOnDone+"; new="+updateActionOnDone);
         this.updateActionOnDone = updateActionOnDone;
     }
 
@@ -1404,6 +1445,8 @@ public class MyForm extends Form {
     }
 
     void setUpdateActionOnCancel(Runnable updateActionOnCancel) {
+        if (Config.TEST) ASSERT.that(updateActionOnCancel==null|| this.updateActionOnCancel==null, "Setting updateActionOnCancel twice, old="
+                +this.updateActionOnCancel+"; new="+updateActionOnCancel);
         this.updateActionOnCancel = updateActionOnCancel;
     }
 
@@ -1411,7 +1454,7 @@ public class MyForm extends Form {
         return updateActionOnCancel;
     }
 
-    void addToContentContainer(Component content) {
+    void addToContentContainerXXX(Component content) {
         getContentPane().add(BorderLayout.CENTER, content);
     }
 
@@ -1494,10 +1537,12 @@ public class MyForm extends Form {
     protected boolean isDragAndDropEnabled() {
         return false;
     }
-    
+
     /**
-     * if returning true a warning will be shown to the user that drag and drop is not possible, otherwise nothing happens
-     * @return 
+     * if returning true a warning will be shown to the user that drag and drop
+     * is not possible, otherwise nothing happens
+     *
+     * @return
      */
     protected boolean isShowDragAndDropWarning() {
         return false;
@@ -1613,12 +1658,12 @@ public class MyForm extends Form {
         if (elt.getObjectIdP() != null) {
             ASSERT.that(!elt.isNoSave());
             return elt.getObjectIdP();
-        } else if (elt instanceof ItemList) { 
-            if(!((ItemList) elt).getSystemName().equals("")) {
-            return ((ItemList) elt).getSystemName();
-        } else if( elt instanceof CategoryList) {
-            return ((ItemList) elt).getSystemName();
-        }
+        } else if (elt instanceof ItemList) {
+            if (!((ItemList) elt).getSystemName().equals("")) {
+                return ((ItemList) elt).getSystemName();
+            } else if (elt instanceof CategoryList) {
+                return ((ItemList) elt).getSystemName();
+            }
         }
 //            else if (elt.isNoSave())
         return defaultString;
@@ -1812,7 +1857,7 @@ public class MyForm extends Form {
 
 //    protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemList itemListOrg) {
     protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemAndListCommonInterface itemListOrg) {
-        return makeSearchFunctionUpperLowerStickyHeaders(itemListOrg, () -> (Container) ((MyBorderLayout) getContentPane().getLayout()).getCenter());
+        return makeSearchFunctionUpperLowerStickyHeaders(itemListOrg, () -> (Container) ((BorderLayout) getContentPane().getLayout()).getCenter());
     }
 
     protected ActionListener makeSearchFunctionSimple(ItemList itemListList, ComponentListForSearch getCompList) {
@@ -2274,15 +2319,15 @@ public class MyForm extends Form {
     public Command makeCommandNewItemSaveToInboxXXX(String cmdText) {
         return makeCommandNewItemSaveToItemList(Inbox.getInstance(), cmdText);
     }
+
     public Command makeCommandNewItemSaveToInbox(boolean useStdCmdText) {
-        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), useStdCmdText?"Add task to Inbox":"");
+        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), useStdCmdText ? "Add task to Inbox" : "");
     }
+
     public Command makeCommandNewItemSaveToInbox() {
 //        return makeCommandNewItemSaveToInbox(true);
         return makeCommandNewItemSaveToItemList(Inbox.getInstance(), "CreateNewItemInInbox", "Add task to Inbox", Icons.iconNewTaskToInbox);
     }
-    
-
 
     public MyReplayCommand makeEditFilterSortCommand(ItemAndListCommonInterface itemListOrItem) {
         return MyReplayCommand.createKeep("FilterSortSettings", "Edit filter/sort", Icons.iconFilterSettings, (e) -> {
@@ -2302,8 +2347,9 @@ public class MyForm extends Form {
 //            }
 //</editor-fold>
             //need this construct due to use in lambda below
-            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDefN() != null
-                    ? itemListOrItem.getFilterSortDefN() : itemListOrItem.getFilterSortDef(true);
+//            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDefN() != null
+//                    ? itemListOrItem.getFilterSortDefN() : itemListOrItem.getFilterSortDef(true);
+            FilterSortDef filterSortDef =  itemListOrItem.getFilterSortDef(true);
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenFilter(filterSortDef, MyForm.this, () -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2315,8 +2361,10 @@ public class MyForm extends Form {
 //                    itemListOrItem.setFilterSortDef(filterSortDef); //save a copy of the new edited filter
 //                }
 //</editor-fold>
-                if ((itemListOrItem.getFilterSortDefN() == null && !filterSortDef.equals(itemListOrItem.getFilterSortDef(true))) //if new default filter was edited
-                        || (itemListOrItem.getFilterSortDefN() != null && filterSortDef.isDirty())) { //or if existing filter was edited
+//                if ((itemListOrItem.getFilterSortDefN() == null && !filterSortDef.equals(itemListOrItem.getFilterSortDef(true))) //if new default filter was edited
+//                        || (itemListOrItem.getFilterSortDefN() != null && filterSortDef.isDirty())) { //or if existing filter was edited
+                if ( !filterSortDef.equals(itemListOrItem.getFilterSortDef(true))) {//if original or default filter was edited
+//                        ) { //or if existing filter was edited
                     itemListOrItem.setFilterSortDef(filterSortDef); //update with edited filter
                 }
                 DAO.getInstance().saveNew(filterSortDef); //save updates
@@ -2525,7 +2573,7 @@ public class MyForm extends Form {
                     ASSERT.that("shouldn't happen since no LarmsReplayCmd should be generated/added for ScreenListOfAlarms");
                 }
             } else {
-                ScreenListOfAlarms.getInstance().refreshAfterEdit(); //refresh to ensure new list of alarms is shown
+//                ScreenListOfAlarms.getInstance().refreshAfterEdit(); //ALREADY done in ScreenListOfAlarms.getInstance().show() // refresh to ensure new list of alarms is shown
                 ScreenListOfAlarms.getInstance().show(currentForm);
             }
         });
@@ -2674,10 +2722,14 @@ public class MyForm extends Form {
         return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
     }
 
-    protected static Component layoutN(boolean visibleEditButton, String fieldLabelTxt, Component field, String help) { //normal edit field with [>]
-        return layoutN(fieldLabelTxt, field, help, null, true, false, visibleEditButton, false);
+    protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help) { //normal edit field with [>]
+//        return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
+        return new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, true, false, sizeWestBeforeEast, null);
     }
 
+//    protected static Component layoutN(boolean visibleEditButton, String fieldLabelTxt, Component field, String help) { //normal edit field with [>]
+//        return layoutN(fieldLabelTxt, field, help, null, true, false, visibleEditButton, false);
+//    }
     protected static Component layoutN(String fieldLabelTxt, MyOnOffSwitch onOffSwitch, String help) { //normal edit field with [>]
         return layoutN(fieldLabelTxt, onOffSwitch, help, null, true, false, false, true);
     }
@@ -2690,6 +2742,13 @@ public class MyForm extends Form {
     protected static Component layoutN(String fieldLabelTxt, Component field, String help,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton) {
         return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
+    }
+
+    protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton) {
+//        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
+        return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, sizeWestBeforeEast, null);
+
     }
 
     protected static Component layoutN(String fieldLabelTxt, Component field, String help,
@@ -2705,6 +2764,11 @@ public class MyForm extends Form {
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton) {
         return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, boolean sizeWestBeforeEast) {
+        return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, sizeWestBeforeEast, null);
     }
 
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -3894,7 +3958,7 @@ public class MyForm extends Form {
         return false;
     }
 
-    private void createAndAddInsertContainer(MyDragAndDropSwipeableContainer refComponentN, ItemAndListCommonInterface itemElt,
+    protected void createAndAddInsertContainer(MyDragAndDropSwipeableContainer refComponentN, ItemAndListCommonInterface itemElt,
             boolean insertBeforeRefElement) {//, boolean insertAsSubtask) {
         if (false && (itemElt == null || refComponentN == null)) { //both can be null when inserting first element into a list
 //            return null;
@@ -4768,6 +4832,7 @@ public class MyForm extends Form {
 //        return null;
 //    }
 //</editor-fold>
+    @Override
     public void pointerReleased(int[] x, int[] y) {
         if (pinchInsertInitiated) {
             if (Config.TEST_PINCH) {
@@ -4779,6 +4844,7 @@ public class MyForm extends Form {
         super.pointerReleased(x, y);
     }
 
+    @Override
     public void pointerReleased(int x, int y) {
         if (pinchInsertInitiated) {
             if (Config.TEST_PINCH) {
@@ -5240,6 +5306,14 @@ public class MyForm extends Form {
             }
         }
         return null;
+    }
+
+    public void showStatusBar(boolean show) {
+//        if (getUIManager().isThemeConstant("paintsTitleBarBool", false)) {
+        Hashtable<String, Object> theme = new Hashtable<>();
+        theme.put("paintsTitleBarBool", show);
+//        getUIManager().setThemeProps(theme);
+        UIManager.getInstance().addThemeProps(theme);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

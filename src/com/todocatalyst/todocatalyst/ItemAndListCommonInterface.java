@@ -1160,7 +1160,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return
      */
     public FilterSortDef getFilterSortDefN();
-    
+
+    default public FilterSortDef getFilterSortDef() {
+        return getFilterSortDef(true);
+    }
+
     default public FilterSortDef getFilterSortDef(boolean returnDefaultFilterIfNoneDefined) {
         FilterSortDef filterSortDef = getFilterSortDefN();
         if (filterSortDef == null && returnDefaultFilterIfNoneDefined) {
@@ -1296,7 +1300,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
-     * update at the very last moment, just before saving, so that all other changes to an element have been effectuated
+     * update at the very last moment, just before saving, so that all other
+     * changes to an element have been effectuated
      */
     default public void updateBeforeSave() {
 //        assert false; //Do nothing unless specified by specialized object

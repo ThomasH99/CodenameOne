@@ -31,16 +31,23 @@ public class EditFieldContainer extends Container {
 
     EditFieldContainer(String fieldLabelTxt, Component field, String helpText, SwipeClear swipeClearFct,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton) {
-        this(fieldLabelTxt, field, helpText, swipeClearFct, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, null);
+        this(fieldLabelTxt, field, helpText, swipeClearFct, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, false, null);
     }
 
     EditFieldContainer(String fieldLabelTxt, Component field, String helpText, SwipeClear swipeClearFct,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, Image fieldIcon) {
-        super(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+        this(fieldLabelTxt, field, helpText, swipeClearFct, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, false, fieldIcon);
+    }
+
+    EditFieldContainer(String fieldLabelTxt, Component field, String helpText, SwipeClear swipeClearFct,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, boolean sizeWestBeforeEast, Image fieldIcon) {
+//        super(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+        super(); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
         setUIID("EditFieldContainer");
         Container fieldContainer = this;
         MyBorderLayout layout = MyBorderLayout.center();
-        layout.setSizeEastWestMode(MyBorderLayout.SIZE_WEST_BEFORE_EAST);
+//        layout.setSizeEastWestMode(MyBorderLayout.SIZE_WEST_BEFORE_EAST);
+        layout.setSizeEastWestMode(sizeWestBeforeEast ? MyBorderLayout.SIZE_WEST_BEFORE_EAST : MyBorderLayout.SIZE_EAST_BEFORE_WEST);
         fieldContainer.setLayout(layout);
 
 //        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
@@ -51,7 +58,7 @@ public class EditFieldContainer extends Container {
             ((WrapButton) field).setTextUIID(showAsFieldUneditable ? "ScreenItemField" : "ScreenItemEditableValue");
             ((WrapButton) field).setUIID("Container");
             ((WrapButton) field).getTextComponent().setRTL(true);
-        } else if (field instanceof ComponentGroup|| field instanceof MyToggleButton) {
+        } else if (field instanceof ComponentGroup || field instanceof MyToggleButton) {
         } else {
 //                field.setUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
             field.setUIID(showAsFieldUneditable ? "ScreenItemValueUneditable" : "ScreenItemEditableValue");
@@ -113,18 +120,22 @@ public class EditFieldContainer extends Container {
                 int labelPreferredW = fieldLabel.getPreferredW();
                 int fieldPreferredW = visibleField.getPreferredW();
                 if (labelPreferredW + fieldPreferredW > availDisplWidth) { //if too wide
-                    if (field instanceof ComponentGroup ){//|| field instanceof MyToggleButton) { //MyComponentGroups cannot wrap and must be shown fully so split on *two* lines
+                    if (field instanceof ComponentGroup) {//|| field instanceof MyToggleButton) { //MyComponentGroups cannot wrap and must be shown fully so split on *two* lines
                         fieldContainer.add(MyBorderLayout.NORTH, fieldLabel);
                         fieldContainer.add(MyBorderLayout.EAST, visibleField);
+                        if (field instanceof ComponentGroup) {
+                            field.setUIID("ComponentGroupTwoLines");
+                        }
                     } else {
-                        int widthFirstColumn = 0;
-                        int labelRelativeWidthPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
-                        int labelScreenWidthPercent = labelPreferredW * 100 / (availDisplWidth);
-                        if (true) {
-                            if (labelScreenWidthPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
-                                widthFirstColumn = labelScreenWidthPercent;
-                            }
-                        } else {
+                        if (false) {
+                            int widthFirstColumn = 0;
+                            int labelRelativeWidthPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
+                            int labelScreenWidthPercent = labelPreferredW * 100 / (availDisplWidth);
+                            if (true) {
+                                if (labelScreenWidthPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
+                                    widthFirstColumn = labelScreenWidthPercent;
+                                }
+                            } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //field should not be less than 30% of width
 //                    int labelRelativeWidthPercent = labelPreferredW * 100/ availDisplWidth ;
@@ -135,23 +146,28 @@ public class EditFieldContainer extends Container {
 //                        int widthFirstColumn = Math.min(Math.max(fieldLabelPreferredW / visibleFieldPreferredW * 100, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
 //                        widthFirstColumn = 100 - fieldRelativeWidthPercent; //first column gets the rest
 //</editor-fold>
-                            if (labelRelativeWidthPercent > 70) { //visibleField takes up less than 30% of avail space 
-                                widthFirstColumn = 70; //first column gets the rest
-                            } else if (labelRelativeWidthPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
-                                widthFirstColumn = labelRelativeWidthPercent; //give it full space (no wrap)
-                            } else if (labelRelativeWidthPercent < 30) { //visibleField takes up less than 30% of avail space 
+                                if (labelRelativeWidthPercent > 70) { //visibleField takes up less than 30% of avail space 
+                                    widthFirstColumn = 70; //first column gets the rest
+                                } else if (labelRelativeWidthPercent < 45 && fieldLabelTxt.indexOf(" ") == -1) { //label takes up less than 45% of avail space and no spaces (no wrap)
+                                    widthFirstColumn = labelRelativeWidthPercent; //give it full space (no wrap)
+                                } else if (labelRelativeWidthPercent < 30) { //visibleField takes up less than 30% of avail space 
 //                        int widthVisibleFieldPercent = 100 - widthFieldLabelPercent;
 //                        int widthLabelPercent = labelPreferredW * 100 / (labelPreferredW + fieldPreferredW);
-                                widthFirstColumn = 30; //Math.min(Math.max(widthLabelPercent, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
+                                    widthFirstColumn = 30; //Math.min(Math.max(widthLabelPercent, 30), 70); //30 to avoid first field gets smaller than 30%, 70 to avoid it gets wider than 70%
+                                }
                             }
-                        }
-                        TableLayout tl = new TableLayout(1, 2);
-                        tl.setGrowHorizontally(true); //grow the remaining right-most column
+
+                            TableLayout tl = new TableLayout(1, 2);
+                            tl.setGrowHorizontally(true); //grow the remaining right-most column
 //                fieldContainer = new Container(tl);
-                        fieldContainer.setLayout(tl);
-                        fieldContainer.
-                                add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.LEFT).widthPercentage(widthFirstColumn), fieldLabel).
-                                add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.RIGHT), visibleField); //align center right
+                            fieldContainer.setLayout(tl);
+                            fieldContainer.
+                                    add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.LEFT).widthPercentage(widthFirstColumn), fieldLabel).
+                                    add(tl.createConstraint().verticalAlign(Component.CENTER).horizontalAlign(Component.RIGHT), visibleField); //align center right
+                        } else {
+                            fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
+                            fieldContainer.add(MyBorderLayout.EAST, visibleField);
+                        }
                     }
                 } else {
                     fieldContainer.add(MyBorderLayout.WEST, fieldLabel);

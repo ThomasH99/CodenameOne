@@ -2405,7 +2405,8 @@ class TimerStack {
                 itemHierarchyContainer.setHidden(!itemHierarchyContainer.isHidden()); //inverse visibility
 //                    buttonShowItemHierarchy.setIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
                 buttonShowItemHierarchy.setMaterialIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMore : Icons.iconShowLess); //switch icon
-                buttonShowItemHierarchy.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+//                buttonShowItemHierarchy.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+                buttonShowItemHierarchy.getComponentForm().animateHierarchy(MyForm.ANIMATION_TIME_DEFAULT);
             });
 
             contentPane.add(BorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName)))
@@ -3044,7 +3045,7 @@ class TimerStack {
 
                 timerInstance.stopTimer(true); //do this first to avoid that timer continues while dialog is active
                 //if setting Waiting, ask if set waiting date and/or waiting alarm
-                MyForm.showDialogSetWaitingDateAndAlarm(timedItem); //only call if we're changing TO Waiting status
+                MyForm.showDialogSetWaitingDateAndAlarmIfAppropriate(timedItem); //only call if we're changing TO Waiting status
 //                if (false) MyForm.showDialogUpdateRemainingTime(effort); //too cumbersome to call from timer, simply stop Timer and edit if timer's been running for too long
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                timedItem.setStatus(status.getStatus());
@@ -3297,7 +3298,8 @@ class TimerStack {
                         itemHierarchyContainer.setHidden(!itemHierarchyContainer.isHidden()); //inverse visibility
 //                    buttonShowItemHierarchy.setIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMoreLabelStyle : Icons.iconShowLessLabelStyle); //switch icon
                         buttonShowItemHierarchy.setMaterialIcon(itemHierarchyContainer.isHidden() ? Icons.iconShowMore : Icons.iconShowLess); //switch icon
-                        buttonShowItemHierarchy.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+//                        buttonShowItemHierarchy.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+                        buttonShowItemHierarchy.getComponentForm().animateHierarchy(MyForm.ANIMATION_TIME_DEFAULT);
                     });
 
                     timerContainer.add(BorderLayout.center(FlowLayout.encloseCenter(new SpanLabel(listName)))

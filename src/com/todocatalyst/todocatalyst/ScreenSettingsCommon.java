@@ -175,6 +175,10 @@ public class ScreenSettingsCommon extends MyForm {
 //        cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener, prefEntry.getHelpText()));
         cont.add(settingBoolean(parseIdMap2, prefEntry, onOnAction, onOffAction));
     }
+    
+    static void addSettingBoolean(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnOffAction) {
+        addSettingBoolean(cont, parseIdMap2, prefEntry, onOnOffAction, onOnOffAction);
+    }
 
     static void addSettingBoolean(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Component settingShowOnActive) {
 //        cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener, prefEntry.getHelpText()));
@@ -194,7 +198,7 @@ public class ScreenSettingsCommon extends MyForm {
     static Component settingBoolean(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnAction, Runnable onOffAction) {
 //        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
         ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
-        Switch compForActionListener = new MyOnOffSwitch(parseIdMap2, () -> {
+        Switch switchCmp = new MyOnOffSwitch(parseIdMap2, () -> {
             return MyPrefs.getBoolean(prefEntry);
         }, (b) -> {
             MyPrefs.setBoolean(prefEntry, b);
@@ -224,8 +228,8 @@ public class ScreenSettingsCommon extends MyForm {
 //                MyPrefs.setBoolean(prefEntry, b);
 //            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
 //</editor-fold>
-        compForActionListener.addActionListener((e) -> {
-            if (compForActionListener.isOn()) {
+        switchCmp.addActionListener((e) -> {
+            if (switchCmp.isOn()) {
                 if (onOnAction != null) {
                     onOnAction.run();
                 }
@@ -236,7 +240,7 @@ public class ScreenSettingsCommon extends MyForm {
             }
         });
 //        return compForActionListener;
-        return layoutSetting(prefEntry.getFieldScription(), compForActionListener, prefEntry.getHelpText());
+        return layoutSetting(prefEntry.getFieldScription(), switchCmp, prefEntry.getHelpText());
     }
 
     static Component settingBoolean(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {

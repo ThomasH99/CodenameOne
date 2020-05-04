@@ -194,20 +194,20 @@ public class MyTree2 extends ContainerScrollY {
             }
         }
 
-        BoxLayout layout;
-        layout = new BoxLayout(BoxLayout.Y_AXIS);
+//        BoxLayout layout;
+//        layout = new BoxLayout(BoxLayout.Y_AXIS);
 //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
 //        FlowLayout layout ;
 //        layout =(new FlowLayout(Component.CENTER));
 //        layout.
-        setLayout(layout);
+        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+        setScrollableY(true);
 //        if (folder == null) {
 //            folder = UIManager.getInstance().getThemeImageConstant("treeFolderImage");
 //            openFolder = UIManager.getInstance().getThemeImageConstant("treeFolderOpenImage");
 //            nodeImage = UIManager.getInstance().getThemeImageConstant("treeNodeImage");
 //        }
         buildBranch(null, 0, this, false);
-        setScrollableY(true);
         setUIID("Tree");
     }
 
@@ -681,6 +681,8 @@ public class MyTree2 extends ContainerScrollY {
             } else if (parent instanceof ItemAndListCommonInterface) {
 //                nodeComponent = createNode(current, depth);
                 nodeComponent = createNode(current, depth, (ItemAndListCommonInterface) parent, null);
+//            } else if (current instanceof ExpiredAlarm) {
+//                nodeComponent = createNode(current, depth, (ItemAndListCommonInterface) parent, null);
             } else {
                 nodeComponent = createNode(current, depth);
             }
@@ -1324,9 +1326,11 @@ public class MyTree2 extends ContainerScrollY {
             }
             if (newStr != null && !newStr.equals(previousStickyStr)) {
                 stringPut.put(newStr); //store to compare next time
-                StickyHeader stickyHeader = new StickyHeader("StickyHeader", "StickyHeaderIcon"); //TODO!! define separate style for stickyheaders
-                Label stickyHeaderLabel = new Label(newStr, "StickyHeaderLabel");
-                stickyHeader.add(stickyHeaderLabel);
+//                StickyHeader stickyHeader = new StickyHeader("StickyHeader", "StickyHeaderIcon"); //TODO!! define separate style for stickyheaders
+                StickyHeader stickyHeader = new StickyHeader("StickyHeader"); //TODO!! define separate style for stickyheaders
+//                Label stickyHeaderLabel = new Label(newStr, "StickyHeaderLabel");
+//                stickyHeader.add(stickyHeaderLabel);
+                stickyHeader.setText(newStr);
                 return stickyHeader;
             }
 

@@ -9,6 +9,8 @@ import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import com.parse4cn1.ParseQuery;
 import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
+import java.io.DataInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -49,7 +51,7 @@ public class FilterSortDef extends ParseObject {
     private static String PARSE_FILTER_NAME = "name"; //name of filter
     private static String PARSE_FILTER_DESCRIPTION = "description"; //longer text description the *purpose*/*benefit* of the filter
     private static String PARSE_FILTER_HELP = "help"; //help text
-    private static String PARSE_FILTER_DEFINITION = "definition"; //short *definition* (how exactly is it calculate) of the filter
+//    private static String PARSE_FILTER_DEFINITION = "definition"; //short *definition* (how exactly is it calculate) of the filter
     static String PARSE_SYSTEM_NAME = ItemList.PARSE_SYSTEM_NAME; //systemname for filters for e.g. Next, Inbox, Alltasks, ...
 //    private static String PARSE_FILTER_PREDEFINED = "predefined";
 //    public static String PARSE_SORT_FILTER_ID = "filterId"; //name of screen and objectId of object displayed
@@ -90,9 +92,9 @@ public class FilterSortDef extends ParseObject {
         if (!Objects.equals(getFilterName(), filterSortDef.getFilterName())) {
             return false;
         }
-        if (!Objects.equals(getDefinition(), filterSortDef.getDefinition())) {
-            return false;
-        }
+//        if (!Objects.equals(getDefinition(), filterSortDef.getDefinition())) {
+//            return false;
+//        }
         if (!Objects.equals(getDescription(), filterSortDef.getDescription())) {
             return false;
         }
@@ -109,7 +111,7 @@ public class FilterSortDef extends ParseObject {
         }
 
         if (!Objects.equals(getFilterOptions(), filterSortDef.getFilterOptions())) {
-            setFilterOptions(filterSortDef.getFilterOptions());
+            setAndExtractFilterOptions(filterSortDef.getFilterOptions());
             updated = true;
         }
         if (!Objects.equals(getSortFieldId(), filterSortDef.getSortFieldId())) {
@@ -128,10 +130,10 @@ public class FilterSortDef extends ParseObject {
             setFilterName(filterSortDef.getFilterName());
             updated = true;
         }
-        if (!Objects.equals(getDefinition(), filterSortDef.getDefinition())) {
-            setDefinition(filterSortDef.getDefinition());
-            updated = true;
-        }
+//        if (!Objects.equals(getDefinition(), filterSortDef.getDefinition())) {
+//            setDefinition(filterSortDef.getDefinition());
+//            updated = true;
+//        }
         if (!Objects.equals(getDescription(), filterSortDef.getDescription())) {
             setDescription(filterSortDef.getDescription());
             updated = true;
@@ -207,9 +209,9 @@ public class FilterSortDef extends ParseObject {
     public final static String FILTER_SORT_TODAY_VIEW = "TODAY_VIEW";
 //    public final static String FILTER_SORT_OWNER = "SORT_ON_OWNER";
 
-    private boolean showInitialized = false;
-    private boolean showAll = true;
-    private boolean showDefault;// = true;
+//    private boolean showInitialized; // = false;
+    private boolean showAll; // = true;
+//    private boolean showDefault;// = true;
     private boolean showNewTasks;// = true;
     private boolean showOngoingTasks;// = true;
     private boolean showWaitingTasks;
@@ -230,6 +232,7 @@ public class FilterSortDef extends ParseObject {
      */
     public FilterSortDef() {
         super(CLASS_NAME);
+//        extractAndSetFilterOptions(); //NO good here, since constructor called when object is created, before any data is loaded. //Need to initialize these whenever a filter is created eg by reading in a cached value
 //        initFilterOptions();
 //        setDefaults();
 //        assert sortOptions.length == sortField.length: "error different number items in sortOptions and softField"; //already done in ScreenFilter
@@ -242,37 +245,13 @@ public class FilterSortDef extends ParseObject {
 //        setFilteredObjectId(filteredObject.getObjectIdP());
 //        setFilteredObject(filteredObject);
 //    }
-    public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortDescending, String description) {
+    public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortOn, boolean sortDescending, String filterName,
+            String description, /*String definition,*/ String help) {
         this();
         setSortFieldId(sortParseFieldId);
-        setSortOn(sortParseFieldId != null && !sortParseFieldId.equals(""));
-        setSortDescending(sortDescending);
-//        if (filterOptions != null) {
-////            extractAndSetFilterOptions(filterOptions);
-////            saveCurrentlyActiveFilterOptions();
-//            setFilterOptions(filterOptions);
-//        }
-//        else {
-//            getFilterOptions();
-//        }
-        setFilterOptions(filterOptions);
-        setDescription(description);
-    }
-
-    public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortDescending, boolean isNoSave) {
-        this(sortParseFieldId, filterOptions, sortDescending, "");
-        this.isNoSave = isNoSave;
-    }
-
-    public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortDescending) {
-        this(sortParseFieldId, filterOptions, sortDescending, false);
-    }
-
-    public FilterSortDef(Comparator<Item> sorter, String filterOptions, String description) {
-        this();
-//        setSortFieldId(sortParseFieldId);
 //        setSortOn(sortParseFieldId != null && !sortParseFieldId.equals(""));
-        setSortingComparator(sorter);
+        setSortOn(sortOn);
+        setSortDescending(sortDescending);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterOptions != null) {
 ////            extractAndSetFilterOptions(filterOptions);
@@ -282,30 +261,73 @@ public class FilterSortDef extends ParseObject {
 //        else {
 //            getFilterOptions();
 //        }
-//        setSortDescending(sortDescending);
 //</editor-fold>
-        setFilterOptions(filterOptions);
+        setAndExtractFilterOptions(filterOptions);
+
+        setFilterName(filterName);
         setDescription(description);
+//        setDefinition(definition);
+        setHelp(help);
     }
+
+    public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortOn, boolean sortDescending, String description) {
+        this(sortParseFieldId, filterOptions, sortOn, sortDescending, "", description, "");
+    }
+
+    public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortOn, boolean sortDescending, boolean isNoSave) {
+        this(sortParseFieldId, filterOptions, sortOn, sortDescending, "");
+        this.isNoSave = isNoSave;
+    }
+
+    public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortOn, boolean sortDescending) {
+        this(sortParseFieldId, filterOptions, sortOn, sortDescending, false);
+    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public FilterSortDef(Comparator<Item> sorter, String filterOptions, String description) {
+//        this(PARSE_SORT_FIELD, filterOptions, showDoneTasks, description);
+////        setSortFieldId(sortParseFieldId);
+////        setSortOn(sortParseFieldId != null && !sortParseFieldId.equals(""));
+//        setSortingComparator(sorter);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (filterOptions != null) {
+//////            extractAndSetFilterOptions(filterOptions);
+//////            saveCurrentlyActiveFilterOptions();
+////            setFilterOptions(filterOptions);
+////        }
+////        else {
+////            getFilterOptions();
+////        }
+////        setSortDescending(sortDescending);
+////</editor-fold>
+//        setAndExtractFilterOptions(filterOptions);
+//        setDescription(description);
+//    }
+//</editor-fold>
 
     public FilterSortDef(FilterSortDef filterToCopy) {
-        this();
-        setSortFieldId(filterToCopy.getSortFieldId());
-        setSortDescending(filterToCopy.isSortDescending());
-        setSortOn(filterToCopy.isSortOn());
-        setFilterOptions(filterToCopy.getFilterOptions());
-
-        setFilterName(filterToCopy.getFilterName());
-        setDefinition(filterToCopy.getDefinition());
-        setHelp(filterToCopy.getHelp());
-        setDescription(filterToCopy.getDescription());
+//        this();
+        this(filterToCopy.getSortFieldId(), filterToCopy.getFilterOptions(), filterToCopy.isSortOn(), filterToCopy.isSortDescending(), filterToCopy.getFilterName(),
+                filterToCopy.getDescription(), filterToCopy.getHelp());
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        setSortFieldId(filterToCopy.getSortFieldId());
+//        setAndExtractFilterOptions(filterToCopy.getFilterOptions());
+//        setSortOn(filterToCopy.isSortOn());
+//        setSortDescending(filterToCopy.isSortDescending());
+//
+//        setFilterName(filterToCopy.getFilterName());
+//        setDescription(filterToCopy.getDescription());
+//        setDefinition(filterToCopy.getDefinition());
+//        setHelp(filterToCopy.getHelp());
+//</editor-fold>
     }
 
-    public FilterSortDef(String cmdUniqueId, String definition, String helpText) {
+//    public FilterSortDef(String cmdUniqueId, String definition, String helpText) {
+    public FilterSortDef(String filterName, String description, String helpText) {
         this();
-        setDefinition(definition);
+//        setCmdUniqueId(cmdUniqueId);
+        setFilterName(filterName);
+        setDescription(description);
         setHelp(helpText);
-        setCmdUniqueId(cmdUniqueId);
     }
 
     public void setCmdUniqueId(String cmdUniqueId) {
@@ -325,6 +347,7 @@ public class FilterSortDef extends ParseObject {
 //        s += isNoSave() ? "|NoSave" : "";
         return s;
     }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public FilterSortDef(Comparator<Item> sorter, String filterOptions, String description) {
 //        this();
 //        setFilterName(description);
@@ -337,7 +360,7 @@ public class FilterSortDef extends ParseObject {
 //    void setDefaultsXXX() {
 //        setSortFieldId(Item.PARSE_DUE_DATE); //show sort on DUE as default option *if* setting sortOn
 //        setSortDescending(false);
-//        setSortOn(false); //don't sort by default, 
+//        setSortOn(false); //don't sort by default,
 ////        extractAndSetFilterOptions(FILTER_SHOW_NEW_TASKS + FILTER_SHOW_ONGOING_TASKS + FILTER_SHOW_WAITING_TASKS + FILTER_SHOW_DONE_TASKS + FILTER_SHOW_CANCELLED_TASKS);//when creating filter first time, show all tasks (to avoid that tasks suddenly disappear in the list)
 ////        saveCurrentlyActiveFilterOptions();
 //        setFilterOptions(FILTER_SHOW_NEW_TASKS + FILTER_SHOW_ONGOING_TASKS + FILTER_SHOW_WAITING_TASKS + FILTER_SHOW_DONE_TASKS + FILTER_SHOW_CANCELLED_TASKS);//when creating filter first time, show all tasks (to avoid that tasks suddenly disappear in the list)
@@ -345,6 +368,7 @@ public class FilterSortDef extends ParseObject {
 //    private static FilterSortDef defaultDoneTasksFilter
 //            = new FilterSortDef(null, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
 //                    + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false); //no sorting, //TODO!! Move this filter to FilterSortDef.getDeafultFilter() and reuse everywhere
+//</editor-fold>
     /**
      * return default task filter, unsorted, hiding Done/Cancelled tasks. A new
      * instance each time, so if it is modified (and saved) locally it won't
@@ -372,6 +396,7 @@ public class FilterSortDef extends ParseObject {
         return filter;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    static FilterSortDef getNeutralFilterXXX() {
 //        FilterSortDef filter = new FilterSortDef();
 //        filter.setSortFieldId(null); //show sort on DUE as default option *if* setting sortOn
@@ -384,6 +409,7 @@ public class FilterSortDef extends ParseObject {
 //        filter.setFilterOptions(FILTER_SHOW_ALL);//when creating filter first time, show all tasks (to avoid that tasks suddenly disappear in the list)
 //        return filter;
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * return default task filter, unsorted, hiding Done/Cancelled tasks.
@@ -448,6 +474,7 @@ public class FilterSortDef extends ParseObject {
         Item.PARSE_URGENCY,
         Item.PARSE_STATUS};
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * fetches a filter from Parse or returns default filter if none is stored
      *
@@ -468,6 +495,7 @@ public class FilterSortDef extends ParseObject {
 //        }
 //        return filterSortDef;
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    FilterPredicate filterPredicate = new FilterPredicate();
 //    MyHashMap<String, Object> filterMap = new MyHashMap();
@@ -541,6 +569,11 @@ public class FilterSortDef extends ParseObject {
         }
     }
 
+    /**
+     * systemname for filters for e.g. Next, Inbox, Alltasks, ...
+     *
+     * @param systemName
+     */
     public void setSystemName(String systemName) {
         if (systemName == null || systemName.length() == 0) {
             remove(PARSE_SYSTEM_NAME);
@@ -549,6 +582,11 @@ public class FilterSortDef extends ParseObject {
         }
     }
 
+    /**
+     * a text description of what the filter does, shorter than help
+     *
+     * @param description
+     */
     public void setDescription(String description) {
         if (description == null || description.length() == 0) {
             remove(PARSE_FILTER_DESCRIPTION);
@@ -566,6 +604,11 @@ public class FilterSortDef extends ParseObject {
         }
     }
 
+    /**
+     * the longest description of what the filter does, used for popup help
+     *
+     * @param helpTxt
+     */
     public void setHelp(String helpTxt) {
         if (helpTxt == null || helpTxt.length() == 0) {
             remove(PARSE_FILTER_HELP);
@@ -583,23 +626,22 @@ public class FilterSortDef extends ParseObject {
         }
     }
 
-    public void setDefinition(String definition) {
-        if (definition == null || definition.length() == 0) {
-            remove(PARSE_FILTER_DEFINITION);
-        } else {
-            put(PARSE_FILTER_DEFINITION, definition);
-        }
-    }
-
-    public String getDefinition() {
-        String s = getString(PARSE_FILTER_DEFINITION);
-        if (s == null) {
-            return "";
-        } else {
-            return s;
-        }
-    }
-
+//    public void setDefinition(String definition) {
+//        if (definition == null || definition.length() == 0) {
+//            remove(PARSE_FILTER_DEFINITION);
+//        } else {
+//            put(PARSE_FILTER_DEFINITION, definition);
+//        }
+//    }
+//
+//    public String getDefinition() {
+//        String s = getString(PARSE_FILTER_DEFINITION);
+//        if (s == null) {
+//            return "";
+//        } else {
+//            return s;
+//        }
+//    }
     /**
      * @return the sortOn
      */
@@ -709,9 +751,9 @@ public class FilterSortDef extends ParseObject {
 //            return;
 //        }
 //</editor-fold>
-        if (showInitialized) {
-            return;
-        }
+//        if (false && showInitialized) { //NB extractAndSetFilterOptions is now called explicitly on every change so no need to check if initialized
+//            return;
+//        }
         String filterOptions = getFilterOptions();
         if (filterOptions == null) {
             filterOptions = ""; //reset all options
@@ -734,7 +776,7 @@ public class FilterSortDef extends ParseObject {
         showWithoutEstimatesOnly = filterOptions.indexOf(FILTER_SHOW_WITHOUT_ESTIMATES_ONLY) != -1;
         showWithActualsOnly = filterOptions.indexOf(FILTER_SHOW_WITH_ACTUALS_ONLY) != -1;
 
-        showInitialized = true;
+//        showInitialized = true;
     }
 
 //    private void extractAndSetFilterOptions() {
@@ -749,11 +791,11 @@ public class FilterSortDef extends ParseObject {
 //        if (false) {
 //            extractAndSetFilterOptions();
 //        }
-        return filterOptions;
+        return filterOptions != null ? filterOptions : "";
 //        }
     }
 
-    public void setFilterOptions(String filterOptions) {
+    public void setAndExtractFilterOptions(String filterOptions) {
         if (filterOptions != null && !filterOptions.isEmpty()) {
             put(PARSE_FILTER_OPTIONS, filterOptions);
         } else { //        extractAndSetFilterOptions(filterOptions);
@@ -795,7 +837,7 @@ public class FilterSortDef extends ParseObject {
                 + (showWithoutEstimatesOnly ? FILTER_SHOW_WITHOUT_ESTIMATES_ONLY + " " : "")
                 + (showWithActualsOnly ? FILTER_SHOW_WITH_ACTUALS_ONLY + " " : "");
 //        put(PARSE_FILTER_OPTIONS, filterOptions);
-        setFilterOptions(filterOptions);
+        setAndExtractFilterOptions(filterOptions);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1738,12 +1780,11 @@ public class FilterSortDef extends ParseObject {
         return getDeletedDate() != null;
     }
 
-    public boolean delete(Date deletedDate) {
-        setDeletedDate(deletedDate);
-//        DAO.getInstance().saveNew(this,true);
-        return true;
-    }
-
+//    public boolean delete(Date deletedDate) {
+//        setDeletedDate(deletedDate);
+////        DAO.getInstance().saveNew(this,true);
+//        return true;
+//    }
 //    public boolean softDelete() {
 //        return softDelete(true);
 //    }
@@ -1756,4 +1797,10 @@ public class FilterSortDef extends ParseObject {
     public boolean isNoSave() {
         return equals(FilterSortDef.getDefaultFilter()) || isNoSave;
     }
+
+    public void internalize(int version, DataInputStream in) throws IOException {
+        super.internalize(version, in);
+        extractAndSetFilterOptions();
+    }
+
 }

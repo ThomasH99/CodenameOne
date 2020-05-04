@@ -51,7 +51,7 @@ public class ScreenCategoryPicker extends MyForm {
 //    Set<Category> unselectedCategories=new HashSet(); //set of categories unselected by user on this screen
 //    Set<Category> selectedCategoriesOriginal;
 //    Item item;
-    
+
 //    ScreenCategoryPicker(List categories, Set<Category> selectedCategories, Form previousForm) { //throws ParseException, IOException {
 //    ScreenCategoryPicker(List categories, Item item, MyForm previousForm, UpdateField updateAfterEdit) { //throws ParseException, IOException {
 //        this(categories, item, previousForm);
@@ -103,7 +103,7 @@ public class ScreenCategoryPicker extends MyForm {
 //            compList.animateLayout(150);
 //        });
 //</editor-fold>
-        getToolbar().addSearchCommand(makeSearchFunctionSimple(listOfAllCategories,()->getContentPane()),MyPrefs.defaultIconSizeInMM.getFloat());
+//        getToolbar().addSearchCommand(makeSearchFunctionSimple(listOfAllCategories,()->getContentPane()),MyPrefs.defaultIconSizeInMM.getFloat());
 //        buildContentPane(getContentPane(), listOfAllCategories); //, this.selectedCategories);
         refreshAfterEdit();
     }
@@ -177,7 +177,6 @@ public class ScreenCategoryPicker extends MyForm {
 //
 //    }
 //</editor-fold>
-
     public void addCommandsToToolbar(Toolbar toolbar) {
         super.addCommandsToToolbar(toolbar);
 
@@ -209,10 +208,12 @@ public class ScreenCategoryPicker extends MyForm {
 //                    previousForm.showBack();
 //</editor-fold>
 //                        showPreviousScreenOrDefault(previousForm, false);
-                        showPreviousScreen( false);
+                        showPreviousScreen(false);
                     }
             );
         }
+
+        toolbar.addSearchCommand(makeSearchFunctionSimple(listOfAllCategories, () -> getContentPane()), MyPrefs.defaultIconSizeInMM.getFloat());
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
@@ -222,10 +223,11 @@ public class ScreenCategoryPicker extends MyForm {
 //        });
 //</editor-fold>
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllCategories, ScreenCategoryPicker.this, () -> refreshAfterEdit()));
-        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd("",listOfAllCategories, ScreenCategoryPicker.this, ()->{})); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
+//        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd("",listOfAllCategories, ScreenCategoryPicker.this, ()->{})); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
+        toolbar.addCommandToOverflowMenu(ScreenListOfCategories.makeNewCategoryCmd("", listOfAllCategories, ScreenCategoryPicker.this, () -> {
+        })); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
 
 //        addSearchToTitle();
-
 //        ADDITIONAL COMMANDS
 //        DONE: Add new category
 //        Sort categories by Name (default), by creation date (most recent first), by most used (#tasks), by used most recently?, by ??
@@ -298,5 +300,4 @@ public class ScreenCategoryPicker extends MyForm {
 //        return cont;
 //    }
 //</editor-fold>
-
 }

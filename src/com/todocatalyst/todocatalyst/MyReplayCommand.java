@@ -68,9 +68,9 @@ public class MyReplayCommand extends CommandTracked {
     }
 
 //    @Override
-//    public String toString() {
-//        return cmdUniqueID + " keep="+keep;
-//    }
+    public String toStringXXX() {
+        return cmdUniqueID + " keep="+keep;
+    }
     //TODO: toString is used (I think) in eg menu commands to get the string to display, should use getCommandName() instead - puch fix
 //    @Override
 //    public String toString() {

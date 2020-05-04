@@ -74,7 +74,7 @@ public class ScreenMain extends MyForm {
 //        Style iconStyle = UIManager.getInstance().getComponentStyle("SideCommandIcon");
         if (Config.TEST) {
             Log.p("STATUSBAR: getUIManager().isThemeConstant(\"paintsTitleBarBool\", false)=="
-                    + (getUIManager().isThemeConstant("paintsTitleBarBool") == null ? "<null>" : ""+getUIManager().isThemeConstant("paintsTitleBarBool")));
+                    + (getUIManager().isThemeConstant("paintsTitleBarBool") == null ? "<null>" : "" + getUIManager().isThemeConstant("paintsTitleBarBool")));
         }
 
         refreshAfterEdit();
@@ -167,7 +167,7 @@ public class ScreenMain extends MyForm {
 //    }
 //</editor-fold>
     public void addCommandsToToolbar(Toolbar toolbar, Container cont) { //, Resources theme) {
-        
+
         toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
 
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
@@ -199,7 +199,7 @@ public class ScreenMain extends MyForm {
 //        }
 //</editor-fold>
         Command overdue = MyReplayCommand.create(SCREEN_OVERDUE_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainOverdue, (e) -> {
-                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_DUE_DATE, 
+                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_DUE_DATE,
                             FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
 //                    new ScreenListOfItems(SCREEN_OVERDUE_TITLE, () -> new ItemList(SCREEN_OVERDUE_TITLE, DAO.getInstance().getOverdue(), filterSort, true), ScreenMain.this, (i) -> {
 //                    new ScreenListOfItems(SCREEN_OVERDUE_TITLE, () -> new ItemList(SCREEN_OVERDUE_TITLE, DAO.getInstance().getNamedItemList(DAO.OVERDUE, SCREEN_OVERDUE_TITLE), filterSort, true), ScreenMain.this, (i) -> {
@@ -212,7 +212,8 @@ public class ScreenMain extends MyForm {
                     //                        | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
                 }
         );
-        makeAndAddButtons(overdue, toolbar, cont, "Overdue tasks, you probably want to deal with these before moving on to other tasks");
+        makeAndAddButtons(overdue, toolbar, cont,
+                "Overdue tasks, you probably want to deal with these before moving on to other tasks");
 
         Command today = MyReplayCommand.create(SCREEN_TODAY_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainToday, (e) -> {
                     //TODO!!!!! FilterSort currently works on Items, but today view also show workslots                    
@@ -299,9 +300,9 @@ public class ScreenMain extends MyForm {
         if (true || Config.TEST) {
             Command allTasks = MyReplayCommand.create(SCREEN_ALL_TASKS_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainAllTasks, (e) -> {
                         FilterSortDef allTasksSystemFilter = DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString());
-                        new ScreenListOfItems(ALL_TASKS, 
-                                () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(false,false,true,false,false), allTasksSystemFilter, true), ScreenMain.this, (i) -> {
-                        }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
+                        new ScreenListOfItems(ALL_TASKS,
+                                () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(false, false, true, false, false), allTasksSystemFilter, true), ScreenMain.this, (i) -> {
+                                }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
                     }
             );
             makeAndAddButtons(allTasks, toolbar, cont, "**");
@@ -491,12 +492,14 @@ public class ScreenMain extends MyForm {
 //            cont.add(new Button(statisticsList));
 //        }
 //</editor-fold>
+        if (Config.TEST) {
 //        Command cleanTemplates = MyReplayCommand.create("Clean up templates", Icons.get().iconSettingsLabelStyle, (e) -> {
-        Command cleanTemplates = MyReplayCommand.create("Clean up templates", Icons.iconSettings, (e) -> {
-            DAO.getInstance().cleanUpTemplateListInParse(true);
+            Command cleanTemplates = MyReplayCommand.create("Clean up templates", Icons.iconSettings, (e) -> {
+                DAO.getInstance().cleanUpTemplateListInParse(true);
+            }
+            );
+            makeAndAddButtons(cleanTemplates, toolbar, cont, "**");
         }
-        );
-        makeAndAddButtons(cleanTemplates, toolbar, cont, "**");
 
         Command settings = MyReplayCommand.create(ScreenSettings.SCREEN_TITLE, Icons.iconSettings, (e) -> {
 //                new ScreenListOfCategories("Categories", new ItemList(DAO.getInstance().getAllCategories()), ScreenMain.this, (i)->{}).show();
@@ -505,12 +508,15 @@ public class ScreenMain extends MyForm {
         );
         makeAndAddButtons(settings, toolbar, cont, "**");
 
-        Command repair = MyReplayCommand.create(ScreenRepair.SCREEN_TITLE, Icons.iconRepair, (e) -> {
+        if (Config.TEST) {
+
+            Command repair = MyReplayCommand.create(ScreenRepair.SCREEN_TITLE, Icons.iconRepair, (e) -> {
 //                new ScreenListOfCategories("Categories", new ItemList(DAO.getInstance().getAllCategories()), ScreenMain.this, (i)->{}).show();
-            new ScreenRepair(ScreenMain.this).show();
+                new ScreenRepair(ScreenMain.this).show();
+            }
+            );
+            makeAndAddButtons(repair, toolbar, cont, "**");
         }
-        );
-        makeAndAddButtons(repair, toolbar, cont, "**");
 
         Command homePage = MyReplayCommand.create("Home page"/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainWeb, (e) -> {
                     Display.getInstance().execute("http://todocatalyst.com");

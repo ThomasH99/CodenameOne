@@ -29,8 +29,8 @@ import java.util.HashMap;
  */
 public class InlineInsertNewItemContainer2 extends InlineInsertNewContainer implements InsertNewElementFunc {
 
-    private final static String ENTER_SUBTASK = "Swipe left to insert task"; //"New subtask, <-for task"; //"New subtask, swipe left for task"; //"Enter subtask (swipe left: cancel)"; "New subtask, <-for task"
-    private final static String ENTER_TASK_SWIPE_RIGHT_FOR_SUBTASK = "Swipe right to insert subtask"; //"New task ->for subtask"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+    private final static String ENTER_SUBTASK = "Swipe left for normal task"; //"New subtask, <-for task"; //"New subtask, swipe left for task"; //"Enter subtask (swipe left: cancel)"; "New subtask, <-for task"
+    private final static String ENTER_TASK_SWIPE_RIGHT_FOR_SUBTASK = "Swipe right to create subtask"; //"Swipe right to insert subtask", "New task ->for subtask"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
     private final static String ENTER_TASK_NO_SWIPE_RIGHT = "New task"; //"Task (swipe right: subtask)"
 
 //    protected static final String SAVE_LOCALLY_INLINE_INSERT_TEXT = "InlineInsertText"; //used to save inline text from within the InlineInsert container

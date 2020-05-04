@@ -22,17 +22,18 @@ import java.util.Vector;
  */
 public class MyToggleButton extends Container {
 
-    int[] values;
-    String[] names;
+    private int[] values;
+    private String[] names;
 //    Object[] names;
 //    RadioButton[] buttonsArray;
-    Button[] buttonsArray;
+    private Button[] buttonsArray;
 //    int selectedValue;
-    boolean onlySingleSelectionAllowed = true;
-    Vector initiallySelectedValues;
-    int oldIndex = -1;
-    Container buttonsContainer;
-    ActionListener listener = new ActionListener() {
+    private boolean onlySingleSelectionAllowed = true; //selecting one automatically unselects previously selected
+    private boolean unselectAllowed = false; //OK to unselect the selected, meaning no items are selected
+    private Vector initiallySelectedValues;
+    private int oldIndex = -1;
+    private ComponentGroup buttonsContainer;
+    private ActionListener listener = new ActionListener() {
         public void actionPerformed(ActionEvent evt) {
 //            int oldIndex = getSelectedIndex();
             Object source = evt.getSource();
@@ -44,7 +45,9 @@ public class MyToggleButton extends Container {
 //                        selectedValue = valuesFinal[i];
 //                        selectedValue = MyToggleButton.this.values[i];
 //                    flipSelectedIndex(i); //toggle
-                    if(selectionListener!=null) selectionListener.fireSelectionEvent(oldIndex, i);
+                    if (selectionListener != null) {
+                        selectionListener.fireSelectionEvent(oldIndex, i);
+                    }
                     oldIndex = i; //keep track of previous selected index to fire selectionLIstener correctly
                 }
             }
@@ -65,20 +68,7 @@ public class MyToggleButton extends Container {
         this(names, values, initiallySelectedIntegerValues, initiallySelectedIntValue, multipleSelectionAllowed, null, null);
     }
 
-    MyToggleButton(String[] names, int[] values, Vector initiallySelectedIntegerValues, int initiallySelectedIntValue, boolean multipleSelectionAllowed, ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
-        super();
-        ASSERT.that((values == null && names != null && names.length > 0) || (values != null && names != null && values.length == names.length && values.length > 0), "Both values and names arrays must have same length, and be non-empty");
-
-        this.names = names;
-        this.values = values;
-        onlySingleSelectionAllowed = !multipleSelectionAllowed;
-        //automatically fill out values with {0, 1, ...}
-        if (values == null) {
-            this.values = new int[names.length];
-            for (int i = 0, size = names.length; i < size; i++) {
-                this.values[i] = i;
-            }
-        }
+    private void setupInitiallySelectedValues(Vector initiallySelectedIntegerValues, int initiallySelectedIntValue) {
 
         if (initiallySelectedIntegerValues == null) {
             this.initiallySelectedValues = new Vector(1);
@@ -88,16 +78,83 @@ public class MyToggleButton extends Container {
         } else {
             this.initiallySelectedValues = initiallySelectedIntegerValues;
         }
+    }
 
-        setup();
+    private void setSelected(Vector initiallySelectedValues) {
+        for (int i = 0, size = initiallySelectedValues.size(); i < size; i++) {
+            setSelectedValue(((Integer) initiallySelectedValues.elementAt(i)).intValue());
+        }
+    }
+
+    MyToggleButton(String[] names, int[] values, Vector initiallySelectedIntegerValues, int initiallySelectedIntValue,
+            boolean multipleSelectionAllowed, ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
+        super();
+        ASSERT.that((values == null && names != null && names.length > 0) || (values != null && names != null && values.length == names.length && values.length > 0), "Both values and names arrays must have same length, and be non-empty");
+
+        this.names = names;
+        this.values = values;
+        onlySingleSelectionAllowed = !multipleSelectionAllowed;
+        //below code is never used?! (MyToggleButton never called values==null)
+        //automatically fill out values with {0, 1, ...}
+        if (this.values == null) {
+            this.values = new int[names.length];
+            for (int i = 0, size = names.length; i < size; i++) {
+                this.values[i] = i;
+            }
+        }
+
+//        if (initiallySelectedIntegerValues == null) {
+//            this.initiallySelectedValues = new Vector(1);
+//            if (initiallySelectedIntValue != -1) {
+//                this.initiallySelectedValues.addElement(new Integer(initiallySelectedIntValue));
+//            }
+//        } else {
+//            this.initiallySelectedValues = initiallySelectedIntegerValues;
+//        }
+//        setupInitiallySelectedValues( initiallySelectedIntegerValues,  initiallySelectedIntValue);
+//        setupXX();
+        buttonsArray = new Button[this.values.length];
+
+        //create the logical button group
+        ButtonGroup bg = new ButtonGroup();
+
+        for (int i = 0, size = this.values.length; i < size; i++) {
+//            buttonsArray[i] = new RadioButton(names[i]);
+            if (onlySingleSelectionAllowed) {
+                buttonsArray[i] = new RadioButton(names[i]);
+                bg.add((RadioButton) buttonsArray[i]); //ButtonGroup's only purpose is to avoid multiple simultanous selections
+            } else {
+                buttonsArray[i] = new CheckBox(names[i]);
+                buttonsArray[i].setUIID("RadioButton");
+            }
+            buttonsArray[i].setToggle(true);
+            buttonsArray[i].addActionListener(listener);
+//            buttons.addComponent(buttonsArray[i]);
+        }
+        //set selected
+        if (initiallySelectedIntegerValues == null) {
+            initiallySelectedIntegerValues = new Vector(1);
+            if (initiallySelectedIntValue != -1) {
+                initiallySelectedIntegerValues.addElement(new Integer(initiallySelectedIntValue));
+            }
+        }
+//        for (int i = 0, size = initiallySelectedValues.size(); i < size; i++) {
+//            setSelectedValue(((Integer) initiallySelectedValues.elementAt(i)).intValue());
+//        }
+        setSelected(initiallySelectedIntegerValues);
+
         setupLayout(this.values.length, compGroupRows, nbButtonsInEachRow);
     }
 
+    MyToggleButton(String[] names, int[] values, Vector initiallySelectedIntegerValues,
+            boolean multipleSelectionAllowed, ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
+        this(names, values, initiallySelectedIntegerValues, -1, multipleSelectionAllowed, compGroupRows, nbButtonsInEachRow);
+    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    MyToggleButton(String[] names, int[] values, String initiallySelectedString) {
 //        this(names, values, names.);
 //    }
-//</editor-fold>
+
     /**
      *
      * @param values the array of values
@@ -106,12 +163,14 @@ public class MyToggleButton extends Container {
      * @param valueIndex preselected value (one of the values in the array of
      * values) - makes it easy to select the right value
      */
-    MyToggleButton(String[] names, int[] values, int initiallySelectedIntValue, boolean multipleSelectionAllowed) {
-        this(names, values, null, initiallySelectedIntValue, multipleSelectionAllowed);
-    }
+//    MyToggleButton(String[] names, int[] values, int initiallySelectedIntValue, boolean multipleSelectionAllowed) {
+//        this(names, values, null, initiallySelectedIntValue, multipleSelectionAllowed);
+//    }
+//</editor-fold>
 
+    /* used externally */
     MyToggleButton(String[] names, int[] values, int initiallySelectedIntValue) {
-        this(names, values, initiallySelectedIntValue, false);
+        this(names, values, null, initiallySelectedIntValue, false);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        super();
 //        ASSERT.that((values == null && names != null && names.length > 0) || (values != null && names != null && values.length == names.length && values.length > 0), "Both values and names arrays must have same length, and be non-empty");
@@ -132,51 +191,50 @@ public class MyToggleButton extends Container {
 //</editor-fold>
     }
 
+    /*used externally*/
     MyToggleButton(String[] names, int[] values) {
         this(names, values, -1);
     }
 
-    MyToggleButton(String[] names) {
-        this(names, null, -1);
-    }
+//    MyToggleButton(String[] names) {
+//        this(names, null, -1);
+//    }
 
+    /*used externally*/
     MyToggleButton(String[] names, int[] values, Vector initiallySelectedIntegerValues, boolean multipleSelectionAllowed) {
         this(names, values, initiallySelectedIntegerValues, -1, multipleSelectionAllowed);
     }
 
-    MyToggleButton(String[] names, int[] values, Vector initiallySelectedIntegerValues) {
-        this(names, values, initiallySelectedIntegerValues, false);
-    }
-
+////<editor-fold defaultstate="collapsed" desc="comment">
+//    MyToggleButton(String[] names, int[] values, Vector initiallySelectedIntegerValues) {
+//        this(names, values, initiallySelectedIntegerValues, false);
+//    }
     /**
      *
      * @param values
      * @param valueIndex index of value in values
      * @param names
      */
-    MyToggleButton(final int[] values, int valueIndex, String[] names) {
-        this(names, values, null, values[valueIndex], false);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        int valueIndex=0; //0 is default choice if value is not found in values
-//        for (int i = 0, size = Math.min(values.length, names.length); i < size; i++) {
-//            if (value==values[i]) valueIndex=i;
-//        }
-//        this(values, names, valueIndex);
-//</editor-fold>
-    }
-
+//    MyToggleButton(final int[] values, int valueIndex, String[] names) {
+//        this(names, values, null, values[valueIndex], false);
+////        int valueIndex=0; //0 is default choice if value is not found in values
+////        for (int i = 0, size = Math.min(values.length, names.length); i < size; i++) {
+////            if (value==values[i]) valueIndex=i;
+////        }
+////        this(values, names, valueIndex);
+//    }
     /**
      * sets the buttonsContainer that will receive the buttons and determine the
      * graphical layout
      */
-    public void setContainer(Container buttonsContainer) {
-        if (this.buttonsContainer != null) {
-            this.buttonsContainer.removeAll(); //remove buttons from old container
-        }
-        this.buttonsContainer = buttonsContainer;
-        setupLayout(); //setup with new layout
-    }
-
+//    public void setContainerXXX(Container buttonsContainer) {
+//        if (this.buttonsContainer != null) {
+//            this.buttonsContainer.removeAll(); //remove buttons from old container
+//        }
+//        this.buttonsContainer = buttonsContainer;
+////        setupLayout(); //setup with new layout
+//    }
+////</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void setup(int nbRows) {
 ////        buttonsArray = new RadioButton[this.values.length];
@@ -212,7 +270,7 @@ public class MyToggleButton extends Container {
 //        setupLayout(this.values.length);
 //    }
 //</editor-fold>
-    private void setup() {
+    private void setupXX() {
 //        buttonsArray = new RadioButton[this.values.length];
         buttonsArray = new Button[this.values.length];
 
@@ -238,29 +296,30 @@ public class MyToggleButton extends Container {
         }
     }
 
-    public void setupLayout() {
-        setupLayout(this.values.length);
-    }
-
-    /**
-     * creates the layout of the buttons. Can be overvritten
-     *
-     * @param numberButtons
-     */
-    public void setupLayout(int numberButtons) {
-        setupLayout(numberButtons, 1);
-    }
-
-    public void setupLayout(int numberButtons, int bgRows) {
-
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void setupLayout() {
+//        setupLayout(this.values.length);
+//    }
+//
+//    /**
+//     * creates the layout of the buttons. Can be overvritten
+//     *
+//     * @param numberButtons
+//     */
+//    public void setupLayout(int numberButtons) {
+//        setupLayout(numberButtons, 1);
+//    }
+//
+//    public void setupLayout(int numberButtons, int bgRows) {
+//
+//    }
+//</editor-fold>
     /**
      * make and format an appropriate ComponentGroup
      *
      * @return
      */
-    public ComponentGroup makeComponentGroup() {
+    private ComponentGroup makeComponentGroup() {
         ComponentGroup buttonsContainerGroup = new ComponentGroup();
 //        buttonsContainerGroup.setLayout(new FlowLayout(Component.CENTER));
 //        buttonsContainerGroup.setElementUIID("ToggleButton");
@@ -278,6 +337,7 @@ public class MyToggleButton extends Container {
     public void setupLayout(int numberButtons, ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
         setupLayout(numberButtons, compGroupRows, nbButtonsInEachRow, false);
     }
+
     public void setupLayout(int numberButtons, ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow, boolean allButtonsSameWidth) {
 //        if (compGroupRows != null) {
         if (nbButtonsInEachRow != null) {
@@ -299,8 +359,9 @@ public class MyToggleButton extends Container {
 //                    cGroup = makeComponentGroup();
                 }
             }
-            if (allButtonsSameWidth)
+            if (allButtonsSameWidth) {
                 compGroupCont.setSameWidth(compGroupRows[compGroupIndex]);
+            }
             addComponent(compGroupCont); //add buttons
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void setupLayout(int numberButtons, int[][] compGrouping) {
@@ -322,11 +383,12 @@ public class MyToggleButton extends Container {
 //</editor-fold>
         } else {
             if (buttonsContainer == null) {
-                ComponentGroup buttonsContainerGroup = new ComponentGroup();
-                buttonsContainerGroup.setLayout(new FlowLayout(Component.CENTER));
-                buttonsContainerGroup.setElementUIID("ToggleButton");
-                buttonsContainerGroup.setHorizontal(true);
-                buttonsContainer = buttonsContainerGroup;
+//                ComponentGroup buttonsContainer = new ComponentGroup();
+                buttonsContainer = new ComponentGroup();
+                buttonsContainer.setLayout(new FlowLayout(Component.CENTER));
+                buttonsContainer.setElementUIID("ToggleButton");
+                buttonsContainer.setHorizontal(true);
+//                buttonsContainer = buttonsContainer;
             }
 //        else {
 //            buttonsContainer.removeAll(); //remove all buttons from previous container
@@ -339,7 +401,7 @@ public class MyToggleButton extends Container {
         }
     }
 
-    public void setupLayoutAsTable(int rows, int columns, int numberButtons) {
+    private void setupLayoutAsTable(int rows, int columns, int numberButtons) {
         Container buttons = new Container(new TableLayout(rows, columns));
         for (int i = 0; i < numberButtons; i++) {
             buttons.addComponent(buttonsArray[i]);
@@ -347,6 +409,7 @@ public class MyToggleButton extends Container {
         addComponent(buttons); //add buttons
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private void setup() {
 //        buttonsArray = new RadioButton[this.values.length];
 //        for (int i = 0, size = this.values.length; i < size; i++) {
@@ -406,7 +469,7 @@ public class MyToggleButton extends Container {
 //        addComponent(buttons); //add last buttons
 ////        addComponent(centerFlow); //add the buttons to this buttonsContainer
 //    }
-
+//</editor-fold>
     /**
      * is RadioButton at index selected?
      */
@@ -418,13 +481,15 @@ public class MyToggleButton extends Container {
 //    public int getSelectedIndex() {
 //        return ((RadioButton) getModel().getItemAt(index)).isSelected();
 //    }
-    public void setSelectedIndexState(int index, boolean set) {
+    private void setSelectedIndexState(int index, boolean set) {
 //        buttonsArray[index].setSelected(set);
 //        ((RadioButton) getModel().getItemAt(index)).setSelected(set);
         int oldIndex = getSelectedIndex();
         if (onlySingleSelectionAllowed) { //shouldn't test on onlySingleSelectionAllowed here????
             ((RadioButton) buttonsArray[index]).setSelected(set);
-            if(selectionListener!=null) selectionListener.fireSelectionEvent(oldIndex, index);
+            if (selectionListener != null) {
+                selectionListener.fireSelectionEvent(oldIndex, index);
+            }
         } else {
             ((CheckBox) buttonsArray[index]).setSelected(set);
         }
@@ -432,11 +497,11 @@ public class MyToggleButton extends Container {
 //        super.setSelectedIndex(index); //trigger selection listener
     }
 
-    public void setSelectedIndex(int index) {
+    public void setSelectedIndexXXX(int index) {
         setSelectedIndexState(index, true);
     }
 
-    public void flipSelectedIndex(int index) {
+    public void flipSelectedIndexXXX(int index) {
 //        buttonsArray[index].setSelected(!buttonsArray[index].isSelected());
         setSelectedIndexState(index, !isSelected(index)); //flip selected state
     }
@@ -463,7 +528,7 @@ public class MyToggleButton extends Container {
     /**
      * returns vector with all selected names
      */
-    public Vector getSelectedNames() {
+    public Vector getSelectedNamesXXX() {
         Vector selectedNames = new Vector();
         for (int i = 0, size = buttonsArray.length; i < size; i++) {
 //        for (int i = 0, size = size(); i < size; i++) {
@@ -494,7 +559,7 @@ public class MyToggleButton extends Container {
     }
 
     /**
-     * returns the selected logical value. 
+     * returns the selected logical value.
      *
      * @return
      */
@@ -511,7 +576,7 @@ public class MyToggleButton extends Container {
      * nothing is done
      *
      */
-    public void setSelectedName(String name) {
+    public void setSelectedNameXXX(String name) {
 //        int index = 0;
 //        for (int i = 0, size = names.length; i < size; i++) {
         for (int i = 0, size = names.length; i < size; i++) {
@@ -557,8 +622,9 @@ public class MyToggleButton extends Container {
      * @inheritDoc
      */
     public void addSelectionListener(SelectionListener l) {
-        if(selectionListener == null)
+        if (selectionListener == null) {
             selectionListener = new EventDispatcher();
+        }
         selectionListener.addListener(l);
     }
 
@@ -566,7 +632,8 @@ public class MyToggleButton extends Container {
      * @inheritDoc
      */
     public void removeSelectionListener(SelectionListener l) {
-        if(selectionListener != null)
-        selectionListener.removeListener(l);
+        if (selectionListener != null) {
+            selectionListener.removeListener(l);
+        }
     }
 }

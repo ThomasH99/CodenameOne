@@ -111,7 +111,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
             if (getDefaultValue != null)
                 getDate().setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
             else
-                getDate().setTime(new MyDate().getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+                getDate().setTime(MyDate.roundUpToNextMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
         }
         super.pressed();
     }

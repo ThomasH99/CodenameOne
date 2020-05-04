@@ -42,8 +42,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    public static int MINUTES_IN_MILLISECONDS = MyDate.MINUTE_IN_MILLISECONDS; //60 * 1000;
     final static String WORKSLOT = "Workslot";
     final static String DESCRIPTION = "Description";//"Name";
-    final static String DESCRIPTION_HELP = "Optional description of the " + WORKSLOT;//"Name";
-    final static String DESCRIPTION_HINT = "Optional description";//"Name";
+    final static String DESCRIPTION_HELP = Format.f("Optional description of the {0 workslot}", WORKSLOT);//"Name";
+    final static String DESCRIPTION_HINT = Format.f("{0 workslot} description", WORKSLOT);//"Optional description";//"Name";
 //    final static String INACTIVE = "Inactive";
     final static String DURATION = "Duration";
     final static String DURATION_HELP = "Define the duration of the " + WORKSLOT;
@@ -140,7 +140,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      * used to create repeat copies of a WorkSlot, e.g. for Repeat instances
      */
     public WorkSlot(WorkSlot sourceWorkSlot, Date startDate) {
-        this(sourceWorkSlot.getText(), startDate, sourceWorkSlot.getDurationInMinutes(), sourceWorkSlot.getRepeatRule());
+        this(sourceWorkSlot.getText(), startDate, sourceWorkSlot.getDurationInMinutes(), sourceWorkSlot.getRepeatRuleN());
 //        if (sourceWorkSlot.getMyRepeatRule()!=null)
 //            this.repeatRule=sourceWorkSlot.getMyRepeatRule();
     }
@@ -423,7 +423,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      *
      * @return
      */
-    public RepeatRuleParseObject getRepeatRule() {
+    public RepeatRuleParseObject getRepeatRuleN() {
 //        return repeatRule;
 //        ParseObject.fetchFromCacheOnly("RepeatRule", repeatRule.getObjectId());
         RepeatRuleParseObject repeatRule = (RepeatRuleParseObject) getParseObject(PARSE_REPEAT_RULE);
@@ -451,7 +451,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     public final void setRepeatRule(RepeatRuleParseObject newRepeatRuleN) {
-        RepeatRuleParseObject oldRepeatRule = getRepeatRule();
+        RepeatRuleParseObject oldRepeatRule = getRepeatRuleN();
         if (oldRepeatRule == null) { //setting a RR for the first time
             if (newRepeatRuleN != null) {
 //                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null) { //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
@@ -471,7 +471,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //                    setRepeatRuleInParse(null);
 //                }
                 setRepeatRuleInParse(null);
-                opsAfterSubtaskUpdates.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)); //will also save RR
+//                opsAfterSubtaskUpdates.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)); //will also save RR
+                opsAfterSubtaskUpdates.add(() -> oldRepeatRule.delete(new MyDate())); //will also save RR
 
             } else { //possibly modified
                 if (!newRepeatRuleN.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
@@ -704,14 +705,14 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             destination.setSource(this); //otherwise (this is first copy) use this
         }
         if (copyFieldDefinition == CopyMode.COPY_TO_REPEAT_INSTANCE) {
-            RepeatRuleParseObject repeatRule = getRepeatRule();
+            RepeatRuleParseObject repeatRule = getRepeatRuleN();
             boolean notSaved = false;
             if (Config.TEST) {
                 notSaved = repeatRule.getObjectIdP() == null || repeatRule.getObjectIdP().isEmpty(); //repeatRule.isDirty() ||
             }
-            destination.setRepeatRuleInParse(getRepeatRule());
+            destination.setRepeatRuleInParse(getRepeatRuleN());
         } else {
-            destination.setRepeatRule(getRepeatRule());
+            destination.setRepeatRule(getRepeatRuleN());
         }
     }
 
@@ -873,11 +874,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     @Override
     public String toString() {
 //        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
-        return (getRepeatRule() != null ? "*" : "") + "WS:" + MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS, true)
+        return (getRepeatRuleN() != null ? "*" : "") + "WS:" + MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS, true)
                 //                + " " + getText() + "[" + getObjectIdP() + "]" + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
                 + (getObjectIdP() == null ? " [NoObjId]" : (" [" + getObjectIdP() + "]"))
                 + (" Owner:" + (getOwner() != null ? (getOwner().getText() + "/" + getOwner().getObjectIdP()) : "None")
-                + (getRepeatRule() != null ? "RepRul[" + getRepeatRule().getObjectIdP() + "]" : ""));
+                + (getRepeatRuleN() != null ? "RepRul[" + getRepeatRuleN().getObjectIdP() + "]" : ""));
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1124,8 +1125,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     /**
-     * workslot duration is always set by the user (no automatic calculation that could millisecond results) so only store minutes in Parse
-     * @return 
+     * workslot duration is always set by the user (no automatic calculation
+     * that could millisecond results) so only store minutes in Parse
+     *
+     * @return
      */
     public int getDurationInMinutes() {
 //        return getDurationInMillis() / MINUTES_IN_MILLISECONDS;
@@ -1729,7 +1732,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        }
 //    }
     /**
-     * keep track of which items have been allocated a (non-zero?!) slide of this workslot
+     * keep track of which items have been allocated a (non-zero?!) slide of
+     * this workslot
      *
      * @param item
      */
@@ -1929,6 +1933,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
     public ItemAndListCommonInterface removeFromOwner() {
         ItemAndListCommonInterface owner = getOwner();
         if (owner != null) {
@@ -2053,19 +2058,23 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     public boolean deletePrepare(Date deletedDate) {
 
         //DELETE IN OWNER
-        ItemAndListCommonInterface owner = getOwner();
-        ASSERT.that(owner != null, "softDeleting workSlot with no owner, workSlot=" + this);
-        if (owner != null) {
-            WorkSlotList workSlotList = owner.getWorkSlotListN();
-            if (Config.PRODUCTION_RELEASE || workSlotList != null) { //don't crash in case there is an error
-                workSlotList.remove(this);
-                owner.setWorkSlotList(workSlotList);
-//                DAO.getInstance().saveInBackground((ParseObject) owner);
-                DAO.getInstance().saveNew((ParseObject) owner, false);
-            }
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false && owner != null) { //done in removeFromOwner()
+//            ItemAndListCommonInterface owner = getOwner();
+//            WorkSlotList workSlotList = owner.getWorkSlotListN();
+//            if (Config.PRODUCTION_RELEASE || workSlotList != null) { //don't crash in case there is an error
+//                workSlotList.remove(this);
+//                owner.setWorkSlotList(workSlotList);
+////                DAO.getInstance().saveInBackground((ParseObject) owner);
+//                DAO.getInstance().saveNew((ParseObject) owner, false);
+//            }
+//        }
+//</editor-fold>
+        ItemAndListCommonInterface updatedOwner = removeFromOwner();
+        ASSERT.that(updatedOwner != null, "softDeleting workSlot with no owner, workSlot=" + this);
+            DAO.getInstance().saveNew((ParseObject) updatedOwner, false);
 
-        RepeatRuleParseObject myRepeatRule = getRepeatRule();
+        RepeatRuleParseObject myRepeatRule = getRepeatRuleN();
         if (myRepeatRule != null) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we
@@ -2118,6 +2127,27 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
                 f.run();
             }
         }
+    }
+    
+    /**
+     * update this workslot to have same values as refWorkSlot, used to update future workslot repeat instances when one of them is edited. 
+     * Updates duration and text
+     * @param refWorkSlot 
+     * @return  true if this workslot was modified
+     */
+    @Override
+    public boolean update(RepeatRuleObjectInterface refElt){
+        WorkSlot refWorkSlot = (WorkSlot)refElt;
+        boolean modified=false;
+        if(refWorkSlot.getDurationInMillis()!=getDurationInMillis()) {
+            setDurationInMillis(refWorkSlot.getDurationInMillis());
+            modified=true;
+        }
+        if(!refWorkSlot.getText().equals(getText())) {
+            setText(refWorkSlot.getText());
+            modified=true;
+        }
+        return modified;
     }
 
 }

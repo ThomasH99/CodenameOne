@@ -99,8 +99,8 @@ public class MultipleSelection {
         //TODO!!! replace this by CopyInto?!
         return (item) -> {
             Item ref = itemWithValuesToSet;
-            if (ref.getAlarmDate() != 0) {
-                item.setAlarmDate(ref.getAlarmDate());
+            if (ref.getAlarmDate().getTime() != 0) {
+                item.setAlarmDate(new MyDate(ref.getAlarmDate().getTime()));
             }
             if (ref.getComment() != null && !ref.getComment().equals("")) {
                 item.setComment(Item.addToCommentDefaultPosition(item.getComment(), ref.getComment()));

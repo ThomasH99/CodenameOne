@@ -149,6 +149,18 @@ public class DAO {
 //        ASSERT.that(parseObject instanceof ParseObject, () -> "trying to store non-ParseObject in cache: parseObject=" + parseObject);
     }
 
+    /**
+     * cache a special named list, accessible both via its name and (as usual)
+     * via its objectId
+     *
+     * @param name
+     * @param parseObject
+     */
+    private synchronized void cachePut(String name, ParseObject parseObject) {
+        cache.put(name, parseObject.getObjectIdP());
+        cachePut(parseObject);
+    }
+
 //    private void cacheList(List<ParseObject> list) {
 //    private void cacheList(List<ParseObject> list) {
     private void cacheList(List list) {
@@ -184,6 +196,13 @@ public class DAO {
         } else {
             return null;
         }
+    }
+
+    private synchronized ParseObject cacheGetNamed(String name) {
+        Object cachedObjIdStr = cache.get(name);
+//        ASSERT.that(cachedObjIdStr != null);
+//        if (cachedObjIdStr != null) 
+        return cachedObjIdStr!=null?(ParseObject) cache.get(cachedObjIdStr):null; //cahce: name -> objectIdP
     }
 
     private synchronized ParseObject cacheGet(ParseObject parseObject) {
@@ -536,7 +555,7 @@ public class DAO {
         }
         for (int i = 0, size = list.size(); i < size; i++) {
             Object val = list.get(i);
-            if (val == null && Config.TEST) {
+            if (val == null) {//&& Config.TEST) {
                 ASSERT.that(val != null, "null element in list from cache:" + list);
             }
             list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) val));
@@ -910,6 +929,98 @@ public class DAO {
 //    }
 //</editor-fold>
 //    public List<ItemAndListCommonInterface> getTodayDueAndOrWaitingOrWorkSlotsItems(boolean includeWaiting, boolean includeStartingToday) {
+    public List<ItemAndListCommonInterface> getToday() {
+
+        List<ParseQuery> queries = new ArrayList<>();
+
+        ParseQuery<Item> query = null;
+
+        Date startOfToday = MyDate.getStartOfDay(new Date());
+        Date startOfTomorrow = new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS);
+
+        Date startDate = new Date(MyDate.currentTimeMillis() - MyPrefs.todayViewIncludeOverdueFromThisManyPastDays.getInt() * MyDate.DAY_IN_MILLISECONDS);
+        ParseQuery<Item> queryDueToday = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(queryDueToday, true);
+        queryDueToday.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startDate);
+        queryDueToday.whereLessThan(Item.PARSE_DUE_DATE, startOfTomorrow);
+        if (MyPrefs.todayViewShowProjectsInsteadOfLeafTasks.getBoolean()) {
+            queryDueToday.whereExists(Item.PARSE_SUBTASKS);
+            queryDueToday.whereDoesNotExist(Item.PARSE_OWNER_ITEM);
+        } else {
+            queryDueToday.whereDoesNotExist(Item.PARSE_SUBTASKS);
+        }
+        queries.add(queryDueToday);
+
+        if (MyPrefs.todayViewIncludeWaitingExpiringToday.getBoolean()) {
+            ParseQuery<Item> queryWaitingExpiresToday = ParseQuery.getQuery(Item.CLASS_NAME);
+            setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingExpiresToday, false); //false: we only fetch Waiting
+            queryWaitingExpiresToday.whereGreaterThanOrEqualTo(Item.PARSE_WAITING_TILL_DATE, startOfToday);
+            queryWaitingExpiresToday.whereLessThan(Item.PARSE_WAITING_TILL_DATE, startOfTomorrow);
+            if (false) { //TODO!!! find a way to eliminate duplicates, e.g. a task which is both due today, waiting till today and has an alarm today...
+                queryWaitingExpiresToday.whereLessThanOrEqualTo(Item.PARSE_DUE_DATE, startOfToday); //don't get Waiting tasks that are due today
+                queryWaitingExpiresToday.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startOfTomorrow); //don't get Waiting tasks that are due today
+            }
+            queryWaitingExpiresToday.whereEqualTo(Item.PARSE_STATUS, ItemStatus.WAITING.toString()); //item that are NOT DONE or CANCELLED
+
+            queries.add(queryWaitingExpiresToday);
+        }
+
+        if (MyPrefs.todayViewIncludeStartingToday.getBoolean()) {
+            ParseQuery<Item> queryStartToday = ParseQuery.getQuery(Item.CLASS_NAME);
+            setupItemQueryNotTemplateNotDeletedLimit10000(queryStartToday, true);
+            queryStartToday.whereGreaterThanOrEqualTo(Item.PARSE_START_BY_DATE, startOfToday);
+            queryStartToday.whereLessThan(Item.PARSE_START_BY_DATE, startOfTomorrow);
+            queries.add(queryStartToday);
+        }
+
+        if (MyPrefs.todayViewIncludeAlarmsExpiringToday.getBoolean()) {
+            ParseQuery<Item> queryStartToday = ParseQuery.getQuery(Item.CLASS_NAME);
+            setupItemQueryNotTemplateNotDeletedLimit10000(queryStartToday, false);
+            queryStartToday.whereGreaterThanOrEqualTo(Item.PARSE_ALARM_DATE, startOfToday);
+            queryStartToday.whereLessThan(Item.PARSE_ALARM_DATE, startOfTomorrow);
+            queryStartToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(),
+                    ItemStatus.WAITING.toString()))); //item that are NOT DONE or CANCELLED, don't include WAITING since waiting for a later date overrides
+            queries.add(queryStartToday);
+        }
+
+        List allTodayElements = new ArrayList();
+
+        //get all items
+        try {
+            query = ParseQuery.getOrQuery(queries);
+            query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
+            query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+            List result = query.find();
+            fetchListElementsIfNeededReturnCachedIfAvail(result);
+            allTodayElements.addAll(result);
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+
+        //get workslots
+        //WORKSLOTS - get workslots starting today
+        if (MyPrefs.todayViewIncludeWorkSlotsCoveringToday.getBoolean()) { //fetch WorkSLots that have workTime between now and end of today
+
+            ParseQuery<WorkSlot> queryWorkSlots = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+            queryWorkSlots.whereGreaterThan(WorkSlot.PARSE_END_TIME, new MyDate()); //slots that end *after* *now*
+            queryWorkSlots.whereLessThan(WorkSlot.PARSE_START_TIME, startOfTomorrow); //and starts before tomorrow
+
+            queryWorkSlots.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+            query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+
+            try {
+                List<WorkSlot> resultsWorkSlots = queryWorkSlots.find();
+                fetchListElementsIfNeededReturnCachedIfAvail(resultsWorkSlots);
+                allTodayElements.addAll(resultsWorkSlots); //real hack: disguise workslot as task... TODO!!!! No good, because treats workslot as task (e.g can edit task fields, cannot edit workslot!!
+            } catch (ParseException ex) {
+                Log.e(ex);
+            }
+        }
+
+        removeDuplicates(allTodayElements); //TODO!!!: will remove duplicate tasks, but not tasks in workslots, not sure this is an issue?!
+        return allTodayElements;
+    }
+
     public ItemList getToday(ItemList existingListToUpdate) {
 //        ParseQuery<Item> query = getDueAndOrWaitingTodayQuery(includeWaiting, includeStartingToday);
 
@@ -925,6 +1036,12 @@ public class DAO {
         setupItemQueryNotTemplateNotDeletedLimit10000(queryDueToday, true);
         queryDueToday.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startDate);
         queryDueToday.whereLessThan(Item.PARSE_DUE_DATE, startOfTomorrow);
+        if (MyPrefs.todayViewShowProjectsInsteadOfLeafTasks.getBoolean()) {
+            queryDueToday.whereExists(Item.PARSE_SUBTASKS);
+            queryDueToday.whereDoesNotExist(Item.PARSE_OWNER_ITEM);
+        } else {
+            queryDueToday.whereDoesNotExist(Item.PARSE_SUBTASKS);
+        }
 //        queryDueToday.whereNotContainedIn(Item.PARSE_STATUS, new ArrayList(Arrays.asList(ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString()))); //item that are NOT DONE or CANCELLED
 
 //        queryDueToday.whereDoesNotExist(Item.PARSE_TEMPLATE); //don't fetch any templates
@@ -1029,6 +1146,24 @@ public class DAO {
         }
     }
 
+    public List<ItemAndListCommonInterface> getOverdue() {
+
+        Date startOfToday = MyDate.getStartOfToday();
+        Date startOfOverdueInterval = new Date(startOfToday.getTime() - MyPrefs.overdueLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
+
+        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
+        query.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startOfOverdueInterval);
+        query.whereLessThan(Item.PARSE_DUE_DATE, startOfToday);
+        try {
+            List results = query.find();
+            return results;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return null;//new ItemList();
+    }
+
     public ItemList getOverdue(ItemList existingListToUpdate) {
         Date startOfToday = MyDate.getStartOfToday();
         Date startOfOverdueInterval = new Date(startOfToday.getTime() - MyPrefs.overdueLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
@@ -1079,6 +1214,22 @@ public class DAO {
      *
      * @return
      */
+    public List<ItemAndListCommonInterface> getCalendar() {
+        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
+        Date startOfToday = MyDate.getStartOfToday();
+        query.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS));
+        query.whereLessThan(Item.PARSE_DUE_DATE, new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * (1 + MyPrefs.nextInterval.getInt()))); //+1 since Next always start tomorrow
+        List results = null;
+        try {
+            results = query.find();
+            return results;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return null;
+    }
+
     public ItemList getCalendar(ItemList existingListToUpdate) {
 //        Calendar cal = Calendar.getInstance();
 //        cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -1142,7 +1293,7 @@ public class DAO {
         //UI: badgecount includes all elements shown in Today view (counting leaf-tasks for Projects!)
 //        return getDueAndOrWaitingTodayCount(includeWaiting, includeStartingToday);
         if (true) {
-            List<ItemAndListCommonInterface> all = getToday(null);
+            List<ItemAndListCommonInterface> all = DAO.this.getToday(null);
             int count = 0;
             for (ItemAndListCommonInterface elt : all) {
                 if (elt instanceof WorkSlot) {
@@ -1158,7 +1309,7 @@ public class DAO {
             }
             return count;
         } else {
-            List todayList = getToday(null);
+            List todayList = DAO.this.getToday(null);
             return todayList.size();
         }
     }
@@ -1269,6 +1420,40 @@ public class DAO {
 //    }
 //</editor-fold>
     public CategoryList getCategoryList() {
+        CategoryList listCached = null;
+
+        listCached = (CategoryList) cacheGetNamed(CategoryList.CLASS_NAME);
+        if (listCached != null)// && !forceLoadFromParse) {
+        {
+            return listCached;
+        }
+
+        List<CategoryList> results = null;
+        ParseQuery<CategoryList> query = ParseQuery.getQuery(CategoryList.CLASS_NAME);
+//        query.selectKeys(new ArrayList());
+        query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //normally never deleted, but could happen in the future
+        try {
+            results = query.find();
+            if (results.size() > 0) {
+                if (Config.TEST) {
+                    ASSERT.that(results.size() <= 1, "error: more than one TemplateList element (" + results + ")"); //TODO create error log for this 
+                }
+                listCached = results.get(0); //return first element
+//                cachePut(CategoryList.CLASS_NAME, listCached); //MUST cache first, otherwise the categoryList's elements won't get the right (this categoryList) as owner
+            } else { //initialise the templateList for the first time
+                listCached = new CategoryList();
+                saveNew((ParseObject) listCached); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
+                saveNewExecuteUpdate();
+//                cachePut(CategoryList.CLASS_NAME, listCached); //MUST cache first, otherwise the categoryList's elements won't get the right (this categoryList) as owner
+            }
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        cachePut(CategoryList.CLASS_NAME, listCached);
+        return listCached;
+    }
+
+    public CategoryList getCategoryListOLD() {
 //        CategoryList categoryList = null;
         List<CategoryList> results = null;
         ParseQuery<CategoryList> query = ParseQuery.getQuery(CategoryList.CLASS_NAME);
@@ -1326,7 +1511,7 @@ public class DAO {
         return null;
     }
 
-    public CategoryList getCategoryList(boolean forceLoadFromParse, Date startDate, Date endDate) {
+    public CategoryList getCategoryListXXX(boolean forceLoadFromParse, Date startDate, Date endDate) {
         ASSERT.that(!(forceLoadFromParse && (startDate != null || endDate != null)), "getItemListList called with both forceReload AND date interval");
 
         CategoryList categoryList = null;
@@ -1486,54 +1671,93 @@ public class DAO {
      *
      * @return
      */
-    public ItemListList getItemListList() {
+    public ItemListList getItemListList() {//boolean forceLoadFromParse) {
 //        return getItemListList(false);
 //        ItemListList itemListList = null;
 //        if ((itemListList = (ItemListList) cacheGet(ItemListList.CLASS_NAME)) != null) {
 //            return itemListList;
 //        }
-        ParseQuery<ItemListList> query = ParseQuery.getQuery(ItemListList.CLASS_NAME);
-        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-        try {
-            List<ItemListList> results = query.find();
-            //if no categoryList already saved, initialize it with existing categories
-            if (results.size() > 0) {
-                ASSERT.that(results.size() <= 1, () -> "error: more than one ItemItemList element (" + results.size() + ")");
-                ItemListList itemListList = results.get(0); //return first element
-//                fetchListElementsIfNeededReturnCachedIfAvail(itemListList); //get the right elements  
-//                cachePut(itemListList);
-                ItemListList cachedItemListList = (ItemListList) cacheGet(itemListList);
-                if (cachedItemListList != null) {
-                    itemListList = cachedItemListList;
-                } else {
-//                fetchListElementsIfNeededReturnCachedIfAvail(categoryList);
-                    cachePut(itemListList); //MUST cache first, otherwise the categoryList's elements won't get the right (this categoryList) as owner
-                    fetchListElementsIfNeededReturnCachedIfAvail(itemListList); //get the right elements  
-                }
-                return itemListList;
-            } else {
-                ItemListList itemListList2 = new ItemListList();
+        ItemListList itemListListCached = null;
+
+        itemListListCached = (ItemListList) cacheGetNamed(ItemListList.CLASS_NAME);
+        if (itemListListCached != null) {// && !forceLoadFromParse) {
+            return itemListListCached;
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                if (false) { //if forceload and no results, mean we need to initialize
-//                    itemListList.addAll(getAllItemListsFromParse());
+//        ParseQuery<ItemListList> query = ParseQuery.getQuery(ItemListList.CLASS_NAME);
+//        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//        try {
+//            List<ItemListList> results = query.find();
+//            //if no categoryList already saved, initialize it with existing categories
+//            if (results.size() > 0) {
+//                ASSERT.that(results.size() <= 1, () -> "error: more than one ItemItemList element (" + results.size() + ")");
+//                 itemListList = results.get(0); //return first element
+////                fetchListElementsIfNeededReturnCachedIfAvail(itemListList); //get the right elements
+////                cachePut(itemListList);
+////                ItemListList cachedItemListList = (ItemListList) cacheGet(itemListList);
+////                if (cachedItemListList != null) {
+////                    itemListList = cachedItemListList;
+////                } else {
+////                fetchListElementsIfNeededReturnCachedIfAvail(categoryList);
+//                    cachePut(ItemListList.CLASS_NAME,itemListList); //MUST cache first, otherwise the categoryList's elements won't get the right (this categoryList) as owner
 //                    fetchListElementsIfNeededReturnCachedIfAvail(itemListList); //get the right elements
-//                }
+////                }
+////                return itemListList;
+//            } else {
+//                ItemListList itemListList2 = new ItemListList();
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                if (false) { //if forceload and no results, mean we need to initialize
+////                    itemListList.addAll(getAllItemListsFromParse());
+////                    fetchListElementsIfNeededReturnCachedIfAvail(itemListList); //get the right elements
+////                }
+////</editor-fold>
+////                saveAndWait((ParseObject) itemListList); //always save so new lists can be assigned to it
+////                cachePut(itemListList); //may fetchFromCacheOnly by objectId via getOwner
+////                saveInBackground((ParseObject) itemListList2, () -> cachePut(itemListList2)); //always save so new lists can be assigned to it
+////                saveNew((ParseObject) itemListList2, true); //SAVEINBACKGROUND automatically adds to cache //always save so new lists can be assigned to it
+//                saveNew((ParseObject) itemListList2); //SAVEINBACKGROUND automatically adds to cache //always save so new lists can be assigned to it
+//                saveNewExecuteUpdate();
+//                cachePut(itemListList2);
+//                return itemListList2;
+//            }
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//        assert false;
+////        return itemListList;
+//        return null;
 //</editor-fold>
-//                saveAndWait((ParseObject) itemListList); //always save so new lists can be assigned to it
-//                cachePut(itemListList); //may fetchFromCacheOnly by objectId via getOwner
-//                saveInBackground((ParseObject) itemListList2, () -> cachePut(itemListList2)); //always save so new lists can be assigned to it
-//                saveNew((ParseObject) itemListList2, true); //SAVEINBACKGROUND automatically adds to cache //always save so new lists can be assigned to it
-                saveNew((ParseObject) itemListList2); //SAVEINBACKGROUND automatically adds to cache //always save so new lists can be assigned to it
+        List<ItemListList> results = null;
+        ParseQuery<ItemListList> query = ParseQuery.getQuery(ItemListList.CLASS_NAME);
+//        query.selectKeys(new ArrayList());
+        query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //normally never deleted, but could happen in the future
+        try {
+            results = query.find();
+            if (results.size() > 0) {
+                if (Config.TEST) {
+                    ASSERT.that(results.size() <= 1, "error: more than one TemplateList element (" + results + ")"); //TODO create error log for this 
+                }
+//                ItemListList itemListListParse = results.get(0); //return first element
+                itemListListCached = results.get(0); //return first element
+//                if (itemListListCached != null) {
+//                    List l = itemListListCached.getListFull();
+//                    l.clear();
+//                    l.addAll(itemListListParse.getListFull()); //A *HACK* to refresh the existing 
+//                }
+//                cachePut(ItemListList.CLASS_NAME, itemListListCached); //MUST cache first, otherwise the categoryList's elements won't get the right (this categoryList) as owner
+                if (false) {
+                    fetchListElementsIfNeededReturnCachedIfAvail(itemListListCached); //SHOULDN'T be necessary, done by getList(). //get the right elements
+                }
+            } else { //initialise the templateList for the first time
+                itemListListCached = new ItemListList();
+                saveNew((ParseObject) itemListListCached); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
                 saveNewExecuteUpdate();
-                cachePut(itemListList2);
-                return itemListList2;
             }
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        assert false;
-//        return itemListList;
-        return null;
+        cachePut(ItemListList.CLASS_NAME, itemListListCached);
+        return itemListListCached;
     }
 
 //    public ItemListList getItemListList(boolean forceFromParse) {
@@ -1555,7 +1779,7 @@ public class DAO {
      * @param endDate
      * @return
      */
-    public ItemListList getItemListList(boolean forceLoadFromParse, Date startDate, Date endDate) {
+    public ItemListList getItemListListXXX(boolean forceLoadFromParse, Date startDate, Date endDate) {
         ASSERT.that(!(forceLoadFromParse && (startDate != null || endDate != null)), "getItemListList called with both forceReload AND date interval");
         ItemListList itemListList = null;
         List<ItemListList> results;// = null;
@@ -1659,50 +1883,77 @@ public class DAO {
 //        return getTemplateList(forceLoadFromParse, null, null);
 //    }
 //</editor-fold>
-    public TemplateList getTemplateList() {
-//        TemplateList templateList = null;
+//    public TemplateList getTemplateList() {
+//        return getTemplateList(false, null, null);
+//    }
+    public TemplateList getTemplateList() {//boolean forceLoadFromParse) {//, Date startDate, Date endDate) {
+
+        TemplateList templateList = null;
+
+        templateList = (TemplateList) cacheGetNamed(TemplateList.CLASS_NAME);
+        if (templateList != null) {// && !forceLoadFromParse) {
+            return templateList;
+        }
+
         List<TemplateList> results = null;
         ParseQuery<TemplateList> query = ParseQuery.getQuery(TemplateList.CLASS_NAME);
-//        setupItemQueryNotTemplateNotDeletedLimit10000(query);
+//        query.selectKeys(new ArrayList()); //NO: must fetch list of templates!!
+        query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //normally never deleted, but could happen in the future
+        try {
+            results = query.find();
+            if (results.size() > 0) {
+                if (Config.TEST) {
+                    ASSERT.that(results.size() <= 1, "error: more than one TemplateList element (" + results + ")"); //TODO create error log for this 
+                }
+                templateList = results.get(0); //return first element
+//                cachePut(TemplateList.CLASS_NAME, templateList); //MUST cache first, otherwise the categoryList's elements won't get the right (this categoryList) as owner
+//                fetchListElementsIfNeededReturnCachedIfAvail(templateList); //get the right elements  
+            } else { //initialise the templateList for the first time
+                templateList = new TemplateList();
+                saveNew((ParseObject) templateList); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
+                saveNewExecuteUpdate();
+            }
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        cachePut(TemplateList.CLASS_NAME, templateList);
+        return templateList;
+    }
+
+    public TemplateList getTemplateListOLD() {
+        TemplateList templateList;
+        templateList = (TemplateList) cacheGetNamed(TemplateList.CLASS_NAME);
+        if (templateList != null) {
+            return templateList;
+        }
+
+        List<TemplateList> results = null;
+        ParseQuery<TemplateList> query = ParseQuery.getQuery(TemplateList.CLASS_NAME);
         query.selectKeys(new ArrayList());
-        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+        query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //normally never deleted, but could happen in the future
         try {
             results = query.find();
             int s = results.size();
             if (s > 0) {
                 ASSERT.that(s <= 1, () -> "error: more than one TemplateList element (" + s + ")"); //TODO create error log for this 
-                TemplateList templateList = results.get(0); //return first element
-//                fetchListElementsIfNeededReturnCachedIfAvail(templateList); //get the right elements  
-//                cachePut(templateList);
-//                return templateList;
+                templateList = results.get(0); //return first element
                 TemplateList cachedTemplateList = (TemplateList) cacheGet(templateList);
                 if (cachedTemplateList != null) {
                     templateList = cachedTemplateList;
                 } else {
-//                fetchListElementsIfNeededReturnCachedIfAvail(categoryList);
                     cachePut(templateList); //MUST cache first, otherwise the categoryList's elements won't get the right (this categoryList) as owner
                     fetchListElementsIfNeededReturnCachedIfAvail(templateList); //get the right elements  
                 }
                 return templateList;
             } else { //if (results.size() == 0) 
                 TemplateList templateList2 = new TemplateList();
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                templateList.addAll(getAllTemplatesByQuery()); //must use addAll to set pre-existing templates
-////                templateList.setList(getAllTemplatesByQuery());
-////                if (false) fetchListElementsIfNeededReturnCachedIfAvail(templateList);
-//                fetchListElementsIfNeededReturnCachedIfAvail(templateList); //get the right elements
-//</editor-fold>
-//                saveAndWait((ParseObject) templateList); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
-//                cachePut(templateList); //cache list 
-//                saveInBackground((ParseObject) templateList2, () -> cachePut(templateList2)); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
-//                saveNew((ParseObject) templateList2, true); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
                 saveNew((ParseObject) templateList2); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
                 saveNewExecuteUpdate();
                 cachePut(templateList2);
                 return templateList2;
             }
-//            cache.put(templateList.getObjectIdP(), templateList);
-//            cache.put(TemplateList.CLASS_NAME, templateList);
+//            cache.put(TemplateList.CLASS_NAME, templateList.getO);
+//            cachePut(TemplateList.CLASS_NAME, templateList);
         } catch (ParseException ex) {
             Log.e(ex);
         }
@@ -1722,7 +1973,7 @@ public class DAO {
         return null;
     }
 
-    public TemplateList getTemplateList(boolean forceLoadFromParse, Date startDate, Date endDate) {
+    public TemplateList getTemplateListXXX(boolean forceLoadFromParse, Date startDate, Date endDate) {
         ASSERT.that(!(forceLoadFromParse && (startDate != null || endDate != null)), "getItemListList called with both forceReload AND date interval");
         TemplateList templateList = null;
         List<TemplateList> results = null;
@@ -1864,9 +2115,12 @@ public class DAO {
 //            return inbox;
 //        } //NO need for caching since this is done in the instance/singleton
 //*named* lists are cached twice: as "name"->objectId and as usual: objectId->parseObject
-        Object cachedObjIdStr = cache.get(name);
-        if (cachedObjIdStr != null) {
-            return (ItemList) cache.get(cachedObjIdStr); //cahce: name -> objectIdP
+        ItemList temp = (ItemList) cacheGetNamed(name); //cahce: name -> objectIdP
+//        Object cachedObjIdStr = cache.get(name);
+//        if (cachedObjIdStr != null) {
+//            return (ItemList) cache.get(cachedObjIdStr); //cahce: name -> objectIdP
+        if (temp != null) {
+            return temp;
         } else {
             ItemList inbox = getSpecialNamedItemListFromParse(name);
             if (inbox == null) { //if no Inbox already saved, initialize it with existing motherless tasks
@@ -1900,13 +2154,15 @@ public class DAO {
                 return newInbox;
             } else { //check if list is already cached, use that object instance instead of the one returned by getSpecialNamedItemListFromParse
                 Object temp2 = cacheGet(inbox);
-                ASSERT.that(temp2 instanceof ItemList||temp2==null, "cached Inbox is NOT an ItemList, inbox=" + temp2);
+                ASSERT.that(temp2 instanceof ItemList || temp2 == null, "cached Inbox is NOT an ItemList, inbox=" + temp2);
                 if (temp2 instanceof ItemList) {
                     inbox = (ItemList) temp2; //reuse an already cached list
-                    cache.put(name, inbox.getObjectIdP()); //can't be sure it's already cached under name "Inbox"
+//                    cache.put(name, inbox.getObjectIdP()); //can't be sure it's already cached under name "Inbox"
+                    cachePut(name, inbox);
                 } else {
-                    cache.put(name, inbox.getObjectIdP());
-                    cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
+//                    cache.put(name, inbox.getObjectIdP());
+//                    cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
+                    cachePut(name, inbox);
                 }
                 return inbox;
             }
@@ -1941,268 +2197,340 @@ public class DAO {
      * @param filterSortDef
      * @return
      */
-    public ItemList getNamedItemList(String name, String visibleName, FilterSortDef filterSortDef) {
-//        ItemList temp = null;
+    public ItemList getNamedItemList(String name, String visibleName, FilterSortDef filterSortDef, boolean forceReloadFromParse) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        String objId;
-//        if (filterSortDef != null) {
-//            ((ItemList) temp).setFilterSortDef(filterSortDef);
-//            saveInBackground(temp);
-//        }
-//        if (false && (temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) { //temp.getUpdatedAt() == null: in case it hasn't been saved to Parse server yet
-////           //temp is cached and updated today
-//            return (ItemList) temp;
-//        } else {
-        // !((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) <=>
-        // ((temp = cacheGet(name)) == null || !(temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) <=>
-        // ((temp = cacheGet(name)) == null || (temp.getUpdatedAt() != null && !MyDate.isToday(temp.getUpdatedAt())))
-//            List<ItemAndListCommonInterface> updatedList;
-//        ItemList temp = namedLists.get(name); //ensure lists a
-//</editor-fold>
-//        ItemList temp = (ItemList) cacheGet(name); //ensure lists are reused
-        Object cachedObjIdStr = cache.get(name);
-        ItemList temp = null;
-        if (cachedObjIdStr != null) {
-            temp = (ItemList) cache.get(cachedObjIdStr); //cahce: name -> objectIdP
-        }
-        if (temp == null) {
-            //if not cached, try to get from Parse:
-            temp = getSpecialNamedItemListFromParse(name); //fetch from parse
-            if (temp == null) {
-                //if not on Parse, create a new - this will only be done ONCE for every user for each list
-                temp = new ItemList();
-                temp.setText(visibleName);
-                temp.setSystemName(name);
-                temp.setFilterSortDef(filterSortDef);
-//                saveNew(true, filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
-                saveNew(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
-                saveNewExecuteUpdate();
-//                cache.put(name, temp);
-                cache.put(name, temp.getObjectIdP());
-            } else { //if list is already cached, use that object instance instead of the one returned by getSpecialNamedItemListFromParse
-                Object temp2 = cacheGet(temp);
-                ASSERT.that(temp2 instanceof ItemList, "cached named list is NOT an ItemList, temp2=" + temp2);
-                if (temp2 instanceof ItemList) {
-                    temp = (ItemList) temp2; //reuse an already cached list
-                    cache.put(name, temp.getObjectIdP());
-                }
-            }
-        }
-        ItemList updatedList = null;
-        switch (name) {
-            case OVERDUE:
-                updatedList = getOverdue(temp);
-//<editor-fold defaultstate="collapsed" desc="comment">
-////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
-//////                    return (ItemList) temp;
-////                    } else {
-//                    if (temp != null) {
-//                        ((ItemAndListCommonInterface) temp).setList(getOverdue()); //refresh the list (important to just update existing list so eg Timer continues on same list!!)
-//                        saveInBackground(temp);
-//                    } else {
-//                        temp = new ItemList(visibleName, getOverdue());
-////<editor-fold defaultstate="collapsed" desc="comment">
-////                        if (filterSortDef != null) {
-////                            saveInBackground(filterSortDef);
-////                            ((ItemList) temp).setFilterSortDef(filterSortDef);
-////                        }
-////                        saveAndWait(temp); //NB. MUST be saveAndWait so an pbjectId is creating before caching based on on name
-////                        cache.put(name, temp);
-////                    return (ItemList) temp;
-////</editor-fold>
-//                    }
-//                    }
-//</editor-fold>
-                break;
-            case TODAY:
-                updatedList = getToday(temp);
-//<editor-fold defaultstate="collapsed" desc="comment">
-////                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
-////                    if ((temp = cacheGet(name)) != null && (MyDate.isToday(temp.getUpdatedAt()))) {
-//////                    return (ItemList) temp;
-////                    } else {
-//                    if (temp != null) {
-//                        ((ItemAndListCommonInterface) temp).setList(getToday()); //refresh the list (important so eg Timer continues on same list!!)
-//                        saveInBackground(temp);
-//                    } else {
-//                        temp = new ItemList(visibleName, getToday());
-////<editor-fold defaultstate="collapsed" desc="comment">
-////                        if (filterSortDef != null) {
-////                            saveInBackground(filterSortDef);
-////                            ((ItemList) temp).setFilterSortDef(filterSortDef);
-////                        }
-//////                    saveInBackground(temp);
-////                        //optimization: does this in background:
-////                        saveAndWait(temp); //NB! MUST use saveAndWait, so the list is stored in Cache with an updatedAt date to make the check above work correctly!!
-////                        cache.put(name, temp);
-////                    return (ItemList) temp;
-////</editor-fold>
-//                    }
-////                    }
-//</editor-fold>
-                break; //unreachable statement!!
-            case NEXT:
-                updatedList = getCalendar(temp);
-//<editor-fold defaultstate="collapsed" desc="comment">
-////<editor-fold defaultstate="collapsed" desc="comment">
-////                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
-////                    return (ItemList) temp;
-////                else
-////                    temp = new ItemList(visibleName, getCalendar());
-////                if (temp == null) {
-////                    temp = new ItemList(visibleName, false);
-////                    saveInBackground(temp);
-////                    cache.put(name, temp);
-////                } else {
-////                    cache.put(name, temp);
-////                }
-////                return (ItemList) temp;
-////
-////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
-//////                    return (ItemList) temp;
-////                    } else {
-////</editor-fold>
-//                    if (temp != null) {
-//                        ((ItemAndListCommonInterface) temp).setList(getCalendar()); //refresh the list (important so eg Timer continues on same list!!)
-//                        saveInBackground(temp);
-//                    } else {
-//                        temp = new ItemList(visibleName, getCalendar());
-////<editor-fold defaultstate="collapsed" desc="comment">
-////                        if (filterSortDef != null) {
-////                            saveInBackground(filterSortDef);
-////                            ((ItemList) temp).setFilterSortDef(filterSortDef);
-////                        }
-////                        saveAndWait(temp);
-////                        cache.put(name, temp);
-//////                    return (ItemList) temp;
-////</editor-fold>
-//                    }
-////                    }
-//</editor-fold>
-                break; //unreachable statement!!
-            case LOG:
-                updatedList = getCompletionLog(temp);
-//<editor-fold defaultstate="collapsed" desc="comment">
-////<editor-fold defaultstate="collapsed" desc="comment">
-////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
-//////                    return (ItemList) temp;
-////                    } else {
-////</editor-fold>
-//                    if (temp != null) {
-//                        ((ItemAndListCommonInterface) temp).setList(getCompletionLog()); //refresh the list (important so eg Timer continues on same list!!)
-//                        saveInBackground(temp);
-//                    } else {
-//                        temp = new ItemList(visibleName, getCompletionLog());
-////<editor-fold defaultstate="collapsed" desc="comment">
-////                        if (filterSortDef != null) {
-////                            saveInBackground(filterSortDef);
-////                            ((ItemList) temp).setFilterSortDef(filterSortDef);
-////                        }
-////                        saveAndWait(temp);
-////                        cache.put(name, temp);
-////</editor-fold>
-//                    }
-//                    }
-//</editor-fold>
-                break;
-            case DIARY:
-                updatedList = getCreationLog(temp);
-//<editor-fold defaultstate="collapsed" desc="comment">
-////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
-////                    } else {
-//                    if (temp != null) {
-//                        ((ItemAndListCommonInterface) temp).setList(getCreationLog()); //refresh the list (important so eg Timer continues on same list!!)
-//                        saveInBackground(temp);
-//                    } else {
-//                        temp = new ItemList(visibleName, getCreationLog());
-//                        saveAndWait(temp);
-//                        cache.put(name, temp);
-//                    }
-////                    }
-//</editor-fold>
-                break;
-            case TOUCHED:
-                updatedList = getTouchedLog(temp);
-//<editor-fold defaultstate="collapsed" desc="comment">
-////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
-////                    } else {
-//                    if (temp != null) {
-//                        ((ItemAndListCommonInterface) temp).setList(getTouchedLog()); //refresh the list (important so eg Timer continues on same list!!)
-//                        saveInBackground(temp);
-//                    } else {
-//                        temp = new ItemList(visibleName, getTouchedLog());
-//                        saveAndWait(temp);
-//                        cache.put(name, temp);
-//                    }
-////                    }
-//</editor-fold>
-                break;
-//                default:
-//                    break;
-            }
-//        updatedList.setSystemList(true);
-//        updatedList.setNoSave(true);
-//        updatedList.setText(visibleName);
-//        updatedList.setFilterSortDef(filterSortDef);
-//        namedLists.put(name, updatedList);
-        return updatedList;
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (temp.getObjectIdP() == null) { //new created list
-//            if (temp == null) { //create new list (only done on first use or after refreshing cache)
-////                temp = new ItemList(visibleName, getTouchedLog((ItemList) temp));
-//                temp = new ItemList(visibleName, updatedList);
-//                ((ItemList) temp).setSystemList(true);
-//                ((ItemList) temp).setList(updatedList);
-//                if (filterSortDef != null) {
-//                    saveInBackground(filterSortDef);
-//                    ((ItemList) temp).setFilterSortDef(filterSortDef);
-//                }
-////                saveAndWait(temp); //NB. MUST be saveAndWait so an objectId is created before caching based on name
-////                cache.put(name, temp);
-////                ParseObject lambdaCopy = temp;
-////                saveInBackground(temp, () -> cache.put(name, lambdaCopy)); //NB. MUST be saveAndWait so an objectId is created before caching based on name
-//                if (false) saveInBackground(temp); //NB. MUST be saveAndWait so an objectId is created before caching based on name -> now done in backgroundsavethread after call to saveInBackground
-////                cache.put(name, temp);
-//            } else {
-//                ((ItemAndListCommonInterface) temp).setList(updatedList); //refresh the list (important to just update existing list so eg Timer continues on same list!!)
-//                if (false) saveInBackground(temp);
-//            }
-//
-////            if (temp != null) {
-////                return (ItemList) temp;
-////            } else {
-////                ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
-////                return null;
-////            }
+//        ItemList temp = (ItemList) cacheGetNamed(name); //cahce: name -> objectIdP
+//        if (temp == null) {
+//            //if not cached, try to get from Parse:
+//            temp = getSpecialNamedItemListFromParse(name); //fetch from parse
 //            if (temp == null) {
-//                ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
-//            }
-//            return (ItemList) temp;
-////        }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (false) {
-//            ItemList inbox = getSpecialNamedItemListFromParse(name, visibleName);
-//            if (inbox == null) {
-//                //if no Inbox already saved, initialize it with existing categories
-//                inbox = new ItemList();
-//                inbox.setText(name);
-//                List itemWithoutOwners = getAllItemsWithoutOwners();
-//                for (Item item : (List<Item>) itemWithoutOwners) {
-//                    inbox.addToList(item);
+//                //if not on Parse, create a new - this will only be done ONCE for every user for each list
+//                temp = new ItemList();
+//                temp.setText(visibleName);
+//                temp.setSystemName(name);
+//                temp.setFilterSortDef(filterSortDef);
+////                saveNew(true, filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+//                saveNew(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+//                saveNewExecuteUpdate();
+////                cache.put(name, temp);
+////                cache.put(name, temp.getObjectIdP());
+//                cachePut(name, temp);
+//            } else { //if list is already cached, use that object instance instead of the one returned by getSpecialNamedItemListFromParse
+//                Object temp2 = cacheGet(temp);
+//                ASSERT.that(temp2 instanceof ItemList, "cached named list is NOT an ItemList, temp2=" + temp2);
+//                if (temp2 instanceof ItemList) {
+//                    temp = (ItemList) temp2; //reuse an already cached list
+////                    cache.put(name, temp.getObjectIdP());
+//                    cachePut(name, temp);
 //                }
-//                saveAndWait((ParseObject) inbox); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
-//                saveInBackground(itemWithoutOwners); //save all items who now have their Inbox owner assigned
-////                fetchListElementsIfNeededReturnCachedIfAvail(inbox);
-////            saveInBackground((ParseObject)inbox); //always save so new lists can be assigned to it
-////            saveAndWait((ParseObject)inbox); //always save so new lists can be assigned to it
 //            }
-//            cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
-//            return inbox;
 //        }
 //</editor-fold>
+        List<ItemAndListCommonInterface> updatedList = null;
+        if (forceReloadFromParse) {
+            switch (name) {
+                case OVERDUE:
+                    updatedList = getOverdue();
+                    break;
+                case TODAY:
+                    updatedList = getToday();
+                    break; //unreachable statement!!
+                case NEXT:
+                    updatedList = getCalendar();
+                    break; //unreachable statement!!
+                case LOG:
+                    updatedList = getCompletionLog();
+                    break;
+                case DIARY:
+                    updatedList = getCreationLog();
+                    break;
+                case TOUCHED:
+                    updatedList = getTouchedLog();
+                    break;
+            }
+        }
+
+        ItemList temp = (ItemList) cacheGetNamed(name); //cahce: name -> objectIdP
+        if (temp != null) {
+            temp.updateTo(updatedList);
+        } else {
+            temp = new ItemList(updatedList);
+            temp.setText(visibleName);
+            temp.setSystemName(name);
+            temp.setFilterSortDef(filterSortDef);
+        }
+        saveNew(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+        saveNewExecuteUpdate();
+        cachePut(name, temp);
+
+        return temp;
     }
 
+    public ItemList getNamedItemList(String name, String visibleName, FilterSortDef filterSortDef) {
+        return getNamedItemList(name, visibleName, filterSortDef, true);
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public ItemList getNamedItemListOLD(String name, String visibleName, FilterSortDef filterSortDef) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        ItemList temp = null;
+////        String objId;
+////        if (filterSortDef != null) {
+////            ((ItemList) temp).setFilterSortDef(filterSortDef);
+////            saveInBackground(temp);
+////        }
+////        if (false && (temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) { //temp.getUpdatedAt() == null: in case it hasn't been saved to Parse server yet
+//////           //temp is cached and updated today
+////            return (ItemList) temp;
+////        } else {
+//        // !((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) <=>
+//        // ((temp = cacheGet(name)) == null || !(temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) <=>
+//        // ((temp = cacheGet(name)) == null || (temp.getUpdatedAt() != null && !MyDate.isToday(temp.getUpdatedAt())))
+////            List<ItemAndListCommonInterface> updatedList;
+////        ItemList temp = namedLists.get(name); //ensure lists a
+////        ItemList temp = (ItemList) cacheGet(name); //ensure lists are reused
+////        Object cachedObjIdStr = cache.get(name);
+////        ItemList temp = null;
+////        if (cachedObjIdStr != null) {
+////            temp = (ItemList) cache.get(cachedObjIdStr); //cahce: name -> objectIdP
+////        }
+////</editor-fold>
+//        ItemList temp = (ItemList) cacheGetNamed(name); //cahce: name -> objectIdP
+//        if (temp == null) {
+//            //if not cached, try to get from Parse:
+//            temp = getSpecialNamedItemListFromParse(name); //fetch from parse
+//            if (temp == null) {
+//                //if not on Parse, create a new - this will only be done ONCE for every user for each list
+//                temp = new ItemList();
+//                temp.setText(visibleName);
+//                temp.setSystemName(name);
+//                temp.setFilterSortDef(filterSortDef);
+////                saveNew(true, filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+//                saveNew(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+//                saveNewExecuteUpdate();
+////                cache.put(name, temp);
+////                cache.put(name, temp.getObjectIdP());
+//                cachePut(name, temp);
+//            } else { //if list is already cached, use that object instance instead of the one returned by getSpecialNamedItemListFromParse
+//                Object temp2 = cacheGet(temp);
+//                ASSERT.that(temp2 instanceof ItemList, "cached named list is NOT an ItemList, temp2=" + temp2);
+//                if (temp2 instanceof ItemList) {
+//                    temp = (ItemList) temp2; //reuse an already cached list
+////                    cache.put(name, temp.getObjectIdP());
+//                    cachePut(name, temp);
+//                }
+//            }
+//        }
+//
+//        List<ItemAndListCommonInterface> updatedList = null;
+//        switch (name) {
+//            case OVERDUE:
+//                updatedList = getOverdue();
+////<editor-fold defaultstate="collapsed" desc="comment">
+//////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
+////////                    return (ItemList) temp;
+//////                    } else {
+////                    if (temp != null) {
+////                        ((ItemAndListCommonInterface) temp).setList(getOverdue()); //refresh the list (important to just update existing list so eg Timer continues on same list!!)
+////                        saveInBackground(temp);
+////                    } else {
+////                        temp = new ItemList(visibleName, getOverdue());
+//////<editor-fold defaultstate="collapsed" desc="comment">
+//////                        if (filterSortDef != null) {
+//////                            saveInBackground(filterSortDef);
+//////                            ((ItemList) temp).setFilterSortDef(filterSortDef);
+//////                        }
+//////                        saveAndWait(temp); //NB. MUST be saveAndWait so an pbjectId is creating before caching based on on name
+//////                        cache.put(name, temp);
+//////                    return (ItemList) temp;
+//////</editor-fold>
+////                    }
+////                    }
+////</editor-fold>
+//                break;
+//            case TODAY:
+//                updatedList = getToday();
+////<editor-fold defaultstate="collapsed" desc="comment">
+//////                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
+//////                    if ((temp = cacheGet(name)) != null && (MyDate.isToday(temp.getUpdatedAt()))) {
+////////                    return (ItemList) temp;
+//////                    } else {
+////                    if (temp != null) {
+////                        ((ItemAndListCommonInterface) temp).setList(getToday()); //refresh the list (important so eg Timer continues on same list!!)
+////                        saveInBackground(temp);
+////                    } else {
+////                        temp = new ItemList(visibleName, getToday());
+//////<editor-fold defaultstate="collapsed" desc="comment">
+//////                        if (filterSortDef != null) {
+//////                            saveInBackground(filterSortDef);
+//////                            ((ItemList) temp).setFilterSortDef(filterSortDef);
+//////                        }
+////////                    saveInBackground(temp);
+//////                        //optimization: does this in background:
+//////                        saveAndWait(temp); //NB! MUST use saveAndWait, so the list is stored in Cache with an updatedAt date to make the check above work correctly!!
+//////                        cache.put(name, temp);
+//////                    return (ItemList) temp;
+//////</editor-fold>
+////                    }
+//////                    }
+////</editor-fold>
+//                break; //unreachable statement!!
+//            case NEXT:
+//                updatedList = getCalendar();
+////<editor-fold defaultstate="collapsed" desc="comment">
+//////<editor-fold defaultstate="collapsed" desc="comment">
+//////                if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt())))
+//////                    return (ItemList) temp;
+//////                else
+//////                    temp = new ItemList(visibleName, getCalendar());
+//////                if (temp == null) {
+//////                    temp = new ItemList(visibleName, false);
+//////                    saveInBackground(temp);
+//////                    cache.put(name, temp);
+//////                } else {
+//////                    cache.put(name, temp);
+//////                }
+//////                return (ItemList) temp;
+//////
+//////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
+////////                    return (ItemList) temp;
+//////                    } else {
+//////</editor-fold>
+////                    if (temp != null) {
+////                        ((ItemAndListCommonInterface) temp).setList(getCalendar()); //refresh the list (important so eg Timer continues on same list!!)
+////                        saveInBackground(temp);
+////                    } else {
+////                        temp = new ItemList(visibleName, getCalendar());
+//////<editor-fold defaultstate="collapsed" desc="comment">
+//////                        if (filterSortDef != null) {
+//////                            saveInBackground(filterSortDef);
+//////                            ((ItemList) temp).setFilterSortDef(filterSortDef);
+//////                        }
+//////                        saveAndWait(temp);
+//////                        cache.put(name, temp);
+////////                    return (ItemList) temp;
+//////</editor-fold>
+////                    }
+//////                    }
+////</editor-fold>
+//                break; //unreachable statement!!
+//            case LOG:
+////                updatedList = getCompletionLog(temp);
+//                updatedList = getCompletionLog();
+////<editor-fold defaultstate="collapsed" desc="comment">
+//////<editor-fold defaultstate="collapsed" desc="comment">
+//////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
+////////                    return (ItemList) temp;
+//////                    } else {
+//////</editor-fold>
+////                    if (temp != null) {
+////                        ((ItemAndListCommonInterface) temp).setList(getCompletionLog()); //refresh the list (important so eg Timer continues on same list!!)
+////                        saveInBackground(temp);
+////                    } else {
+////                        temp = new ItemList(visibleName, getCompletionLog());
+//////<editor-fold defaultstate="collapsed" desc="comment">
+//////                        if (filterSortDef != null) {
+//////                            saveInBackground(filterSortDef);
+//////                            ((ItemList) temp).setFilterSortDef(filterSortDef);
+//////                        }
+//////                        saveAndWait(temp);
+//////                        cache.put(name, temp);
+//////</editor-fold>
+////                    }
+////                    }
+////</editor-fold>
+//                break;
+//            case DIARY:
+//                updatedList = getCreationLog();
+////<editor-fold defaultstate="collapsed" desc="comment">
+//////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
+//////                    } else {
+////                    if (temp != null) {
+////                        ((ItemAndListCommonInterface) temp).setList(getCreationLog()); //refresh the list (important so eg Timer continues on same list!!)
+////                        saveInBackground(temp);
+////                    } else {
+////                        temp = new ItemList(visibleName, getCreationLog());
+////                        saveAndWait(temp);
+////                        cache.put(name, temp);
+////                    }
+//////                    }
+////</editor-fold>
+//                break;
+//            case TOUCHED:
+//                updatedList = getTouchedLog();
+////<editor-fold defaultstate="collapsed" desc="comment">
+//////                    if ((temp = cacheGet(name)) != null && (temp.getUpdatedAt() == null || MyDate.isToday(temp.getUpdatedAt()))) {
+//////                    } else {
+////                    if (temp != null) {
+////                        ((ItemAndListCommonInterface) temp).setList(getTouchedLog()); //refresh the list (important so eg Timer continues on same list!!)
+////                        saveInBackground(temp);
+////                    } else {
+////                        temp = new ItemList(visibleName, getTouchedLog());
+////                        saveAndWait(temp);
+////                        cache.put(name, temp);
+////                    }
+//////                    }
+////</editor-fold>
+//                break;
+//        }
+//        return new ItemList(updatedList);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            if (temp.getObjectIdP() == null) { //new created list
+////            if (temp == null) { //create new list (only done on first use or after refreshing cache)
+//////                temp = new ItemList(visibleName, getTouchedLog((ItemList) temp));
+////                temp = new ItemList(visibleName, updatedList);
+////                ((ItemList) temp).setSystemList(true);
+////                ((ItemList) temp).setList(updatedList);
+////                if (filterSortDef != null) {
+////                    saveInBackground(filterSortDef);
+////                    ((ItemList) temp).setFilterSortDef(filterSortDef);
+////                }
+//////                saveAndWait(temp); //NB. MUST be saveAndWait so an objectId is created before caching based on name
+//////                cache.put(name, temp);
+//////                ParseObject lambdaCopy = temp;
+//////                saveInBackground(temp, () -> cache.put(name, lambdaCopy)); //NB. MUST be saveAndWait so an objectId is created before caching based on name
+////                if (false) saveInBackground(temp); //NB. MUST be saveAndWait so an objectId is created before caching based on name -> now done in backgroundsavethread after call to saveInBackground
+//////                cache.put(name, temp);
+////            } else {
+////                ((ItemAndListCommonInterface) temp).setList(updatedList); //refresh the list (important to just update existing list so eg Timer continues on same list!!)
+////                if (false) saveInBackground(temp);
+////            }
+////
+//////            if (temp != null) {
+//////                return (ItemList) temp;
+//////            } else {
+//////                ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
+//////                return null;
+//////            }
+////            if (temp == null) {
+////                ASSERT.that("error: unknown type of named list,name=" + name + ", visibleName=" + visibleName);
+////            }
+////            return (ItemList) temp;
+//////        }
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (false) {
+////            ItemList inbox = getSpecialNamedItemListFromParse(name, visibleName);
+////            if (inbox == null) {
+////                //if no Inbox already saved, initialize it with existing categories
+////                inbox = new ItemList();
+////                inbox.setText(name);
+////                List itemWithoutOwners = getAllItemsWithoutOwners();
+////                for (Item item : (List<Item>) itemWithoutOwners) {
+////                    inbox.addToList(item);
+////                }
+////                saveAndWait((ParseObject) inbox); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
+////                saveInBackground(itemWithoutOwners); //save all items who now have their Inbox owner assigned
+//////                fetchListElementsIfNeededReturnCachedIfAvail(inbox);
+//////            saveInBackground((ParseObject)inbox); //always save so new lists can be assigned to it
+//////            saveAndWait((ParseObject)inbox); //always save so new lists can be assigned to it
+////            }
+////            cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
+////            return inbox;
+////        }
+////</editor-fold>
+//    }
+//</editor-fold>
 //    private final static String ALL_TEMPLATES_KEY = "ALL_TEMPLATES_KEY";
     public List<Item> getTopLevelTemplatesFromParse() {
         List<Item> results = null;
@@ -2210,7 +2538,7 @@ public class DAO {
         setupItemQueryNotTemplateNotDeletedLimit10000(query);
         query.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //only top-level templates
         query.whereExists(Item.PARSE_TEMPLATE);
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        query.whereExists(Item.PARSE_TEMPLATE); //fetch only templates
 //        query.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //exclude all subtasks
 //        query.orderByDescending(Item.PARSE_TEXT); //order alphabetically
@@ -2219,6 +2547,7 @@ public class DAO {
 //        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
 //        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
 //        query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+//</editor-fold>
         try {
             results = query.find();
 //            cacheList(results);
@@ -2660,6 +2989,28 @@ public class DAO {
      *
      * @return
      */
+    public List<ItemAndListCommonInterface> getCompletionLog() {
+        //get the start of the day creationLogInterval days back in time
+        Date firstDate = new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.completionLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
+
+        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(query, false);
+        //Projects are defined as containing subtasks and not being owner by another Item
+        query.whereEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //include if has subtaskss
+
+        query.orderByDescending(Item.PARSE_COMPLETED_DATE);
+        query.whereGreaterThanOrEqualTo(Item.PARSE_COMPLETED_DATE, firstDate);
+
+        List results = null;
+        try {
+            results = query.find();
+            return results;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return null;
+    }
+
     public ItemList getCompletionLog(ItemList existingListToUpdate) {
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         setupItemQueryNotTemplateNotDeletedLimit10000(query, false);
@@ -2740,10 +3091,30 @@ public class DAO {
     }
 
     /**
-     * returns completed tasks by date completed
+     * returns completed tasks by date modified
      *
      * @return
      */
+    public List<ItemAndListCommonInterface> getTouchedLog() {
+        //get the start of the day touchedLogInterval days back in time
+        Date firstDate = new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.touchedLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
+
+        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(query);
+
+        query.whereGreaterThanOrEqualTo(Item.PARSE_UPDATED_AT, firstDate);
+        query.orderByDescending(Item.PARSE_UPDATED_AT);
+
+        List results = null;
+        try {
+            results = query.find();
+            return results;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return null;
+    }
+
     public ItemList getTouchedLog(ItemList existingListToUpdate) {
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
 //        query2.include(Item.PARSE_TEXT);
@@ -2808,6 +3179,25 @@ public class DAO {
      *
      * @return
      */
+    public List<ItemAndListCommonInterface> getCreationLog() {
+        //get the start of the day creationLogInterval days back in time
+        Date firstDate = new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.creationLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
+
+        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(query);
+
+        query.orderByDescending(Item.PARSE_CREATED_AT);
+        query.whereGreaterThanOrEqualTo(Item.PARSE_CREATED_AT, firstDate);
+        List results = null;
+        try {
+            results = query.find();
+            return results;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return null;
+    }
+
     public ItemList getCreationLog(ItemList existingListToUpdate) {
         //TODO!!! implement getting in batches of less than 1000
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
@@ -3417,6 +3807,8 @@ public class DAO {
             parseBatch.execute();
         } catch (ParseException ex) {
             Log.e(ex);
+        } catch (IllegalStateException ex) { //generated when trying to save reference to unsaved ParseObject
+            Log.e(ex);
         }
 
         if (updateCache) {
@@ -3607,20 +3999,34 @@ public class DAO {
         });
     }
 
-    public boolean delete(ItemAndListCommonInterface parseObject, boolean hardDelete, boolean triggerUpdate) {
-        parseObject.deletePrepare(new MyDate());
-        if (hardDelete) {
-            addToBatchDelete((ParseObject) parseObject);
-        } else {
-            if (parseObject.getSoftDeletedDateN() == null) {
-                parseObject.setSoftDeletedDate(new MyDate());
+//    public boolean delete(ItemAndListCommonInterface parseObject, boolean hardDelete, boolean triggerUpdate) {
+    public boolean delete(ParseObject parseObject, boolean hardDelete, boolean triggerUpdate) {
+        if (parseObject instanceof ItemAndListCommonInterface) {
+            ItemAndListCommonInterface elt = (ItemAndListCommonInterface) parseObject;
+            elt.deletePrepare(new MyDate());
+            if (hardDelete) {
+                addToBatchDelete((ParseObject) parseObject);
+            } else {
+                if (elt.getSoftDeletedDateN() == null) {
+                    elt.setSoftDeletedDate(new MyDate());
+                }
+                addToBatchUpdate((ParseObject) parseObject);
             }
-            addToBatchUpdate((ParseObject) parseObject);
+            if (triggerUpdate) {
+                triggerParseUpdate();
+            }
+            return true;
+        } else {
+            if (hardDelete) {
+                addToBatchDelete((ParseObject) parseObject);
+            } else {
+                addToBatchUpdate((ParseObject) parseObject);
+            }
+            if (triggerUpdate) {
+                triggerParseUpdate();
+            }
+            return true;
         }
-        if (triggerUpdate) {
-            triggerParseUpdate();
-        }
-        return true;
     }
 
     /**
@@ -3628,7 +4034,7 @@ public class DAO {
      *
      * @param filter
      */
-    public void delete(FilterSortDef filter) {
+    public void deleteXXX(FilterSortDef filter) {
         if (!filter.isNoSave()) {
             Display.getInstance().callSerially(() -> {
                 try {
@@ -3640,7 +4046,7 @@ public class DAO {
         }
     }
 
-    public void delete(TimerInstance timerInstance) {
+    public void deleteTimerInstance(TimerInstance timerInstance) {
         Display.getInstance().callSerially(() -> {
             try {
                 timerInstance.delete();
@@ -3650,7 +4056,7 @@ public class DAO {
         });
     }
 
-    public void delete(RepeatRuleParseObject repeatRule) {
+    public void deleteXXX(RepeatRuleParseObject repeatRule) {
         repeatRule.delete(new MyDate());
         Display.getInstance().callSerially(() -> {
             try {
@@ -3663,7 +4069,7 @@ public class DAO {
 
     public boolean deleteAll(List<ItemAndListCommonInterface> parseObjects, boolean hardDelete, boolean triggerUpdate) {
         for (ItemAndListCommonInterface p : parseObjects) {
-            delete(p, hardDelete, false); //do triggerUpdate below
+            delete((ParseObject) p, hardDelete, false); //do triggerUpdate below
         }
         if (triggerUpdate) {
             triggerParseUpdate();
@@ -4323,7 +4729,7 @@ public class DAO {
 
         //REPEATRULE
         {
-            RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
+            RepeatRuleParseObject repeatRule = workSlot.getRepeatRuleN();
             if (repeatRule != null) {
                 if (repeatRule.getObjectIdP() == null) {
                     workSlot.setRepeatRuleInParse(null);
@@ -4343,62 +4749,63 @@ public class DAO {
         }
     }
 
-    private void saveWorkSlotNew2OLD(WorkSlot workSlot, Runnable postSaveAction) {
-        if (workSlot == null) {
-            return;
-        }
-        if (Config.TEST_BACKGR) {
-            Log.p("==========>>> DAO.saveWorkSlotInBackground(" + testShowMissingRefs(workSlot) + "), ");
-        }
-
-        WorkSlot source = workSlot.getSource(); //source of Item is necessarily an Item itself
-        if (source != null && source.getObjectIdP() == null) {
-            workSlot.setSource(null);
-            saveWorkSlotNew2(source, () -> {
-                workSlot.setSource(source);
-                addToBatchUpdate(workSlot);
-            });
-        }
-
-        RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
-
-        if (true || workSlot.getObjectIdP() == null) {
-            //workSlot not previously saved
-            //REPEATRULE
-            if (repeatRule != null) {
-                if (repeatRule.getObjectIdP() == null) {
-                    workSlot.setRepeatRuleInParse(null);
-                    saveRepeatRuleNew2(repeatRule, () -> {
-//                        workSlot.setRepeatRule(repeatRule);
-                        workSlot.setRepeatRuleInParse(repeatRule);
-                        addToBatchUpdate(workSlot);
-                    });
-                } else {
-                    saveRepeatRuleNew2(repeatRule, null);
-                }
-            };
-
-            //FINALLY, create the item (now without any references to unsaved items)
-            if (false) {
-                addToBatchCreate(workSlot, postSaveAction);
-            }
-        } else {
-            //ITEM ALREADY SAVED
-//                addToBatchCreateOrUpdate(repeatRule); //if item was already saved, we just need to create or update the repeatRule, whatever is appropriate
-            saveRepeatRuleNew2(repeatRule, null);
-            if (postSaveAction != null) {
-                postSaveAction.run();
-            }
-            addToBatchUpdate(workSlot);
-        }
-
-        if (workSlot.getObjectIdP() == null) {
-            addToBatchCreate(workSlot);
-        } else {
-            addToBatchUpdate(workSlot);
-        }
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private void saveWorkSlotNew2OLD(WorkSlot workSlot, Runnable postSaveAction) {
+//        if (workSlot == null) {
+//            return;
+//        }
+//        if (Config.TEST_BACKGR) {
+//            Log.p("==========>>> DAO.saveWorkSlotInBackground(" + testShowMissingRefs(workSlot) + "), ");
+//        }
+//
+//        WorkSlot source = workSlot.getSource(); //source of Item is necessarily an Item itself
+//        if (source != null && source.getObjectIdP() == null) {
+//            workSlot.setSource(null);
+//            saveWorkSlotNew2(source, () -> {
+//                workSlot.setSource(source);
+//                addToBatchUpdate(workSlot);
+//            });
+//        }
+//
+//        RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
+//
+//        if (true || workSlot.getObjectIdP() == null) {
+//            //workSlot not previously saved
+//            //REPEATRULE
+//            if (repeatRule != null) {
+//                if (repeatRule.getObjectIdP() == null) {
+//                    workSlot.setRepeatRuleInParse(null);
+//                    saveRepeatRuleNew2(repeatRule, () -> {
+////                        workSlot.setRepeatRule(repeatRule);
+//                        workSlot.setRepeatRuleInParse(repeatRule);
+//                        addToBatchUpdate(workSlot);
+//                    });
+//                } else {
+//                    saveRepeatRuleNew2(repeatRule, null);
+//                }
+//            };
+//
+//            //FINALLY, create the item (now without any references to unsaved items)
+//            if (false) {
+//                addToBatchCreate(workSlot, postSaveAction);
+//            }
+//        } else {
+//            //ITEM ALREADY SAVED
+////                addToBatchCreateOrUpdate(repeatRule); //if item was already saved, we just need to create or update the repeatRule, whatever is appropriate
+//            saveRepeatRuleNew2(repeatRule, null);
+//            if (postSaveAction != null) {
+//                postSaveAction.run();
+//            }
+//            addToBatchUpdate(workSlot);
+//        }
+//
+//        if (workSlot.getObjectIdP() == null) {
+//            addToBatchCreate(workSlot);
+//        } else {
+//            addToBatchUpdate(workSlot);
+//        }
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void saveWorkSlotInBackground2(WorkSlot workSlot, Runnable postSaveAction) {
 //        if (workSlot == null) {
@@ -4580,7 +4987,10 @@ public class DAO {
                     saveItemListNew2(((ItemList) o), null);
                 } else if (o instanceof WorkSlot) {
                     saveWorkSlotNew2(((WorkSlot) o), null);
+                } else {
+                    ASSERT.that(false, "element other than Item/ItemList/WorkSlot in list, list=" + list);
                 }
+
             }
         }
         if (runAfterCreation != null) {
@@ -4589,8 +4999,16 @@ public class DAO {
         }
     }
 
+    /**
+     * returns true if there is at least one unsaved element
+     *
+     * @param parseObjects
+     * @return
+     */
     private boolean listContainsUnsaved(List<ParseObject> parseObjects) {
-        for (ParseObject p : parseObjects) {
+//        for (ParseObject p : parseObjects) {
+        for (int i = parseObjects.size() - 1; i >= 0; i--) { //optimization: start from last element, the most likely to not be saved
+            ParseObject p = (ParseObject) parseObjects.get(i);
             if (p.getObjectIdP() == null) {
                 return true;
             }
@@ -4923,180 +5341,181 @@ public class DAO {
         }
     }
 
-    private void saveItemNew2OLD(Item item, Runnable postSaveActionN, boolean saveSubtasks) {
-        if (item == null || (item.getObjectIdP() != null && !item.isDirty())) {
-//        if (item == null || !(item.getObjectIdP()==null || item.isDirty())) {
-            return;
-        }
-        if (Config.TEST_BACKGR) {
-            Log.p("==========>>> DAO.saveItemInBackground(elt=" + testShowMissingRefs(item) + ")");
-        }
-
-        //If owner not saved, don't save it (that is done elsewhere) but remove it and add again after saving
-        if (true) {
-
-            ItemAndListCommonInterface owner = item.getOwner();
-            if (owner instanceof Item) {
-                if (owner.getObjectIdP() == null) { //owner may also be a List
-                    item.setOwnerItem(null, false, false);
-                    saveItemNew2((Item) owner, () -> {
-//                        if (owner != null) { //NO NEED to test since above tests ensure owner can never be null
-                        item.setOwnerItem((Item) owner, false, false);
-//                        }
-                        addToBatchUpdate(item);
-                    });
-                }
-//                else {
-//                    saveItemNew2((Item) owner, null);
-//                }
-            } else if (owner instanceof ItemList) {
-                if (owner.getObjectIdP() == null) { //owner may also be a List
-                    item.setOwner(null, false);
-                    saveItemListNew2((ItemList) owner, () -> {
-//                        if (owner != null) {
-                        item.setOwner(owner);
-//                        }
-                        addToBatchUpdate(item);
-                    });
-                }
-//                else {
-//                    saveItemListNew2((ItemList) owner, null);
-//                }
-            }
-        }
-
-        //Filter has no references back to Item, so can always be saved
-        FilterSortDef filter = item.getFilterSortDefN();
-        if (filter != null && !filter.isNoSave()) {
-            if (filter.getObjectIdP() == null) {
-                item.setFilterSortDef(null);
 //<editor-fold defaultstate="collapsed" desc="comment">
-//            addToBatchCreate(filter, () -> {
-//                item.setFilterSortDef(filter);
-//                addToBatchUpdate(item);
-//            });
-//</editor-fold>
-                saveFilterSortDefNew2(filter, () -> {
-                    item.setFilterSortDef(filter);
-                    addToBatchUpdate(item);
-                });
-            } else {
-                saveFilterSortDefNew2(filter, null);
-            }
-        }
-
-        Item source = (Item) item.getSource(); //source of Item is necessarily an Item itself
-        if (source != null) {
-            if (source.getObjectIdP() == null) {
-                item.setSource(null);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            addToBatchCreate(filter, () -> {
-//                item.setSource(source);
-//                addToBatchUpdate(item);
-//            });
-//</editor-fold>
-                saveItemNew2(source, () -> {
-                    item.setSource(source);
-                    addToBatchUpdate(item);
-                });
-            } else {
-                saveItemNew2(source, null);
-            }
-        }
-
-        Item dependingOnTask = (Item) item.getDependingOnTask();
-        if (dependingOnTask != null) {
-            if (dependingOnTask.getObjectIdP() == null) {
-                item.setDependingOnTask(null);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            addToBatchCreate(filter, () -> {
-//                item.setDependingOnTask(dependingOnTask);
-//                addToBatchUpdate(item);
+//    private void saveItemNew2OLD(Item item, Runnable postSaveActionN, boolean saveSubtasks) {
+//        if (item == null || (item.getObjectIdP() != null && !item.isDirty())) {
+////        if (item == null || !(item.getObjectIdP()==null || item.isDirty())) {
+//            return;
+//        }
+//        if (Config.TEST_BACKGR) {
+//            Log.p("==========>>> DAO.saveItemInBackground(elt=" + testShowMissingRefs(item) + ")");
+//        }
 //
-//           });
-//</editor-fold>
-                saveItemNew2(dependingOnTask, () -> {
-                    item.setDependingOnTask(dependingOnTask);
-                    addToBatchUpdate(item);
-                });
-            } else {
-                saveItemNew2(dependingOnTask, null);
-            }
-        }
-
-        RepeatRuleParseObject repeatRule = item.getRepeatRuleN();
-        List subtasks = item.getListFull();
-        List<Category> categories = item.getCategories();
-
-        if (item.getObjectIdP() == null) {
-            //item not previously saved, save every
-            //REPEATRULE
-            if (repeatRule != null) {
-                if (repeatRule.getObjectIdP() == null) {
-//                    item.setRepeatRule(null);
-                    item.setRepeatRuleInParse(null);
-                    saveRepeatRuleNew2(repeatRule, () -> {
-                        item.setRepeatRuleInParse(repeatRule);
-                        addToBatchUpdate(item);
-                    });
-                } else {
-                    saveRepeatRuleNew2(repeatRule, null);
-                }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                List repeatInstances = repeatRule.getListOfUndoneRepeatInstances();
-//                repeatRule.setListOfUndoneRepeatInstances(null); //remove ref to item before saving
-//                if (repeatRule.getObjectIdP() == null) {
-//                    //if RR not yet saved, then remove it from item and add it back after item has been saved
-//                    item.setRepeatRule(null);
-////                    addToBatchCreate(repeatRule, () -> {
-////                        item.setRepeatRule(repeatRule);
-////                        addToBatchUpdate(item);
-////                    });
-//                    saveRepeatRuleInBackgroundxxx(repeatRule, () -> {
-//                        item.setRepeatRule(repeatRule);
+//        //If owner not saved, don't save it (that is done elsewhere) but remove it and add again after saving
+//        if (true) {
+//
+//            ItemAndListCommonInterface owner = item.getOwner();
+//            if (owner instanceof Item) {
+//                if (owner.getObjectIdP() == null) { //owner may also be a List
+//                    item.setOwnerItem(null, false, false);
+//                    saveItemNew2((Item) owner, () -> {
+////                        if (owner != null) { //NO NEED to test since above tests ensure owner can never be null
+//                        item.setOwnerItem((Item) owner, false, false);
+////                        }
 //                        addToBatchUpdate(item);
 //                    });
 //                }
-//if RR already saved, then simply remove list of instances and add them back after item has been created
+////                else {
+////                    saveItemNew2((Item) owner, null);
+////                }
+//            } else if (owner instanceof ItemList) {
+//                if (owner.getObjectIdP() == null) { //owner may also be a List
+//                    item.setOwner(null, false);
+//                    saveItemListNew2((ItemList) owner, () -> {
+////                        if (owner != null) {
+//                        item.setOwner(owner);
+////                        }
+//                        addToBatchUpdate(item);
+//                    });
+//                }
+////                else {
+////                    saveItemListNew2((ItemList) owner, null);
+////                }
+//            }
+//        }
+//
+//        //Filter has no references back to Item, so can always be saved
+//        FilterSortDef filter = item.getFilterSortDefN();
+//        if (filter != null && !filter.isNoSave()) {
+//            if (filter.getObjectIdP() == null) {
+//                item.setFilterSortDef(null);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            addToBatchCreate(filter, () -> {
+////                item.setFilterSortDef(filter);
+////                addToBatchUpdate(item);
+////            });
+////</editor-fold>
+//                saveFilterSortDefNew2(filter, () -> {
+//                    item.setFilterSortDef(filter);
+//                    addToBatchUpdate(item);
+//                });
+//            } else {
+//                saveFilterSortDefNew2(filter, null);
+//            }
+//        }
+//
+//        Item source = (Item) item.getSource(); //source of Item is necessarily an Item itself
+//        if (source != null) {
+//            if (source.getObjectIdP() == null) {
+//                item.setSource(null);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            addToBatchCreate(filter, () -> {
+////                item.setSource(source);
+////                addToBatchUpdate(item);
+////            });
+////</editor-fold>
+//                saveItemNew2(source, () -> {
+//                    item.setSource(source);
+//                    addToBatchUpdate(item);
+//                });
+//            } else {
+//                saveItemNew2(source, null);
+//            }
+//        }
+//
+//        Item dependingOnTask = (Item) item.getDependingOnTask();
+//        if (dependingOnTask != null) {
+//            if (dependingOnTask.getObjectIdP() == null) {
+//                item.setDependingOnTask(null);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            addToBatchCreate(filter, () -> {
+////                item.setDependingOnTask(dependingOnTask);
+////                addToBatchUpdate(item);
+////
+////           });
+////</editor-fold>
+//                saveItemNew2(dependingOnTask, () -> {
+//                    item.setDependingOnTask(dependingOnTask);
+//                    addToBatchUpdate(item);
+//                });
+//            } else {
+//                saveItemNew2(dependingOnTask, null);
+//            }
+//        }
+//
+//        RepeatRuleParseObject repeatRule = item.getRepeatRuleN();
+//        List subtasks = item.getListFull();
+//        List<Category> categories = item.getCategories();
+//
+//        if (item.getObjectIdP() == null) {
+//            //item not previously saved, save every
+//            //REPEATRULE
+//            if (repeatRule != null) {
+//                if (repeatRule.getObjectIdP() == null) {
+////                    item.setRepeatRule(null);
+//                    item.setRepeatRuleInParse(null);
+//                    saveRepeatRuleNew2(repeatRule, () -> {
+//                        item.setRepeatRuleInParse(repeatRule);
+//                        addToBatchUpdate(item);
+//                    });
+//                } else {
+//                    saveRepeatRuleNew2(repeatRule, null);
+//                }
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                List repeatInstances = repeatRule.getListOfUndoneRepeatInstances();
+////                repeatRule.setListOfUndoneRepeatInstances(null); //remove ref to item before saving
+////                if (repeatRule.getObjectIdP() == null) {
+////                    //if RR not yet saved, then remove it from item and add it back after item has been saved
+////                    item.setRepeatRule(null);
+//////                    addToBatchCreate(repeatRule, () -> {
+//////                        item.setRepeatRule(repeatRule);
+//////                        addToBatchUpdate(item);
+//////                    });
+////                    saveRepeatRuleInBackgroundxxx(repeatRule, () -> {
+////                        item.setRepeatRule(repeatRule);
+////                        addToBatchUpdate(item);
+////                    });
+////                }
+////if RR already saved, then simply remove list of instances and add them back after item has been created
+////</editor-fold>
+//            };
+//            //SUBTASKS
+//            if (true || saveSubtasks) { //should always save subtasks if project is new(?!)
+//                if (subtasks.size() > 0) {
+//                    item.setList(null);
+//                    saveList(subtasks, () -> {
+//                        item.setList(subtasks);
+//                        addToBatchUpdate(item);
+//                    });
+//                }
+//            }
+//            //CATEGORIES
+//            if (categories.size() > 0) {
+//                item.setCategories(null);
+//                saveList(categories, () -> {
+//                    item.setCategories(categories);
+//                    addToBatchUpdate(item);
+//                });
+//            }
+//            //FINALLY, create the item (now without any references to unsaved items)
+//            addToBatchCreate(item, postSaveActionN);
+//        } else {
+//            //ITEM ALREADY SAVED
+////                addToBatchCreateOrUpdate(repeatRule); //if item was already saved, we just need to create or update the repeatRule, whatever is appropriate
+//            saveRepeatRuleNew2(repeatRule, null);
+//            if (saveSubtasks) {
+//                saveList(subtasks, null);
+//            }
+////            saveList(categories, null);
+////            saveListOfCategories(categories);
+//            addToBatchUpdate(item);
+//            if (postSaveActionN != null) {
+//                postSaveActionN.run();
+//            }
+//        }
+//
+//    }
 //</editor-fold>
-            };
-            //SUBTASKS
-            if (true || saveSubtasks) { //should always save subtasks if project is new(?!)
-                if (subtasks.size() > 0) {
-                    item.setList(null);
-                    saveList(subtasks, () -> {
-                        item.setList(subtasks);
-                        addToBatchUpdate(item);
-                    });
-                }
-            }
-            //CATEGORIES
-            if (categories.size() > 0) {
-                item.setCategories(null);
-                saveList(categories, () -> {
-                    item.setCategories(categories);
-                    addToBatchUpdate(item);
-                });
-            }
-            //FINALLY, create the item (now without any references to unsaved items)
-            addToBatchCreate(item, postSaveActionN);
-        } else {
-            //ITEM ALREADY SAVED
-//                addToBatchCreateOrUpdate(repeatRule); //if item was already saved, we just need to create or update the repeatRule, whatever is appropriate
-            saveRepeatRuleNew2(repeatRule, null);
-            if (saveSubtasks) {
-                saveList(subtasks, null);
-            }
-//            saveList(categories, null);
-//            saveListOfCategories(categories);
-            addToBatchUpdate(item);
-            if (postSaveActionN != null) {
-                postSaveActionN.run();
-            }
-        }
-
-    }
-
 //    private void saveItemNew2(Item item, Runnable postSaveAction) {
 //        saveItemNew2(item, postSaveAction, true);
 //    }
@@ -6462,17 +6881,17 @@ public class DAO {
             List<Item> expired = new ArrayList();
             //Solution from http://stackoverflow.com/questions/122105/what-is-the-best-way-to-filter-a-java-collection :
             Iterator<Item> it = results.iterator();
-            Date firstDate;
+            Date nextAlarmDateInParse;
 //            Date futureDate;
             Date lastAlarmDate = new Date(MyDate.MIN_DATE); //time of the last alarm received from Parse server
             while (it.hasNext()) {
                 Item item = it.next();
-                firstDate = item.getNextcomingAlarmDateD();
-                if (firstDate != null && firstDate.getTime() > lastAlarmDate.getTime()) {
-                    lastAlarmDate = firstDate; //gather latest alarm date as we iterate through the items
+                nextAlarmDateInParse = item.getNextcomingAlarmFromParseN();
+                if (nextAlarmDateInParse != null && nextAlarmDateInParse.getTime() > lastAlarmDate.getTime()) {
+                    lastAlarmDate = nextAlarmDateInParse; //gather latest alarm date as we iterate through the items
                 }
-                Date futureDate = item.getNextcomingAlarm();
-                if (futureDate == null || futureDate.getTime() != firstDate.getTime()) { //if there's no longer a future alarm, or it has changed, add to expired for an update
+                Date nextComingAlarmDateN = item.getNextcomingAlarmN();
+                if (nextComingAlarmDateN == null || nextComingAlarmDateN.getTime() != nextAlarmDateInParse.getTime()) { //if there's no longer a future alarm, or it has changed, add to expired for an update
                     expired.add(item);
                     it.remove();
                 }
@@ -6487,7 +6906,7 @@ public class DAO {
 //            Date firstFutureAlarm = expItem.getNextcomingAlarm(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
 //            expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
                 expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
-                Date newFirstAlarm = expItem.getNextcomingAlarmDateD(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
+                Date newFirstAlarm = expItem.getNextcomingAlarmFromParseN(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
                 updated.add(expItem); //save for a ParseServer update whether now null or with new value
                 if (newFirstAlarm != null && newFirstAlarm.getTime() <= lastAlarmDate.getTime()) {
                     results.add(expItem); //add the updated Items which do have a future alarm within the same interval as the other alarms retrieved (less than lastAlarmDate)
@@ -6507,18 +6926,19 @@ public class DAO {
 //</editor-fold>
 //            saveBatch(updated);
             saveNew(updated);
+            triggerParseUpdate();
         } while (!backgroundFetch && (results.isEmpty() && maxNumberItemsToRetrieve == numberOfItemsRetrieved)); //repeat in case every retrieved alarm was expired and we retrieved the maximum number (meaning there are like more alarms to retrieve)
 //        results.addAll(updated); //add the updated ones to results
         //sort the results
         if (results != null && !results.isEmpty()) {
             Collections.sort(results, (object1, object2) -> {
-                if (((Item) object1).getNextcomingAlarmDateD() == null) {
+                if (((Item) object1).getNextcomingAlarmFromParseN() == null) {
                     return -1;
                 }
-                if (((Item) object2).getNextcomingAlarmDateD() == null) {
+                if (((Item) object2).getNextcomingAlarmFromParseN() == null) {
                     return 1;
                 }
-                return FilterSortDef.compareDate(object1.getNextcomingAlarmDateD(), object2.getNextcomingAlarmDateD());
+                return FilterSortDef.compareDate(object1.getNextcomingAlarmFromParseN(), object2.getNextcomingAlarmFromParseN());
             });
         }
         return results;
@@ -6673,7 +7093,7 @@ public class DAO {
 
             if (resultsNextAlarm != null && resultsNextAlarm.size() >= 1) {
                 if (resultsNextWaiting != null && resultsNextWaiting.size() >= 1) {
-                    if (resultsNextAlarm.get(0).getAlarmDateD().getTime() < resultsNextWaiting.get(0).getWaitingAlarmDate().getTime()) {
+                    if (resultsNextAlarm.get(0).getAlarmDate().getTime() < resultsNextWaiting.get(0).getWaitingAlarmDate().getTime()) {
 //                        return resultsNextAlarm.get(0);
                         nextItemWithAlarm = resultsNextAlarm.get(0);
 
@@ -6924,11 +7344,10 @@ public class DAO {
 //        }
 //    }
 //</editor-fold>
-    private void cacheAllItemsFromParse() {
-//        cacheAllItemsFromParse(new Date(RepeatRuleParseObject.MIN_DATE));
-        cacheAllItemsFromParse(new Date(MyDate.MIN_DATE), new MyDate());
-    }
-
+//    private void cacheAllItemsFromParse() {
+////        cacheAllItemsFromParse(new Date(RepeatRuleParseObject.MIN_DATE));
+//        cacheAllItemsFromParse(new Date(MyDate.MIN_DATE), new MyDate());
+//    }
     private List<Item> getAllItemsFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
@@ -6955,10 +7374,9 @@ public class DAO {
         return !results.isEmpty();
     }
 
-    private boolean cacheAllWorkSLotsFromParse() {
-        return cacheAllWorkSlotsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
-    }
-
+//    private boolean cacheAllWorkSLotsFromParse() {
+//        return cacheAllWorkSlotsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
+//    }
 //    private List<WorkSlot> getAllWorkSlotsFromParse(Date afterDate,
 //    private WorkSlotList getAllWorkSlotsFromParse(Date afterDate, Date beforeDate) {
     private List<WorkSlot> getAllWorkSlotsFromParse(Date afterDate, Date beforeDate) {
@@ -7023,13 +7441,11 @@ public class DAO {
 ////        }
 //        return result;
 //    }
-    private void cacheAllRepeatRulesFromParse() {
-        cacheAllRepeatRulesFromParse(new Date(MyDate.MIN_DATE
-        ), new Date(MyDate.MAX_DATE
-        ));
-
-    }
-
+//    private void cacheAllRepeatRulesFromParse() {
+//        cacheAllRepeatRulesFromParse(new Date(MyDate.MIN_DATE
+//        ), new Date(MyDate.MAX_DATE
+//        ));
+//    }
     private List<RepeatRuleParseObject> getAllRepeatRulesFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         ParseQuery<RepeatRuleParseObject> query = ParseQuery.getQuery(RepeatRuleParseObject.CLASS_NAME);
@@ -7054,7 +7470,7 @@ public class DAO {
 
         return !results.isEmpty();
     }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private boolean cacheAllRepeatRulesFromParseXXX(Date reloadUpdateAfterThis, Date now) {
 //        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
 //        boolean result = false;
@@ -7086,9 +7502,10 @@ public class DAO {
 ////        }
 //        return result;
 //    }
-    private boolean cacheAllFilterSortDefsFromParse() {
-        return cacheAllFilterSortDefsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
-    }
+//</editor-fold>
+//    private boolean cacheAllFilterSortDefsFromParse() {
+//        return cacheAllFilterSortDefsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
+//    }
 
     private List<FilterSortDef> getAllFilterSortDefsFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
@@ -7113,6 +7530,7 @@ public class DAO {
         return !results.isEmpty();
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private boolean cacheAllFilterSortDefsFromParseXXX(Date reloadUpdateAfterThis, Date now) {
 //        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
 //        boolean result = false;
@@ -7141,6 +7559,7 @@ public class DAO {
 ////        }
 //        return result;
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    /**
 //     * replace all items in cateogry by their cached instances
@@ -7161,16 +7580,16 @@ public class DAO {
 //////            item.setOwner((Item)temp);
 ////    }
 //</editor-fold>
-    private boolean cacheAllCategoriesFromParse() {
-        return cacheAllCategoriesFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
-    }
-
+//    private boolean cacheAllCategoriesFromParse() {
+//        return cacheAllCategoriesFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
+//    }
     public List<Category> getAllCategoriesFromParse() {
 //        return getAllCategoriesFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
         return getAllCategoriesFromParse(null, null);
 
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public List<Category> getAllCategoriesFromParseXXX(Date reloadUpdateAfterThisDate, Date reloadUpdateBeforeOrOnThisDate) {
 //        List<Category> results = null;
 //        ParseQuery<Category> query = ParseQuery.getQuery(Category.CLASS_NAME);
@@ -7187,6 +7606,7 @@ public class DAO {
 //        }
 //        return null;
 //    }
+//</editor-fold>
     public List<Category> getAllCategoriesFromParse(Date reloadUpdateAfterThis, Date reloadUpdateBeforeOrOnThisDate) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         ParseQuery<Category> query = ParseQuery.getQuery(Category.CLASS_NAME);
@@ -7219,6 +7639,7 @@ public class DAO {
 
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private boolean cacheAllCategoriesFromParseXXX(Date reloadUpdateAfterThis, Date now) {
 //        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
 //        boolean result = false;
@@ -7244,14 +7665,15 @@ public class DAO {
 //        }
 //        return result;
 //    }
-    private boolean cacheAllItemListsFromParse() {
-        return cacheAllItemListsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
-    }
-
+//    private boolean cacheAllItemListsFromParse() {
+//        return cacheAllItemListsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
+//    }
+//</editor-fold>
     public List<ItemList> getAllItemListsFromParse(boolean includeSystemLists) {
         return getAllItemListsFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE), includeSystemLists);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public List<ItemList> getAllItemListsFromParseXXX(Date reloadAfterThisDate, Date reloadUpToAndIncludingThisDate) {
 ////        List<ItemList> results = null;
 //        ParseQuery<ItemList> query = ParseQuery.getQuery(ItemList.CLASS_NAME);
@@ -7268,6 +7690,7 @@ public class DAO {
 //        }
 //        return null;
 //    }
+//</editor-fold>
     public List<ItemList> getAllItemListsFromParse(Date reloadUpdateAfterThis, Date reloadUpToAndIncludingThisDate, boolean includeSystemLists) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         ParseQuery<ItemList> query = ParseQuery.getQuery(ItemList.CLASS_NAME);
@@ -7294,6 +7717,7 @@ public class DAO {
         return !results.isEmpty();
     }
 
+////<editor-fold defaultstate="collapsed" desc="comment">
 //    private boolean cacheAllItemListsFromParseXXX(Date reloadUpdateAfterThis, Date now) {
 //        //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
 //        boolean result = false;
@@ -7306,7 +7730,6 @@ public class DAO {
 //        List<ItemList> results = null;
 //        try {
 //            results = query.find();
-////<editor-fold defaultstate="collapsed" desc="comment">
 ////            for (ParseObject o : results) {
 ////                if (false) {
 //////                    assert (o.isDataAvailable()) : "Cache pb: no data available for ParseObject=" + o + " ObjId=" + o.getObjectId();
@@ -7318,7 +7741,6 @@ public class DAO {
 //////                assert (o instanceof Category);
 //////                cacheItemListOrCategory((ItemList) o); //replaced by a call fetchListElementsIfNeededReturnCachedIfAvail inside the getList() methods of Categories/ItemLists
 ////            }
-////</editor-fold>
 //            cacheList(results);
 //            result = !results.isEmpty();
 //        } catch (ParseException ex) {
@@ -7333,6 +7755,7 @@ public class DAO {
      *
      * @param results list of already cached Category instances
      */
+////</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void cacheUpdateAllCategoryItemReferencesXXX(List<Category> results) {
 //        for (Category cat : results) {
@@ -7738,7 +8161,7 @@ public class DAO {
         if (cacheWorkSlots != null) {
 //            cache.clearStorageCache(); //delete any locally cached data/files
 //            cache.clearAllCache(); //clear any cached data (even in memory to make sure we get a completely fresh copy)
-            cacheWorkSlots.clearAllCache(RESERVED_LIST_NAMES); //clear any cached data (even in memory to make sure we get a completely fresh copy)
+//            cacheWorkSlots.clearAllCache(RESERVED_LIST_NAMES); //clear any cached data (even in memory to make sure we get a completely fresh copy)
             cacheWorkSlots = null;  //force GC and creation of new cache in initAndConfigureCache()
         }
 //        initAndConfigureCache(true);
@@ -7785,8 +8208,9 @@ public class DAO {
 //        initAndConfigureCache(); //now done in DAO constructor
 ////\        loadCacheToMemory(); //first load 
 
-        cache.loadCacheToMemory(); //first load to memory
-
+        if (false) {
+            cache.loadCacheToMemory(); //first load to memory
+        }
         if (loadingChangedDataFromParseServerForTesting) {
             Dialog ip = null;
             if (false && !inBackground) { //false since this creates a new Form just to show the infinte progress
@@ -7926,35 +8350,25 @@ public class DAO {
      * @return
      */
     public boolean cacheAllData(Date afterDate, Date beforeDate) {
+        if (true) {
+            return false;
+        }
         boolean somethingWasLoaded = false;
 
-        if (true) {
-            Log.p("Caching CategoryList");
-//        somethingWasLoaded = cacheCategoryList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Categories
-//        CategoryList.getInstance().reloadFromParse();
-//        CategoryList.getInstance();
-            somethingWasLoaded = CategoryList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
-//            cachePut(CategoryList.getInstance());
-
-            Log.p("Caching ItemListList");
-//        somethingWasLoaded = cacheItemListList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of ItemLists
-            somethingWasLoaded = ItemListList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
-//            cachePut(ItemListList.getInstance());
-
-            Log.p("Caching TemplateList");
-//        somethingWasLoaded = cacheTemplateList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Templates
-            somethingWasLoaded = TemplateList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
-//            cachePut(TemplateList.getInstance());
-        }
+        //ALWAYS for complete reload of all data
+        afterDate = new MyDate(MyDate.MIN_DATE);
+        beforeDate = new MyDate(MyDate.MAX_DATE);
 
         Log.p("Caching Categories");
         somethingWasLoaded = cacheAllCategoriesFromParse(afterDate, beforeDate) || somethingWasLoaded;
 
-        Log.p("Caching ItemLists");
-        somethingWasLoaded = cacheAllItemListsFromParse(afterDate, beforeDate) || somethingWasLoaded;
-
-        Log.p("Caching WorkSlots");
-        somethingWasLoaded = cacheAllWorkSlotsFromParse(afterDate, beforeDate) || somethingWasLoaded;
+        Log.p("Caching CategoryList");
+//        somethingWasLoaded = cacheCategoryList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Categories
+//        CategoryList.getInstance().reloadFromParse();
+//        CategoryList.getInstance();
+//        somethingWasLoaded = CategoryList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
+        CategoryList.getInstance();
+//            cachePut(CategoryList.getInstance());
 
         Log.p("Caching Filters");
         somethingWasLoaded = cacheAllFilterSortDefsFromParse(afterDate, beforeDate) || somethingWasLoaded;
@@ -7963,14 +8377,32 @@ public class DAO {
 //        getAllItemListsFromParse();
 //        getAllItemListsFromParse(reloadUpdateAfterThis, now);
 
+        Log.p("Caching Items");
+        somethingWasLoaded = cacheAllItemsFromParse(afterDate, beforeDate) || somethingWasLoaded;
+
+        Log.p("Caching ItemLists");
+        somethingWasLoaded = cacheAllItemListsFromParse(afterDate, beforeDate) || somethingWasLoaded;
+
+        Log.p("Caching ItemListList");
+//        somethingWasLoaded = cacheItemListList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of ItemLists
+//        somethingWasLoaded = ItemListList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
+        ItemListList.getInstance();
+//            cachePut(ItemListList.getInstance());
+
         Log.p("Caching RepeatRules");
         somethingWasLoaded = cacheAllRepeatRulesFromParse(afterDate, beforeDate) || somethingWasLoaded;
 //        getCategoryList(); //will cache the list of Categories
 //        getItemListList(); //will cache the list of ItemLists
 //        getTemplateList(); //will cache the list of Templates
 
-        Log.p("Caching Items");
-        somethingWasLoaded = cacheAllItemsFromParse(afterDate, beforeDate) || somethingWasLoaded;
+        Log.p("Caching TemplateList");
+//        somethingWasLoaded = cacheTemplateList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Templates
+//        somethingWasLoaded = TemplateList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
+        TemplateList.getInstance();
+//            cachePut(TemplateList.getInstance());
+
+        Log.p("Caching WorkSlots");
+        somethingWasLoaded = cacheAllWorkSlotsFromParse(afterDate, beforeDate) || somethingWasLoaded;
 
 //        cacheUpdateAllCategoryItemReferences(categoryList);
 //        cacheUpdateAllItemListItemReferences(itemListLists);

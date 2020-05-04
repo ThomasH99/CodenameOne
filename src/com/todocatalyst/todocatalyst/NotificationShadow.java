@@ -32,6 +32,10 @@ import java.util.Date;
             return type+"/"+MyDate.formatDateTimeNew(alarmTime)+"/ ["+DAO.getInstance().fetchFromCacheOnly(AlarmType.getObjectIdStrWithoutTypeStr(notificationId))+"]";
         }
         
+        public String toStringXX() {
+            return "NotifShadow id="+notificationId+", alarmTime="+MyDate.formatDateNew(alarmTime)+", type="+type;
+        }
+        
         public NotificationShadow() {
             
         }
@@ -54,6 +58,7 @@ import java.util.Date;
             this.notificationId = type.addTypeStrToStr(objectId);
             this.alarmTime = time;
         }
+        
 
         String getObjectIdStr() {
             return AlarmType.getObjectIdStrWithoutTypeStr(notificationId);

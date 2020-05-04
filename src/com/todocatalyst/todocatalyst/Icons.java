@@ -146,6 +146,8 @@ public class Icons {
     final static char iconStatusTab = FontImage.MATERIAL_MORE_HORIZ;
 
     final static char iconSettings = FontImage.MATERIAL_SETTINGS;
+    final static char iconInsertTaskAbove = FontImage.MATERIAL_CALL_MADE;
+    final static char iconInsertTaskBelow = FontImage.MATERIAL_SUBDIRECTORY_ARROW_RIGHT; //TODO: make as horizontal flip of MATERIAL_CALL_MADE
 
     //Main screen menu icons
     final static char iconMainOverdue = FontImage.MATERIAL_ASSIGNMENT_LATE;
@@ -155,7 +157,7 @@ public class Icons {
     final static char iconMainLists = FontImage.MATERIAL_LIST; //_ALT; //FontImage.MATERIAL_FOLDER_OPEN;
     final static char iconMainCategories = FontImage.MATERIAL_FOLDER_OPEN; //FontImage.MATERIAL_FOLDER_SPECIAL;
     final static char iconMainProjects = FontImage.MATERIAL_FORMAT_ALIGN_LEFT;
-    final static char iconMainWorkSlots = FontImage.MATERIAL_NEXT_WEEK; //WORK;  //TODO: MATERIAL_WORK_OUTLINE
+    final static char iconMainWorkSlots = FontImage.MATERIAL_WORK_OUTLINE; //=iconWorkSlot; //FontImage.MATERIAL_WORK_OUTLINE; //MATERIAL_NEXT_WEEK; //WORK;  //TODO: MATERIAL_WORK_OUTLINE
     final static char iconMainTemplates = FontImage.MATERIAL_BORDER_STYLE;
     final static char iconMainStatistics = FontImage.MATERIAL_EVENT_AVAILABLE;
     final static char iconMainCompletionLog = FontImage.MATERIAL_PLAYLIST_ADD_CHECK; //.MATERIAL_EVENT_AVAILABLE;  

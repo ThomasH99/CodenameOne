@@ -71,8 +71,8 @@ public class ScreenRepeatRuleInstancesOverview extends MyForm {
                     Container dones = new Container(BoxLayout.y()); //should automatically be sorted by completion date
                     Container undones = new Container(BoxLayout.y()); //should automatically be sorted by due date
                     
-                    ExpandableContainer showDones = new ExpandableContainer("Past instances", dones, ()->true, null);
-                    ExpandableContainer showUndones = new ExpandableContainer("Current instances", undones, ()->true, null);
+                    ExpandableContainer showDones = new ExpandableContainer("Past instances", dones, ()->true, null); //true: default collapse past repeat
+                    ExpandableContainer showUndones = new ExpandableContainer("Current instances", undones, ()->false, null);
                     
                     for (Object e: repeatRule.getListOfDoneInstances()) {
                         if (e instanceof Item)

@@ -2,6 +2,7 @@ package com.todocatalyst.todocatalyst;
 
 //import com.codename1.io.Log;
 import com.codename1.ui.Container;
+import com.codename1.ui.Label;
 
 //import com.codename1.ui.*;
 //import com.codename1.ui.events.ActionEvent;
@@ -34,13 +35,57 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
+       ScreenType screenType= previousForm.getScreenType();
+//       if (screenType)
+        switch (screenType) {
+            case TODAY:
+                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeStartingToday);
+                addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeWaitingExpiringToday);
+                addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeAlarmsExpiringToday);
+                addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeWorkSlotsCoveringToday);
+                addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewShowProjectsInsteadOfLeafTasks);
+                addSettingInt(content, parseIdMap2, MyPrefs.todayViewIncludeOverdueFromThisManyPastDays, 0, 60, 1); //UI: max 60 days of overdue
+                content.add(makeSpacer());
+                break;
+            case OVERDUE:
+                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingInt(content, parseIdMap2, MyPrefs.overdueLogInterval, 1, 365, 1);
+                content.add(makeSpacer());
+                break;
+            case CREATION_LOG:
+                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingInt(content, parseIdMap2, MyPrefs.creationLogInterval, 1, 365, 1);
+                content.add(makeSpacer());
+                break;
+            case COMPLETION_LOG:
+                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingInt(content, parseIdMap2, MyPrefs.completionLogInterval, 1, 365, 1);
+                content.add(makeSpacer());
+                break;
+            case TOUCHED:
+                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingInt(content, parseIdMap2, MyPrefs.touchedLogInterval, 1, 365, 1);
+                content.add(makeSpacer());
+                break;
+            case NEXT:
+                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingInt(content, parseIdMap2, MyPrefs.nextInterval, 1, 365, 1); //UI: max 60 days of overdue
+                content.add(makeSpacer());
+                break;
+            case NOT_INIT:
+        }
+        
+        content.add(new Label("Setings shared for all task lists"));
+
 //        cont.setScrollableY(true);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowRemainingEvenIfZero);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListHideRemainingWhenDefaultValue);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListEffortEstimate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListDontShowValueIfEarnedValuePerHourIsNonZero);
         addSettingInt(content, parseIdMap2, MyPrefs.earnedValueDecimals, 0, 2, 1);
-        
+
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListAlwaysShowHideUntilDate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListAlwaysShowStartByDate);
@@ -53,7 +98,7 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
         addSettingInt(content, parseIdMap2, MyPrefs.dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask, 5, 25, 1);
         content.add(makeSpacer());
         addSettingInt(content, parseIdMap2, MyPrefs.useSmartdatesForThisManyDaysOverdueDueOrFinishDates, 0, 60, 1);
-        
+
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.hideStickyHeadersForSortedLists);
         addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenOnScrollingDown);

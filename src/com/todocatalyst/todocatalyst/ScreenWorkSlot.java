@@ -84,6 +84,15 @@ public class ScreenWorkSlot extends MyForm {
         addCommandsToToolbar(getToolbar());
 //        setCheckOnExit(()->checkWorkSlotIsValidForSaving(this.workSlot, owner));
 //        buildContentPane(getContentPane());
+        if (false) {
+            setUpdateActionOnDone(() -> {
+                //
+                RepeatRuleParseObject repeatRule = this.workSlot.getRepeatRuleN();
+                if (repeatRule != null) {
+                    repeatRule.updateWorkslotInstancesWhenWorkSlotModified(workSlot);
+                }
+            });
+        }
         refreshAfterEdit();
     }
 
@@ -277,6 +286,27 @@ public class ScreenWorkSlot extends MyForm {
 //            content.setLayout(tl);
 //        }
 //</editor-fold>
+
+        //OWNER
+        ItemAndListCommonInterface ownerObj = workSlot.getOwner();
+        String ownerText = ""; // = item.getOwner() != null ? ((ItemAndListCommonInterface) item.getOwner()).getText() : ""; //TODO 
+        if (ownerObj != null) {
+            if (ownerObj instanceof Item) {
+                ownerText = Item.PROJECT + ": " + ((Item) ownerObj).getText(); //TODO only call top-level projects for "Project"? 
+            } else if (ownerObj instanceof Category) {
+                ownerText = Category.CATEGORY + ": " + ((Category) ownerObj).getText();
+            } else if (ownerObj instanceof ItemList) {
+                ownerText = ItemList.ITEM_LIST + ": " + ((ItemList) ownerObj).getText();
+            }
+        }
+        SpanLabel ownerLabel = new SpanLabel(ownerText);
+        //NB!! If adding support for EDITING owner, don't allow it for repeating rules!
+
+//        statusCont.add(new Label(Item.BELONGS_TO)).add(owner); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//        content.add(layout(Item.BELONGS_TO, owner, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+        content.add(layoutN(Item.BELONGS_TO, ownerLabel, Item.BELONGS_TO_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//        owner.setConstraint(TextArea.UNEDITABLE); //DOESN'T WORK        
+
         long now = MyDate.currentTimeMillis();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyDateAndTimePicker startByDate = new MyDateAndTimePicker("<start work on this date>", parseIdMap2,
@@ -285,8 +315,9 @@ public class ScreenWorkSlot extends MyForm {
 //                (d) -> workSlot.setStartTime(d));
 //        Date defaultDate = (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? MyDate.getStartOfMinute(new Date(now)) : new Date(0));
 //</editor-fold>
+        //STARTTIME
         GetVal makeDefaultWorkSlotStartDate
-                = () -> (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? MyDate.getRoundUpToNextMinute(new MyDate(now)) : new MyDate(0));
+                = () -> (MyPrefs.workSlotDefaultStartDateIsNow.getBoolean() ? MyDate.roundUpToNextMinute(new MyDate(now)) : new MyDate(0));
         MyDateAndTimePicker startByDatePicker = new MyDateAndTimePicker();
         initField(WorkSlot.PARSE_START_TIME, startByDatePicker,
                 //                () -> ((workSlot.getStartTimeD().getTime() == 0 && MyPrefs.workSlotDefaultStartDateIsNow.getBoolean()) ? 
@@ -308,6 +339,7 @@ public class ScreenWorkSlot extends MyForm {
 //                ? MyPrefs.workSlotDefaultDurationInMinutes.getInt() : (int) workSlot.getDurationInMinutes(), //UI: use default workSlot duration
 //                (i) -> workSlot.setDurationInMinutes((int) i));
 //</editor-fold>
+        //DURATION
         MyDurationPicker durationPicker = new MyDurationPicker();
         durationPicker.setMinuteStep(MyPrefs.workSlotDurationStepIntervalInMinutes.getInt());
 
@@ -335,6 +367,7 @@ public class ScreenWorkSlot extends MyForm {
                 makeDefaultDuration);
         content.add(layoutN(WorkSlot.DURATION, durationPicker, WorkSlot.DURATION_HELP));
 
+        //END TIME
         MyDateAndTimePicker endByDatePicker = new MyDateAndTimePicker();
 //<editor-fold defaultstate="collapsed" desc="comment">
         if (false) {
@@ -364,6 +397,7 @@ public class ScreenWorkSlot extends MyForm {
 //        content.add(layout("Start by",startByDate, "**"));
         content.add(layoutN(WorkSlot.END_TIME, endByDatePicker, WorkSlot.END_TIME_HELP));
 
+        //ACTION LISTENERS to ensure consistence between start time, duration and end time
         durationPicker.addActionListener(e -> {
             if (durationPicker.getDuration() != 0) { //if date is set
                 if (lastFieldSetManually.equals(START_DATE)) {
@@ -511,8 +545,8 @@ public class ScreenWorkSlot extends MyForm {
             RepeatRuleParseObject locallyEditedRepeatRule1 = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
             String repeatRuleButtonStr;
             if (locallyEditedRepeatRule1 == null) { //no edits
-                if (workSlot.getRepeatRule() != null) {
-                    repeatRuleButtonStr = workSlot.getRepeatRule().getText();
+                if (workSlot.getRepeatRuleN() != null) {
+                    repeatRuleButtonStr = workSlot.getRepeatRuleN().getText();
                 } else {
                     repeatRuleButtonStr = "";
                 }
@@ -528,14 +562,14 @@ public class ScreenWorkSlot extends MyForm {
 
         Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenWorkSlot", "", null, (e) -> {
 
-            if (workSlot.getRepeatRule() != null && !workSlot.getRepeatRule().canRepeatRuleBeEdited(workSlot)) {
+            if (workSlot.getRepeatRuleN() != null && !workSlot.getRepeatRuleN().canRepeatRuleBeEdited(workSlot)) {
                 Dialog.show("INFO", Format.f("Once a repeating task has been set {0 DONE} or {1 CANCELLED} the {2 REPEAT_RULE} definition cannot be edited from this task anymore",
                         ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
                 return;
             }
             //only allow editing RR if startDate is set
 //            if (workSlot.getStartTimeD().getTime() == 0) {
-            if (startByDatePicker.getDate().getTime() == 0) {
+            if (false && startByDatePicker.getDate().getTime() == 0) {
                 Dialog.show("INFO", Format.f("Please set {0 start date} before editing the {1 REPEAT_RULE} definition",
                         WorkSlot.START_TIME, Item.REPEAT_RULE), "OK", null);
                 return;
@@ -548,19 +582,19 @@ public class ScreenWorkSlot extends MyForm {
                 locallyEditedRepeatRuleCopy = localRR;
             } else {
 //                locallyEditedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE); //fetch previously edited instance/copy of the repeat Rule
-                if (workSlot.getRepeatRule() == null) {
+                if (workSlot.getRepeatRuleN() == null) {
                     locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(); //create a fresh RR
 //                    locallyEditedRepeatRuleCopy.addOriginatorToRule(workSlot); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
                 } else {
-                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(workSlot.getRepeatRule()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
-                    ASSERT.that(workSlot.getRepeatRule() == null || (workSlot.getRepeatRule().equals(locallyEditedRepeatRuleCopy) && locallyEditedRepeatRuleCopy.equals(workSlot.getRepeatRule())), "problem in cloning repeatRule");
+                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(workSlot.getRepeatRuleN()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
+                    ASSERT.that(workSlot.getRepeatRuleN() == null || (workSlot.getRepeatRuleN().equals(locallyEditedRepeatRuleCopy) && locallyEditedRepeatRuleCopy.equals(workSlot.getRepeatRuleN())), "problem in cloning repeatRule");
                 }
                 previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy);
             }
 
             new ScreenRepeatRule(Item.REPEAT_RULE + " " + WorkSlot.WORKSLOT, locallyEditedRepeatRuleCopy, workSlot, ScreenWorkSlot.this, () -> {
                 if (false) {
-                    if (locallyEditedRepeatRuleCopy.equals(workSlot.getRepeatRule())) {
+                    if (locallyEditedRepeatRuleCopy.equals(workSlot.getRepeatRuleN())) {
                         previousValues.remove(Item.PARSE_REPEAT_RULE);
                     } else if (locallyEditedRepeatRuleCopy.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
                         previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
@@ -582,7 +616,13 @@ public class ScreenWorkSlot extends MyForm {
             if (editedRule instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
                 ((RepeatRuleParseObject) editedRule).addOriginatorToRule(workSlot); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
                 workSlot.setRepeatRule((RepeatRuleParseObject) editedRule);
+            } else {//if RR was NOT edited, but workslot (potentially) was, updated already generated instances
+                RepeatRuleParseObject repeatRule = workSlot.getRepeatRuleN();
+                if (repeatRule != null) {
+                    repeatRule.updateWorkslotInstancesWhenWorkSlotModified(workSlot);
+                }
             }
+
         });
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -607,27 +647,8 @@ public class ScreenWorkSlot extends MyForm {
 //            owner.setEditable(false);
 //        }
 //</editor-fold>
-        ItemAndListCommonInterface ownerObj = workSlot.getOwner();
-        String ownerText = ""; // = item.getOwner() != null ? ((ItemAndListCommonInterface) item.getOwner()).getText() : ""; //TODO 
-        if (ownerObj != null) {
-            if (ownerObj instanceof Item) {
-                ownerText = Item.PROJECT + ": " + ((Item) ownerObj).getText(); //TODO only call top-level projects for "Project"? 
-            } else if (ownerObj instanceof Category) {
-                ownerText = Category.CATEGORY + ": " + ((Category) ownerObj).getText();
-            } else if (ownerObj instanceof ItemList) {
-                ownerText = ItemList.ITEM_LIST + ": " + ((ItemList) ownerObj).getText();
-            }
-        }
-        Label ownerLabel = new Label(ownerText);
-        //NB!! If adding support for EDITING owner, don't allow it for repeating rules!
-
-//        statusCont.add(new Label(Item.BELONGS_TO)).add(owner); //.add(new SpanLabel("Click to move task to other projects or lists"));
-//        content.add(layout(Item.BELONGS_TO, owner, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-        content.add(layoutN(Item.BELONGS_TO, ownerLabel, Item.BELONGS_TO_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-//        owner.setConstraint(TextArea.UNEDITABLE); //DOESN'T WORK        
-
 //        repeatRuleButton.setUIID("TextField");
-        content.add(layoutN(WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, true, false, true));//, true, false, false));
+        content.add(layoutN(true, WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, true, false, true));//, true, false, false));
 //        checkDataIsCompleteBeforeExit = () -> {
 //        setCheckOnExit( () -> {
 //            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
@@ -637,66 +658,10 @@ public class ScreenWorkSlot extends MyForm {
 //            return null;
 //        });
 
-        //HEADER - EDIT LIST IN FULL SCREEN MODE
-//                    Button editSubtasksFullScreen = ScreenListOfItems.makeSubtaskButton(item, null);
-        List<Item> items = workSlot.getItemsInWorkSlot();
-        if (items != null && items.size() > 0) {
-            ItemList itemList = new ItemList(workSlot.getItemsInWorkSlot());
-            Button editSubtasksFullScreen = new Button();
-            editSubtasksFullScreen.setCommand(MyReplayCommand.create("ShowTasksInWorkSlot", items.size() + " tasks", null, (e) -> {
-//                new ScreenListOfItems("Tasks in WorkSlot", itemList, ScreenWorkSlot.this, (iList) -> {
-                new ScreenListOfItems("Tasks in WorkSlot", () -> new ItemList(workSlot.getItemsInWorkSlot()), ScreenWorkSlot.this, (iList) -> {
-//                        item.setItemList(subtaskList);
-//                        DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//                        myForm.refreshAfterEdit(); //necessary to update sum of subtask effort
-                }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
-                        | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_INTERRUPT | ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP
-                        | ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_SELECTION_MODE
-                ).show();
-            }
-            ));
-//        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
-            content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
-        }
-        if (workSlot.getObjectIdP() != null) { //don't show for a new created workslot
-//        content.add(layoutN("Unallocated time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
-//            content.add(layoutN("Available time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
-            content.add(layoutN("Remaining time", new Label(MyDate.formatDurationStd(workSlot.getRemainingAvailableTime(now))), "How much of this work slot is still free",
-                    true, true, false));
-        }
-
-        if (Config.WORKTIME_TEST) {
-            content.add(layoutN("WorkTimeAllocator (TEST)", new Label(workSlot.getWorkSlotAllocationsAsStringForTEST()), "**",
-                    true, true, false));
-        }
-
-        if ((Config.TEST || (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean())) && workSlot.getObjectIdP() != null) {
-            Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "ScreenItemValueUneditable");
-            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
-        }
-
-        //ORIGINAL SOURCE
-        if (Config.TEST) { //hide source except when testing since purpose has to be clarified  
-            if (workSlot.getSource() != null && MyPrefs.showSourceWorkSlotInEditScreens.getBoolean()) { //don't show unless defined
-                //TODO!! what happens if source is set to template or other item, then saved locally on app exit and THEN recreated via Replay???
-//            Label sourceLabel = new Label(itemLS.getSource() == null ? "" : item.getSource().getText(), "LabelFixed");
-                WorkSlot workSlotSource = (WorkSlot) workSlot.getSource();
-                String text = workSlotSource.getText();
-                if (text == null || text.isEmpty()) {
-                    text = MyDate.formatDateTimeNew(workSlotSource.getStartTimeD())
-                            + " " + MyDate.formatDuration(workSlotSource.getDurationInMillis(), true)
-                            + " [" + workSlotSource.getObjectIdP() + "]";
-                }
-                SpanLabel sourceLabel = new SpanLabel(text, "ScreenItemValueUneditable");
-//            statusCont.add(new Label(Item.SOURCE)).add(source); //.add(new SpanLabel("Click to move task to other projects or lists"));
-//            statusCont.add(layout(Item.SOURCE, source, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-//            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-                content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-            }
-        }
-
+        //DESCRIPTION
 //        MyTextField workSlotName = new MyTextField("Description", parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s));
-        MyTextField workSlotName = new MyTextField(WorkSlot.DESCRIPTION_HINT, 20, 100, 0, parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s), TextField.RIGHT);
+//        MyTextField workSlotName = new MyTextField(WorkSlot.DESCRIPTION_HINT, 20, 100, 0, parseIdMap2, () -> workSlot.getText(), (s) -> workSlot.setText(s), TextField.RIGHT);
+        MyTextField workSlotName = new MyTextField(WorkSlot.DESCRIPTION_HINT, 20, 100, 0, null, () -> workSlot.getText(), (s) -> workSlot.setText(s), TextField.RIGHT);
         workSlotName.addActionListener((e) -> {
             String text = workSlotName.getText();
             Item.EstimateResult estim = Item.getEffortEstimateFromTaskText(text);
@@ -721,6 +686,61 @@ public class ScreenWorkSlot extends MyForm {
         workSlotName.setUIID("ScreenItemTaskText");
         content.add(workSlotName);
         workSlotName.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //start with initial caps automatically - TODO!!!! NOT WORKING LIKE THIS!!
+
+        //TASKS IN WORKSLOT
+        //HEADER - EDIT LIST IN FULL SCREEN MODE
+//                    Button editSubtasksFullScreen = ScreenListOfItems.makeSubtaskButton(item, null);
+        List<Item> items = workSlot.getItemsInWorkSlot();
+        if (items != null && items.size() > 0) {
+            ItemList itemList = new ItemList(workSlot.getItemsInWorkSlot());
+            Button editSubtasksFullScreen = new Button();
+            editSubtasksFullScreen.setCommand(MyReplayCommand.create("ShowTasksInWorkSlot", items.size() + " tasks", null, (e) -> {
+//                new ScreenListOfItems("Tasks in WorkSlot", itemList, ScreenWorkSlot.this, (iList) -> {
+                new ScreenListOfItems("Tasks in WorkSlot", () -> new ItemList(workSlot.getItemsInWorkSlot()), ScreenWorkSlot.this, (iList) -> {
+//                        item.setItemList(subtaskList);
+//                        DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                        myForm.refreshAfterEdit(); //necessary to update sum of subtask effort
+                }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
+                        | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_INTERRUPT | ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP
+                        | ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_SELECTION_MODE
+                ).show();
+            }
+            ));
+//        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
+            content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
+        }
+
+        //ORIGINAL SOURCE
+        if (Config.TEST) { //hide source except when testing since purpose has to be clarified  
+            if (workSlot.getSource() != null && MyPrefs.showSourceWorkSlotInEditScreens.getBoolean()) { //don't show unless defined
+                //TODO!! what happens if source is set to template or other item, then saved locally on app exit and THEN recreated via Replay???
+//            Label sourceLabel = new Label(itemLS.getSource() == null ? "" : item.getSource().getText(), "LabelFixed");
+                WorkSlot workSlotSource = (WorkSlot) workSlot.getSource();
+                String text = workSlotSource.getText();
+                if (text == null || text.isEmpty()) {
+                    text = MyDate.formatDateTimeNew(workSlotSource.getStartTimeD())
+                            + " " + MyDate.formatDuration(workSlotSource.getDurationInMillis(), true)
+                            + " [" + workSlotSource.getObjectIdP() + "]";
+                }
+                SpanLabel sourceLabel = new SpanLabel(text, "ScreenItemValueUneditable");
+//            statusCont.add(new Label(Item.SOURCE)).add(source); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//            statusCont.add(layout(Item.SOURCE, source, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//                content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+                content.add(layoutN(true, Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true, true, false)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+            }
+        }
+        //OBJECT-ID
+        if ((Config.TEST || (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean())) && workSlot.getObjectIdP() != null) {
+            Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "ScreenItemValueUneditable");
+            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+        }
+
+        //WORKTIME ALLOCATOR
+        if (Config.WORKTIME_TEST) {
+            content.add(layoutN("WorkTimeAllocator (TEST)", new SpanLabel(workSlot.getWorkSlotAllocationsAsStringForTEST()), "**",
+                    true, true, false));
+        }
 
 //        setEditOnShow(workSlotName); //UI: start editing this field, NO
 //        MyTextField comment = new MyTextField("Description", parseIdMap2, () -> workSlot.getComment(), (s) -> workSlot.setComment(s));

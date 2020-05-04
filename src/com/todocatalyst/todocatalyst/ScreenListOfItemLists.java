@@ -101,7 +101,8 @@ public class ScreenListOfItemLists extends MyForm {
         this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + itemListList.getObjectIdP());
 
 //        expandedObjects = new HashSet();
-        expandedObjects = new ExpandedObjects(getUniqueFormId());
+//        expandedObjects = new ExpandedObjects(getUniqueFormId());
+        expandedObjectsInit("");
         addCommandsToToolbar(getToolbar());
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForListOfItems(this.itemListList));
         refreshAfterEdit();

@@ -12,6 +12,7 @@ import com.parse4cn1.util.Logger;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -208,9 +209,9 @@ public class CleanUpDataInconsistencies {
         int i = 0;
         List<Item> itemsInList = itemList.getListFull();
         while (i < itemsInList.size()) {
-            Item item = itemsInList.get(i);
-            if (notOnParseServer(item)) {
-                logError(itemList, item);
+            ItemAndListCommonInterface item = itemsInList.get(i);
+            if (notOnParseServer((ParseObject) item)) {
+                logError(itemList, (ParseObject) item);
                 if (executeCleanup) {
                     itemsInList.remove(i);
 //                    i++; //DON'T INCREASE i if bad item ref was removed
@@ -218,7 +219,10 @@ public class CleanUpDataInconsistencies {
                     i++;
                 }
             } else {
-                cleanUpBadObjectReferencesItem(item); //we should clean up here, since an Item may only be found via its owner ItemList
+                if (item instanceof Item) {
+                    cleanUpBadObjectReferencesItem((Item) item); //we should clean up here, since an Item may only be found via its owner ItemList
+                }//                else if (item instanceof WorkSlot)
+//                cleanUpWBadObjectReferencesItem((Item)item); //we should clean up here, since an Item may only be found via its owner ItemList
                 i++;
             }
         }
@@ -530,7 +534,7 @@ public class CleanUpDataInconsistencies {
 //    private void cleanUpAllCategoriesFromParse(List<Category> listOfCategories, CategoryList categoryList) {
     public void cleanUpAllCategoriesFromParse() {
         CategoryList categoryList = CategoryList.getInstance();
-        categoryList.reloadFromParse(true, null, null); //get latest state
+//        categoryList.reloadFromParse(true, null, null); //get latest state
 
         List<Category> listOfCategoriesFromParse = dao.getAllCategoriesFromParse();
 
@@ -651,13 +655,21 @@ public class CleanUpDataInconsistencies {
 
 //    private boolean belongsTo(FilterSortDef filter, )
     /**
-     * remove any filters from Parse server which are not pointing to both a
+     * remove any filters from Parse server which are not pointed by an
+     * Item/ItemList/Category and remove any filters from Item/ItemList/Category
+     * which does not exist
      *
      * @param listOfFilters
      */
     private void cleanUpFilterSortDefs() {
         List<FilterSortDef> listOfFilters = dao.getAllFilterSortDefsFromParse();
+        List<ParseObject> listOfUpdatedFilterOwner = new ArrayList();
         Log.p("CLEANUP: number elements in list = " + listOfFilters.size(), logLevel);
+
+        HashSet<String> listOfFiltersObjId = new HashSet();
+        for (FilterSortDef f : listOfFilters) {
+            listOfFiltersObjId.add(f.getObjectIdP());
+        }
 
         //construct hashmpas to effectively search for elements that point to a filter
 //        Map<FilterSortDef, Category> catsWithFilter = new HashMap();
@@ -665,8 +677,14 @@ public class CleanUpDataInconsistencies {
 //        for (Category cat : CategoryList.getInstance().getList()) {
         for (Object o : CategoryList.getInstance().getListFull()) {
             Category cat = (Category) o;
-            if (cat.getFilterSortDefN() != null && cat.getFilterSortDefN().getObjectIdP() != null) {
-                catsWithFilter.put(cat.getFilterSortDefN().getObjectIdP(), cat);
+            FilterSortDef filter = cat.getFilterSortDefN();
+            if (filter != null && filter.getObjectIdP() != null) {
+                catsWithFilter.put(filter.getObjectIdP(), cat);
+                if (!listOfFiltersObjId.contains(filter.getObjectIdP())) { //cat's filter does not exist, so remove it from cat
+                    Log.p("CLEANUP: Category (ObjId=" + cat.getObjectIdP() + ") references FilterSortDef (" + filter.getObjectIdP() + ") NOT on Parse server", logLevel);
+                    cat.setFilterSortDef(null);
+                    listOfUpdatedFilterOwner.add(cat);
+                }
             }
         }
 
@@ -675,8 +693,14 @@ public class CleanUpDataInconsistencies {
 //        for (ItemList itemList : ItemListList.getInstance().getList()) {
         for (Object o : ItemListList.getInstance().getListFull()) {
             ItemList itemList = (ItemList) o;
-            if (itemList.getFilterSortDefN() != null && itemList.getFilterSortDefN().getObjectIdP() != null) {
-                itemListsWithFilter.put(itemList.getFilterSortDefN().getObjectIdP(), itemList);
+            FilterSortDef filter = itemList.getFilterSortDefN();
+            if (filter != null && filter.getObjectIdP() != null) {
+                itemListsWithFilter.put(filter.getObjectIdP(), itemList);
+                if (!listOfFiltersObjId.contains(filter.getObjectIdP())) { //cat's filter does not exist, so remove it from cat
+                    Log.p("CLEANUP: ItemList (ObjId=" + itemList.getObjectIdP() + ") references FilterSortDef (" + filter.getObjectIdP() + ") NOT on Parse server", logLevel);
+                    itemList.setFilterSortDef(null);
+                    listOfUpdatedFilterOwner.add(itemList);
+                }
             }
         }
 
@@ -684,8 +708,14 @@ public class CleanUpDataInconsistencies {
 //        Map<FilterSortDef, Item> itemsWithFilter = new HashMap<>();
         Map<String, Item> itemsWithFilter = new HashMap<>();
         for (Item item : dao.getAllItems()) {
-            if (item.getFilterSortDefN() != null && item.getFilterSortDefN().getObjectIdP() != null) {
-                itemsWithFilter.put(item.getFilterSortDefN().getObjectIdP(), item);
+            FilterSortDef filter = item.getFilterSortDefN();
+            if (filter != null && filter.getObjectIdP() != null) {
+                itemsWithFilter.put(filter.getObjectIdP(), item);
+                if (!listOfFiltersObjId.contains(filter.getObjectIdP())) { //cat's filter does not exist, so remove it from cat
+                    Log.p("CLEANUP: Item (ObjId=" + item.getObjectIdP() + ") references FilterSortDef (" + filter.getObjectIdP() + ") NOT on Parse server", logLevel);
+                    item.setFilterSortDef(null);
+                    listOfUpdatedFilterOwner.add(item);
+                }
             }
         }
 
@@ -701,14 +731,17 @@ public class CleanUpDataInconsistencies {
 //            } else {
 //</editor-fold>
             String filterObjId = filter.getObjectIdP();
-            if (catsWithFilter.get(filterObjId) == null
-                    && itemListsWithFilter.get(filterObjId) == null
-                    && itemsWithFilter.get(filterObjId) == null) { //no refs to filter
+            if (itemListsWithFilter.get(filterObjId) == null
+                    && itemsWithFilter.get(filterObjId) == null
+                    && catsWithFilter.get(filterObjId) == null) { //no refs to filter
                 Log.p("CLEANUP: FilterSortDef (ObjId=" + filter.getObjectIdP() + ") is not referenced by any Category/ItemList/Item", logLevel);
                 if (executeCleanup) {
-                    dao.delete(filter); //delete filters without ref to both objectId and Screen
+                    dao.delete(filter, true, false); //delete filters without ref to both objectId and Screen
                 }
             };
+            if (executeCleanup) {
+                dao.saveNew(listOfUpdatedFilterOwner); //delete filters without ref to both objectId and Screen
+            }
 //            }
         }
     }
@@ -717,6 +750,7 @@ public class CleanUpDataInconsistencies {
 //    private void cleanUpWorkSlots(WorkSlotList listOfWorkSlots) {
     void cleanUpWorkSlots(boolean executeCleanup) {
         WorkSlotList listOfWorkSlots = dao.getAllWorkSlotsFromParse();
+        List updatedWorkSlots = new ArrayList<>();
         Log.p("CLEANUP: number elements in list = " + listOfWorkSlots.size(), logLevel);
         for (int i = 0, size = listOfWorkSlots.size(); i < size; i++) {
             WorkSlot workSlot = listOfWorkSlots.get(i);
@@ -742,14 +776,29 @@ public class CleanUpDataInconsistencies {
                 //TODO!!! check if any RepeatRule references the workslot but it doesn't reference the RR
                 //TODO!!! check if any Item/ItemList/Category references the workslot but it doesn't reference it back
             }
-            if (false && workSlot.getRepeatRule() == null) {// || workSlot.getRepeatRule().equals("")) {
+
+            //Check repeat rule exists
+            if (workSlot.getRepeatRuleN() != null) {
+                if (notOnParseServer((ParseObject) workSlot.getRepeatRuleN())) {
+                    Log.p("CLEANUP: WorkSlot \"" + workSlot.toString() + "\" with bad ref to RepeatRule objectId=" + ((ParseObject) workSlot.getRepeatRuleN()).getObjectIdP(), logLevel);
+                    if (executeCleanup) {
+                        workSlot.setRepeatRule(null); //remove reference to inexisting RepeatRule
+                        updatedWorkSlots.add(workSlot);
+                    }
+                }
+                noRepeatRule = false;
+            } else {
+                noRepeatRule = true;
+            }
+
+            if (false && workSlot.getRepeatRuleN() == null) {// || workSlot.getRepeatRule().equals("")) {
 //                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerItem(" + workSlot.getOwnerList() + ")", logLevel);
 //                deleteWorkSlot = false;
                 noRepeatRule = true;
             }
 //            if (deleteWorkSlot) {
             if (noOwner && noRepeatRule) {
-                Log.p("CLEANUP: WorkSlot no owner: workSLot=" + workSlot + ") with null as Owner.", logLevel);
+                Log.p("CLEANUP: WorkSlot no owner and not referenced from RepeatRule: workSLot=" + workSlot + ") with null as Owner.", logLevel);
 //                try {
                 if (executeCleanup) {
                     dao.delete(workSlot, true, false); //delete filters without ref to both objectId and Screen
@@ -757,6 +806,9 @@ public class CleanUpDataInconsistencies {
 //                    Log.e(ex);
 //                }
             }
+        }
+        if (executeCleanup) {
+            dao.saveNew(updatedWorkSlots);
         }
     }
 
@@ -781,8 +833,8 @@ public class CleanUpDataInconsistencies {
         Map<RepeatRuleParseObject, WorkSlot> workSlotsWithRepeatRule = new HashMap<>();
 
         for (WorkSlot workSlot : dao.getAllWorkSlotsFromParse().getWorkSlotListFull()) {
-            if (workSlot.getRepeatRule() != null) {
-                workSlotsWithRepeatRule.put(workSlot.getRepeatRule(), workSlot);
+            if (workSlot.getRepeatRuleN() != null) {
+                workSlotsWithRepeatRule.put(workSlot.getRepeatRuleN(), workSlot);
             }
         }
 //        for (int i = 0, size = allRepeatRules.size(); i < size; i++) {
@@ -793,21 +845,18 @@ public class CleanUpDataInconsistencies {
             if (itemsWithRepeatRule.get(repeatRule) == null && workSlotsWithRepeatRule.get(repeatRule) == null) { //no refs to repeatRule
                 Log.p("CLEANUP: RepeatRule (ObjId=" + repeatRule.getObjectIdP() + ") is not referenced by any Item or WorkSlot", logLevel);
                 if (executeCleanup) {
-                    dao.delete(repeatRule); //delete filters without ref to both objectId and Screen
+                    dao.delete(repeatRule, true, false); //delete filters without ref to both objectId and Screen
 //                    allRepeatRules.remove(repeatRule); //NOT necessary since we have a for loop
                 }
             } else { //if RR is referenced
                 //clean up wrong references in list of repeat instances
 //            List<ItemAndListCommonInterface> repeatInstanceList = repeatRule.getListOfUndoneRepeatInstances();
-                List<RepeatRuleObjectInterface> repeatInstanceList = repeatRule.getListOfUndoneInstances();
-
-                cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(repeatRule, repeatInstanceList);
-
+                List<RepeatRuleObjectInterface> undoneInstances = repeatRule.getListOfUndoneInstances();
+                cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(repeatRule, undoneInstances);
                 //clean up duplicates in list of repeat instances
-                cleanUpDuplicatesInList("RepeatRule instances " + repeatRule, repeatInstanceList, executeCleanup);
-
+                cleanUpDuplicatesInList("RepeatRule instances " + repeatRule, undoneInstances, executeCleanup);
                 if (executeCleanup) {
-                    repeatRule.setListOfUndoneInstances(repeatInstanceList);
+                    repeatRule.setListOfUndoneInstances(undoneInstances);
                     dao.saveNew(repeatRule, false);
                 }
             }
@@ -1166,7 +1215,7 @@ public class CleanUpDataInconsistencies {
                     dao.saveNew(workSlot, false);
                 }
                 //repeatRule
-                RepeatRuleParseObject repeatRule = workSlot.getRepeatRule();
+                RepeatRuleParseObject repeatRule = workSlot.getRepeatRuleN();
                 if (repeatRule != null) {
                     //no relevant checks to do here? RepeatRule should check if all copies refer back to it?!
 //                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerItem(" + workSlot.getOwnerList() + ")", logLevel);
@@ -1261,7 +1310,13 @@ public class CleanUpDataInconsistencies {
             Object elt = itemListOrCategory.getItemAt(i);
 //            Object elt = itemListOrCategory.get(i);
 
-            if (!(elt instanceof Item)) {
+            if (elt == null) {
+                Log.p(prefix + " refer contains Item which is NULL at index=" + i);
+                if (executeCleanup) {
+                    itemListOrCategory.removeItem(i);
+                    moveToNextIndex = false;
+                }
+            } else if (!(elt instanceof Item)) {
                 boolean remove = false;
                 if (elt instanceof ParseObject) {
                     Log.p(prefix + " refer to a ParseObject which is not an Item: [" + ((ParseObject) elt).getObjectIdP() + "]");

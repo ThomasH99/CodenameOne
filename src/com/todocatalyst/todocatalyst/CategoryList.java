@@ -106,13 +106,13 @@ public class CategoryList extends ItemList {
         return null;
     }
 
-    public synchronized boolean reloadFromParse(boolean forceLoadFromParse, Date startDate, Date endDate) {
+    public synchronized boolean reloadFromParseXXX(boolean forceLoadFromParse, Date startDate, Date endDate) {
 //        CategoryList t = INSTANCE;
 //        INSTANCE = null; //next call to getInstance() will re-initiate/refresh the instance
 //        return t;
 //        INSTANCE.add(temp);
 //        INSTANCE.setList(temp.getList()); //NO good because shortcircuts the addItem logic (bags etc)
-        CategoryList temp = DAO.getInstance().getCategoryList(forceLoadFromParse, startDate, endDate);
+        CategoryList temp = DAO.getInstance().getCategoryList();//forceLoadFromParse); //, startDate, endDate);
         if (temp != null) {
             CategoryList current = getInstance();
 //            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)

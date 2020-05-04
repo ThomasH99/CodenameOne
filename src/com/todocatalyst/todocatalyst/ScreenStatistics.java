@@ -50,7 +50,8 @@ public class ScreenStatistics extends MyForm {
             setLayout(new BorderLayout());
         }
 //        expandedObjects = new HashSet();
-        expandedObjects = new ExpandedObjects(getUniqueFormId()); //,null);
+//        expandedObjects = new ExpandedObjects(getUniqueFormId()); //,null);
+        expandedObjectsInit(""); //,null);
         addCommandsToToolbar(getToolbar());
 
         reloadData();

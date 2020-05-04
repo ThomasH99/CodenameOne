@@ -179,7 +179,8 @@ public class ScreenItem2 extends MyForm {
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects(FORM_UNIQUE_ID,this.item);
         if (false) {
-            expandedObjects = new ExpandedObjects(getUniqueFormId() + this.itemOrg.getObjectIdP()); //NOT used in this screen
+//            expandedObjects = new ExpandedObjects(getUniqueFormId() + this.itemOrg.getObjectIdP()); //NOT used in this screen
+            expandedObjectsInit(this.itemOrg.getObjectIdP()); //NOT used in this screen
         }
         try {
             //        DAO.getInstance().deleteCategoryFromAllItems(cat);
@@ -787,7 +788,7 @@ public class ScreenItem2 extends MyForm {
             dueDate = new MyDate(makeDefaultDueDate().getTime());
         }
         long defaultAlarm = Math.max(dueDate.getTime() - MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS,
-                MyDate.getNow() + MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: when setting an alarm for a past due date, use now as reference
+                MyDate.currentTimeMillis() + MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: when setting an alarm for a past due date, use now as reference
         return MyDate.roundDownToFullMinutes(new MyDate(defaultAlarm)); //round off to remove seconds/milliseconds
 //        return new Date(defaultAlarm); //round off to remove seconds/milliseconds (now done in makeDefaultDueDate())
     }
@@ -1263,7 +1264,7 @@ public class ScreenItem2 extends MyForm {
 //        mainCont.add(layout(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)), true));
         initField(Item.PARSE_ALARM_DATE,
                 alarmDate,
-                () -> itemCopy.getAlarmDateD(),
+                () -> itemCopy.getAlarmDate(),
                 (d) -> itemOrg.setAlarmDate((Date) d),
                 () -> alarmDate.getDate(),
                 (d) -> alarmDate.setDate((Date) d));
@@ -1476,7 +1477,7 @@ public class ScreenItem2 extends MyForm {
 //        mainCont.add(layout(Item.CATEGORIES, categoriesButton, "**", false, false, false));
 //</editor-fold>
 //        mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, "**", null, true, false, true));
-        mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, Item.CATEGORIES));
+        mainCont.add(layoutN(true, Item.CATEGORIES, categoriesButton, Item.CATEGORIES));
 
 //        mainCont.add(makeSpacerThin());
         //TODO deleting should not delete in item but delete editcopy and when saving via parseIdMap
@@ -1656,10 +1657,11 @@ public class ScreenItem2 extends MyForm {
                     previousValues.put(Item.PARSE_DUE_DATE, new MyDate(locallyEditedRepeatRuleCopy.getSpecifiedStartDateXXXZZZ().getTime())); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
                 }
                 //if no due date is already set, automatically set the duePicker to the first repeatdate generated
-                if (dueDate.getDate().getTime()==0)
+                if (dueDate.getDate().getTime() == 0) {
                     previousValues.put(Item.PARSE_DUE_DATE, locallyEditedRepeatRuleCopy.getFirstRepeatDateAfterTodayForWhenEditingRuleWithoutPredefinedDueDateN()); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
+                }
                 previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //store edited rule (otherwise not persisted in local memory)
-            }, true, dueDate.getDate(), () -> makeDefaultDueDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
+            }, true, dueDate.getDate().getTime() != 0 ? dueDate.getDate() : null, () -> makeDefaultDueDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
         repeatRuleButton.setCommand(repeatRuleEditCmd);
@@ -1682,7 +1684,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             }
         });
 
-        Component repeatRuleContainer = layoutN(Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP);
+        Component repeatRuleContainer = layoutN(true, Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP);
 //        if (false && (editedRepeatRule == null || editedRepeatRule.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT)) {
 //            repeatRuleContainer.setHidden(true); //hide as long as no due date is set (like Apple Reminders)
 //        }
@@ -2037,7 +2039,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                () -> itemLS.getPriority() == 0 ? "" : itemLS.getPriority() + "",
 //        MyComponentGroup priority = new MyComponentGroup(new String[]{"-", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, parseIdMap2,
 //                (s) -> item.setPriority(Integer.parseInt(s.length() == 0 ? "0" : s)));
-        MyComponentGroup priority = new MyComponentGroup(new String[]{"-", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, true);
+        MyComponentGroup priority = new MyComponentGroup(new String[]{"/", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, true);
         initField(Item.PARSE_PRIORITY, priority,
                 () -> itemCopy.getPriority(),
                 (t) -> itemOrg.setPriority((int) t),
@@ -2409,7 +2411,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             }
             if (effortEstimateSetManually && !remainingEffortSetManually
                     && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean() //&& item.getRemainingEffortNoDefault() == 0
-                    && itemOrg.getRemainingForProjectTaskItselfFromParse() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+                    //                    && itemOrg.getRemainingForProjectTaskItselfFromParse() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+                    //only update Remaining to new Estimate if not changed manually and equal to zero or default value:
+//                    && (remainingEffort.getDuration() == itemOrg.getRemainingForProjectTaskItselfFromParse()
+//                    && (remainingEffort.getDuration() == 0
+//                    || remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS)
+                    ) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
                 remainingEffortSetAutomatically = true;
                 remainingEffort.setDurationAndNotify(effortEstimate.getDuration() - actualEffort.getDuration()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
                 remainingEffortSetAutomatically = false;
@@ -3051,6 +3058,32 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
 //        statusCont.add(layout(Item.OBJECT_ID, itemObjectId, "**", true, true, true));
             statusCont.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+        }
+
+        if (true) {
+//            Container statusCont=null;
+            statusCont.add("Enter a decimal value:");
+            TextField textField = new TextField();
+            textField.setConstraint(TextArea.DECIMAL);
+            statusCont.add(textField);
+
+            TextArea textField2 = new TextArea("TextArea", 3, 80);
+            textField2.setConstraint(TextArea.ANY);
+            statusCont.add(textField2);
+            TextArea textField5 = new TextArea("TextArea, no constraint", 3, 80);
+//                textField5.setConstraint(TextArea.ANY);
+            statusCont.add(textField5);
+
+            TextField textField1 = new TextField("TextField", "TextField", 3, 80);
+            textField1.setConstraint(TextArea.ANY);
+            statusCont.add(textField1);
+
+            MyTextField textField3 = new MyTextField("Simple MyTextField", 3, 80);
+            statusCont.add(textField3);
+
+//                  MyTextField(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint,  int alignment) {
+            MyTextField textField4 = new MyTextField("Normal MyTextField", 80, 3, 5, 200, TextArea.DECIMAL);
+            statusCont.add(textField4);
         }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

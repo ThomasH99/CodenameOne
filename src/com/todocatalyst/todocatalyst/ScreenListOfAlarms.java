@@ -22,12 +22,16 @@ import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.GridLayout;
 import com.codename1.ui.table.TableLayout;
+import com.codename1.ui.tree.TreeModel;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.AlarmType.*;
+import static com.todocatalyst.todocatalyst.MyTree2.KEY_ACTION_ORIGIN;
+import com.todocatalyst.todocatalyst.MyTree2.StickyHeaderGenerator;
 import static com.todocatalyst.todocatalyst.MyTree2.setIndent;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Vector;
 import javafx.scene.effect.DisplacementMap;
 
 /**
@@ -85,7 +89,8 @@ public class ScreenListOfAlarms extends MyForm {
             setLayout(new BorderLayout());
         }
 
-        expandedObjects = new ExpandedObjects(getUniqueFormId());
+//        expandedObjects = new ExpandedObjects(getUniqueFormId());
+        expandedObjectsInit("");
 
         addCommandsToToolbar(getToolbar());
 //        refreshAfterEdit();
@@ -309,7 +314,7 @@ public class ScreenListOfAlarms extends MyForm {
                 public void actionPerformed(ActionEvent evt) {
                     long now = MyDate.currentTimeMillis();
                     Item testItem = new Item("Alarm test task, created " + new MyDate(now) + ", alarm=" + new MyDate(now));
-                    testItem.setAlarmDate(now + MyDate.SECOND_IN_MILLISECONDS * 5);
+                    testItem.setAlarmDate(new MyDate(now + MyDate.SECOND_IN_MILLISECONDS * 5));
 //                    DAO.getInstance().saveAndWait(testItem);
 //                    DAO.getInstance().saveNew(testItem, true);
                     DAO.getInstance().saveNew(testItem);
@@ -348,7 +353,8 @@ public class ScreenListOfAlarms extends MyForm {
      * @param content
      * @return
      */
-    protected static Container buildItemAlarmContainer(ScreenListOfAlarms myForm, Item item, ExpiredAlarm expiredAlarm, List<ExpiredAlarm> expiredAlarms, MyForm.Action refreshAfterItemEdit, KeepInSameScreenPosition keepPos, MyForm previousForm, ExpandedObjects expandedObjects) {
+    protected static Container buildItemAlarmContainer(ScreenListOfAlarms myForm, Item item, ExpiredAlarm expiredAlarm, List<ExpiredAlarm> expiredAlarms,
+            MyForm.Action refreshAfterItemEdit, KeepInSameScreenPosition keepPos, MyForm previousForm, ExpandedObjects expandedObjects) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //buildItemContainer(Item item, ItemList orgList, //DONE!!! remove orgList
 //            MyForm.GetBoolean isDragAndDropEnabled, MyForm.Action refreshOnItemEdits,
@@ -394,6 +400,12 @@ public class ScreenListOfAlarms extends MyForm {
         Label alarmHeader;
         if ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.waitingRepeat)) {
             alarmHeader = new Label("Waiting " + MyDate.formatDateSmart(expiredAlarm.alarmTime), "ScreenAlarmsWaitingTitle");
+            alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
+        } else if ((expiredAlarm.type == AlarmType.snoozedWaiting)) {
+            alarmHeader = new Label("Waiting snoozed " + MyDate.formatDateSmart(expiredAlarm.alarmTime), "ScreenAlarmsWaitingTitle");
+            alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
+        } else if ((expiredAlarm.type == AlarmType.snoozedNotif)) {
+            alarmHeader = new Label("Reminder snoozed " + MyDate.formatDateSmart(expiredAlarm.alarmTime), "ScreenAlarmsWaitingTitle");
             alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
         } else {//     if ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.waitingRepeat)) {
             alarmHeader = new Label("Reminder " + MyDate.formatDateSmart(expiredAlarm.alarmTime), "ScreenAlarmsWaitingTitle");
@@ -471,11 +483,73 @@ public class ScreenListOfAlarms extends MyForm {
 
         alarmHeaderCont.add(BorderLayout.EAST, BoxLayout.encloseX(cancelAlarm, snoozeAlarm, snoozePicker));
 //        alarmHeaderCont.add(BorderLayout.CENTER,  snoozePicker);
+        
+        //hack to promote the expandCollapse subtasks button from the ItemContainer to the AlarmContainer
+        if(false){ //this disables the start of code to enable expansion of task subtasks
+        Object expandButton = itemCont.getClientProperty(KEY_ACTION_ORIGIN);
+        alarmCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandButton);
+        }
 
         return alarmCont;
     }
 
     protected Container buildContentPaneForAlarmList(List<ExpiredAlarm> expiredAlarms, MyForm previousForm) {
+        parseIdMap2.parseIdMapReset();
+
+        MyTreeModel xx = new MyTreeModel() {
+            /**
+             * Returns the child objects representing the given parent, null
+             * should return the root objects
+             *
+             * @param parent the parent object whose children should be
+             * returned, null would return the tree roots
+             * @return the children of the given node within the tree
+             */
+            @Override
+            public List getChildrenList(Object parent) {
+                List<ExpiredAlarm> expiredFiltered = new ArrayList();
+                for (ExpiredAlarm notif : expiredAlarms) {
+//            ExpiredAlarm notif = expiredAlarms.get(i);
+                    if (notif.alarmTime.getTime() <= now) {
+                        Item item = DAO.getInstance().fetchItem(notif.objectId);
+                        expiredFiltered.add(notif);
+                    }
+                }
+                return expiredFiltered;
+            }
+
+            /**
+             * Is the node a leaf or a folder
+             *
+             * @param node a node within the tree
+             * @return true if the node is a leaf that can't be expanded
+             */
+            @Override
+            public boolean isLeaf(Object node) {
+                return true;
+            }
+        };
+
+        if (expiredAlarms.size() > 0) {
+            MyTree2 myTree = new MyTree2(xx, expandedObjects, null, (StickyHeaderGenerator) null) {//                    lastInsertNewElementContainer != null ? 
+                @Override
+                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
+                    ExpiredAlarm notif = (ExpiredAlarm) node;
+                    Item item = DAO.getInstance().fetchItem(notif.objectId);
+                    showDetails.add(item); //hack to always show alarmTime even if normally hidden in details
+                    Component cmp = buildItemAlarmContainer(ScreenListOfAlarms.this, item, notif, expiredAlarms, () -> refreshAfterEdit(),
+                            keepPos, previousForm, expandedObjects);
+                    setIndent(cmp, depth);
+                    return cmp;
+                }
+            };
+            return myTree;
+        } else {
+            return BorderLayout.centerCenter(new SpanLabel(getTextToShowIfEmptyList()));
+        }
+    }
+
+    protected Container buildContentPaneForAlarmListOLD(List<ExpiredAlarm> expiredAlarms, MyForm previousForm) {
         parseIdMap2.parseIdMapReset();
         if (expiredAlarms != null && expiredAlarms.size() > 0) {
 //        Container cont = new Container();

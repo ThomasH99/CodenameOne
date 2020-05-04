@@ -201,16 +201,16 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         } else {
 
             //first deal with any repeating workslots (remove expired and add new repeat instances
-            List<RepeatRuleParseObject> repeatRules = new ArrayList<>();
+            List<RepeatRuleParseObject> workSlotsWithRepeatRules = new ArrayList<>();
             for (WorkSlot ws : sortedOnStartTimeWorkslotList) {
                 //NB! workSlot list can contain both individual workslots and (many) repeats of same workSlot -> 
                 //gather all repeatRules to update in batch:
-                RepeatRuleParseObject repeatRule = ws.getRepeatRule();
-                if (repeatRule != null && !(repeatRules.contains(repeatRule))) { //contains(): keep only one instance of each rule if multiple workslots originate from same rule
-                    repeatRules.add(repeatRule);
+                RepeatRuleParseObject repeatRule = ws.getRepeatRuleN();
+                if (repeatRule != null && !(workSlotsWithRepeatRules.contains(repeatRule))) { //contains(): keep only one instance of each rule if multiple workslots originate from same rule
+                    workSlotsWithRepeatRules.add(repeatRule);
                 }
             }
-            for (RepeatRuleParseObject repeatRuleParseObject : repeatRules) {
+            for (RepeatRuleParseObject repeatRuleParseObject : workSlotsWithRepeatRules) {
 //                repeatRuleParseObject.updateIfExpiredOrDeletedWorkslots(null); //will update based on owner() in internal list of generated instances
                 repeatRuleParseObject.updateIfExpiredWorkslots(); //will update based on owner() in internal list of generated instances
             }

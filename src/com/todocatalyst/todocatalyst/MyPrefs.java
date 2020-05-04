@@ -27,6 +27,8 @@ public class MyPrefs {
             = new PrefEntry("In Today, include tasks starting today", "todayViewIncludeStartingToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
     static PrefEntry todayViewIncludeWorkSlotsCoveringToday
             = new PrefEntry("In Today, include WorkSLots starting today", "todayViewIncludeWorkSlotsCoveringToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+    static PrefEntry todayViewShowProjectsInsteadOfLeafTasks
+            = new PrefEntry("In Today, show top-level projects instead of leaf tasks", "todayViewShowProjectsInsteadOfLeafTasks", false, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
 
 //ESTIMATES
     static PrefEntry automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining
@@ -320,9 +322,12 @@ public class MyPrefs {
             = new PrefEntry("Confirm changing status for this many subtasks", "itemMaxNbSubTasksToChangeStatusForWithoutConfirmation", 2, "For a project, ask for confirmation when changing the status of this many subtasks");
 
     static PrefEntry askToEnterActualIfMarkingTaskDoneOutsideTimer
-            = new PrefEntry("Show popup to enter Actual effort on Done", "askToEnterActualIfMarkingTaskDoneOutsideTimer",
+            = new PrefEntry(Format.f("Enter {0 Actual effort} on {1 task status}",Item.EFFORT_ACTUAL,ItemStatus.DONE.getName()), "askToEnterActualIfMarkingTaskDoneOutsideTimer",
                     true, "When marking a task Done outside the timer, show popup to enter Actual effort");
-    static PrefEntry askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero
+    static PrefEntry askToEnterActualIfMarkingTaskWaitingOutsideTimer
+            = new PrefEntry(Format.f("Enter {0 Actual effort} on {1 task status}",Item.EFFORT_ACTUAL,ItemStatus.WAITING.getName()), "askToEnterActualIfMarkingTaskWaitingOutsideTimer",
+                    true, "When marking a task Done outside the timer, show popup to enter Actual effort");
+    static PrefEntry askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZeroXXX
             = new PrefEntry("Enter Actual effort when none was set", "askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero",
                     true, "When marking a task Done outside the timer, show popup to enter Actual effort");
     static PrefEntry askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem //TODO!!! No, only ask if overwriting an alreadyd defined value!
@@ -502,6 +507,10 @@ public class MyPrefs {
             = new PrefEntry("Disable screen rotation", "screenRotationDisabled", true, "**");
     static PrefEntry enableShowingSystemInfo
             = new PrefEntry("Show additional system information like unique identified", "enableShowingSystemInfo", true, "**");
+    static PrefEntry enableSafeArea
+            = new PrefEntry("Do not allow content on top/bottom part of iPhone X type devices (safe area)", "enableSafeArea", true, "**");
+    static PrefEntry hideStatusBar
+            = new PrefEntry("Hide the status bar at the top of the screen", "hideStatusBar", false, "**");
 
     //REPEATRULE
     static PrefEntry repeatMaxInterval = new PrefEntry("repeatMaxInterval**", "repeatMaxInterval", 365, "maximun value for repeat interval**");
@@ -546,6 +555,7 @@ public class MyPrefs {
     static PrefEntry itemListExpiresByDate = new PrefEntry("Show Expires By date", "itemListExpiresByDate", true, "**");
     static PrefEntry itemListWaitingTillDate = new PrefEntry("Show Waiting Till date", "itemListWaitingTillDate", true, "**");
     static PrefEntry itemListShowRemainingEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_REMAINING), "itemListShowRemainingEvenIfZero", false, "**");
+    static PrefEntry itemListHideRemainingWhenDefaultValue = new PrefEntry(Format.f("Hide {0} with default value", Item.EFFORT_REMAINING), "itemListHideRemainingWhenDefaultValue", true, "**");
     static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry(Format.f("Show {0} for tasks not {1}", Item.EFFORT_ACTUAL, ItemStatus.DONE.getName()),
             "itemListShowActualIfNonZeroEvenIfNotDone", false, "**");
     static PrefEntry itemListEffortEstimate = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ESTIMATE), "itemListEffortEstimate", true, "**");

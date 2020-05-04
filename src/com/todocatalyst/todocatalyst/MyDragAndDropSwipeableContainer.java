@@ -1958,22 +1958,53 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         super.close();
     }
 
+//    @Override
+    public void openToLeft() {
+        Form f = getComponentForm();
+        if (f instanceof MyForm) {
+            if (false && ((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                ((MyForm) f).openSwipeContainer.close();
+            }
+            ((MyForm) f).openSwipeContainer = this;
+        }
+        super.openToLeft();
+    }
+
+//    @Override
+    public void openToRight() {
+        Form f = getComponentForm();
+        if (f instanceof MyForm) {
+            if (false && ((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                ((MyForm) f).openSwipeContainer.close();
+            }
+            ((MyForm) f).openSwipeContainer = this;
+        }
+        super.openToRight();
+    }
+
+    @Override
+    public SwipeableContainer getPreviouslyOpened() {
+        return ((MyForm) getComponentForm()).openSwipeContainer;
+    }
+
     MyDragAndDropSwipeableContainer(Component bottomLeft, Component bottomRight, Component top) {
         super(bottomLeft, bottomRight, top);
         setDropTarget(true); //containers are both dropTargets and draggable
         setDraggable(false); //set false by default to allow scrolling. LongPress will activate, drop will deactivate it
         setUIID("MyDragAndDropSwipeableContainer");
 
-        addSwipeOpenListener((e) -> {
-            Form f = getComponentForm();
-            if (f instanceof MyForm) {
-                MyForm myForm = (MyForm) f;
-                if (myForm.openSwipeContainer != null && myForm.openSwipeContainer != this && myForm.openSwipeContainer.getComponentForm() != null) { //if there's a previously open Swipetable, then close it
-                    myForm.openSwipeContainer.close();
+        if (false) {
+            addSwipeOpenListener((e) -> {
+                Form f = getComponentForm();
+                if (f instanceof MyForm) {
+                    MyForm myForm = (MyForm) f;
+                    if (myForm.openSwipeContainer != null && myForm.openSwipeContainer != this && myForm.openSwipeContainer.getComponentForm() != null) { //if there's a previously open Swipetable, then close it
+                        myForm.openSwipeContainer.close();
+                    }
+                    myForm.openSwipeContainer = this;
                 }
-                myForm.openSwipeContainer = this;
-            }
-        });
+            });
+        }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false)

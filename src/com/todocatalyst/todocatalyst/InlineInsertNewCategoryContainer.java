@@ -89,7 +89,8 @@ public class InlineInsertNewCategoryContainer extends InlineInsertNewContainer i
                 newCategory = createNewCategory(); //store new category for use when recreating next insert container
                 if (newCategory != null) {
 //                    myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
-                    myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+//                    myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+                    ((MyForm)getComponentForm()).setKeepPos(new KeepInSameScreenPosition(newCategory, this)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                 }
 //                this.categoryList.addToList(newCategory);
                 insertNewCategoryAndSaveChanges(newCategory);

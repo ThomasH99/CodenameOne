@@ -129,6 +129,14 @@ public interface RepeatRuleObjectInterface {
         return owner;
     }
 
+        /**
+     * update this element to have same values as refElement. Used eg to update future workslot repeat instances when one of them is edited, updates duration and text.
+     * For Item: TBD
+     * @param refElt 
+     * @return  true if this element was modified (to know if it needs saving or other actions)
+     */
+    public boolean update(RepeatRuleObjectInterface refElt);
+
     /**
      *
      * @param copyFieldDefintion

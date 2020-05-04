@@ -126,7 +126,8 @@ public class ScreenListOfWorkSlots extends MyForm {
             setLayout(new BorderLayout());
         }
         getContentPane().setScrollableY(false);
-        expandedObjects = new ExpandedObjects(getUniqueFormId(), (ParseObject) owner); //no persistance if filename and is empty (e.g. like with list of project subtasks)
+//        expandedObjects = new ExpandedObjects(getUniqueFormId(), (ParseObject) owner); //no persistance if filename and is empty (e.g. like with list of project subtasks)
+        expandedObjects = new ExpandedObjects( owner.getObjectIdP()); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         this.enableAddWorkSlots = enableAddWorkSlots;
         addCommandsToToolbar(getToolbar());
 //        setScrollableY(true);
@@ -446,7 +447,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        String endTimeStr = "-" + MyDate.formatTimeNew(new Date(workSlot.getEndTime()))
 //        String endTimeStr = " " + MyDate.formatDurationShort(workSlot.getDurationAdjusted(now))
         String endTimeStr = " " + MyDate.formatDurationShort(workSlot.getDurationInMillis())
-                + (workSlot.getRepeatRule() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
+                + (workSlot.getRepeatRuleN() != null ? "*" : ""); //                + " " + MyDate.formatTimeDuration(workSlot.getDurationInMillis())// + ")"
         Label endTimeLabel = new Label(endTimeStr, "WorkSlotEndTime");
 
 //        west.add(startTimeStr);
@@ -604,6 +605,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                setInlineInsertContainer(new InlineInsertNewItemContainer2(this, null, workSlotList, null, false)); //UI: in an empty list you can insert a new task via the inlineInsert container
 //                return (Container) getInlineInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
 //            return BoxLayout.encloseY(new Label("Add a " + WorkSlot.WORKSLOT + " using +"));
+//            return BorderLayout.centerCenter(new SpanLabel(getTextToShowIfEmptyList()));
             return BorderLayout.centerCenter(new SpanLabel("Add a " + WorkSlot.WORKSLOT + " using +"));
         }
 

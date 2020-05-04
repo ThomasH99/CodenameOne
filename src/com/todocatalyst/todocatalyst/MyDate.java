@@ -1006,6 +1006,89 @@ public class MyDate extends Date {
         return year % 4 == 0 && year % 100 != 0 ? 366 : 365;
     }
 
+    public static int getDayInYear(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+//        cal.get(Calendar.DAY_OF_YEAR);
+        int dayOfYear = cal.get(6);
+        return dayOfYear;
+    }
+
+    /**
+     * SUNDAY=1
+     *
+     * @param date
+     * @return
+     */
+    public static int getDayInWeek(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
+        return dayOfWeek;
+    }
+    
+        /** OLD VERSION - NEVER USED
+     * Field number for get and set indicating the day of the week. This field
+     * takes values SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, and
+     * SATURDAY.
+     *
+     * @param date
+     * @return
+     */
+    public static int getDayInWeekXXX(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        int v = calendar.get(Calendar.DAY_OF_WEEK);
+        v = calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH);
+        return v;
+    }
+
+
+
+    /**
+     * eg first Monday of month will return 1, 3rd Sunday 2ill return 3
+     * @param weekday SUNDAY=1
+     * @return 
+     */
+    public static int getWeekdayInMonth(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int weekdayOfMonth = cal.get(Calendar.DAY_OF_WEEK_IN_MONTH); 
+        return weekdayOfMonth;
+    }
+
+    /**
+     * eg first Monday of month will return 1, 3rd Sunday 2ill return 3
+     * @param weekday SUNDAY=1
+     * @return 
+     */
+    public static int getWeekNbInMonth(Date date) {
+//https://stackoverflow.com/questions/6538791/what-is-the-difference-between-calendar-week-of-month-and-calendar-day-of-week-i
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int weekOfMonth = cal.get(Calendar.WEEK_OF_MONTH); 
+        return weekOfMonth;
+    }
+
+    /**
+     * returns 1 for January etc (contrary to Calendar which returns 0)
+     *
+     * @param date
+     * @return
+     */
+    public static int getMonthInYear(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        int monthInYear = cal.get(Calendar.MONTH) + 1;
+        return monthInYear;
+    }
+
+    public static int getMonthInYearAsVector(Date date) {
+
+        int monthInYear = getMonthInYear(date);
+        return monthInYear;
+    }
+
     /**
      * returns list of display text strings indicating week in month (FIRST,
      * THIRD, LAST, ...)
@@ -1063,22 +1146,6 @@ public class MyDate extends Date {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int v = calendar.get(Calendar.WEEK_OF_MONTH);
-        return v;
-    }
-
-    /**
-     * Field number for get and set indicating the day of the week. This field
-     * takes values SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, and
-     * SATURDAY.
-     *
-     * @param date
-     * @return
-     */
-    public static int getDayInWeek(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int v = calendar.get(Calendar.DAY_OF_WEEK);
-        v = calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH);
         return v;
     }
 
@@ -1980,7 +2047,7 @@ public class MyDate extends Date {
      * returns the time now (System.currentTimeMillis()). Provide to make it
      * possible to override this function, e.g. for test purposes.
      */
-    static long getNow() {
+    static long getNowXXX() {
         return System.currentTimeMillis();
     }
     /**
@@ -2136,7 +2203,7 @@ public class MyDate extends Date {
      * @param time
      * @return
      */
-    static Date getRoundUpToNextMinute(Date time) {
+    static Date roundUpToNextMinute(Date time) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(time);
 //        cal.set(Calendar.MINUTE, 0);
@@ -2153,7 +2220,7 @@ public class MyDate extends Date {
 //        return new Date(rounded); //round off to minutes
     }
 
-    static Date getRoundToNearestMinute(Date time) {
+    static Date roundToNearestMinute(Date time) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(time);
 //        cal.set(Calendar.MINUTE, 0);

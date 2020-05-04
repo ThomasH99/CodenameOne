@@ -169,6 +169,8 @@ public class ScreenListOfItems extends MyForm {
     final static int OPTION_NO_INLINEINSERT_EMPTYLIST = OPTION_NO_TASK_DETAILS * 2;
     private boolean optionNoInlineInsertContInEmptyList;
 
+    private static int LABEL_GAP = 0; //in pixels!
+
     final static int OPTION_LAST_TO_CHECK_IF_ALL_BITS_ARE_USED = OPTION_NO_INLINEINSERT_EMPTYLIST * 2;
 //    boolean optionSingleSelectMode;
 //    final static int OPTION_MULTIPLE_SELECT_MODE = OPTION_SINGLE_SELECT_MODE * 2;
@@ -402,7 +404,8 @@ public class ScreenListOfItems extends MyForm {
         String expandedObjectsFileName = makeUniqueIdForExpandedObjects(itemListOrg, "$NoListName");
 //        String expandedObjectsFileName = itemListOrg.isNoSave() ? "" : (getUniqueFormId() + (itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
         if (expandedObjectsFileName != null) {
-            expandedObjects = new ExpandedObjects(getUniqueFormId() + "-" + expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
+//            expandedObjects = new ExpandedObjects(getUniqueFormId() + "-" + expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
+            expandedObjectsInit(expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         }
         this.stickyHeaderGen = stickyHeaderGen;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -589,7 +592,8 @@ public class ScreenListOfItems extends MyForm {
         }//        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
 //        getContentPane().add(MyBorderLayout.CENTER, contentContainer); //NB!!! this doesn't actually replace the old contentPane immediately (in the below calls!!!) meaning recreateInlineInsertContainerIfNeeded() doesn't work
-        addToContentContainer(contentContainer);
+//        addToContentContainer(contentContainer);
+        getContentPane().add(BorderLayout.CENTER, contentContainer);
         if (contentContainer != null) {
             ContainerScrollY scrollable = findScrollableContYChild(contentContainer);
             if (scrollable != null) {
@@ -1101,8 +1105,9 @@ public class ScreenListOfItems extends MyForm {
 
 //            Command hideShowDone = new CommandTracked("", Icons.iconShowDoneTasks, "HideShowDoneTasks") {
             Command hideShowDone = new CommandTracked("Show zzz",
-                    itemListOrg.getFilterSortDef(true).isShowDoneTasks()
-                    ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks,
+                    //                    itemListOrg.getFilterSortDef(true).isShowDoneTasks()
+                    //                    ? Icons.iconHideDoneTasks : Icons.iconShowDoneTasks,
+                    Icons.iconHideDoneTasks,
                     "HideShowDoneTasks") {
                 @Override
                 public void actionPerformed(ActionEvent e) {
@@ -1186,7 +1191,8 @@ public class ScreenListOfItems extends MyForm {
                 public String getCommandName() {
 //                    return "Sort " + ((filterSortDef == null || !filterSortDef.isSortOn()) ? "ON" : "OFF");
 //                    return "Sort " + ((itemListOrg.getFilterSortDef() == null || !itemListOrg.getFilterSortDef().isSortOn()) ? "ON" : "OFF");
-                    return (itemListOrg.getFilterSortDefN() == null || !itemListOrg.getFilterSortDefN().isSortOn()) ? "Show sorted" : "Show unsorted"; //"Show manual sort"
+//                    return (itemListOrg.getFilterSortDefN() == null || !itemListOrg.getFilterSortDefN().isSortOn()) ? "Show sorted" : "Show unsorted"; //"Show manual sort"
+                    return (!itemListOrg.getFilterSortDef().isSortOn()) ? "Show sorted" : "Show unsorted"; //"Show manual sort"
                 }
             };
             toolbar.addCommandToOverflowMenu(sortOnOff);
@@ -1398,6 +1404,33 @@ public class ScreenListOfItems extends MyForm {
                 }, "SelectionOnOff"));
             }
 
+            if (!optionTemplateEditMode) {
+                toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemsSettings", "Settings", Icons.iconSettings, (e) -> {
+                    new ScreenSettingsListOfItems(ScreenListOfItems.this, () -> {
+                        refreshAfterEdit();
+                    }).show();
+                }
+                ));
+            }
+
+//        toolbar.addCommandToOverflowMenu(CommandTracked.create("Help", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+            toolbar.addCommandToOverflowMenu(CommandTracked.create("Support", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+                showPreviousScreen(true);
+            }, "Help"));
+
+            if (false) {
+                toolbar.addCommandToOverflowMenu(CommandTracked.create("Report issue", Icons.iconReportIssue, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+                    showPreviousScreen(true);
+                }, "ReportIssue"));
+            }
+
+            //CANCEL - not relevant, all edits are done immediately so not possible to cancel
+            if (false) {//doesn't make sense for a list!
+                toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+                    showPreviousScreen(true);
+                }, "Cancel"));
+            }
+
             if (Config.TEST && itemListOrg instanceof ItemList) {
                 Command showIssuesInList = new CommandTracked("Show list issues", Icons.iconRepair) {
                     @Override
@@ -1421,31 +1454,6 @@ public class ScreenListOfItems extends MyForm {
 
         }
 
-        if (!optionTemplateEditMode) {
-            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemsSettings", "Settings", Icons.iconSettings, (e) -> {
-                new ScreenSettingsListOfItems(ScreenListOfItems.this, () -> {
-                    refreshAfterEdit();
-                }).show();
-            }
-            ));
-        }
-
-//        toolbar.addCommandToOverflowMenu(CommandTracked.create("Help", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-        toolbar.addCommandToOverflowMenu(CommandTracked.create("Support", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-            showPreviousScreen(true);
-        }, "Help"));
-        if (false) {
-            toolbar.addCommandToOverflowMenu(CommandTracked.create("Report issue", Icons.iconReportIssue, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-                showPreviousScreen(true);
-            }, "ReportIssue"));
-        }
-        if (false) {//doesn't make sense for a list!
-            toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-                showPreviousScreen(true);
-            }, "Cancel"));
-        }
-
-        //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
 
     /**
@@ -1713,7 +1721,8 @@ public class ScreenListOfItems extends MyForm {
 //        return filterSortDef != null && filterSortDef.isSortOn();
 //        return itemListFilteredSorted != itemListOrg; //NO - since list may be filtered and it's still possible to drag & drop
 //        return filterSortDef != null && filterSortDef.isSortOn(); //
-        return itemListOrg.getFilterSortDefN() != null && itemListOrg.getFilterSortDefN().isSortOn(); //
+//        return itemListOrg.getFilterSortDefN() != null && itemListOrg.getFilterSortDefN().isSortOn(); //
+        return itemListOrg.getFilterSortDef().isSortOn(); //
     }
 
     @Override
@@ -1921,7 +1930,8 @@ public class ScreenListOfItems extends MyForm {
 //        Container swipeActionContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 //        Container buttonSwipeContainer = null;
 //        Container buttonSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
-        Container buttonSwipeContainer = new Container(BoxLayout.x(), "ListOfItemsSwipeButtons"); //must grow buttons to fill entire space
+        Container buttonSwipeLeftContainer = new Container(BoxLayout.x(), "ListOfItemsSwipeButtons"); //must grow buttons to fill entire space
+        Container buttonSwipeRightContainer = new Container(BoxLayout.x(), "ListOfItemsSwipeButtons"); //must grow buttons to fill entire space
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (true) {
 //            swipeActionContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -1930,7 +1940,7 @@ public class ScreenListOfItems extends MyForm {
 //        SwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(swipeActionContainer, buttonSwipeContainer, contWithAddNewTaskCont) {
 //</editor-fold>
 //        SwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(swipeActionContainer, buttonSwipeContainer, mainCont) {
-        SwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(null, buttonSwipeContainer, mainCont) {
+        MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(buttonSwipeRightContainer, buttonSwipeLeftContainer, mainCont) {
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
@@ -2200,7 +2210,11 @@ public class ScreenListOfItems extends MyForm {
                 }
 //                mainCont.getParent().getParent().animateLayout(100);
 //                mainCont.getParent().animateLayout(100);
-                swipCont.getParent().animateLayout(ANIMATION_TIME_FAST);
+                if (false) {
+                    swipCont.getParent().animateLayout(ANIMATION_TIME_FAST);
+                } else {
+                    swipCont.getComponentForm().animateLayout(ANIMATION_TIME_FAST);
+                }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                parent.animateLayout(150);
 //                if (!south.isHidden()) {
@@ -2298,16 +2312,20 @@ public class ScreenListOfItems extends MyForm {
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
 
                 //if setting Done, ask if set actual
-                if (((newStatus == ItemStatus.DONE || newStatus == ItemStatus.WAITING)
-                        && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.WAITING))
-                        && !wasTimerRunningForTheTask
-                        && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
-                    showDialogUpdateActualTime(item);
+//                if (((newStatus == ItemStatus.DONE || newStatus == ItemStatus.WAITING)
+//                        && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.WAITING))
+//                        && !wasTimerRunningForTheTask
+//        &&(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZeroXXX.getBoolean() && item.getActual() == 0)
+//                        && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
+                if (((newStatus == ItemStatus.DONE && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean())
+                        || (newStatus == ItemStatus.WAITING && MyPrefs.askToEnterActualIfMarkingTaskWaitingOutsideTimer.getBoolean()))
+                        && !wasTimerRunningForTheTask) {
+                    showDialogUpdateActualTimeIfAppropriate(item);
                 }
 
                 //if setting Waiting, ask if set waiting date and/or waiting alarm
-                if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) {
-                    showDialogSetWaitingDateAndAlarm(item); //only call if we're changing TO Waiting status
+                if (false && newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) { //DEACTIVATE, waiting for proper Done/Retrospective screen
+                    showDialogSetWaitingDateAndAlarmIfAppropriate(item); //only call if we're changing TO Waiting status
                 }
 
                 myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
@@ -2396,6 +2414,8 @@ public class ScreenListOfItems extends MyForm {
                 actualEffortLabel = new Label(MyDate.formatDurationShort(actualEffort, true).toString());
                 actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
                 actualEffortLabel.setUIID("ListOfItemsActualEffort");
+                actualEffortLabel.setGap(LABEL_GAP);
+
                 if (Config.TEST) {
                     status.setName("ActualEffort");
                 }
@@ -2408,6 +2428,7 @@ public class ScreenListOfItems extends MyForm {
                 actualEffortLabel = new Label(MyDate.formatDurationShort(actualEffort, true).toString());
                 actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
                 actualEffortLabel.setUIID("ListOfItemsActualEffort");
+                actualEffortLabel.setGap(LABEL_GAP);
                 southDetailsContainer.add(actualEffortLabel);
             }
 
@@ -2419,6 +2440,7 @@ public class ScreenListOfItems extends MyForm {
             if (item.getCompletedDateD().getTime() != 0) {
                 completedDateLabel = new Label(MyDate.formatDateSmart(item.getCompletedDateD(), true), "ListOfItemsCompletedDate"); //true: always show time of day when task was completed
                 completedDateLabel.setMaterialIcon(Icons.iconCompletedDate);
+                completedDateLabel.setGap(LABEL_GAP);
 //            completedDateLabel.setMaterialIcon(0);
                 if (oldFormat) {
                     east.addComponent(completedDateLabel);
@@ -2436,6 +2458,7 @@ public class ScreenListOfItems extends MyForm {
                 finishTimeLabel = new Label(MyDate.formatDateSmart(finishTimeD),
                         due != 0 && finishTime > due ? "ListOfItemsFinishTimeOverdue" : "ListOfItemsFinishTime");
                 finishTimeLabel.setMaterialIcon(Icons.iconFinishDateMaterial);
+                finishTimeLabel.setGap(LABEL_GAP);
 //                if (Config.TEST) {
 //                } else
 //                    finishTimeLabel = new Label("F:" + MyDate.formatDateSmart(new Date(finishTime)),
@@ -2449,6 +2472,7 @@ public class ScreenListOfItems extends MyForm {
 //                dueDateLabel = new Label(MyDate.formatDateSmart(new Date(due)), Icons.iconSetDueDateToToday(),
                 dueDateLabel = new Label(MyDate.formatDateSmart(new MyDate(due)), due < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
                 dueDateLabel.setMaterialIcon(Icons.iconSetDueDateToTodayFontImageMaterial);
+                dueDateLabel.setGap(LABEL_GAP);
                 if (item.isDueDateInherited()) {
                     dueDateLabel.setUIID("ListOfItemsDueDateInherited");
                 }
@@ -2461,10 +2485,12 @@ public class ScreenListOfItems extends MyForm {
             }
 
             long remainingEffort = item.getRemaining();
-            if (remainingEffort != 0 || MyPrefs.itemListShowRemainingEvenIfZero.getBoolean()) {
+            if ((remainingEffort != 0 || MyPrefs.itemListShowRemainingEvenIfZero.getBoolean())
+                    && !(remainingEffort == Item.getRemainingDefaultValue() && MyPrefs.itemListHideRemainingWhenDefaultValue.getBoolean())) {
 //                    east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
-                remainingEffortLabel = new Label(MyDate.formatDurationShort(remainingEffort), "ListOfItemsRemaining");
+                remainingEffortLabel = new Label(MyDate.formatDurationShort(remainingEffort, true), "ListOfItemsRemaining");
                 remainingEffortLabel.setMaterialIcon(Icons.iconRemainingEffort);
+                remainingEffortLabel.setGap(LABEL_GAP - 3);
                 if (Config.TEST) {
                     remainingEffortLabel.setName("Remaining");
                 }
@@ -2477,6 +2503,7 @@ public class ScreenListOfItems extends MyForm {
             if (due != 0) {
                 dueDateLabel = new Label(MyDate.formatDateSmart(new MyDate(due)), due < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
                 dueDateLabel.setMaterialIcon(Icons.iconSetDueDateToTodayFontImageMaterial);
+                dueDateLabel.setGap(LABEL_GAP);
                 if (item.isDueDateInherited()) {
                     dueDateLabel.setUIID("ListOfItemsDueDateInherited");
                 }
@@ -2621,6 +2648,7 @@ public class ScreenListOfItems extends MyForm {
                 southDetailsContainer.add(priorityLabel);
             }
             priorityLabel.setUIID("ListOfItemsPrio");
+            priorityLabel.setGap(LABEL_GAP);
             if (Config.TEST) {
                 priorityLabel.setName("Priority");
             }
@@ -2634,6 +2662,7 @@ public class ScreenListOfItems extends MyForm {
             if (Config.TEST) {
                 impUrgLabel.setName("ImpUrg");
             }
+            impUrgLabel.setGap(LABEL_GAP);
 //        impUrgLabel.setUIID("ListOfItemsImpUrg");
             if (false && showInDetails) {
                 southDetailsContainer.add(impUrgLabel);
@@ -2645,8 +2674,13 @@ public class ScreenListOfItems extends MyForm {
             Label funDreadLabel; // = new Label();
 //            funDreadLabel = new Label(item.getDreadFunValueN().toString(), "ItemDetailsLabel");
 //            funDreadLabel = new Label(item.getDreadFunValueN().getDescription(), "ItemDetailsLabel");
-            funDreadLabel = new Label("", "ListOfItemsItemDetailsLabel");
-            funDreadLabel.setMaterialIcon(item.getDreadFunValueN().getIcon());
+            if (Config.TEST) {
+                funDreadLabel = new Label(item.getDreadFunValueN().getTestTxt(), "ListOfItemsItemDetailsLabel");
+            } else {
+                funDreadLabel = new Label("", "ListOfItemsItemDetailsLabel");
+                funDreadLabel.setMaterialIcon(item.getDreadFunValueN().getIcon());
+            }
+            funDreadLabel.setGap(LABEL_GAP);
             if (Config.TEST) {
                 funDreadLabel.setName("FunDread");
             }
@@ -2660,10 +2694,17 @@ public class ScreenListOfItems extends MyForm {
             Label challengeLabel; // = new Label();
 //            challengeLabel = new Label(item.getChallengeN().toString(), "ItemDetailsLabel");
 //            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
-            challengeLabel = new Label("", "ListOfItemsItemDetailsLabel");
-            challengeLabel.setMaterialIcon(item.getChallengeN().getIcon());
-//            if (false) 
-            challengeLabel.setFontIcon(Icons.iconFont, Icons.iconEditMyFont);
+            if (Config.TEST) {
+                challengeLabel = new Label(item.getChallengeN().getChalTxtDebug(), "ListOfItemsItemDetailsLabel");
+//            challengeLabel.setMaterialIcon(item.getChallengeN().getIcon());
+            } else {
+                challengeLabel = new Label("", "ListOfItemsItemDetailsLabel");
+                challengeLabel.setMaterialIcon(item.getChallengeN().getIcon());
+                if (false) {
+                    challengeLabel.setFontIcon(Icons.iconFont, Icons.iconEditMyFont);
+                }
+            }
+            challengeLabel.setGap(LABEL_GAP);
             if (Config.TEST) {
                 challengeLabel.setName("Challenge");
             }
@@ -2679,6 +2720,7 @@ public class ScreenListOfItems extends MyForm {
 //            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
             earnedValueLabel = new Label(L10NManager.getInstance().format(item.getEarnedValue(), MyPrefs.earnedValueDecimals.getInt()), "ListOfItemsItemDetailsLabel");
             earnedValueLabel.setMaterialIcon(Icons.iconEarnedValue);
+            earnedValueLabel.setGap(LABEL_GAP);
             if (Config.TEST) {
                 earnedValueLabel.setName("EarnedValue");
             }
@@ -2694,6 +2736,7 @@ public class ScreenListOfItems extends MyForm {
 //            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
             earnedValuePerHourLabel = new Label(L10NManager.getInstance().format(item.getEarnedValuePerHour(), MyPrefs.earnedValueDecimals.getInt()), "ListOfItemsItemDetailsLabel");
             earnedValuePerHourLabel.setMaterialIcon(Icons.iconEarnedValuePerHour);
+            earnedValuePerHourLabel.setGap(LABEL_GAP);
             if (Config.TEST) {
                 earnedValuePerHourLabel.setName("EarnedValuePerHour");
             }
@@ -2711,6 +2754,7 @@ public class ScreenListOfItems extends MyForm {
                 Label dueLabel = new Label("D:" + MyDate.formatDateNew(item.getDueDate()),
                         item.getDueDate() < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
                 dueLabel.setName("DueDate");
+                dueLabel.setGap(LABEL_GAP);
                 southDetailsContainer.addComponent(dueLabel);
             }
         }
@@ -2723,13 +2767,14 @@ public class ScreenListOfItems extends MyForm {
 //        Style s = UIManager.getInstance().getComponentStyle("ListOfItems");
 //        final Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, s);
         Label alarmLabel = null;
-        if (item.getAlarmDate() != 0) {
+        if (item.getAlarmDate().getTime() != 0) {
 //            south.addComponent(new Label((Image) (item.getAlarmDate() != 0 ? Icons.get().iconAlarmSetLabelStyle : null)));
 //            alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), (Image) Icons.get().iconAlarmSetLabelStyle, "ItemDetailsLabel");
 //            alarmLabel = new Label(MyDate.formatDateTimeNew(item.getAlarmDateD()), "ItemDetailsLabel");
 //            alarmLabel = new Label(MyDate.formatDateSmart(item.getAlarmDateD()), "ItemDetailsLabel");
-            alarmLabel = new Label(MyDate.formatDateSmart(item.getAlarmDateD()), "ListOfItemsAlarmDate");
+            alarmLabel = new Label(MyDate.formatDateSmart(item.getAlarmDate()), "ListOfItemsAlarmDate");
             alarmLabel.setMaterialIcon(Icons.iconAlarmDate);
+            alarmLabel.setGap(LABEL_GAP);
             if (Config.TEST) {
                 alarmLabel.setName("Alarm");
             }
@@ -2737,6 +2782,16 @@ public class ScreenListOfItems extends MyForm {
 //            if (showInDetails) {
 //                southDetailsContainer.addComponent(alarmLabel);
 //            }
+        }
+
+        Label waitingAlarmLabel = null;
+        if (item.getWaitingAlarmDate().getTime() != 0) {
+            waitingAlarmLabel = new Label(MyDate.formatDateSmart(item.getWaitingAlarmDate()), "ListOfItemsAlarmDate");
+            waitingAlarmLabel.setMaterialIcon(Icons.iconWaitingAlarm);
+            waitingAlarmLabel.setGap(LABEL_GAP);
+            if (Config.TEST) {
+                waitingAlarmLabel.setName("WaitingAlarm");
+            }
         }
 
         //                new Label("(R:" + item.getRemainingEffortInMinutes() + "/A:" + item.getActualEffortInMinutes() + ")"),
@@ -2747,6 +2802,7 @@ public class ScreenListOfItems extends MyForm {
 //            hideUntilLabel = new Label("H:" + MyDate.formatDateNew(item.getHideUntilDateD()), "ItemDetailsLabel");
             hideUntilLabel = new Label(MyDate.formatDateSmart(item.getHideUntilDateD()), "ItemDetailsLabel");
             hideUntilLabel.setMaterialIcon(Icons.iconHideUntilDate);
+            hideUntilLabel.setGap(LABEL_GAP);
             if (Config.TEST) {
                 hideUntilLabel.setName("HideUntil");
             }
@@ -2761,6 +2817,7 @@ public class ScreenListOfItems extends MyForm {
 //            startByLabel = new\ Label("S:" + MyDate.formatDateNew(item.getStartByDateD()), "ItemDetailsLabel");
             startByLabel = new Label(MyDate.formatDateSmart(item.getStartByDateD()), "ItemDetailsLabel");
             startByLabel.setMaterialIcon(Icons.iconStartByDate);
+            startByLabel.setGap(LABEL_GAP);
             if (Config.TEST) {
                 startByLabel.setName("StartBy");
             }
@@ -2776,6 +2833,7 @@ public class ScreenListOfItems extends MyForm {
 //            expireByLabel = new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD()), "ItemDetailsLabel");
             expireByLabel = new Label(MyDate.formatDateSmart(item.getExpiresOnDate()), "ItemDetailsLabel");
             expireByLabel.setMaterialIcon(Icons.iconExpireByDate);
+            expireByLabel.setGap(LABEL_GAP);
             if (Config.TEST) {
                 expireByLabel.setName("ExpireBy");
             }
@@ -2793,6 +2851,7 @@ public class ScreenListOfItems extends MyForm {
 //            waitingTillLabel = new Label(MyDate.formatDateNew(item.getWaitingTillDateD()), "ItemDetailsLabel");
             waitingTillLabel = new Label(MyDate.formatDateSmart(item.getWaitingTillDate()), "ItemDetailsLabel");
             waitingTillLabel.setMaterialIcon(Icons.iconWaitingDateMaterial);
+            waitingTillLabel.setGap(LABEL_GAP);
             if (Config.TEST) {
                 waitingTillLabel.setName("WaitingTill");
             }
@@ -2807,6 +2866,8 @@ public class ScreenListOfItems extends MyForm {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            effortEstimateLabel = new Label("E:" + MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
             effortEstimateLabel = new Label("E" + MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
+            effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+            effortEstimateLabel.setGap(LABEL_GAP);
             if (false) { //TODO!!! show once there is a decent Estimate symbol
                 effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
             }
@@ -2916,11 +2977,17 @@ public class ScreenListOfItems extends MyForm {
                 myForm.showDetails.add(item); //UI: always show details (with alarm time) in alarm screen
             }
         }
+        if (waitingAlarmLabel != null) {
+            southDetailsContainer.addComponent(waitingAlarmLabel);
+            if (myForm.getScreenType() == ScreenType.ALARMS) {
+                myForm.showDetails.add(item); //UI: always show details (with alarm time) in alarm screen
+            }
+        }
         if (true || Config.TEST) { //show owner directly in list to facilitate debug
 //            myForm.showDetails.add(new Label(item.getOwner() != null ? ("=:" + item.getOwner().getText()) : "<owner>"));
 //            southDetailsContainer.addComponent(new Label(item.getOwner() != null ? ("O:" + item.getOwner().getText()) : "<null>", "ListOfItemsOwner"));
 //            if ((category instanceof Category)&&item.getOwner() != null && item.getOwner() != ownerItemOrItemList) {
-            if (category instanceof Category && item.getOwner() != null) {
+            if (!item.isTemplate() && category instanceof Category && item.getOwner() != null) {
                 southDetailsContainer.addComponent(new Label(item.getOwner().getText(), "ListOfItemsOwner"));
             }
         }
@@ -3194,7 +3261,7 @@ refreshAfterEdit();
                 myForm.refreshAfterEdit();//optimize, eg ?? (is likely to affect work time)
             });
             setDueDateToToday.setUIID("SwipeButtonSetDueToToday");
-            buttonSwipeContainer.add(setDueDateToToday);
+            buttonSwipeLeftContainer.add(setDueDateToToday);
         }
 
         //Move next-coming items to Today view (up the Due Date)
@@ -3212,7 +3279,7 @@ refreshAfterEdit();
                 myForm.refreshAfterEdit();//optimize, eg ?? (is likely to affect work time)
             });
             setFutureDueToToday.setUIID("SwipeButtonSetFutureDueToToday");
-            buttonSwipeContainer.add(setFutureDueToToday);
+            buttonSwipeLeftContainer.add(setFutureDueToToday);
         }
 
         //TIMER
@@ -3243,7 +3310,7 @@ refreshAfterEdit();
             }));
             startTimer.setMaterialIcon(Icons.iconLaunchTimer);
             startTimer.setUIID("SwipeButtonTimer");
-            buttonSwipeContainer.add(startTimer);
+            buttonSwipeLeftContainer.add(startTimer);
         } else { // item.isTemplate()
 //            Button newFromTemplate = new Button(MyReplayCommand.create("NewItemFromTemplate", null, Icons.iconNewItemFromTemplate, (e) -> {
             Button newFromTemplate = new Button(MyReplayCommand.create("NewItemFromTemplate", null, null, (e) -> {
@@ -3261,7 +3328,7 @@ refreshAfterEdit();
             newFromTemplate.setMaterialIcon(Icons.iconNewItemFromTemplate);
 //                    newFromTemplate.setUIID("SwipeButton");
             newFromTemplate.setUIID("SwipeButtonNewFromTemplate");
-            buttonSwipeContainer.add(newFromTemplate);
+            buttonSwipeLeftContainer.add(newFromTemplate);
 //            }
         }
 
@@ -3297,8 +3364,26 @@ refreshAfterEdit();
                     myForm.refreshAfterEdit(); //update inherited values
                 });
                 starredSwipeableButton.setUIID(item.isStarred() ? "SwipeButtonStarActive" : "SwipeButtonStarInactive");
-                buttonSwipeContainer.add(starredSwipeableButton);
+                buttonSwipeLeftContainer.add(starredSwipeableButton);
             }
+        }
+
+        if (true || !((ScreenListOfItems) myForm).projectEditMode) {
+            Button insertInlineContAbove = new Button(MyReplayCommand.create("NewItemSwipeInsertAbove", null, Icons.iconInsertTaskAbove, (e) -> {
+                ((MyForm) swipCont.getComponentForm()).createAndAddInsertContainer(swipCont, item, true);
+                swipCont.close();
+                swipCont.revalidate();
+            }));
+            insertInlineContAbove.setUIID("SwipeButtonInsertAbove");
+            buttonSwipeRightContainer.add(insertInlineContAbove);
+
+            Button insertInlineContBelow = new Button(MyReplayCommand.create("NewItemSwipeInsertBelow", null, Icons.iconInsertTaskBelow, (e) -> {
+                ((MyForm) swipCont.getComponentForm()).createAndAddInsertContainer(swipCont, item, false);
+                swipCont.close();
+                swipCont.revalidate();
+            }));
+            insertInlineContBelow.setUIID("SwipeButtonInsertBelow");
+            buttonSwipeRightContainer.add(insertInlineContBelow);
         }
 
 //        }
@@ -4382,7 +4467,7 @@ refreshAfterEdit();
 //        return cont;
 //</editor-fold>
         if (listOfItems != null && listOfItems.size() > 0) {
-            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, getInlineInsertContainer(), stickyHeaderGen) {//                    lastInsertNewElementContainer != null ? 
+            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, getInlineInsertContainer(), stickyHeaderGen) { //                    lastInsertNewElementContainer != null ? 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        myTree = new MyTree2(listOfItems, expandedObjects, filterSortDef) {
 //            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, itemListOrg.getFilterSortDef(), (item, itemOrItemList) -> InsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) 
@@ -4458,7 +4543,8 @@ refreshAfterEdit();
 //                        cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, () -> {}, keepPos);
                         cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, ScreenListOfItems.this, keepPos, false, true);
                     } else {
-                        assert false;
+//                        assert false;
+                        ASSERT.that(false, "node of unknown type=" + node);
                     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                        if (node instanceof Category) {

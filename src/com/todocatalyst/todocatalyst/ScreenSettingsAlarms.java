@@ -46,6 +46,7 @@ public class ScreenSettingsAlarms extends ScreenSettingsCommon {
         addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmReuseIndividuallySetSnoozeDurationForLongPress);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmReuseIndividuallySetSnoozeDurationForNormalSnooze);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmPlayBuiltinAlarmSound);
 
         if (false) {
             //Examples:

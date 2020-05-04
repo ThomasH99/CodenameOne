@@ -71,6 +71,16 @@ class MyTextField extends TextField {
         if (parseIdMap != null && setValue != null)
             parseIdMap.put(this, () -> setValue.accept(getText()));
     }
+    
+        MyTextField(String hint, int columns,  int constraint) {
+        super("", hint, columns, constraint);
+        setBlockLead(false);//xxx;
+        putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
+
+        setAutoDegradeMaxSize(true);
+        setHint(hint);
+    }
+
 
 }
 

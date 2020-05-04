@@ -62,14 +62,32 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //            ;
 //        }
         addSettingBoolean(content, parseIdMap2, MyPrefs.keepScreenAlwaysOnInApp);
+
         if (Display.getInstance().canForceOrientation()) {
-            addSettingBoolean(content, parseIdMap2, MyPrefs.screenRotationDisabled, () -> Display.getInstance().lockOrientation(true), () -> Display.getInstance().lockOrientation(false));
+            addSettingBoolean(content, parseIdMap2, MyPrefs.screenRotationDisabled,
+                    () -> Display.getInstance().lockOrientation(true),
+                    () -> Display.getInstance().lockOrientation(false));
         }
-        addSettingInt(content, parseIdMap2, MyPrefs.overdueLogInterval, 0, 365, 1);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.enableShowingSystemInfo);
+        //Safe area on/off
+        addSettingBoolean(content, parseIdMap2, MyPrefs.enableSafeArea,
+                () -> {
+                    previousForm.setSafeArea(true);
+                    previousForm.setSafeAreaChanged();
+                },
+                () -> {
+                    previousForm.setSafeArea(false);
+                    previousForm.setSafeAreaChanged();
+                });
+
+        if (true) {
+            addSettingBoolean(content, parseIdMap2, MyPrefs.hideStatusBar, () -> showStatusBar(false), () -> showStatusBar(true));
+        }
+
         addSettingBoolean(content, parseIdMap2, MyPrefs.showSourceItemInEditScreens);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.showObjectIdsInEditScreens);
         addSettingBoolean(content, parseIdMap2, MyPrefs.pinchInsertEnabled);
+        content.add(makeSpacer());
+        addSettingBoolean(content, parseIdMap2, MyPrefs.enableShowingSystemInfo);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.showObjectIdsInEditScreens);
         content.add(makeSpacer());
         if (Config.TEST_STORE_PASSWORD_FOR_USER) {
             try {
@@ -80,7 +98,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
             content.add(BorderLayout.centerEastWest(null, new Label(ParseUser.getCurrent().getEmail()), new Label("Email")));
             content.add(BorderLayout.centerEastWest(null, new Label((String) ParseUser.getCurrent().get("visiblePassword")), new Label("Password")));
         }
-//        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice, () -> AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled());
 //        addSettingInt(content, parseIdMap2, MyPrefs.alarmDefaultSnoozeTimeInMinutes, 0, 120, 1);
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText);
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddToBeginningOfComment);

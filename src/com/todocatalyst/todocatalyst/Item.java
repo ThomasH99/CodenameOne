@@ -1204,7 +1204,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public boolean isWaiting() {
 //        return getStatus() == ItemStatus.WAITING && (System.currentTimeMillis() < getWaitingTillDateD().getTime() || getWaitingTillDateD().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
-        return getStatus() == ItemStatus.WAITING && (MyDate.getNow() < getWaitingTillDate().getTime() || getWaitingTillDate().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
+        return getStatus() == ItemStatus.WAITING && (MyDate.currentTimeMillis() < getWaitingTillDate().getTime() || getWaitingTillDate().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
 //    ItemStatus status = getStatus();
 //        if (statusreturn getStatus() == ItemStatus.WAITING && (System.currentTimeMillis()<getWaitingTillDate()||getWaitingTillDate()==0 && ); 
     }
@@ -1846,7 +1846,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
             //PRIORITY
             if ((copyExclusions & COPY_EXCLUDE_PRIORITY) == 0) {
-//                if (destination.getPriority() == Settings.getInstance().getDefaultPriority()) { //only change priority to template's value if the item has default value (assuming no value has been set - TODO!!!! what if the user wanted the default value??)
+//                if (destination.getPriority() == Settings.getInstance().getDefaultPriority()) { //only change priority to template's value if the item has default value (asbtasming no value has been set - TODO!!!! what if the user wanted the default value??)
                 if (destination.getPriority() == 0) { //only change priority to template's value if the item has default value (assuming no value has been set - TODO!!!! what if the user wanted the default value??)
                     destination.setPriority(getPriority());
                 }
@@ -2001,6 +2001,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if ((copyExclusions & COPY_EXCLUDE_EXPIRES_ON_DATE) == 0) {
                 destination.setExpiresOnDate(getExpiresOnDate());
             }
+        } 
+        
+        if (defToRepeatInst) {
+            destination.setRemaining(getRemainingForProjectTaskItself(), false);
         }
 
         //TODO support copying alarmDate/startByDate/showFromDate/expiresOnDate relative to a user-defined due date
@@ -2052,8 +2056,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (MyPrefs.repeatSetRelativeFieldsWhenCreatingRepeatInstances.getBoolean()) {
 //                setDueDate(newDueDateTime); ///only set a new due date if one was already set
                 //TODO!!!!: what if no DueDate is set, but only an alarmDate or showFromDate? Can this happen (what would the repeatReference date then be?)
-                if (referenceItem.getAlarmDate() != 0) { //only update if a value was defined for the referenceItem
-                    setAlarmDate(referenceItem.getAlarmDate() + delta);
+                if (referenceItem.getAlarmDate().getTime() != 0) { //only update if a value was defined for the referenceItem
+                    setAlarmDate(new MyDate(referenceItem.getAlarmDate().getTime() + delta));
                 }
 //            if (referenceItem.getShowFromDate() != 0) { //only update if a value was defined for the referenceItem
 //                setShowFromDate(referenceItem.getShowFromDate() + deltaTime);
@@ -2091,9 +2095,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         if (delta != 0 && MyPrefs.repeatSetRelativeFieldsWhenCreatingRepeatInstances.getBoolean()) {
             //TODO!!!!: what if no DueDate is set, but only an alarmDate or showFromDate? Can this happen (what would the repeatReference date then be?)
-            if (getAlarmDate() != 0) { //only update if a value was defined for the referenceItem
+            if (getAlarmDate().getTime() != 0) { //only update if a value was defined for the referenceItem
 //                setAlarmDate(newDueDate - (oldDueDate - getAlarmDate()));
-                setAlarmDate(getAlarmDate() + delta);
+                setAlarmDate(new MyDate(getAlarmDate().getTime() + delta));
             }
             if (getHideUntilDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
 //                setHideUntilDate(new Date(newDueDate - (oldDueDate - getHideUntilDateD().getTime())));
@@ -2198,7 +2202,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 case Item.COMPARE_HIDE_UNTIL_DATE:
                     return compareLong(getHideUntilDateD().getTime(), c.getHideUntilDateD().getTime());
                 case Item.COMPARE_ALARM_DATE:
-                    return compareLong(getAlarmDate(), c.getAlarmDate());
+                    return compareLong(getAlarmDate().getTime(), c.getAlarmDate().getTime());
                 case Item.COMPARE_EFFORTESTIMATE:
                     return compareLong(getRemaining(), c.getRemaining());
                 case Item.COMPARE_ACTUALEFFORT:
@@ -2304,8 +2308,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         FilterSortDef filter = getFilterSortDefN();
         if (filter != null) {
-            filter.delete(deleteDate);
-            DAO.getInstance().delete(filter);
+            filter.setDeletedDate(deleteDate);
+//            DAO.getInstance().delete(filter);
+            DAO.getInstance().delete(filter, false, false);
         }
 
         //TODO!!!! remove item from OriginalSource field (from copies of this task) - all these links are one way, so need to search in ParseServer.
@@ -2457,7 +2462,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public List getList() {
 //        return getListFull(); //TODO!!!! implement filter/sort
         List<Item> list = getListFull();
-        FilterSortDef filterSortDef = getFilterSortDefN();
+//        FilterSortDef filterSortDef = getFilterSortDefN();
+        FilterSortDef filterSortDef = getFilterSortDef();
         if (filterSortDef != null) { //no buffer for (see code above for buffer version)
             return filterSortDef.filterAndSortItemList(list);
         } else {
@@ -3478,7 +3484,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        return (date == null) ? 0L : date.getTime();
 //        return getExpiresOnDateD().getTime();
 //    }
-
     public Date getExpiresOnDate() {
 //        return new Date(getExpiresOnDate());
         Date date = getDate(PARSE_EXPIRES_ON_DATE);
@@ -3664,17 +3669,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 //  
 
-    public Date getAlarmDateD() {
+    public Date getAlarmDate() {
         Date date = getDate(PARSE_ALARM_DATE);
 //        return (date == null || isDone()) ? new Date(0) : date; //WHY? return no AlarmDate when Done? May prevent canceleling of alarms?
         return (date == null) ? new MyDate(0) : date;
 //        return alarmDate;
     }
 
-    public long getAlarmDate() {
+    public long getAlarmDateXXX() {
 //        Date date = getDate(PARSE_ALARM_DATE);
 //        return (date == null) ? 0 : date.getTime();
-        return getAlarmDateD().getTime();
+        return getAlarmDate().getTime();
 //        return alarmDate;
     }
 
@@ -3696,7 +3701,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             list.add(alarmRecord);
         }
 //        if ((date = getAlarmDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
-        if ((date = getAlarmDateD()).getTime() != 0 && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
+        if ((date = getAlarmDate()).getTime() != 0 && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
             list.add(new AlarmRecord(date, notification));
         }
 //        if ((date = getWaitingAlarmDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
@@ -3715,7 +3720,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return getAllAlarmRecords(new MyDate(), true);
     }
 
-    public AlarmRecord getNextcomingAlarmRecord() {
+    public AlarmRecord getNextcomingAlarmRecordN() {
         List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
         return list.isEmpty() ? null : list.get(0);
     }
@@ -3726,14 +3731,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
-    public Date getNextcomingAlarm() {
+    public Date getNextcomingAlarmN() {
 //        return getAllAlarmRecords(new Date(), true).get(0).alarmTime;
         List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
         return list.isEmpty() ? null : list.get(0).alarmTime;
     }
 
     public void updateNextcomingAlarm() {
-        Date date = getNextcomingAlarm(); //List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
+        Date date = getNextcomingAlarmN(); //List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
         if (date == null || date.getTime() == 0) { //list.isEmpty()) {
             remove(PARSE_NEXTCOMING_ALARM);
         } else {
@@ -3765,7 +3770,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     /**
      * returns null if no date is defined
      */
-    public Date getNextcomingAlarmDateD() {
+    public Date getNextcomingAlarmFromParseN() {
         Date date = getDate(PARSE_NEXTCOMING_ALARM);
         return date; //(date == null) ? new Date(0) : date;
     }
@@ -3785,7 +3790,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //        Date oldAlarmDate = getAlarmDateD();
 //        Date oldAlarmDate = getDate(PARSE_ALARM_DATE);
-        Date oldAlarmDate = getAlarmDateD();
+        Date oldAlarmDate = getAlarmDate();
         if (alarmDate != null && alarmDate.getTime() != 0) {
             put(PARSE_ALARM_DATE, alarmDate);
         } else {
@@ -3807,7 +3812,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
     }
 
-    public void setAlarmDate(long alarmDate) {
+    public void setAlarmDateXX(long alarmDate) {
         setAlarmDate(new MyDate(alarmDate));
 //        if (has(PARSE_ALARM_DATE) || alarmDate != 0) {
 //            AlarmHandler.getInstance().updateReminderAlarm(this, getAlarmDateD(), new Date(alarmDate));
@@ -3981,7 +3986,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return waitingAlarmDate == null ? new MyDate(0) : waitingAlarmDate; //return 0 is task is Done -NO, this prevents seeing alarmDates when editing a done task!! And maybe if copying done tasks. Instead, test on Done must be done at a higher level!!
     }
 
-    public void setWaitingAlarmDate(long waitingAlarmDate) {
+    public void setWaitingAlarmDateXXX(long waitingAlarmDate) {
         setWaitingAlarmDate(new MyDate(waitingAlarmDate));
     }
 
@@ -4876,7 +4881,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //RemainingEffort: NO reason to delete remaining effort because a task is cancelled or Done
 //reset Alarms for Done/Cancelled tasks //TODO shouldn't be necessary to reset alarmDate when using Parse to find relevant next alarmdate
         if (false && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED)) {
-            item.setAlarmDate(0); //Cancel any set alarms 
+            item.setAlarmDate(new MyDate(0)); //Cancel any set alarms 
 //TODO: to support reverting when a task is marked Done, the alarm time should be kept, but not activated (AlarmServer should ignore alarms for Done tasks)
 //UI: if a Done task is set undone, any old future alarms should be re-actviated in save()
         }
@@ -5167,7 +5172,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
         if (false && newStatus == ItemStatus.WAITING) { //behaviour too specific to UI/screen in which a task is set waiting, so don't do here
-            MyForm.showDialogSetWaitingDateAndAlarm(this); //only call if we're changing TO Waiting status
+            MyForm.showDialogSetWaitingDateAndAlarmIfAppropriate(this); //only call if we're changing TO Waiting status
 //            MyForm.showDialogUpdateRemainingTime(getRemaining());
         }
 
@@ -7009,7 +7014,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public long getRemainingForProjectTaskItself() {
 //        return getRemainingForProjectTaskItself(true); //by default, 
-long effort = getRemainingForProjectTaskItselfFromParse();
+        long effort = getRemainingForProjectTaskItselfFromParse();
         return effort;
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -7023,7 +7028,7 @@ long effort = getRemainingForProjectTaskItselfFromParse();
 //    }
 //</editor-fold>
 
-    public long getRemainingDefaultValue() {
+    public static long getRemainingDefaultValue() {
         if (MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean()) {
             return ((long) MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS;
         } else {
@@ -7081,7 +7086,6 @@ long effort = getRemainingForProjectTaskItselfFromParse();
 //    public long getRemaining(boolean useDefaultEstimateForZeroEstimates) {
 //        return getRemaining(useDefaultEstimateForZeroEstimates, true);
 //    }
-
     /**
      * return total remaining effort for this task (remaining of all undone
      * subtasks and this project task itself).
@@ -7105,7 +7109,6 @@ long effort = getRemainingForProjectTaskItselfFromParse();
 //        return getRemainingEffort(false);
 //    }
 //</editor-fold>
-
     public long getRemainingForSubtasks() {
         long effort = 0;
         for (Item item : (List<Item>) getListFull()) {
@@ -7661,8 +7664,9 @@ long effort = getRemainingForProjectTaskItselfFromParse();
     }
 
     /**
-     * Called when updating an item after editing the categories locally.Updates the set of categories for this Item and adds/removes this Item to
- new/removed categories (and does NOT save the categories).
+     * Called when updating an item after editing the categories locally.Updates
+     * the set of categories for this Item and adds/removes this Item to
+     * new/removed categories (and does NOT save the categories).
      *
      * @param locallyEditedCategories if null nothing is done (if empty all
      * categories are removed)
@@ -7670,7 +7674,8 @@ long effort = getRemainingForProjectTaskItselfFromParse();
      * template into an existing item to avoid removing any already manually
      * added categories. Do NOT save the updated categories (since the item may
      * not be saved at the time the category is set)
-     * @return all modified categories (for which Item was added or removed) for example to save them all
+     * @return all modified categories (for which Item was added or removed) for
+     * example to save them all
      */
     public List<Category> updateCategories(List<Category> locallyEditedCategories, boolean onlyAddNewCatsDontRemoveAny) {
 //        if (locallyEditedCategories == null || locallyEditedCategories.size() == 0) {
@@ -8563,7 +8568,7 @@ long effort = getRemainingForProjectTaskItselfFromParse();
 //        return getText().length() != 0 ? getText()+" ("+getObjectId()+")" : getObjectId();
         return getText() + "[" + getObjectIdP() + "]"
                 + (getDueDateD().getTime() != 0 ? " Due" + MyDate.formatDateSmart(getDueDateD()) : "")
-                + (isDone() ? " [DONE]" : (getRemaining() > 0 ? " "+MyDate.formatDurationShort(getRemaining()) : ""))
+                + (isDone() ? " [DONE]" : (getRemaining() > 0 ? " " + MyDate.formatDurationShort(getRemaining()) : ""))
                 + (showSubtasks ? (getListFull().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getListFull()) + "}") : "");
     }
 
@@ -9440,8 +9445,8 @@ long effort = getRemainingForProjectTaskItselfFromParse();
             s += (s.isEmpty() ? "" : "\n") + Item.DUE_DATE + ": " + MyDate.formatDateTimeNew(getDueDateD());
         }
 
-        if (alarmType.isReminder() && MyPrefs.alarmShowAlarmTimeAtEndOfNotificationText.getBoolean() && getAlarmDateD().getTime() != 0) {
-            s += (s.isEmpty() ? "" : "\n") + Item.ALARM_DATE + ": " + MyDate.formatDateTimeNew(getAlarmDateD());
+        if (alarmType.isReminder() && MyPrefs.alarmShowAlarmTimeAtEndOfNotificationText.getBoolean() && getAlarmDate().getTime() != 0) {
+            s += (s.isEmpty() ? "" : "\n") + Item.ALARM_DATE + ": " + MyDate.formatDateTimeNew(getAlarmDate());
         }
 
         if (alarmType.isWaitingReminder()) {
@@ -9536,7 +9541,7 @@ long effort = getRemainingForProjectTaskItselfFromParse();
                 break;
             case PARSE_ALARM_DATE:
                 if (toCSV) {
-                    list.add(MyDate.formatDateNew(getAlarmDateD()));
+                    list.add(MyDate.formatDateNew(getAlarmDate()));
                 } else {
                     setAlarmDate((Date) val);
                 }
@@ -10733,11 +10738,16 @@ long effort = getRemainingForProjectTaskItselfFromParse();
                 newItem.setStatus(itemBefore.getStatus()); //UI: same prio as item just before
                 break;
             case Item.PARSE_ALARM_DATE: //TODO!!! do same for all date fields
-                newItem.setAlarmDate(itemBefore.getAlarmDateD()); //UI: same prio as item just before
+                newItem.setAlarmDate(itemBefore.getAlarmDate()); //UI: same prio as item just before
                 break;
         }
     }
 
+    /**
+     * NB! default filter will not have inherited true
+     * @param filterSortDef
+     * @return 
+     */
     public boolean isFilterSortDefInherited(FilterSortDef filterSortDef) {
         return filterSortDef != null && getOwner() != null && filterSortDef.equals(getOwner().getFilterSortDefN());
     }
@@ -10833,6 +10843,12 @@ long effort = getRemainingForProjectTaskItselfFromParse();
         }
 
         return str;
+    }
+
+    @Override
+    public boolean update(RepeatRuleObjectInterface refElt) {
+        assert false;
+        return false;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

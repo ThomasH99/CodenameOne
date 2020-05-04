@@ -31,7 +31,6 @@ import com.parse4cn1.ParseUser;
 import com.parse4cn1.Permissions;
 import com.parse4cn1.util.Logger;
 import com.parse4cn1.util.ParseRegistry;
-import static com.todocatalyst.todocatalyst.ScreenLogin.getLastUserSessionFromStorage;
 import static com.todocatalyst.todocatalyst.ScreenLogin.setDefaultACL;
 import java.io.IOException;
 import java.util.Arrays;
@@ -76,6 +75,48 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //    private boolean midletPaused = false;
 //</editor-fold>
     Resources resources;
+    private static final String FILE_LAST_APP_VERSION = "TDC_lastAppVersion"; //marker for last local cache removeFromCache - it stored only updated parseObjects will be cached
+    private static final String FILE_LAST_LAUNCH_TIME = "TDC_lastLaunchTime"; //marker for last local cache removeFromCache - it stored only updated parseObjects will be cached
+    private static final Date buildDate = new Date();
+
+    private boolean isFirstLaunchOfNewAppVersion() {
+        String lastVersion = (String) Storage.getInstance().readObject(FILE_LAST_APP_VERSION); //read in when initializing the Timer - from here on it is only about saving updates
+        String currentVersion = Display.getInstance().getProperty("AppVersion", "NONE");
+        if (lastVersion == null || (currentVersion != null && !currentVersion.equals(lastVersion))) {
+            //app version has changed (or first time installation)
+            Storage.getInstance().writeObject(FILE_LAST_APP_VERSION, currentVersion);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * return the date the app was last launched and stores the now Date as current time for next launch, returns null if no previously stored date
+     */
+    private Date getAndUpdateLastAppStartDate(Date now) {
+//        Date now = new Date();
+        Date lastLaunchTimeN = (Date) Storage.getInstance().readObject(FILE_LAST_LAUNCH_TIME); //read in when initializing the Timer - from here on it is only about saving updates
+//        Log.p("Last launch time = " + MyDate.formatDateSmart(lastLaunchTimeN) + " - resetting automatic restart");
+        Storage.getInstance().writeObject(FILE_LAST_LAUNCH_TIME, now);
+        return lastLaunchTimeN;
+    }
+
+    /**
+     * return the time since the app was last launched, and MyDate.MAX_DATE if never launched before (or not date previously stored)
+     *
+     * @return
+     */
+    private long getTimeSinceLastAppStartAndUpdateTimeMillis() {
+        Date now = new Date();
+        Date last = getAndUpdateLastAppStartDate(now);
+        if (last == null) {
+            return MyDate.MAX_DATE;
+        } else {
+            long launchInterval = now.getTime() - last.getTime();
+            return launchInterval;
+        }
+    }
 
     //<editor-fold defaultstate="collapsed" desc="comment">
     //    static MIDlet self; // = null; // used to access the MIDlet from other classes
@@ -341,9 +382,33 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         //PARSE logging:
         Logger.getInstance().setLogLevel(Log.DEBUG); //set parse4cn1 log level
 
+        NativeLogs.initNativeLogs();
+
+        Log.p("AppName=" + Display.getInstance().getProperty("AppName", "1.0"));
+        Log.p("AppVersion=" + Display.getInstance().getProperty("AppVersion", "1.0"));
         Log.p("init() starting...");
 
-        NativeLogs.initNativeLogs();
+        long timeSinceLastInit = getTimeSinceLastAppStartAndUpdateTimeMillis();
+        Log.p("Time since last app start (call to init())= " + MyDate.formatDurationStd(timeSinceLastInit, true));
+
+        if (timeSinceLastInit < MyDate.MINUTE_IN_MILLISECONDS) {
+//            Log.p("Time since last restart less than " + MyDate.formatDuration(timeSinceLastInit,true) + " - deleting Replay");
+                Log.p("Time since last restart less than " + MyDate.formatDuration(timeSinceLastInit,true) );
+            if (ReplayLog.getInstance().deleteReplayInfo()) {
+                Log.p( " - Replay DELETED");
+//                Log.p("Replay info successfully deleted");
+            } else {
+                Log.p( " - Replay delete FAILED");
+//                Log.p("Replay info NOT successfully deleted");
+            }
+            Log.p("Deleting ALL STORAGE (except user token");
+            String userToken = ScreenLogin.fetchCurrentUserSessionToStorage(); //avoid user token being deleted (which would force user to log in again)
+            //TODO also reset cache to ensure a complete reset
+            Storage.getInstance().clearStorage();
+            ScreenLogin.saveCurrentUserSessionToStorage(userToken);
+        } else {
+            Log.p("Time since last restart=" + MyDate.formatDurationStd(timeSinceLastInit) + " - NO ACTION taken");
+        }
 
         if (false) {
             Log.install(new Log() {
@@ -869,7 +934,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         Display.getInstance().setProperty("iosHideToolbar", "true"); //prevent ttoolbar over keyboard to show (Done/Next button): https://stackoverflow.com/questions/48727116/codename-one-done-button-of-ios-virtual-keyboard
 
         if (Display.getInstance().canForceOrientation()) {
-            if (false&&Display.getInstance().isTablet()) {
+            if (false && Display.getInstance().isTablet()) {
                 Display.getInstance().lockOrientation(true); //lock screen rotation to portrait=true, https://stackoverflow.com/questions/48712682/codenameone-rotate-display
             }//        }
 //            Display.getInstance().lockOrientation(!Config.TEST); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
@@ -878,7 +943,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 
         //Check if already logged in, if so, removeFromCache cache
         //if not logged in, show window to create account or log in. NB! Must init user before starting the login process since the init of first screen may read the TimerStack which becomes empty if user is not logged in
-        ParseUser parseUser = getLastUserSessionFromStorage();
+        ParseUser parseUser = ScreenLogin.getLastUserSessionFromStorage();
         Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
         if (parseUser != null) {
             setDefaultACL(parseUser);
@@ -948,18 +1013,20 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             }
             current.show();
         }
+//<editor-fold defaultstate="collapsed" desc="comment">
 
-        if (false) {
-            Item item = new Item();
-            item.setFilterSortDef(new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, true));
-            item.setRepeatRule(new RepeatRuleParseObject());
-            ItemList itemList = new ItemList();
-            itemList.addItem(item);
-            itemList.addToList(item);
-//            DAO.getInstance().saveNew(true, item, itemList);
-            DAO.getInstance().saveNew(item, itemList);
-            DAO.getInstance().saveNewExecuteUpdate();
-        }
+//        if (false) {
+//            Item item = new Item();
+//            item.setFilterSortDef(new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, true));
+//            item.setRepeatRule(new RepeatRuleParseObject());
+//            ItemList itemList = new ItemList();
+//            itemList.addItem(item);
+//            itemList.addToList(item);
+////            DAO.getInstance().saveNew(true, item, itemList);
+//            DAO.getInstance().saveNew(item, itemList);
+//            DAO.getInstance().saveNewExecuteUpdate();
+//        }
+//</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        switch (1) {
@@ -1155,6 +1222,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
      */
     public void destroy() {
 //        ScreenTimer.getInstance().onDestroy();
+
         Log.p("destroy()");
     }
 

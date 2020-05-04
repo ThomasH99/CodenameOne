@@ -1073,7 +1073,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         List<E> list = getListFull();
 //        List<? extends ItemAndListCommonInterface> list = getListFull();
 //        FilterSortDef filterSortDef = getFilterSortDef();
-        FilterSortDef filterSortDef = getFilterSortDefN();
+//        FilterSortDef filterSortDef = getFilterSortDefN();
+        FilterSortDef filterSortDef = getFilterSortDef(true);
         if (false && Config.TEST) {
             Log.p("Calling getList() for list=" + this.getText() + (filterSortDef != null ? (" Filter defined, options=" + filterSortDef.getFilterOptions()) : "Filter NOT defined"));// + "; filter=" + getFilterSortDef());
         }
@@ -1780,8 +1781,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
         FilterSortDef filter = getFilterSortDefN();
         if (filter != null) {
-            filter.delete(deleteDate);
-            DAO.getInstance().delete(filter);
+            filter.setDeletedDate(deleteDate);
+            DAO.getInstance().delete(filter, false, false);
         }
 
         setSoftDeletedDate(deleteDate);
@@ -3306,7 +3307,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         throw new RuntimeException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-//    @Override
+    @Override
     public boolean addAll(Collection c) {
         boolean success = true;
         for (Object o : c) {
@@ -3316,6 +3317,20 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
         return success;
 //        throw new RuntimeException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    /**
+     * update the list to contain the same elements as l (add/remove the
+     * differences). TODO: use this to flag individual changes eg if Timer is
+     * timing an element in this list which is then removed
+     *
+     * @param l
+     * @return
+     */
+    public void updateTo(List newList) {
+        List l = getListFull();
+        l.clear();
+        l.addAll(newList);
     }
 
     public boolean addAllNotMakingOwner(Collection<ItemAndListCommonInterface> c) {

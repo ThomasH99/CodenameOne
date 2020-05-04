@@ -68,7 +68,9 @@ public class AlarmInAppAlarmHandler {
 //        }
 //    }
 //</editor-fold>
-    public void startInAppTimerOnNextcomingAlarm(NotificationShadow notif) {
+//    public void startInAppTimerOnNextcomingAlarm(NotificationShadow notif) {
+    public void updateInAppTimerOnNextcomingAlarm() {
+        NotificationShadow notif = AlarmHandler.getInstance().getNextFutureAlarmN(); //get (but don't remove) next notif);
         //cancel timer if already running
         if (inAppTimer != null) {
             inAppTimer.cancel();
@@ -137,9 +139,9 @@ public class AlarmInAppAlarmHandler {
         }
     }
 
-    public void startInAppTimerOnNextcomingAlarm() {
-        startInAppTimerOnNextcomingAlarm(AlarmHandler.getInstance().getNextFutureAlarmN()); //get (but don't remove) next notif);
-    }
+//    public void startInAppTimerOnNextcomingAlarmXXX() {
+//        startInAppTimerOnNextcomingAlarm(AlarmHandler.getInstance().getNextFutureAlarmN()); //get (but don't remove) next notif);
+//    }
 
     /**
      * will set the inApp timer for the next item with alarmTime. If called

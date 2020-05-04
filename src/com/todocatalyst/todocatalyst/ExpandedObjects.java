@@ -108,8 +108,10 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
             }
         } else if (element instanceof WorkSlotList) {
             s = ((WorkSlotList) element).getOwner().getObjectIdP(); //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
-        } else if (Config.TEST) {
-            ASSERT.that(false, "expanding unsupported element=" + element);
+        } else if (element instanceof ExpiredAlarm) {
+            s = ((ExpiredAlarm) element).objectId; //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
+        } else if (Config.TEST) { //NB. the top-level list is by default expanded and if the format is not recognized, we arrive here, which is not a problem
+            if (false) ASSERT.that(false, "expanding unsupported element=" + element);
         }
         return s;
     }

@@ -90,7 +90,8 @@ public class ScreenListOfCategories extends MyForm {
             setLayout(new BorderLayout());
         }
         setPinchInsertEnabled(true);
-        expandedObjects = new ExpandedObjects(getUniqueFormId());
+//        expandedObjects = new ExpandedObjects(getUniqueFormId());
+        expandedObjectsInit("");
         previousValues = new SaveEditedValuesLocally(this, getUniqueFormId(), true);
 
         addCommandsToToolbar(getToolbar());

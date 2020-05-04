@@ -115,7 +115,8 @@ public class ScreenLogin extends MyForm {
 //            ip.dispose();
         }
         //ALARMS - initialize
-        AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
+//        AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
+        AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(); //TODO!!!! optimization: do in background
 
         //TIMER - was running when app was moved to background? - now done with ReplayCommand
 //            if (!ScreenTimer.getInstance().isTimerActive()) {
@@ -801,7 +802,7 @@ public class ScreenLogin extends MyForm {
     private final static String CURRENT_USER_SESSION_TOKEN = "parseUserSessionToken";
 //    private String CURRENT_USER_PASSWORD = "parseUserPsWd";
 
-    private boolean saveCurrentUserSessionToStorage(String sessionToken) {
+    static boolean saveCurrentUserSessionToStorage(String sessionToken) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        HashMap h = new HashMap();
 //        h.put(CURRENT_USER_USER_NAME, parseUser.getUsername());
@@ -811,6 +812,11 @@ public class ScreenLogin extends MyForm {
 //        return Storage.getInstance().writeObject(CURRENT_USER_SESSION_TOKEN, parseUser.getSessionToken());
 //</editor-fold>
         return Storage.getInstance().writeObject(CURRENT_USER_SESSION_TOKEN, sessionToken);
+    }
+
+    static String fetchCurrentUserSessionToStorage() {
+        String sessionTokenN = (String) Storage.getInstance().readObject(CURRENT_USER_SESSION_TOKEN);
+        return sessionTokenN;
     }
 
 //    private boolean saveCurrentUserToStorage(ParseUser parseUser) {
@@ -828,7 +834,8 @@ public class ScreenLogin extends MyForm {
     }
 
     static public ParseUser getLastUserSessionFromStorage() {
-        String sessionTokenN = (String) Storage.getInstance().readObject(CURRENT_USER_SESSION_TOKEN);
+//        String sessionTokenN = (String) Storage.getInstance().readObject(CURRENT_USER_SESSION_TOKEN);
+        String sessionTokenN = fetchCurrentUserSessionToStorage();
         Log.p("Retrieved Sessiontoken=" + sessionTokenN != null ? sessionTokenN : "<null>");
         if (sessionTokenN == null || sessionTokenN.equals("")) {
             return null;
@@ -981,7 +988,7 @@ public class ScreenLogin extends MyForm {
         }
         String password;
         if (Config.TEST_STORE_PASSWORD_FOR_USER) {
-            password = PasswordGenerator.getInstance().generate("",6,true,true,true,false); //avoid punctuation during testing
+            password = PasswordGenerator.getInstance().generate("", 6, true, true, true, false); //avoid punctuation during testing
         } else {
             password = PasswordGenerator.getInstance().generate(12);
         }
@@ -999,8 +1006,8 @@ public class ScreenLogin extends MyForm {
             setDefaultACL(parseUser); //NB cannot set ACL for user with a null id
             saveCurrentUserSessionToStorage();
 //            Message msg = new Message();
-            Display.getInstance().sendMessage(new String[]{validEmail}, "Your TodoCatalyst account login info ("+validEmail+")",
-                    new Message("\n\nTodoCatalyst login/email: "+validEmail+"\n\nYour auto-generated password (please change in TodoCatalyst app): "+password));
+            Display.getInstance().sendMessage(new String[]{validEmail}, "Your TodoCatalyst account login info (" + validEmail + ")",
+                    new Message("\n\nTodoCatalyst login/email: " + validEmail + "\n\nYour auto-generated password (please change in TodoCatalyst app): " + password));
             //No cache/memory setup needed for new account
             return null;
         } catch (ParseException ex) {

@@ -48,6 +48,7 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
 
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.askToEnterActualIfMarkingTaskWaitingOutsideTimer);
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.showTemplateListAfterCreatingNewTemplateFromExistingProject);
 

@@ -40,12 +40,13 @@ public class TemplateList<T> extends ItemList {
         return INSTANCE;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public List<Item> getList() {
 ////        return (ItemList) getParseObject(PARSE_ITEMLIST_LIST);
 //        List<Item> list = getList(PARSE_ITEMLIST_LIST);
 //        if (list != null) {
-//           DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);            
+//           DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
 //            return list;
 //        } else {
 //            return new ArrayList();
@@ -78,11 +79,12 @@ public class TemplateList<T> extends ItemList {
 //            remove(PARSE_ITEMLIST_LIST); //if setting a list to null or setting an empty list, then simply delete the field
 //        }
 //    }
-    public synchronized boolean reloadFromParse(boolean forceLoadFromParse, Date startDate, Date endDate) {
+//</editor-fold>
+    public synchronized boolean reloadFromParseXXX(boolean forceLoadFromParse, Date startDate, Date endDate) {
 //        TemplateList t= INSTANCE;
 //        INSTANCE=null; //next call to getInstance() will re-initiate/refresh the instance
 //        return t;
-        TemplateList temp = DAO.getInstance().getTemplateList(forceLoadFromParse, startDate, endDate);
+        TemplateList temp = DAO.getInstance().getTemplateList();//forceLoadFromParse, startDate, endDate);
         if (temp != null) {
             TemplateList current = getInstance();
 //            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)

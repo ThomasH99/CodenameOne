@@ -36,8 +36,10 @@ public class AlarmHandler {
 
 //    private final static String STORAGE_FILE_NAME = "AlarmHandler";
 //    final static String CLASS_NAME_ALARM_DATA = "alarmData";
-    final static String NOTIF_LIST_FILE_ID = "notificationList";
-    final static String EXPIRED_ALARMS_FILE_ID = "expiredAlarmsList";
+    private final static String NOTIF_LIST_FILE_ID = "$$notificationList";
+    private final static String EXPIRED_ALARMS_FILE_ID = "$$expiredAlarmsList";
+
+    static final int MAX_NUMBER_LOCAL_NOTIFICATIONS = 64;
 
 //    private final static String WAITING_KEY = "-[WAITING]";     // postfix to identify a waiting alarm
 //    private final static String ALARM_KEY = "-[ALARM]"; // postfix to identify an alarm
@@ -47,23 +49,29 @@ public class AlarmHandler {
     /**
      * keep a copy of all local notifications set
      */
-    LocalNotificationsShadowList notificationList; // = new LocalNotificationsShadowList();
+    private LocalNotificationsShadowList notificationList; // = new LocalNotificationsShadowList();
     /**
      * list of already expired alarms not yet processed by the end-user, to show
      * in AlarmScreen to snooze, cancel etc
      */
-    List<ExpiredAlarm> expiredAlarms;
-    AlarmInAppAlarmHandler inAppTimer; // = new AlarmInAppAlarmHandler(notificationList);
+    private List<ExpiredAlarm> expiredAlarms;
+    private AlarmInAppAlarmHandler inAppTimer; // = new AlarmInAppAlarmHandler(notificationList);
 
     private AlarmHandler() {
-        if (Storage.getInstance().exists(NOTIF_LIST_FILE_ID)) {
+        if (true || Storage.getInstance().exists(NOTIF_LIST_FILE_ID)) { //readObject below return null if no file exists
             //TODO: catch any reading/format problems and recreate the file
             notificationList = (LocalNotificationsShadowList) Storage.getInstance().readObject(NOTIF_LIST_FILE_ID);
+        } else {
+            notificationList = null;
         }
         if (notificationList == null) { //whatever happens, if previouslyRunningTimers==null, then create a new one
+//            notificationList = new LocalNotificationsShadowList(this); //create if none existed before
             notificationList = new LocalNotificationsShadowList(); //create if none existed before
 //                save(); //DON'T save before something is added
         }
+
+        notificationList.setAlarmHandler(this);
+
         if (Storage.getInstance().exists(EXPIRED_ALARMS_FILE_ID)) {
             //TODO: catch any reading/format problems and recreate the file
             expiredAlarms = (List<ExpiredAlarm>) Storage.getInstance().readObject(EXPIRED_ALARMS_FILE_ID);
@@ -74,7 +82,8 @@ public class AlarmHandler {
         }
 //        inAppTimer = new AlarmInAppAlarmHandler(notificationList);
         inAppTimer = new AlarmInAppAlarmHandler();
-        inAppTimer.startInAppTimerOnNextcomingAlarm(notificationList.getNextFutureAlarmN());
+//        inAppTimer.startInAppTimerOnNextcomingAlarm(notificationList.getNextFutureAlarmN());
+//        inAppTimer.updateInAppTimerOnNextcomingAlarm();
     }
 
     private static AlarmHandler INSTANCE;
@@ -82,6 +91,7 @@ public class AlarmHandler {
     public static AlarmHandler getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new AlarmHandler();
+            INSTANCE.inAppTimer.updateInAppTimerOnNextcomingAlarm(); //MUST do here and not in singleton instantiation of AlarmHandler() above to avoid infinite loop
         }
         return INSTANCE;
     }
@@ -139,7 +149,8 @@ public class AlarmHandler {
             return;
         }
 //        int maxNbFreeNotifications = notificationList.getNumberAvailableLocalNotificationSlots();
-        List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
+//        List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
+        List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS);
         if (newAlarmsList != null && newAlarmsList.size() > 0) { //only do something if we successfully got the list (avoid cancelling alarms if anything went wrong with the fetch)
 
             notificationList.cancelAndRemoveAllAvailableLocalNotifications();
@@ -147,7 +158,7 @@ public class AlarmHandler {
             Item item;
             while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
                 item = newAlarmsList.remove(0);
-                notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecord());
+                notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecordN());
             }
             refreshInAppTimerAndSaveNotificationList();
         }
@@ -158,7 +169,7 @@ public class AlarmHandler {
      * settings)
      */
     public void updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled() {
-        if (MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) {
+        if (!MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) {
             //disable all
             notificationList.cancelAndRemoveAllAvailableLocalNotifications();
             refreshInAppTimerAndSaveNotificationList();
@@ -166,17 +177,23 @@ public class AlarmHandler {
         } else {
             //update, or set from scratch, all alarms
 //        int maxNbFreeNotifications = notificationList.getNumberAvailableLocalNotificationSlots();
-            List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
+//            List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
+            List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS);
             if (newAlarmsList != null && newAlarmsList.size() > 0) { //only do something if we successfully got the list (avoid cancelling alarms if anything went wrong with the fetch)
                 notificationList.cancelAndRemoveAllAvailableLocalNotifications();
                 Item item;
                 while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
                     item = newAlarmsList.remove(0);
-                    notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecord());
+//                    notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecordN());
+                    notificationList.addAlarmAndRepeat(item);
                 }
                 refreshInAppTimerAndSaveNotificationList();
             }
         }
+    }
+
+    private void saveNotificationList() {
+        Storage.getInstance().writeObject(AlarmHandler.NOTIF_LIST_FILE_ID, notificationList);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -251,12 +268,13 @@ public class AlarmHandler {
 //    }
 //</editor-fold>
     private void refreshInAppTimerAndSaveNotificationList() {
-        inAppTimer.startInAppTimerOnNextcomingAlarm();
-        notificationList.save();
+        inAppTimer.updateInAppTimerOnNextcomingAlarm();
+//        notificationList.save();
+        saveNotificationList();
     }
 
     private void updateAlarmsOrTextForItem(Item item) {
-        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getAlarmDateD(), AlarmType.notification,
+        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getAlarmDate(), AlarmType.notification,
                 item.makeNotificationTitleText(AlarmType.notification), item.makeNotificationBodyText(AlarmType.notification));
 
         notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getWaitingAlarmDate(), AlarmType.waiting,
@@ -272,9 +290,10 @@ public class AlarmHandler {
 
     public void updateOnItemChange(Item item) {
         if (item.isDone()) {
-            AlarmHandler.getInstance().deleteAllAlarmsForItem(item); //remove any future alarms for a Done/Cancelled task
+            deleteAllAlarmsForItem(item); //remove any future alarms for a Done/Cancelled task
         } else {
             updateAlarmsOrTextForItem(item);
+            cancelExpiredAlarmsOnItemUpdate(item);
         }
     }
 
@@ -311,7 +330,7 @@ public class AlarmHandler {
         //delete all possible alarms set for this item
 //        notificationList.removeAllAlarms(item.getObjectId());
         notificationList.removeALLAlarmsForItem(item.getObjectIdP());
-        cancelExpiredAlarms(item); //remove any already expired alarms
+        cancelAllExpiredAlarms(item); //remove any already expired alarms
 //        inAppTimer.refreshInAppTimer();
 //        notificationList.save();
         refreshInAppTimerAndSaveNotificationList();
@@ -416,13 +435,32 @@ public class AlarmHandler {
         expiredAlarmSave();
     }
 
-    public void cancelExpiredAlarms(Item item) {
+    private void cancelAllExpiredAlarms(Item item) {
         Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
         while (it.hasNext()) {
             ExpiredAlarm expiredAlarm = it.next();
             if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
 //                expiredAlarms.remove(expiredAlarm);
                 it.remove();
+            }
+        }
+        expiredAlarmSave();
+    }
+
+    private void cancelExpiredAlarmsOnItemUpdate(Item item) {
+        long now = MyDate.currentTimeMillis();
+        boolean normalAlarmUpdatedToFuture = item.getAlarmDate().getTime() > now;
+        boolean waitingAlarmUpdatedToFuture = item.getWaitingAlarmDate().getTime() > now;
+//        AlarmType normalAlarmUpdated = item.getAlarmDate().getTime()>now;
+//        boolean waitingAlarmUpdated = item.getWaitingAlarmDate().getTime()>now;
+        Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
+        while (it.hasNext()) {
+            ExpiredAlarm expiredAlarm = it.next();
+            if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
+                if (((expiredAlarm.type == AlarmType.notification || expiredAlarm.type == AlarmType.snoozedNotif) && normalAlarmUpdatedToFuture)
+                        || ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.snoozedWaiting) && waitingAlarmUpdatedToFuture)) {
+                    it.remove();
+                }
             }
         }
         expiredAlarmSave();
@@ -462,7 +500,8 @@ public class AlarmHandler {
     void processExpiredAlarm(String notificationId, boolean localNotificationReceived) {
         AlarmHandler.alarmLog("processExpiredAlarm called with: \"" + notificationId + "\"");
 //        Display.getInstance().callSerially(() -> {
-        Display.getInstance().callSeriallyOnIdle(() -> { //onIdle may ensure that the alarm only gets processed after Replay and load of data
+//        Display.getInstance().callSeriallyOnIdle(() -> { //onIdle may ensure that the alarm only gets processed after Replay and load of data
+        Display.getInstance().callSerially(() -> { //onIdle may ensure that the alarm only gets processed after Replay and load of data
             if (localNotificationReceived) {
                 AlarmHandler.alarmLog("Local notifiation received: \"" + notificationId + "\"");
             } else {
@@ -475,22 +514,22 @@ public class AlarmHandler {
 //        AlarmType type = AlarmType.getTypeContainedInStr(notificationId);
 //        String objId = AlarmType.getObjectIdStrWithoutTypeStr(notificationId, type);
                     notificationList.removeAlarmAndRepeatAlarm(notificationId);
-                    notificationList.save();
+//                    notificationList.save();
+                    saveNotificationList();
 //        expiredAlarms.add(0, new ExpiredAlarm(notif.getObjectIdStr(), notif.alarmTime, notif.type));
                     expiredAlarms.add(0, new ExpiredAlarm(notif)); //TODO!!!!! only add each item ONCE, to avoid seeing multiple expired alarms/snoozes?
                     expiredAlarmSave();
 
-                    inAppTimer.startInAppTimerOnNextcomingAlarm();
+                    inAppTimer.updateInAppTimerOnNextcomingAlarm();
 //        if (notif != null) {
 //        Display.getInstance().callSerially(() -> {
-                    playAlarm();
+                    Display.getInstance().callSerially(() ->  playAlarm()); //try to play 
 //                    ScreenListOfAlarms.getInstance().show(); //will check if already visible
                     MyForm myForm = MyForm.getCurrentFormAfterClosingDialogOrMenu();
 //                    if ((Config.PRODUCTION_RELEASE && myForm != null) || !Config.PRODUCTION_RELEASE)
                     if (myForm instanceof ScreenListOfAlarms) {
                         myForm.refreshAfterEdit();
-                    } else if ((!Config.PRODUCTION_RELEASE || myForm != null) && (myForm != null&&myForm.getMyShowAlarmsReplayCmd() != null)) //don't risk crash in production release
-                    {
+                    } else if ((!Config.PRODUCTION_RELEASE || myForm != null) && (myForm != null && myForm.getMyShowAlarmsReplayCmd() != null)) { //don't risk crash in production release
                         myForm.getMyShowAlarmsReplayCmd().actionPerformed(null);
                     }
                 }
@@ -673,7 +712,8 @@ public class AlarmHandler {
                 notificationList.removeAlarmAndRepeatAlarm(notif.notificationId);
                 expiredAlarms.add(0, new ExpiredAlarm(notif)); //UI: add most recent alarms to start
             }
-            notificationList.save();
+//            notificationList.save();
+            saveNotificationList();
             expiredAlarmSave();
         } else {
             notif = notificationList.getNextFutureAlarmN();
@@ -722,13 +762,13 @@ public class AlarmHandler {
     }
 
     private void playAlarm() {
-        // https://www.codenameone.com/manual/files-storage-networking.html#_file_system
-        // CN1 doc: https://www.codenameone.com/javadoc/com/codename1/media/Media.html
-        // https://www.codenameone.com/blog/open-file-rendering.html
-        // https://www.codenameone.com/manual/components.html#sharebutton-section
         if (MyPrefs.alarmPlayBuiltinAlarmSound.getBoolean()) {
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
+            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM); //work-around but sound doesn't seem to work on iOS, nor on simulator
         } else {
+            // https://www.codenameone.com/manual/files-storage-networking.html#_file_system
+            // CN1 doc: https://www.codenameone.com/javadoc/com/codename1/media/Media.html
+            // https://www.codenameone.com/blog/open-file-rendering.html
+            // https://www.codenameone.com/manual/components.html#sharebutton-section
             FileSystemStorage fs = FileSystemStorage.getInstance();
             String soundDir = fs.getAppHomePath(); // + "recordings/"; on simulator="file://home/" 
 //        fs.mkdir(soundDir);

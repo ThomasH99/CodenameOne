@@ -40,11 +40,17 @@ public class LocalNotificationsShadowList implements Externalizable {
 
     final static String CLASS_NAME_NOTIFICATION_LIST = "notificationList";
 //    private final static String NOTIF_LIST_FILE_ID = "notificationList";
-    static final int MAX_NUMBER_LOCAL_NOTIFICATIONS = 64;
+    private AlarmHandler alarmHandler; //reference back to alarmhandler
+    private  int maxNumberLocalNotifications ;
+   
 
-    ArrayList<NotificationShadow> activeLocalNotifsSorted = new ArrayList<>();
+    private ArrayList<NotificationShadow> localNotifsActiveSorted = new ArrayList<>();
 
+//    public LocalNotificationsShadowList(AlarmHandler alarmHandler) {
     public LocalNotificationsShadowList() {
+//        this.alarmHandler=alarmHandler;
+//        setAlarmHandler(alarmHandler);
+        
 //        super();
 //        if (Storage.getInstance().exists(NOTIF_LIST_FILE_ID)) {
 //            //TOD: catch any reading/format problems and recreate the file
@@ -55,21 +61,36 @@ public class LocalNotificationsShadowList implements Externalizable {
 ////                save(); //DON'T save before something is added
 //        }
     }
+    
+    void setAlarmHandler (AlarmHandler alarmHandler) {
+        this.alarmHandler=alarmHandler;
+        maxNumberLocalNotifications=alarmHandler.MAX_NUMBER_LOCAL_NOTIFICATIONS;
+    }
+
+    public String toString() {
+        String str = "[";
+        String sep = "";
+        for (NotificationShadow s : localNotifsActiveSorted) {
+            str += str + s + sep;
+            sep = ";";
+        }
+        return str + "]";
+    }
 
     boolean isEmpty() {
-        return activeLocalNotifsSorted.isEmpty();
+        return localNotifsActiveSorted.isEmpty();
     }
 
     int size() {
-        return activeLocalNotifsSorted.size();
+        return localNotifsActiveSorted.size();
     }
 
     NotificationShadow get(int i) {
-        return activeLocalNotifsSorted.get(i);
+        return localNotifsActiveSorted.get(i);
     }
 
     NotificationShadow remove(int i) {
-        return activeLocalNotifsSorted.remove(i);
+        return localNotifsActiveSorted.remove(i);
     }
 
     /**
@@ -88,16 +109,17 @@ public class LocalNotificationsShadowList implements Externalizable {
          * this guarantees that the return value will be >= 0 if and only if the
          * key is found.
          */
-        int insertIndex = Collections.binarySearch(activeLocalNotifsSorted, notif, (v1, v2) -> {
+        int insertIndex = Collections.binarySearch(localNotifsActiveSorted, notif, (v1, v2) -> {
             return FilterSortDef.compareLong(v1.alarmTime.getTime(), v2.alarmTime.getTime());
         });
         insertIndex = insertIndex < 0 ? -(insertIndex + 1) : insertIndex;
-        activeLocalNotifsSorted.add(insertIndex, notif); //returns -1 for empty list
-        AlarmHandler.getInstance().scheduleLocalNotification(notif.notificationId, titleText, bodyText, notif.alarmTime);
+        localNotifsActiveSorted.add(insertIndex, notif); //returns -1 for empty list
+//        AlarmHandler.getInstance().scheduleLocalNotification(notif.notificationId, titleText, bodyText, notif.alarmTime);
+        alarmHandler.scheduleLocalNotification(notif.notificationId, titleText, bodyText, notif.alarmTime);
         //if there are too many local notifications set now, then remove exces ones (removing the last = the latest in time)
-        while (activeLocalNotifsSorted.size() > MAX_NUMBER_LOCAL_NOTIFICATIONS) {
-            removeAlarmAndRepeatAlarm(activeLocalNotifsSorted.get(activeLocalNotifsSorted.size() - 1).getObjectIdStr(),
-                    activeLocalNotifsSorted.get(activeLocalNotifsSorted.size() - 1).type);
+        while (localNotifsActiveSorted.size() > maxNumberLocalNotifications) {
+            this.removeAlarmAndRepeatAlarm(localNotifsActiveSorted.get(localNotifsActiveSorted.size() - 1).getObjectIdStr(),
+                    localNotifsActiveSorted.get(localNotifsActiveSorted.size() - 1).type);
         }
     }
 
@@ -111,20 +133,20 @@ public class LocalNotificationsShadowList implements Externalizable {
         //find and delete current alarm (and repeat alarms if any)
         //insert new alarm (if any, and within interval), and if so, find and set repeat alarms
 
-        removeAlarmAndRepeatAlarm(objectId, type); //alwlays remove (eg if newAlarm is null)
+        this.removeAlarmAndRepeatAlarm(objectId, type); //alwlays remove (eg if newAlarm is null)
 //        removeAlarmAndRepeatAlarm(objectId, repeatType); //always remove repeatAlarm (eg if newAlarm is null)
 
 //        if (newAlarm != null && newAlarm.getTime() > System.currentTimeMillis() //!= 0
-        if (newAlarm != null && newAlarm.getTime() > MyDate.getNow() //!= 0
+        if (newAlarm != null && newAlarm.getTime() > MyDate.currentTimeMillis() //!= 0
                 && newAlarm.getTime() < getLastAlarmTime(type).getTime()) {
             int repeatInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
 //            if (getNumberAvailableLocalNotificationSlots() >= (repeatInterval > 0 ? 2 : 1)) {
-            insertAndSetSingleBaseAlarmSorted(objectId, type, newAlarm, titleText, bodyText); //will cancel excess alarms
+            this.insertAndSetSingleBaseAlarmSorted(objectId, type, newAlarm, titleText, bodyText); //will cancel excess alarms
 
             if (repeatInterval > 0) {
                 AlarmType repeatType = (type == AlarmType.notification) ? AlarmType.notificationRepeat : AlarmType.waitingRepeat;
 //                    removeAlarmAndRepeatAlarm(objectId, NotificationType.notificationRepeat);
-                insertAndSetSingleBaseAlarmSorted(objectId, repeatType,
+                this.insertAndSetSingleBaseAlarmSorted(objectId, repeatType,
                         new MyDate(newAlarm.getTime() + ((long) repeatInterval) * MyDate.MINUTE_IN_MILLISECONDS),
                         titleText, bodyText);
             }
@@ -145,7 +167,7 @@ public class LocalNotificationsShadowList implements Externalizable {
 //            }
 //        }
 //        return null; 
-        return activeLocalNotifsSorted.isEmpty() ? null : activeLocalNotifsSorted.get(0);
+        return localNotifsActiveSorted.isEmpty() ? null : localNotifsActiveSorted.get(0);
     }
 
 //    private int getNotificationIndexXXX(String notificationId) {
@@ -170,11 +192,11 @@ public class LocalNotificationsShadowList implements Externalizable {
      */
     NotificationShadow getNotification(String notificationId) {
 //        return list.get(getNotificationIndex(notificationId));
-        for (int i = 0, size = activeLocalNotifsSorted.size(); i < size; i++) {
+        for (int i = 0, size = localNotifsActiveSorted.size(); i < size; i++) {
 //            notif = list.get(i);
 //            if (notif.notificationId.equals(notificationId)) {
-            if (activeLocalNotifsSorted.get(i).notificationId.equals(notificationId)) {
-                return activeLocalNotifsSorted.get(i);
+            if (localNotifsActiveSorted.get(i).notificationId.equals(notificationId)) {
+                return localNotifsActiveSorted.get(i);
             }
 //            break;
         }
@@ -201,7 +223,7 @@ public class LocalNotificationsShadowList implements Externalizable {
 //        for (int i = 0, size = list.size(); i < size; i++) {
 //            notif = list.get(i);
         NotificationShadow notif;
-        Iterator<NotificationShadow> it = activeLocalNotifsSorted.iterator();
+        Iterator<NotificationShadow> it = localNotifsActiveSorted.iterator();
         while (it.hasNext()) {
             notif = it.next();
 //                if (notif.notificationId.equals(id) && notif.type == type) {
@@ -211,7 +233,8 @@ public class LocalNotificationsShadowList implements Externalizable {
 //                LocalNotificationsShadowList.this.removeAlarmAndCancelLocalNotification(i);
 //                removeAlarmAndCancelLocalNotificationImpl(i);
 //                Display.getInstance().cancelLocalNotification(notif.notificationId);
-                AlarmHandler.getInstance().cancelLocalNotification(notif.notificationId);
+//                AlarmHandler.getInstance().cancelLocalNotification(notif.notificationId);
+                alarmHandler.cancelLocalNotification(notif.notificationId);
                 it.remove();
             }
             break;
@@ -229,7 +252,7 @@ public class LocalNotificationsShadowList implements Externalizable {
     void removeAlarmAndRepeatAlarm(String notificationId) {
         AlarmType type = AlarmType.getTypeContainedInStr(notificationId);
         String objId = AlarmType.getObjectIdStrWithoutTypeStr(notificationId, type);
-        removeAlarmAndRepeatAlarm(objId, type);
+        this.removeAlarmAndRepeatAlarm(objId, type);
     }
 
     /**
@@ -245,7 +268,7 @@ public class LocalNotificationsShadowList implements Externalizable {
     void removeAlarmAndRepeatAlarm(String objectId, AlarmType mainType) {
 //        for (int i = 0, size = list.size(); i < size; i++) {
         NotificationShadow notif;
-        Iterator<NotificationShadow> it = activeLocalNotifsSorted.iterator();
+        Iterator<NotificationShadow> it = localNotifsActiveSorted.iterator();
         while (it.hasNext()) {
             notif = it.next();
 //            notif = list.get(i);
@@ -254,14 +277,15 @@ public class LocalNotificationsShadowList implements Externalizable {
                 if (notif.type == mainType
                         || (mainType == notification && notif.type == notificationRepeat)
                         || (mainType == waiting && notif.type == waitingRepeat) //                        
-                        || mainType == snoozedNotif  //remove snooze just in case?!
-                        || mainType == snoozedWaiting  //remove snooze just in case?!
+                        || mainType == snoozedNotif //remove snooze just in case?!
+                        || mainType == snoozedWaiting //remove snooze just in case?!
                         ) {
 //                        list.remove(i);
 //                        cancelLocalNotification(notif.notificationId); //cancel the corresponding alarm
 //                    removeAlarmAndCancelLocalNotification(objectId);
 //                    removeAlarmAndCancelLocalNotificationImpl(i);
-                    AlarmHandler.alarmLog("Local notification cancelled: \"" + notif.notificationId + "\"");
+//                    AlarmHandler.alarmLog("Local notification cancelled: \"" + notif.notificationId + "\"");
+                    alarmHandler.alarmLog("Local notification cancelled: \"" + notif.notificationId + "\"");
 
                     Display.getInstance().cancelLocalNotification(notif.notificationId);
                     it.remove();
@@ -304,7 +328,7 @@ public class LocalNotificationsShadowList implements Externalizable {
     void removeALLAlarmsForItem(String objectId) {
 //        for (int i = 0, size = list.size(); i < size; i++) {
 // NotificationShadow notif;
-        Iterator<NotificationShadow> it = activeLocalNotifsSorted.iterator();
+        Iterator<NotificationShadow> it = localNotifsActiveSorted.iterator();
         while (it.hasNext()) {
 //            notif = list.get(i);
 //            notif = it.next();
@@ -314,7 +338,8 @@ public class LocalNotificationsShadowList implements Externalizable {
             if (notif.isForItem(objectId)) { //TOD should use ==0 since notifId starts with objId, but fragile if every the notifId format is changed
 //                String notifId = list.remove(i).notificationId; //remove entry
 //                String notifId = it.remove().notificationId; //remove entry
-                AlarmHandler.getInstance().cancelAlarm(notif.notificationId); //and cancel the corresponding alarm
+//                AlarmHandler.getInstance().cancelAlarm(notif.notificationId); //and cancel the corresponding alarm
+                alarmHandler.cancelAlarm(notif.notificationId); //and cancel the corresponding alarm
             }
         }
     }
@@ -404,13 +429,14 @@ public class LocalNotificationsShadowList implements Externalizable {
 //        for (int i = 0, size = list.size(); i < size; i++) {
 //            notif = list.get(i);
         NotificationShadow notif;
-        Iterator<NotificationShadow> it = activeLocalNotifsSorted.iterator();
+        Iterator<NotificationShadow> it = localNotifsActiveSorted.iterator();
         while (it.hasNext()) {
             notif = it.next();
             if (notif.notificationId.equals(notificationId)) {
 //                removeAlarmAndCancelLocalNotificationImpl(i); //remove alarm itself (could be a snooze)
 //                Display.getInstance().cancelLocalNotification(notif.notificationId);
-                AlarmHandler.getInstance().cancelLocalNotification(notif.notificationId);
+//                AlarmHandler.getInstance().cancelLocalNotification(notif.notificationId);
+                alarmHandler.cancelLocalNotification(notif.notificationId);
                 it.remove();
             } else if (notif.notificationId.startsWith(objId)
                     //remove any repeat but only of same type as alarm itself (if alarm is re-snoozed, the snoze is remove above) 
@@ -421,7 +447,8 @@ public class LocalNotificationsShadowList implements Externalizable {
                     || (type == AlarmType.waitingRepeat && notif.type == AlarmType.waiting))) {
 //                removeAlarmAndCancelLocalNotificationImpl(i);
 //                Display.getInstance().cancelLocalNotification(notif.notificationId);
-                AlarmHandler.getInstance().cancelLocalNotification(notif.notificationId);
+//                AlarmHandler.getInstance().cancelLocalNotification(notif.notificationId);
+                alarmHandler.cancelLocalNotification(notif.notificationId);
                 it.remove();
             } //else nothing
         }
@@ -487,6 +514,9 @@ public class LocalNotificationsShadowList implements Externalizable {
 //                    titleText, bodyText);
 //        }
     }
+    void addAlarmAndRepeat(Item item) {
+        addAlarmAndRepeat(item, item.getNextcomingAlarmRecordN());
+    }
 
     void addAlarmAndRepeat(String objectId, Date newAlarm, AlarmType type, String titleText, String bodyText) {
         int repeatInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
@@ -494,10 +524,10 @@ public class LocalNotificationsShadowList implements Externalizable {
         ASSERT.that(type == AlarmType.notification || type == AlarmType.waiting || type == AlarmType.snoozedNotif || type == AlarmType.snoozedWaiting, () -> "wrong alarmType=" + type);
 //        ASSERT.that((getNumberAvailableLocalNotificationSlots() >= (repeatInterval > 0 ? 2 : 1)));
 
-        insertAndSetSingleBaseAlarmSorted(objectId, type, newAlarm, titleText, bodyText);
+        this.insertAndSetSingleBaseAlarmSorted(objectId, type, newAlarm, titleText, bodyText);
 
         if (repeatInterval > 0 && (type != AlarmType.snoozedNotif && type != AlarmType.snoozedWaiting)) {
-            insertAndSetSingleBaseAlarmSorted(objectId, type == AlarmType.notification ? AlarmType.notificationRepeat : AlarmType.waitingRepeat,
+            this.insertAndSetSingleBaseAlarmSorted(objectId, type == AlarmType.notification ? AlarmType.notificationRepeat : AlarmType.waitingRepeat,
                     new MyDate(newAlarm.getTime() + ((long) repeatInterval) * MyDate.MINUTE_IN_MILLISECONDS),
                     titleText, bodyText);
         }
@@ -571,12 +601,12 @@ public class LocalNotificationsShadowList implements Externalizable {
      * @return
      */
     Date getLastAlarmTime(AlarmType type) {
-        int i = activeLocalNotifsSorted.size() - 1;
-        while (i >= 0 && activeLocalNotifsSorted.get(i).type != type) {
+        int i = localNotifsActiveSorted.size() - 1;
+        while (i >= 0 && localNotifsActiveSorted.get(i).type != type) {
             i--;
         }
         if (i >= 0) {
-            return activeLocalNotifsSorted.get(i).alarmTime;
+            return localNotifsActiveSorted.get(i).alarmTime;
         } else {
 //                return null;
             return new MyDate(MyDate.MAX_DATE); //if 
@@ -593,7 +623,7 @@ public class LocalNotificationsShadowList implements Externalizable {
 //            }
 //        }
 //        return AlarmHandler.MAX_NUMBER_LOCAL_NOTIFICATIONS - list.size() + firstFutureSlot;
-        return MAX_NUMBER_LOCAL_NOTIFICATIONS - activeLocalNotifsSorted.size();
+        return maxNumberLocalNotifications - localNotifsActiveSorted.size();
     }
 
     @Override
@@ -603,12 +633,12 @@ public class LocalNotificationsShadowList implements Externalizable {
 
     @Override
     public void externalize(DataOutputStream out) throws IOException {
-        writeObject(activeLocalNotifsSorted, out);
+        writeObject(localNotifsActiveSorted, out);
     }
 
     @Override
     public void internalize(int version, DataInputStream in) throws IOException {
-        activeLocalNotifsSorted = (ArrayList) readObject(in);
+        localNotifsActiveSorted = (ArrayList) readObject(in);
     }
 
     @Override
@@ -776,19 +806,18 @@ public class LocalNotificationsShadowList implements Externalizable {
 //            list.remove(0);
 //        }
 //    }
-    void save() {
-        Storage.getInstance().writeObject(AlarmHandler.NOTIF_LIST_FILE_ID, LocalNotificationsShadowList.this);
-    }
+
 
     /**
      * cancel and remove all previously set local notifications
      */
     void cancelAndRemoveAllAvailableLocalNotifications() {
-        for (int i = 0, size = activeLocalNotifsSorted.size(); i < size; i++) {
+        for (int i = 0, size = localNotifsActiveSorted.size(); i < size; i++) {
 //            Display.getInstance().cancelLocalNotification(list.get(i).notificationId);
-            AlarmHandler.getInstance().cancelLocalNotification(activeLocalNotifsSorted.get(i).notificationId);
+//            AlarmHandler.getInstance().cancelLocalNotification(localNotifsActiveSorted.get(i).notificationId);
+            alarmHandler.cancelLocalNotification(localNotifsActiveSorted.get(i).notificationId);
         }
-        activeLocalNotifsSorted.clear();
+        localNotifsActiveSorted.clear();
     }
 
 }

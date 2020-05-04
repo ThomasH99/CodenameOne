@@ -224,12 +224,31 @@ Form {
 }
 
 Label {
+    cn1-derive: Default;
     /*border: 1pt solid gray;*/
     padding: 1mm;
     margin: 1mm;
     text-align: left;
     /*color: black;*/
     /*background-color: transparent; /**/
+}
+
+DateLabelCentered { /*used to show simulated dates in ScreenRepeatRule */
+    cn1-derive: Label;
+    text-align: center;
+}
+
+ExpandableContainerTitleXXX { /*used eg to show past/future repeat instances in ScreenRepeatRule */
+    cn1-derive: StickyHeader;
+    text-align: center;
+}
+
+ExpandableContainerButtonXXX { /*used eg to show past/future repeat instances in ScreenRepeatRule */
+    cn1-derive: StickyHeader;
+    /*text-align: left;*/
+}
+ExpandableContainer{ /*used eg to show past/future repeat instances in ScreenRepeatRule */
+    cn1-derive: StickyHeader;
 }
 
 Button {
@@ -280,8 +299,9 @@ StatusBar {
     /*cn1-derive: Container;/**/
     /*color: blue;/**/
     /*padding-top: 2mm;  /*no longer needed on iphone 10 with safeArea*/
-    padding-bottom: 3mm; 
-    background-color: transparent;
+    /*    padding-bottom: 3mm; */
+
+    background-color: transparent;/**/
 }
 
 Toolbar {
@@ -456,12 +476,14 @@ ScreenItemTaskTextHint {
 
 ScreenItemTaskTextStarred {
     cn1-derive: ScreenItemTaskText;
-    color: coral; /*blueviolet;*/
+    /*    color: coral; /*blueviolet;*/
+    background: yellow;
 }
 
 ScreenItemTaskTextStarredInherited {
     cn1-derive: ScreenItemTaskTextStarred;
-    color: indianred; /*blueviolet;*/
+    /*color: indianred; /*blueviolet;*/
+    background: lightyellow;
 }
 /*
 ScreenItemTaskText.selected {
@@ -492,7 +514,7 @@ ScreenItemComment {
 ScreenItemCommentHint { 
     cn1-derive: ScreenItemComment; 
     font-family:  "native:MainThin";
-    color: lightgray;
+    color: #bbb; /*lightgray; -> lightgray is too weak to read */
     /*color: red;*/
 }
 
@@ -500,7 +522,7 @@ TextHint {
     cn1-derive: TextField;/**/
     font-family:  "native:MainThin"; /*"native:MainThin"
     /*font-size: 80%;/**/
-    color: lightgray;
+    color: #bbb; /*lightgray;*/
 }
 
 BaseFieldContainer { /*encapsulates each edit field in ScreenItem and adds left/right margins*/
@@ -517,6 +539,7 @@ BaseFieldContainer { /*encapsulates each edit field in ScreenItem and adds left/
     /*padding: 2mm 0mm 2mm 0mm;*/
     padding-top: 2mm;
     padding-bottom: 2mm;
+    padding-right: 2mm;/**/
     background-color: white;
     /*margin: 2px 0mm 0mm 0mm;*/
     border-bottom: 1px solid lightgray;
@@ -665,7 +688,7 @@ IconEdit {
     /*color: black;*/
     /*    font-size: 100%;*/
     /*padding: 0 0mm 0mm 2.7mm;*/
-    padding-right:1mm;
+    padding-right:0mm;
     margin: 0 0;
     color: grey;
     /*color: red;*/
@@ -812,7 +835,7 @@ BigTimerTimer {
     /*https://stackoverflow.com/questions/60801160/how-to-select-a-native-monospace-font-in-theme-css/60931071#60931071*/
     font-family :  monospace; /*should now be valid*/
     /*font-size: 200%;*/
-    font-size: x-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
+    font-size: 56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
     border: 1mm solid gray;
     background-color: blue;
     text-align: center;
@@ -936,7 +959,7 @@ SmallTimerInterruptIcon{
 SmallTimerTimer {
     cn1-derive: BigTimerTimer;
     border: 5px solid gray;
-    font-size: 100%;
+    font-size: xx-large; /*100%;*/
     padding: 1mm; /* 0mm 1mm 1mm;*/
     margin: 0mm;
     /*        margin-top: 1mm;
@@ -952,8 +975,8 @@ SmallTimerEditItem {
     cn1-derive: SmallTimerBase;
     color: white;
     text-align: right;
-    padding-left: 0mm;
-    padding-right: 1mm;
+    padding-left: 1mm;
+    padding-right: 0mm;
 }
 
 
@@ -1026,7 +1049,8 @@ ScreenItemStarredXXX { /*style for starred icon task text in lists*/
 }
 ScreenItemStarredActive { /*style for starred icon task text in lists*/
     cn1-derive: ScreenItemEditableValue;
-    color:red; /*blueviolet;/**/
+    /*color:red; /*blueviolet;/**/
+    background: yellow;
     /*    padding:0 0.5mm 0 0; top+bottom right+left
         margin:0mm;*/
 }
@@ -1038,7 +1062,8 @@ ScreenItemStarredNotActive { /*style for NOT starred icon task text in lists*/
 }
 ScreenItemStarredActiveInherited { /*style for *active* starred icon task text in lists*/
     cn1-derive: ScreenItemEditableValue;
-    color:indianred;
+    /*color:indianred;/**/
+    background: lightyellow;
 }
 
 
@@ -1052,7 +1077,7 @@ ListOfItemsTextCont { /*style for task container (WrapButton) in lists*/
 ListOfItemsTextBase { /*style for task text in lists*/
     cn1-derive: Label;/**/
     color: black;
-    /*->font-family :  "native:MainRegular"; /*"native:MainLight";*/
+    font-family :  "native:MainRegular"; /*"native:MainLight";*/
     /*font-family :  "native:MainBold"; /*"native:MainLight";
     /* color:black;*/
     /*font-size: 90%; /*100%;*/
@@ -1068,12 +1093,23 @@ ListOfItemsText { /*style for task text in lists*/
     cn1-derive: ListOfItemsTextBase;/**/
     /*font-family :  "native:MainLight"; "native:MainLight";*/
 }
-/*ListOfItemsText.pressed { 
+ListOfItemsText.pressed { 
+    cn1-derive: ListOfItemsTextBase;
+    color: black;
+    text-align: left;
+    padding:0 0.5mm 0 0; /*top+bottom right+left*/
+    margin:0mm;
+}
+ListOfItemsText.unselected{ 
     cn1-derive: ListOfItemsTextBase;
 }
 ListOfItemsText.selected{ 
     cn1-derive: ListOfItemsTextBase;
-}*/
+    color: black;
+    text-align: left;
+    padding:0 0.5mm 0 0; /*top+bottom right+left*/
+    margin:0mm;
+/**/
 
 ListOfItemsTextDone { /*style for DONE task text in lists*/
     cn1-derive: ListOfItemsText;
@@ -1083,11 +1119,13 @@ ListOfItemsTextDone { /*style for DONE task text in lists*/
 
 ListOfItemsTextStarred { /*style for Starred task text in lists*/
     cn1-derive: ListOfItemsText;
-    color: coral; /*red; /*blueviolet;/*/
+    /*color: coral; /*red; /*blueviolet;/*/
+    background: yellow;
 }
 ListOfItemsTextStarredInherited { /*style for Starred task text in lists*/
     cn1-derive: ListOfItemsTextStarred;
-    color: indianred;
+    /*    color: indianred;*/
+    background: lightyellow;
 }
 
 /*ListofItemsStarred { style for starred icon task text in lists
@@ -1136,7 +1174,8 @@ ItemListSmall {
     /*    text-align: left;*/
     font-family :  "native:MainLight"; /*"native:MainRegular";*/
     font-size: 90%; /*80*/
-    color: gray /*darkgray; */
+    color: gray; /*darkgray; */
+        margin-right: 0.75mm;
         /*    padding:0 0.5mm 0 0; top+bottom right+left
             margin:0;*/
 }
@@ -1170,7 +1209,9 @@ ListOfItemsPrio {
     color: white;
     text-align: center;/**/
     /*padding: 2pt;/**/
-    margin: 0pt 1pt; /*2pt;/**/
+    /*margin: 0pt 1pt; 2pt;/**/
+    margin: 0mm; /*2pt;/**/
+    margin-right: 1.25mm;
     /*margin-right: 0mm;/**/
 }
 
@@ -1471,9 +1512,11 @@ StickyHeader {
     /*text-align: center;/**/
     color:black;
     background-color:lightgrey;
-    /*padding: 0 1mm;
+    text-align: center;
+    padding: 1mm 0mm; /*was h=0.5mm*/
     /*foreground-color: #268b04;*/
 }
+
 StickyHeaderLabel {
     cn1-derive: ItemListSmall;
     text-align: center;
@@ -1483,7 +1526,8 @@ StickyHeaderLabel {
     padding: 1mm 0mm;
     /*foreground-color: #268b04;*/
 }
-StickyHeaderIcon {
+
+StickyHeaderIconXXX {
     cn1-derive: StickyHeaderLabel;
     /*text-align: center;
     color:black;
@@ -1559,7 +1603,8 @@ SwipeButtonCommonBase{
     font-size: 120%;
     padding: 2mm;
     margin: 0;
-    text-align: right;
+    /*text-align: right;*/
+    text-align: center;
     color:white;
 }
 
@@ -1612,6 +1657,15 @@ SwipeButtonTimer {
     cn1-derive: SwipeButtonCommonBase;
     /*color:cornflowerblue;*/
     background-color:cornflowerblue;
+}
+SwipeButtonInsertAbove {
+    cn1-derive: SwipeButtonCommonBase;
+    background-color:dodgerblue;
+}
+
+SwipeButtonInsertBelow{
+    cn1-derive: SwipeButtonCommonBase;
+    background-color:darkgreen;
 }
 
 /* INLINE INSERT
@@ -1737,8 +1791,9 @@ ToggleButtonFirst {
     /*border-style: solid;*/
     /*border-style: solid;
     border-right: 0mm;*/
+    /*    
     border-top-left-radius: 1mm;
-    border-bottom-left-radius:  1mm;
+        border-bottom-left-radius:  1mm; /*TEMP DISABLED*/
     /*   margin: 0mm;
        margin-bottom: 0px;
        padding: 1mm;*/
@@ -1751,33 +1806,37 @@ ToggleButtonOnly {
     color: green;
     background: aqua;
     /*border-style: solid;*/
-    border-top-left-radius: 1mm;
+    /*
+        border-top-left-radius: 1mm;
     border-bottom-left-radius:  1mm;
-    border-top-right-radius: 1mm;
-    border-bottom-right-radius:  1mm;
+        border-top-right-radius: 1mm;
+        border-bottom-right-radius:  1mm;/*TEMP DISABLED*/
     /*   margin: 0mm;
        margin-bottom: 0px;
        padding: 1mm;*/
 }
 ToggleButtonLast {
     cn1-derive: ToggleButton;
+    /*   
     border-top-right-radius: 1mm;
-    border-bottom-right-radius:  1mm;
+        border-bottom-right-radius:  1mm;
+    /*TEMP DISABLED*/
 }
 
 GroupElement{
     cn1-derive: ToggleButton;
 }
+
 GroupElementFirst{
     cn1-derive: ToggleButton;
-    border-top-left-radius: 1mm;
-    border-top-right-radius:  1mm;
+    /*    border-top-left-radius: 1mm;
+        border-top-right-radius:  1mm;/*TEMP DISABLED*/
 
 }
 GroupElementLast{
     cn1-derive: ToggleButton;
-    border-bottom-right-radius: 1mm;
-    border-bottom-left-radius:  1mm;
+     /*   border-bottom-right-radius: 1mm;
+        border-bottom-left-radius:  1mm;/*TEMP DISABLED*/
 
 }
 GroupElementOnly{
@@ -1791,7 +1850,12 @@ MyComponentGroupxx {
 }
 
 ComponentGroup {
-    margin:0mm 2mm 0mm 0mm ;
+    margin:0mm 0mm 0mm 0mm ;
+}
+
+ComponentGroupTwoLines {
+    cn1-derive: ComponentGroup;
+    margin-top: 1.5mm;
 }
 
 ButtonGroup { /*popup menu to select item status */
@@ -1805,22 +1869,22 @@ ButtonGroup { /*popup menu to select item status */
 
 ButtonGroupFirst {
     cn1-derive: ButtonGroup;
-    border-top-left-radius: 1mm;
-    border-top-right-radius:  1mm;
+    /*    border-top-left-radius: 1mm;
+        border-top-right-radius:  1mm;*/
 }
 
 ButtonGroupLast {
     cn1-derive: ButtonGroup;
-    border-bottom-right-radius: 1mm;
-    border-bottom-left-radius:  1mm;
+      /*  border-bottom-right-radius: 1mm;
+        border-bottom-left-radius:  1mm;/*TEMP DISABLED*/
 }
 
 ButtonGroupOnly {
     cn1-derive: ButtonGroup;
-    border-top-left-radius: 1mm;
-    border-top-right-radius:  1mm;
-    border-bottom-right-radius: 1mm;
-    border-bottom-left-radius:  1mm;
+    /*    border-top-left-radius: 1mm;
+        border-top-right-radius:  1mm;
+        border-bottom-right-radius: 1mm;
+        border-bottom-left-radius:  1mm;/*TEMP DISABLED*/
     /*    margin: 2mm;
         padding: 2mm;*/
 }

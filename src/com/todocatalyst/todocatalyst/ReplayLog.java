@@ -364,5 +364,15 @@ public class ReplayLog {
 //            }
 //        }
     }
+    
+    /**
+     * delete the replay info, returns true if file was deleted
+     * @return 
+     */
+    public boolean deleteReplayInfo() {
+        boolean replayInfoExists = Storage.getInstance().exists(REPLAY_LOG_FILE_NAME);
+         Storage.getInstance().deleteStorageFile(REPLAY_LOG_FILE_NAME);
+         return replayInfoExists;
+    }
 
 }

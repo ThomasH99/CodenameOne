@@ -338,6 +338,7 @@ public class RepeatRule {
     /**
      * Fields in the rule.
      */
+//    private Hashtable fields = new Hashtable();
     private Hashtable fields = new Hashtable();
 
     /**

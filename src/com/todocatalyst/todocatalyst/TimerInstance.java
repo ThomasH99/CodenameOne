@@ -1070,6 +1070,6 @@ public class TimerInstance extends ParseObject {
      * delete this timer when it's done
      */
     public void deleteInstance() {
-        DAO.getInstance().delete(this);
+        DAO.getInstance().deleteTimerInstance(this);
     }
 }
