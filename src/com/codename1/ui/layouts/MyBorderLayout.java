@@ -391,7 +391,7 @@ public class MyBorderLayout extends BorderLayout {
                 right -= (c.getWidth() + c.getStyle().getHorizontalMargins());
             }
             if (realWest != null) {
-                positionLeftRight(realWest, targetWidth - (realEast != null ? realEast.getWidth() : 0), bottom, top);
+                positionLeftRight(realWest, targetWidth - (realEast != null ? (realEast.getWidth()+ realEast.getStyle().getHorizontalMargins()) : 0), bottom, top);
                 Component c = realWest;
                 c.setX(left + c.getStyle().getMarginLeft(rtl));
                 left += (c.getWidth() + c.getStyle().getMarginLeftNoRTL() + c.getStyle().getMarginRightNoRTL());

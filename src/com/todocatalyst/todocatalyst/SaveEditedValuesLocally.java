@@ -55,8 +55,9 @@ public class SaveEditedValuesLocally {//extends HashMap {
                 if (false) {
                     Log.p("SaveEditedValuesLocally.saveScrollTimer: SAVING scroll Y=" + scrollY);
                 }
-                previousValues.put(SCROLL_VALUE_KEY, scrollY); //only save scroll position after timeout
-                saveFile();
+//                previousValues.put(SCROLL_VALUE_KEY, scrollY); //only save scroll position after timeout
+                put(SCROLL_VALUE_KEY, scrollY); //only save scroll position after timeout
+//                saveFile();
             });
 
             Component scrollable = this.myForm.findScrollableContYChild();
@@ -79,7 +80,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
             }
             String uniquePostFix = "";
 //        ASSERT.that(filename != null && !filename.isEmpty());
-            this.filename = PREFIX + filename ;
+            this.filename = PREFIX + filename;
 //            if (Storage.getInstance().exists(this.filename)) {
             while (Storage.getInstance().exists(this.filename)) {
 //                previousValues.putAll((Map) Storage.getInstance().readObject(this.filename)); //merge values
@@ -95,6 +96,10 @@ public class SaveEditedValuesLocally {//extends HashMap {
 
     SaveEditedValuesLocally() {
         this(null, null, false);
+    }
+    
+    public String toString() {
+        return "Hash={"+previousValues+"}, file="+filename;
     }
 
     public void setScrollComponent(Component scrollableN) {
@@ -130,13 +135,15 @@ public class SaveEditedValuesLocally {//extends HashMap {
      */
 //    public void scrollToSavedYOnFirstShow(MyForm myForm) {
     public void scrollToSavedYOnFirstShow(ContainerScrollY scrollableComp) {
-        Integer scrollY = (Integer) previousValues.get(SCROLL_VALUE_KEY);
+//        Integer scrollY = (Integer) previousValues.get(SCROLL_VALUE_KEY);
+        Integer scrollY = (Integer) get(SCROLL_VALUE_KEY);
         if (scrollY != null) {
 //            ContainerScrollY scrollableComp = this.myForm.findScrollableContYChild(myForm.getContentPane());
             if (scrollableComp != null) { //not sure why it can bcome null but it has happened
                 scrollableComp.setScrollYPublic(scrollY);
             }
-            previousValues.remove(SCROLL_VALUE_KEY); //we only scroll to this value once, on first show of screen after 
+//            previousValues.remove(SCROLL_VALUE_KEY); //we only scroll to this value once, on first show of screen after 
+            remove(SCROLL_VALUE_KEY); //we only scroll to this value once, on first show of screen after 
             if (false && Config.TEST) {
                 Log.p("SaveEditedValuesLocally: Scroll to Y=" + scrollY);
             }
@@ -263,6 +270,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //        }
 //</editor-fold>
         previousValues.clear();
+        saveFile();
 //        }
     }
 
@@ -289,7 +297,8 @@ public class SaveEditedValuesLocally {//extends HashMap {
         for (Map.Entry<Object, Object> entry : predefinedValues.previousValues.entrySet()) {
             Object key = entry.getKey();
             Object value = entry.getValue();
-            Object oldValue = previousValues.put(key, value);
+//            Object oldValue = previousValues.put(key, value);
+            Object oldValue = put(key, value);
             ASSERT.that(oldValue == null || oldValue.equals(value), this.getClass() + ".addAndOverwrite: key=" + key + ", overwriting exiting value=" + oldValue + ", with different value=" + value);
         }
         saveFile();
@@ -311,19 +320,36 @@ public class SaveEditedValuesLocally {//extends HashMap {
         }
     }
 
-    public void putOwner(ItemAndListCommonInterface owner) {
+    public void putOwnerXXX(ItemAndListCommonInterface owner) {
 //        Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
 //        if (owner == null || owner.size() == 0)
 //            previousValues.remove(Item.PARSE_CATEGORIES);
 //        previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(owner));
         if (owner == null) {
-            previousValues.remove(Item.PARSE_OWNER_ITEM);
+//            previousValues.remove(Item.PARSE_OWNER_ITEM);
+            remove(Item.PARSE_OWNER_ITEM);
         } else {
             put(Item.PARSE_OWNER_ITEM, owner.getObjectIdP());
         }
     }
 
-    public ItemAndListCommonInterface getOwner() {
+    public void putOwners(List<ItemAndListCommonInterface> owners) {
+        if (owners == null) {
+            remove(Item.PARSE_OWNER_ITEM);
+        } else {
+            List ids = new ArrayList();
+            for (ItemAndListCommonInterface e : owners) {
+                ids.add(e.getObjectIdP());
+            }
+            put(Item.PARSE_OWNER_ITEM, ids);
+        }
+    }
+
+    public void putOwner(ItemAndListCommonInterface owner) {
+        putOwners(Arrays.asList(owner));
+    }
+
+    public ItemAndListCommonInterface getOwnerXXX() {
 //        if (previousValues.get(Item.PARSE_CATEGORIES) != null)
 //            return Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES));
 //        else return new ArrayList();
@@ -331,6 +357,39 @@ public class SaveEditedValuesLocally {//extends HashMap {
                 ? DAO.getInstance().fetchItemOwner(((List<String>) get(Item.PARSE_OWNER_ITEM)).get(0)) //fetch the actual owner 
                 : null;
     }
+
+    /**
+     * returns null if no list was previously defined, otherwise an empty list
+     * if previous owner was removed, or a list containing the previously
+     * selected new owner. Necessary to distinguish the three cases when editing
+     * the owner of an object: 1) no change, 2) unselected previous owner 3)
+     * selected new owner. Without a list, case 1) and 2) cannot be
+     * distinguished!!
+     *
+     * @return
+     */
+    public List<ItemAndListCommonInterface> getOwnersN() {
+        if (get(Item.PARSE_OWNER_ITEM) != null) {
+            List<String> ids = (List) get(Item.PARSE_OWNER_ITEM);
+            List<ItemAndListCommonInterface> owners = new ArrayList();
+            for (String id : ids) {
+                ItemAndListCommonInterface owner = DAO.getInstance().fetchItemOwner(id);
+                owners.add(owner);
+            }
+            return owners;
+        } else {
+            return null;
+        }
+    }
+
+    public void removeOwnerXXX() {
+        remove(Item.PARSE_OWNER_ITEM);
+    }
+
+    public void removeOwners() {
+        remove(Item.PARSE_OWNER_ITEM);
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public boolean updateWithEditedValues() {
 //    protected static void putEditedValues2(Map<Object, UpdateField> parseIdMap2) {

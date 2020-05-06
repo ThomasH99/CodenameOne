@@ -126,16 +126,36 @@ public class ScreenObjectPicker<E> extends MyForm {
 //    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllProjects, List listOfAllTasks, List selectedObjects, MyForm previousForm, UpdateField updateOnDone,
 
     ScreenObjectPicker(String title, List listOfAllLists, List listOfAllTopLevelProjects, List selectedObjects,
-            MyForm previousForm, Runnable updateOnDone,
-            GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected,
+            MyForm previousForm, Runnable updateOnDone, GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected,
             boolean exitWhenMaxObjectsIsSelected) {
         this(title, listOfAllLists, listOfAllTopLevelProjects, selectedObjects, previousForm, updateOnDone,
                 labelMaker, 1, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
     }
 
-    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllTopLevelProjects, List selectedObjects,
-            MyForm previousForm, Runnable updateOnDone,
-            GetStringFrom labelMaker, int minNbOfSelected, int maxNbOfSelected,
+    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllTopLevelProjects, Object selectedObject,
+            MyForm previousForm, Runnable updateOnDone, GetStringFrom labelMaker, int minNbOfSelected, int maxNbOfSelected,
+            boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
+        this(title, listOfAllLists, listOfAllTopLevelProjects, (List) new ArrayList(Arrays.asList(selectedObject)), previousForm, updateOnDone, labelMaker, minNbOfSelected,
+                maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
+    }
+
+    /**
+     *
+     * @param title
+     * @param listOfAllLists
+     * @param listOfAllTopLevelProjects
+     * @param selectedObjects
+     * @param previousForm
+     * @param updateOnDone
+     * @param labelMaker
+     * @param minNbOfSelected
+     * @param maxNbOfSelected
+     * @param removeFirstAddedObjectIfMoreThanMaxAreAdded
+     * @param scrollToFirstSelected
+     * @param exitWhenMaxObjectsIsSelected
+     */
+    public ScreenObjectPicker(String title, List listOfAllLists, List listOfAllTopLevelProjects, List selectedObjects,
+            MyForm previousForm, Runnable updateOnDone, GetStringFrom labelMaker, int minNbOfSelected, int maxNbOfSelected,
             boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
         super(title, previousForm, updateOnDone);
         assert maxNbOfSelected >= minNbOfSelected && maxNbOfSelected >= 1;
@@ -269,7 +289,7 @@ public class ScreenObjectPicker<E> extends MyForm {
         setCheckIfSaveOnExit(() -> checkObjectChoiceIsValid(selectedObjects1.size()));
 //        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //false: don't refresh ScreenItem when returning from Category selector
         addStandardBackCommand();
-        
+
         if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //UI: always enable Cancel to make it easy to regret any changes
             toolbar.addCommandToOverflowMenu(
                     "Cancel", null, (e) -> {

@@ -41,6 +41,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
 //    public static int MINUTES_IN_MILLISECONDS = MyDate.MINUTE_IN_MILLISECONDS; //60 * 1000;
     final static String WORKSLOT = "Workslot";
+    final static String WORKSLOTS = "Workslots";
     final static String DESCRIPTION = "Description";//"Name";
     final static String DESCRIPTION_HELP = Format.f("Optional description of the {0 workslot}", WORKSLOT);//"Name";
     final static String DESCRIPTION_HINT = Format.f("{0 workslot} description", WORKSLOT);//"Optional description";//"Name";

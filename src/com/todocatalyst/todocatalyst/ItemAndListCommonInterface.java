@@ -435,8 +435,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @param addAfterRefEltOrEndOfList
      */
     default public void moveItemInList(Item item, Item refItem, boolean addAfterRefEltOrEndOfList) {
-        if (removeFromList(item, false)) //only add if already there
-        {
+        if (removeFromList(item, false)) { //only add if already there
             addToList(item, refItem, addAfterRefEltOrEndOfList);
         }
     }

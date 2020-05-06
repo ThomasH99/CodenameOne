@@ -12,6 +12,7 @@ import com.codename1.components.Switch;
 import com.codename1.components.ToastBar;
 import com.codename1.io.Log;
 import com.codename1.ui.Button;
+import com.codename1.ui.CN;
 import static com.codename1.ui.CN.EAST;
 import static com.codename1.ui.CN.WEST;
 import com.codename1.ui.Command;
@@ -113,9 +114,9 @@ public class MyForm extends Form {
     private Container smallTimer = null;
 
     protected void expandedObjectsInit(String objIdOrOtherUniqueName) {
-        expandedObjects = new ExpandedObjects(getUniqueFormId(),objIdOrOtherUniqueName); 
+        expandedObjects = new ExpandedObjects(getUniqueFormId(), objIdOrOtherUniqueName);
     }
-    
+
     public CheckIfDataIsComplete getCheckIfSaveOnExit() {
         return checkDataIsCompleteBeforeExit;
     }
@@ -527,38 +528,38 @@ public class MyForm extends Form {
             getAnimationManager().onTitleScrollAnimation(scrollableComponent, title2);
         }
     }
-    
-        /**
-     * Allows subclasses to disable the global toolbar for a specific form by overriding this method
+
+    /**
+     * Allows subclasses to disable the global toolbar for a specific form by
+     * overriding this method
      */
     @Override
     protected void initGlobalToolbar() {
-        if(Toolbar.isGlobalToolbar()) {
-            setToolbar(new Toolbar(){
-                    protected void initTitleBarStatus() {
+        if (Toolbar.isGlobalToolbar()) {
+            setToolbar(new Toolbar() {
+                protected void initTitleBarStatus() {
 //        Form f = getComponentForm();
 //        if (f != null && !f.shouldPaintStatusBar()) {
 //            return;
 //        }
 //        if (getUIManager().isThemeConstant("paintsTitleBarBool", false)) {
-        if (!MyPrefs.hideStatusBar.getBoolean()) {
-            // check if its already added:
-            if (((BorderLayout) getLayout()).getNorth() == null) {
-                Container bar = new Container();
-                if(getUIManager().isThemeConstant("landscapeTitleUiidBool", false)) {
-                    bar.setUIID("StatusBar", "StatusBarLandscape");
-                } else {
-                    bar.setUIID("StatusBar");
+                    if (!MyPrefs.hideStatusBar.getBoolean()) {
+                        // check if its already added:
+                        if (((BorderLayout) getLayout()).getNorth() == null) {
+                            Container bar = new Container();
+                            if (getUIManager().isThemeConstant("landscapeTitleUiidBool", false)) {
+                                bar.setUIID("StatusBar", "StatusBarLandscape");
+                            } else {
+                                bar.setUIID("StatusBar");
+                            }
+                            addComponent(BorderLayout.NORTH, bar);
+                        }
+                    }
                 }
-                addComponent(BorderLayout.NORTH, bar);
-            }
-        }
-    }
 
             });
         }
     }
-
 
     protected void setKeepPos(KeepInSameScreenPosition keepPos) {
         this.keepPos = keepPos;
@@ -946,9 +947,8 @@ public class MyForm extends Form {
     }
 
     static void showDialogUpdateActualTimeIfAppropriate(Item item) {
-        if (false&&(item.isDone()
-                || !(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()
-//                || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZeroXXX.getBoolean() && item.getActual() == 0)))
+        if (false && (item.isDone()
+                || !(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean() //                || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZeroXXX.getBoolean() && item.getActual() == 0)))
                 ))) {
             return; //do nothing if item is done, or settings/conditions not fulfilled
         }
@@ -1435,8 +1435,10 @@ public class MyForm extends Form {
 //    }
 //</editor-fold>
     void setUpdateActionOnDone(Runnable updateActionOnDone) {
-        if (Config.TEST) ASSERT.that(updateActionOnDone==null|| this.updateActionOnDone==null, "Setting updateActionOnDone twice, old="
-                +this.updateActionOnDone+"; new="+updateActionOnDone);
+        if (Config.TEST) {
+            ASSERT.that(updateActionOnDone == null || this.updateActionOnDone == null, "Setting updateActionOnDone twice, old="
+                    + this.updateActionOnDone + "; new=" + updateActionOnDone);
+        }
         this.updateActionOnDone = updateActionOnDone;
     }
 
@@ -1445,8 +1447,10 @@ public class MyForm extends Form {
     }
 
     void setUpdateActionOnCancel(Runnable updateActionOnCancel) {
-        if (Config.TEST) ASSERT.that(updateActionOnCancel==null|| this.updateActionOnCancel==null, "Setting updateActionOnCancel twice, old="
-                +this.updateActionOnCancel+"; new="+updateActionOnCancel);
+        if (Config.TEST) {
+            ASSERT.that(updateActionOnCancel == null || this.updateActionOnCancel == null, "Setting updateActionOnCancel twice, old="
+                    + this.updateActionOnCancel + "; new=" + updateActionOnCancel);
+        }
         this.updateActionOnCancel = updateActionOnCancel;
     }
 
@@ -1801,8 +1805,7 @@ public class MyForm extends Form {
                     topLevelComp = topLevelComp.getParent();
                 }
 //                MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(topLevelComp);
-                if (true || topLevelComp != null) //should never be null?!
-                {
+                if (true || topLevelComp != null) { //should never be null?!
                     topLevelComp.remove();
                 }
                 myForm.setInlineInsertContainer(null);
@@ -2330,7 +2333,7 @@ public class MyForm extends Form {
     }
 
     public MyReplayCommand makeEditFilterSortCommand(ItemAndListCommonInterface itemListOrItem) {
-        return MyReplayCommand.createKeep("FilterSortSettings", "Edit filter/sort", Icons.iconFilterSettings, (e) -> {
+        return MyReplayCommand.createKeep("FilterSortSettings", "Edit filter/sort", Icons.iconEditFilterSort, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDefN() == null
 //                    ? new FilterSortDef()
@@ -2349,7 +2352,7 @@ public class MyForm extends Form {
             //need this construct due to use in lambda below
 //            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDefN() != null
 //                    ? itemListOrItem.getFilterSortDefN() : itemListOrItem.getFilterSortDef(true);
-            FilterSortDef filterSortDef =  itemListOrItem.getFilterSortDef(true);
+            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDef(true);
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenFilter(filterSortDef, MyForm.this, () -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2363,7 +2366,7 @@ public class MyForm extends Form {
 //</editor-fold>
 //                if ((itemListOrItem.getFilterSortDefN() == null && !filterSortDef.equals(itemListOrItem.getFilterSortDef(true))) //if new default filter was edited
 //                        || (itemListOrItem.getFilterSortDefN() != null && filterSortDef.isDirty())) { //or if existing filter was edited
-                if ( !filterSortDef.equals(itemListOrItem.getFilterSortDef(true))) {//if original or default filter was edited
+                if (!filterSortDef.equals(itemListOrItem.getFilterSortDef(true))) {//if original or default filter was edited
 //                        ) { //or if existing filter was edited
                     itemListOrItem.setFilterSortDef(filterSortDef); //update with edited filter
                 }
@@ -2518,6 +2521,8 @@ public class MyForm extends Form {
             ((SpanButton) comp).addActionListener(al);
         } else if (comp instanceof Button) {
             ((Button) comp).addActionListener(al);
+        } else if (comp instanceof MySpanButton) {
+            ((MySpanButton) comp).addActionListener(al);
         } else {
             assert false : "Unknown type of help button, comp=" + comp;
         }
@@ -2529,15 +2534,30 @@ public class MyForm extends Form {
     }
 
     protected static Component makeHelpButton(String label, String helpText, boolean makeSpanButton) {
+        return makeHelpButton(label, helpText, makeSpanButton, null);
+    }
+
+    protected static Component makeHelpButton(String label, String helpText, boolean makeSpanButton, Character materialIcon) {
         if (label == null) {
             return null;
         }
         Component spanB;
         if (makeSpanButton) {
-            spanB = new SpanButton(label, "ScreenItemFieldLabel");
-            spanB.setUIID("Container"); //avoid adding additional white space by setting the Container UIID to LabelField
+            MySpanButton spanButton = new MySpanButton(label, "ScreenItemFieldLabel");
+            spanButton.setTextPosition(Component.RIGHT); //put icon on the left
+            if (materialIcon != null) {
+                spanButton.setMaterialIcon(materialIcon);
+            }
+            spanButton.setUIID("Container"); //avoid adding additional white space by setting the Container UIID to LabelField
+            spanButton.setIconUIID("ScreenItemFieldIcon"); //avoid adding additional white space by setting the Container UIID to LabelField
+            spanB = spanButton;
         } else {
-            spanB = new Button(label, "ScreenItemFieldLabel");
+            Button button = new Button(label, "ScreenItemFieldLabel");
+            button.setTextPosition(Component.RIGHT); //put icon on the left
+            if (materialIcon != null) {
+                button.setMaterialIcon(materialIcon);
+            }
+            spanB = button;
         }
 
         if (helpText != null && !helpText.isEmpty()) {
@@ -2691,7 +2711,7 @@ public class MyForm extends Form {
      * align with other fields)
      * @return
      */
-    protected static Component layoutN(String fieldLabelTxt, MyComponentGroup group, String help) {
+    protected static Component layoutNXXX(String fieldLabelTxt, MyComponentGroup group, String help) {
         return layoutN(fieldLabelTxt, group, help, null, true, false, false, true);
     }
 
@@ -2703,6 +2723,16 @@ public class MyForm extends Form {
         return layoutN(fieldLabelTxt, field, help, field instanceof MyDurationPicker ? (() -> ((MyDurationPicker) field).swipeClear())
                 : (field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear() : () -> ((MyDateAndTimePicker) field).swipeClear()),
                 true, false, false, false);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Picker field, String help, Character materialIcon) {
+        return new EditFieldContainer(fieldLabelTxt, field, help,
+                field instanceof MyDurationPicker ? (() -> ((MyDurationPicker) field).swipeClear())
+                        : (field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear() : () -> ((MyDateAndTimePicker) field).swipeClear()),
+                true, false, false, false, false, materialIcon);
+//        return EditFieldContainer(fieldLabelTxt, field, help, field instanceof MyDurationPicker ? (() -> ((MyDurationPicker) field).swipeClear())
+//                : (field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear() : () -> ((MyDateAndTimePicker) field).swipeClear()),
+//                true, false, false, false, false,materialIcon);
     }
 
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help,
@@ -2722,9 +2752,18 @@ public class MyForm extends Form {
         return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
     }
 
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help, Character materialIcon) { //normal edit field with [>]
+        return layoutN(fieldLabelTxt, field, help, null, true, false, true, true, false, materialIcon);
+    }
+
     protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help) { //normal edit field with [>]
 //        return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
         return new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, true, false, sizeWestBeforeEast, null);
+    }
+
+    protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help, Character materialIcon) { //normal edit field with [>]
+//        return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
+        return new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, true, false, sizeWestBeforeEast, materialIcon);
     }
 
 //    protected static Component layoutN(boolean visibleEditButton, String fieldLabelTxt, Component field, String help) { //normal edit field with [>]
@@ -2736,12 +2775,26 @@ public class MyForm extends Form {
 
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable) {
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, false, false);
-        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
+//        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
+        return new EditFieldContainer(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable, Character materialIcon) {
+//        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, false, false);
+//        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
+        return new EditFieldContainer(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false, materialIcon);
     }
 
     protected static Component layoutN(String fieldLabelTxt, Component field, String help,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton) {
-        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
+//        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
+        return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, null);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, Character materialIcon) {
+//        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
+        return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon);
     }
 
     protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help,
@@ -2762,6 +2815,12 @@ public class MyForm extends Form {
     }
 
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, Character materialIcon) {
+//        return layoutN(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, false);
+        return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton) {
         return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton);
     }
@@ -2769,6 +2828,13 @@ public class MyForm extends Form {
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, boolean sizeWestBeforeEast) {
         return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, sizeWestBeforeEast, null);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton,
+            boolean sizeWestBeforeEast, Character materialIcon) {
+        return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable,
+                visibleEditButton, hiddenEditButton, sizeWestBeforeEast, materialIcon);
     }
 
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -3027,14 +3093,18 @@ public class MyForm extends Form {
         Container fieldContainer = new Container(layout, "SettingContainer");
 
 //        Component fieldLabel = makeHelpButton(fieldLabelTxt, help, true);
-        SpanButton fieldLabel = (SpanButton) makeHelpButton(fieldLabelTxt, help, true);
+//        SpanButton fieldLabel = (SpanButton) makeHelpButton(fieldLabelTxt, help, true);
+        Component fieldLabel = makeHelpButton(fieldLabelTxt, help, true);
 //        fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
-        fieldContainer.add(WEST, fieldLabel);
+        if (false) {
+            fieldContainer.add(WEST, fieldLabel);
+        }
 //        fieldContainer.add(WEST, fieldLabel);
 //        fieldContainer.add(MyBorderLayout.EAST, field);  //label WEST
         if (field != null) {
             fieldContainer.add(EAST, field);  //label WEST
         }
+        fieldContainer.add(WEST, fieldLabel);
         return fieldContainer;
     }
 
@@ -3861,6 +3931,11 @@ public class MyForm extends Form {
         this.pinchInsertEnabled = pinchInsertEnabled;
     }
 
+    public boolean isPinchOngoing() {
+//        return pinchInsertEnabled;
+        return pinchInsertInitiated;
+    }
+
     private static boolean minimumPinchSizeReached(int pinchYDistance, Component pinchContainer) {
         int minH = pinchContainer.getPreferredH() / 3 * 2;
         return pinchYDistance > minH; //true if over 2/3 of the required size has been pinched out
@@ -4205,6 +4280,11 @@ public class MyForm extends Form {
 //    }
 //</editor-fold>
 
+    /* adjust x and y to adjust for imprecise finger placement. Notably, the top (index) finger more easily moves up faster than the lower thumb. */
+    private void adjustXAndY(int[] x, int[] y) {
+
+    }
+
     /**
      * insert container and animate?? three cases: 1) simple: pinching out two
      * siblings => insert between. 2) Pinching out between a parent (Item
@@ -4227,16 +4307,22 @@ public class MyForm extends Form {
      * show an new insert container
      * @return
      */
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private Container createAndInsertPinchContainer(int[] x, int[] y) {
 //        return createAndInsertPinchContainer(x, y, null);
 //    }
 //    private Container createAndInsertPinchContainer(int[] x, int[] y, Action closeAction) {
 //    private Container createAndInsertPinchContainer(int[] x, int[] y) {
+//</editor-fold>
     private void createAndInsertPinchContainer(int[] x, int[] y) {
+        ASSERT.that(y[0] <= y[1]); //should 
         pinchContainer = null; //reset previous container
-        Component compAbove = y[0] < y[1] ? getComponentAt(x[0], y[0]) : getComponentAt(x[1], y[1]);
+        adjustXAndY(x, y);
+//        Component compAbove = y[0] < y[1] ? getComponentAt(x[0], y[0]) : getComponentAt(x[1], y[1]);
+        Component compAbove = getComponentAt(x[0], y[0]);
 //        Component compAbove = y[0] < y[1] ? getClosestComponentTo(x[0], y[0]) : getClosestComponentTo(x[1], y[1]);
-        Component compBelow = y[0] < y[1] ? getComponentAt(x[1], y[1]) : getComponentAt(x[0], y[0]); //UI: if both fingers on same container, we still create a new one below (ie lower on the sc reen than the lowest placed finger)
+//        Component compBelow = y[0] < y[1] ? getComponentAt(x[1], y[1]) : getComponentAt(x[0], y[0]); //UI: if both fingers on same container, we still create a new one below (ie lower on the sc reen than the lowest placed finger)
+        Component compBelow = getComponentAt(x[1], y[1]); //UI: if both fingers on same container, we still create a new one below (ie lower on the sc reen than the lowest placed finger)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Component compBelow = y[0] < y[1] ? getClosestComponentTo(x[1], y[1]) : getClosestComponentTo(x[0], y[0]); //UI: if both fingers on same container, we still create a new one below (ie lower on the sc reen than the lowest placed finger)
 //        if (isOrPartOfInsertNewContainer(compAbove) || isOrPartOfInsertNewContainer(compBelow)) return null; //UI: cannot pinchinsert next to an existing insertContainer
@@ -4539,7 +4625,7 @@ public class MyForm extends Form {
             if (refElt != null) { //can be null if inserting into empty list
                 previousValues.put(SAVE_LOCALLY_REF_ELT_OBJID_KEY, refElt.getObjectIdP());
                 previousValues.put(SAVE_LOCALLY_REF_ELT_PARSE_CLASS, ((ParseObject) refElt).getClassName());
-            }
+//            }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            boolean insertBeforeRefElement = (refComp == dropComponentBelow);
 //            insertBeforeRefElement = dropComponentAbove == null && dropComponentBelow != null;
@@ -4547,8 +4633,9 @@ public class MyForm extends Form {
 //                    && itemEltBelow instanceof Item && itemEltAbove.isSubtaskTo((Item) itemEltBelow)) //pinch insert between a project and its first subtask
 //                previousValues.put(SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK, true);
 //</editor-fold>
-            if (insertBeforeRefElement) {
-                previousValues.put(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, true);
+                if (insertBeforeRefElement) {
+                    previousValues.put(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, true);
+                }
             }
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -4573,11 +4660,13 @@ public class MyForm extends Form {
 //                ASSERT.that("pinchinsert into empty screen not handled for this screen=" + this);
 //            }
 //</editor-fold>
-            createAndInsertInlineInsertContainerEmptyScreen();
+            if (false) { //don't create for now since may happen if pinch didn't capture any of the actual 
+                createAndInsertInlineInsertContainerEmptyScreen();
+            }
         }
-        if (getInlineInsertContainer().getTextArea() != null) {
-            getInlineInsertContainer().getTextArea().startEditingAsync();
-        }
+//        if (getInlineInsertContainer().getTextArea() != null) { //Moved to pinchFinished to avoid opening keyboard while pinching
+//            getInlineInsertContainer().getTextArea().startEditingAsync();
+//        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        }
 //        } else if (parentContainerAbove == parentContainerBelow) { //we're inserting in the same list, insert just below the containerAbove
@@ -4689,13 +4778,24 @@ public class MyForm extends Form {
                         }
                     } //remove previous in one exists
                     previousPinchContainer = pinchContainer; //save just inserted container
+
+                    pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
+
                     parentToAnimate = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
+                    //once container is inserted, activate editing 
+                    if (MyPrefs.pinchInsertActivateEditing.getBoolean() && getInlineInsertContainer().getTextArea() != null) {
+                        getInlineInsertContainer().getTextArea().startEditingAsync();
+                    }
                     ASSERT.that(parentToAnimate != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent()); //possible when inserting the very first element
                 } else {
                     if (Config.TEST_PINCH) {
                         Log.p("[B] removing  pinchContainer");
                     }
                     MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(pinchContainer); //remove new pinch container, leave old one (if exists) in pinchContainerPrevious
+                    ASSERT.that(pinchContainer.getParent() == null, "removeFromParentScrollYContainer) did not remove pinchContainer from its parent");
+                    if (true || pinchContainer.getParent() != null) {
+                        pinchContainer.remove(); //TODO just use .remove() - should be enough to remove the pinchContainer and faster/safer than removeFromParentScrollYContainer
+                    }
                 }
             }
             //reset all values
@@ -4985,7 +5085,10 @@ public class MyForm extends Form {
 //                });
 //                pinchContainer = createAndInsertPinchContainer(x, y);
 //</editor-fold>
-                createAndInsertPinchContainer(x, y);
+                int[] yAdj = new int[2];
+                yAdj[0] = yMin + newYDist / 3;
+                yAdj[1] = yMax;
+                createAndInsertPinchContainer(x, yAdj);
 
                 if (Config.TEST_PINCH) {
                     Log.p("inserted pinchContainer");

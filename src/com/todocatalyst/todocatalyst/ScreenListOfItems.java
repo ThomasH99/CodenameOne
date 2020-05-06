@@ -1086,7 +1086,6 @@ public class ScreenListOfItems extends MyForm {
         }
         );
 
-        //FILTER / SORT
         if (!optionTemplateEditMode && !optionUnmodifiableFilter) {// && itemListOrg.getFilterSortDefN() != null) { //UI: !=null: must define filter before sorting can be turned on/off
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", "Edit filter", Icons.iconFilterSettings, (e) -> {
@@ -1103,6 +1102,7 @@ public class ScreenListOfItems extends MyForm {
 //            ));
 //</editor-fold>
 
+            // DONE HIDE/SHOW
 //            Command hideShowDone = new CommandTracked("", Icons.iconShowDoneTasks, "HideShowDoneTasks") {
             Command hideShowDone = new CommandTracked("Show zzz",
                     //                    itemListOrg.getFilterSortDef(true).isShowDoneTasks()
@@ -1152,6 +1152,7 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
             toolbar.addCommandToOverflowMenu(hideShowDone);
 
+            //SORTING ON/OFF
 //            toolbar.addCommandToOverflowMenu(sortOnOff = new Command("Sort ON/OFF", Icons.iconCmdSortOnOff) { //this title never shown
             Command sortOnOff = new CommandTracked("Sort XXX", Icons.iconFilter, "SortOnOff") {
                 @Override
@@ -1197,6 +1198,7 @@ public class ScreenListOfItems extends MyForm {
             };
             toolbar.addCommandToOverflowMenu(sortOnOff);
 
+            //FILTER / SORT
             toolbar.addCommandToOverflowMenu(makeEditFilterSortCommand(itemListOrg));
 
         }
@@ -1318,6 +1320,7 @@ public class ScreenListOfItems extends MyForm {
             };
 
             if (true) {
+                if (false) {
 //            Button draggableOnOff = new Button();
 //                Command draggableOnOff = new CommandTracked("Move ON", Icons.iconMoveUpDownToolbarStyle) {
                 Command draggableOnOff = new CommandTracked("Move ON", Icons.iconMoveUpDown) {
@@ -1335,9 +1338,10 @@ public class ScreenListOfItems extends MyForm {
                         setCommandName(getCommandName().equals("Move ON") ? "Move OFF" : "Move ON");
                     }
                 };
-                if (false) {
                     toolbar.addCommandToOverflowMenu(draggableOnOff); //TODO disactivated until implemented
                 }
+                
+                //SELECTION ON/OFF
 //                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
                 toolbar.addCommandToOverflowMenu(CommandTracked.create("Select", Icons.iconSelected, (e) -> {
                     if (!isSelectionMode()) {

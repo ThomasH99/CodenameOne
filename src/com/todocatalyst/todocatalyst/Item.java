@@ -100,7 +100,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         this();
 //        setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue());
         if (setDefaultRemaining) {
-            setRemainingDefaultValue(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
+            setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
         }
     }
 
@@ -6703,9 +6703,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     /**
      * set the default value for remaining
      */
-    void setRemainingDefaultValue() {
+    void setRemainingDefaultValueIfNone() {
 //        setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue());
-        setRemaining(getRemainingDefaultValue());
+        if (getRemaining()==0) setRemaining(getRemainingDefaultValue());
     }
 
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -7602,7 +7602,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return categories;
     }
-
+    
     /**
      * add category ids NOT already in the list
      *
@@ -7693,11 +7693,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            DAO.getInstance().saveInBackground((ParseObject) cat);
         }
 
-        List<Category> unSelectedCats = null;
+        List<Category> unSelectedCats = new ArrayList();
         if (!onlyAddNewCatsDontRemoveAny) {
 //            Set<Category> unSelectedCats = new HashSet(item.getCategories());
 //            unSelectedCats = new ArrayList(Arrays.asList(item.getCategories()));
-            unSelectedCats = new ArrayList(item.getCategories());
+            unSelectedCats.addAll(item.getCategories());
             unSelectedCats.removeAll(locallyEditedCategories); //remove the categories that are still selected after editing. Those remaining in unSelectedCats have been unselected by user and should be removed
             for (Category cat : unSelectedCats) {
 //                cat.remove(item);
@@ -9918,10 +9918,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     + MyDate.formatDurationShort(requiredCalc, true) + ", getRemaining()=" + MyDate.formatDurationShort(required, true));
         }
 
-        WorkSlotList ownWorkSlots = getWorkSlotListN();
-        if (ownWorkSlots != null) {
-            required -= ownWorkSlots.getWorkTimeSum(); //deduct own worktime since that's always used first
+        WorkSlotList ownWorkSlotsN = getWorkSlotListN();
+        if (ownWorkSlotsN != null) {
+            required -= ownWorkSlotsN.getWorkTimeSum(); //deduct own worktime since that's always used first
         }
+        
         if (required > 0) {
             //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
             List<ItemAndListCommonInterface> providers = getOtherPotentialWorkTimeProvidersInPrioOrderN();
@@ -9960,8 +9961,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                WorkTimeSlices wt=prov.getAllocatedWorkTimeN(this);
 //</editor-fold>
                         WorkTimeSlices wt = prov.getAllocatedWorkTimeN(this);
-                        if (wt != null) //                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
-                        {
+                        if (wt != null) { //                        required = wt.getRemainingDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
                             required -= wt.getAllocatedDuration(); //required = wt != null ? wt.getRemainingDuration() : required; //set remaining to any duration that could not be allocated by this provider
                         }
                     }

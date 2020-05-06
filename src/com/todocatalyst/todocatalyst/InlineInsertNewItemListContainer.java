@@ -15,6 +15,7 @@ import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import com.codename1.ui.layouts.MyBorderLayout;
 import com.parse4cn1.ParseObject;
 
 /**
@@ -78,9 +79,10 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 
         this.insertBeforeRefElement = insertBeforeRefElement;
 
-        Container contForTextEntry = new Container(new BorderLayout());
+        Container contForTextEntry = new Container(new MyBorderLayout(MyBorderLayout.SIZE_EAST_BEFORE_WEST));
 
         textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
+        textEntryField.setUIID("PinchInsertTextField");
         textEntryField.setHint(ENTER_ITEMLIST);
         textEntryField.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
         Container westCont = new Container(BoxLayout.x());
@@ -106,10 +108,11 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
         }
         AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
-        contForTextEntry.add(BorderLayout.CENTER, textEntryField);
+//        contForTextEntry.add(BorderLayout.CENTER, textEntryField);
+        contForTextEntry.add(MyBorderLayout.EAST, textEntryField);
 
         //close insert container
-        contForTextEntry.add(BorderLayout.WEST, westCont);
+        contForTextEntry.add(MyBorderLayout.WEST, westCont);
         if (itemOrItemListForNewItemLists != null && itemOrItemListForNewItemLists.getSize() > 0) { //only add close button if in a non-empty list
             westCont.add(new Button(Command.createMaterial(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
@@ -133,7 +136,9 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
             }
         }, "InlineEditItemList");
         //Enter full screen edit of the new Category:
-        contForTextEntry.add(BorderLayout.EAST, new Button(editNewCmd));
+        Button editItemFullScreen=new Button(editNewCmd);
+         editItemFullScreen.setUIID( "PinchInsertTextEditButton");
+        contForTextEntry.add(BorderLayout.EAST, editItemFullScreen);
         add(contForTextEntry);
     }
 

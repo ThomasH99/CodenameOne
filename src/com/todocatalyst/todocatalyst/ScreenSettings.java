@@ -85,6 +85,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
 
         addSettingBoolean(content, parseIdMap2, MyPrefs.showSourceItemInEditScreens);
         addSettingBoolean(content, parseIdMap2, MyPrefs.pinchInsertEnabled);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.pinchInsertActivateEditing);
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.enableShowingSystemInfo);
         addSettingBoolean(content, parseIdMap2, MyPrefs.showObjectIdsInEditScreens);

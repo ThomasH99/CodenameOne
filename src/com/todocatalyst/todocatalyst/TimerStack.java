@@ -2765,7 +2765,7 @@ class TimerStack {
                     && timerInstance.getElapsedTotalTime()
                     >= MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS) {
                 ASSERT.that(timedItem.getStatus() == ItemStatus.CREATED,
-                        "timedItem.status is " + timedItem.getStatus() + " while status.getStatus()=" + status.getStatus());
+                      ()->  "timedItem.status is " + timedItem.getStatus() + " while Picker status.getStatus()=" + status.getStatus());
                 status.setStatus(ItemStatus.ONGOING, false); //UI: as soon as Timer is started, task status is set to Ongoing (except if Waiting or Ongoing or Completed)   
 //                timedItem.setStatus(ItemStatus.ONGOING);
 //                if (timedItem.getStartedOnDateD().getTime() == 0) //UI: in Timer, startedOnDate is set to when timer was started on the task, but only if the delay expired (if setting active)

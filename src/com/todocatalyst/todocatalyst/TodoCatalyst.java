@@ -1367,6 +1367,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
      */
     @Override
     public void localNotificationReceived(String notificationId) {
+        //https://www.codenameone.com/blog/local-notifications.html
         AlarmHandler.getInstance().localNotificationReceived(notificationId);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        PushContent res = PushContent.get(); //won't work: see discussion here: https://www.codenameone.com/blog/rich-push-notification-improved.html

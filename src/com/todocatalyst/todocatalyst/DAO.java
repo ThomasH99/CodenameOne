@@ -577,6 +577,22 @@ public class DAO {
         return items;
     }
 
+    /**
+     * gets cached elements**
+     * @param list
+     * @return 
+     */
+    public  List<ItemAndListCommonInterface> fetchListOfItemInterfaceFromListOfObjectIds(List<String> list) {
+        if (Config.TEST) {
+            ASSERT.that((list != null), "updating null list from cache");
+        }
+        ArrayList<ItemAndListCommonInterface> items = new ArrayList<>();
+        for (String objectId : list) {
+            items.add((ItemAndListCommonInterface)cacheGet(objectId));
+        }
+        return items;
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public ParseObject fetchIfNeededReturnCachedIfAvailOLDXXX(ParseObject parseObject) {
 //        if (parseObject == null) {

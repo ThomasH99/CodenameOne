@@ -833,6 +833,15 @@ public class ScreenRepair extends MyForm {
             hi.show();
         })));
 
+        content.add(new Button(Command.create("Play all built-in sounds", null, (e9) -> {
+            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
+            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_BUTTON_PRESS);
+            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_CONFIRMATION);
+            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ERROR);
+            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_INFO);
+            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_WARNING);
+        })));
+
 //        content.add(new Button(MyCommand.create("Force current time", null, (e) -> {
         content.add(new Button(Command.create("Force current time", null, (e) -> {
             MyForm fd = new MyForm("Set current time", ScreenRepair.this, () -> {

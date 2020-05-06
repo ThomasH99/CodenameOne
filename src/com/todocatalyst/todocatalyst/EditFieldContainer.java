@@ -35,15 +35,28 @@ public class EditFieldContainer extends Container {
     }
 
     EditFieldContainer(String fieldLabelTxt, Component field, String helpText, SwipeClear swipeClearFct,
-            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, Image fieldIcon) {
-        this(fieldLabelTxt, field, helpText, swipeClearFct, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, false, fieldIcon);
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, Character materialIcon) {
+        this(fieldLabelTxt, field, helpText, swipeClearFct, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, false, materialIcon);
     }
 
-    EditFieldContainer(String fieldLabelTxt, Component field, String helpText, SwipeClear swipeClearFct,
-            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, boolean sizeWestBeforeEast, Image fieldIcon) {
+    /**
+     *
+     * @param fieldLabelTxt
+     * @param field
+     * @param helpText
+     * @param swipeClearFct
+     * @param wrapText use a spanbutton to wrap text that doesn't fit onto one line (should be default)
+     * @param showAsFieldUneditable use UIID to show that field is editable
+     * @param visibleEditButton make button visible, or invisible but still reserving the space
+     * @param hiddenEditButton make button completely hidden (doesn't take any space)
+     * @param sizeWestBeforeEast give desired size to west/left container and then what is left to editable field
+     * @param materialIcon
+     */
+    public EditFieldContainer(String fieldLabelTxt, Component field, String helpText, SwipeClear swipeClearFct,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, boolean sizeWestBeforeEast, Character materialIcon) {
 //        super(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
         super(); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
-        setUIID("EditFieldContainer");
+        setUIID(hiddenEditButton?"EditFieldContainer":"EditFieldContainerEditable");
         Container fieldContainer = this;
         MyBorderLayout layout = MyBorderLayout.center();
 //        layout.setSizeEastWestMode(MyBorderLayout.SIZE_WEST_BEFORE_EAST);
@@ -108,7 +121,7 @@ public class EditFieldContainer extends Container {
         }
 
         //FIELD LABEL
-        Component fieldLabel = makeHelpButton(fieldLabelTxt, helpText, wrapText);
+        Component fieldLabel = makeHelpButton(fieldLabelTxt, helpText, wrapText, materialIcon);
 //        if (true) {
 //            fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
 //            fieldContainer.add(MyBorderLayout.EAST, visibleField);

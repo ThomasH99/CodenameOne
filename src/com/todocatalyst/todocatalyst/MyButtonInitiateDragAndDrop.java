@@ -40,6 +40,12 @@ public class MyButtonInitiateDragAndDrop extends MySpanButton {
 //        actualButton.setAutoRelease(true); //"A bit of "black magic" to avoid that swipe triggers the button http://stackoverflow.com/questions/39558166/how-to-avoid-that-swiping-a-swipeablecontainer-also-creates-an-event-in-the-top
 //        setBlockLead(true);
         addLongPressListener((ev) -> {
+            Form f = getComponentForm();
+            
+            //prioritize pinch over drag&drop
+            if (f instanceof MyForm && ((MyForm)f).isPinchOngoing())
+                return;
+            
             int x = ev.getX();
             int y = ev.getY();
             if (isDragAndDropEnabledFct.get()) {
@@ -52,7 +58,7 @@ public class MyButtonInitiateDragAndDrop extends MySpanButton {
                 }
                 dragAndDropComponent.setDraggable(true);
                 dragAndDropComponent.setFocusable(true);
-                Form f = getComponentForm();
+//                Form f = getComponentForm();
                 f.pointerPressed(x, y);
                 Display.getInstance().callSerially(() -> {
 //                    pointerDragged(x - 1, y - 1); //ths dragged element moves by the '1' pixels
@@ -63,7 +69,7 @@ public class MyButtonInitiateDragAndDrop extends MySpanButton {
                 }
             } else {
 //            Dialog.show("", "Turn Sort OFF to Drag and drop", "OK", null);
-                Form f = getComponentForm();
+//                Form f = getComponentForm();
                 if (f instanceof MyForm && ((MyForm) f).isShowDragAndDropWarning()) {
                     Dialog.show("", "Drag and drop not possible (view sorted, or D&D not possible in this view)", "OK", null);
                 }

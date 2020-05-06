@@ -1,6 +1,7 @@
 package com.todocatalyst.todocatalyst;
 
 //import com.codename1.io.Log;
+import com.codename1.components.SpanLabel;
 import com.codename1.ui.Container;
 import com.codename1.ui.Label;
 
@@ -39,7 +40,7 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
 //       if (screenType)
         switch (screenType) {
             case TODAY:
-                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeStartingToday);
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeWaitingExpiringToday);
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeAlarmsExpiringToday);
@@ -49,37 +50,38 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
                 content.add(makeSpacer());
                 break;
             case OVERDUE:
-                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingInt(content, parseIdMap2, MyPrefs.overdueLogInterval, 1, 365, 1);
                 content.add(makeSpacer());
                 break;
             case CREATION_LOG:
-                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingInt(content, parseIdMap2, MyPrefs.creationLogInterval, 1, 365, 1);
                 content.add(makeSpacer());
                 break;
             case COMPLETION_LOG:
-                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingInt(content, parseIdMap2, MyPrefs.completionLogInterval, 1, 365, 1);
                 content.add(makeSpacer());
                 break;
             case TOUCHED:
-                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingInt(content, parseIdMap2, MyPrefs.touchedLogInterval, 1, 365, 1);
                 content.add(makeSpacer());
                 break;
             case NEXT:
-                content.add(new Label(Format.f("Setings for {0}", screenType.getTitle())));
+                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingInt(content, parseIdMap2, MyPrefs.nextInterval, 1, 365, 1); //UI: max 60 days of overdue
                 content.add(makeSpacer());
                 break;
             case NOT_INIT:
         }
         
-        content.add(new Label("Setings shared for all task lists"));
+        addSettingTitle(content, "Settings shared for all task lists:");
 
 //        cont.setScrollableY(true);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone);
+                if (Config.TEST)addSettingExplanation(content, "Test text to show a fairly long explanation for an individual setting");
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowRemainingEvenIfZero);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListHideRemainingWhenDefaultValue);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListEffortEstimate);

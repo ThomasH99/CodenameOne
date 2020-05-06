@@ -78,7 +78,7 @@ public class InspirationalLists {
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
                 filter.setDescription("Tasks in progress but without any actual time recorded");
                 filter.setHelp("the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
-                filter.setDefinition("Status is ONGOING, Actual is zero, sorted with most recent last");
+//                filter.setDefinition("Status is ONGOING, Actual is zero, sorted with most recent last");
                 break;
             case WarmUp_X:
                 filter = new FilterSortDef() {
@@ -95,7 +95,7 @@ public class InspirationalLists {
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
                 filter.setDescription("quick easy tasks to get that dopamine flowing");
                 filter.setHelp("**the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
-                filter.setDefinition("**Status is ONGOING, Actual is zero, sorted with most recent last");
+//                filter.setDefinition("**Status is ONGOING, Actual is zero, sorted with most recent last");
                 break;
             case LastLittleEffort_X:
                 filter = new FilterSortDef() {
@@ -110,7 +110,7 @@ public class InspirationalLists {
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
                 filter.setDescription("Just a last little effort to finish");
                 filter.setHelp("**the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
-                filter.setDefinition("**Sort tasks/projects on ratio of remaining effort over total time already worked");
+//                filter.setDefinition("**Sort tasks/projects on ratio of remaining effort over total time already worked");
                 break;
             case WaitingForTooLong_X:
                 filter = new FilterSortDef() {
@@ -128,7 +128,7 @@ public class InspirationalLists {
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
                 filter.setDescription("Waiting for too long");
                 filter.setHelp("**the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
-                filter.setDefinition("Sort Waiting tasks/projects where either Waiting Till date is passed or which were set Waiting a long time ago");
+//                filter.setDefinition("Sort Waiting tasks/projects where either Waiting Till date is passed or which were set Waiting a long time ago");
                 break;
             case ImportantNeverGetsDone:
                 filter = new FilterSortDef() {
@@ -150,7 +150,7 @@ public class InspirationalLists {
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
                 filter.setDescription("Important but never gets done");
                 filter.setHelp("**the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
-                filter.setDefinition("What never gets done: Important, not Urgent and Challenging or time consuming");
+//                filter.setDefinition("What never gets done: Important, not Urgent and Challenging or time consuming");
                 break;
         }
         return filter;

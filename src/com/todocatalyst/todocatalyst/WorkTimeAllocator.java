@@ -654,7 +654,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
             //allocate to subtasks
             for (Item itm : itemsSortedFiltered) {
                 long eltDuration = itm.getWorkTimeRequiredFromProvider(ownerItemItemListOrCategory);
-                if (!itm.isDone()) {
+                if (eltDuration>0) {//&&!itm.isDone()) { getWorkTimeRequiredFromProvider above returns 0 if itm is Done
 //                    workTimeCache.put(itm, null); //null to indicate a Done task with no workTime, contrary to zero-duration tasks which get a slice w a starttime //NO, no point in doing this when count/size of cache no longer used
 //                } else {
                     WorkTimeSlices newWorkTS = workTimeSlices.getWorkTime(eltDuration, itm); //get workTime in order, slices keep track of up to where slices are already reserved

@@ -18,7 +18,7 @@ public class MyPrefs {
 
     //TODAY view
     static PrefEntry todayViewIncludeOverdueFromThisManyPastDays
-            = new PrefEntry("In Today, include overdue tasks from last X days", "todayViewIncludeOverdueFromThisManyPastDays", 1, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+            = new PrefEntry("In Today, include tasks overdue by this many days", "todayViewIncludeOverdueFromThisManyPastDays", 1, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
     static PrefEntry todayViewIncludeWaitingExpiringToday
             = new PrefEntry("In Today, include tasks until today", "todayViewIncludeWaitingExpiringToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
     static PrefEntry todayViewIncludeAlarmsExpiringToday
@@ -26,7 +26,7 @@ public class MyPrefs {
     static PrefEntry todayViewIncludeStartingToday
             = new PrefEntry("In Today, include tasks starting today", "todayViewIncludeStartingToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
     static PrefEntry todayViewIncludeWorkSlotsCoveringToday
-            = new PrefEntry("In Today, include WorkSLots starting today", "todayViewIncludeWorkSlotsCoveringToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+            = new PrefEntry("In Today, include WorkSlots starting today", "todayViewIncludeWorkSlotsCoveringToday", true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
     static PrefEntry todayViewShowProjectsInsteadOfLeafTasks
             = new PrefEntry("In Today, show top-level projects instead of leaf tasks", "todayViewShowProjectsInsteadOfLeafTasks", false, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
 
@@ -216,6 +216,9 @@ public class MyPrefs {
     static PrefEntry timerAskBeforeStartingOnNewElement
             = new PrefEntry("Ask before starting Timer starts on new task or list always If Possible to start **Always show new timers in current screenshow",
                     "timerAskBeforeStartingOnNewElement", true, "**");
+    static PrefEntry hideIconsInEditTaskScreen
+            = new PrefEntry("Hiden the icons when editing a task",
+                    "hideIconsInEditTaskScreen", false, "Get a cleaner or more space-efficient look");
 
     //COMMENTS
     static PrefEntry commentsAddToBeginningOfComment
@@ -503,6 +506,8 @@ public class MyPrefs {
             = new PrefEntry("enableRepairCommandsInMenus", "enableRepairCommandsInMenus", true, "**");
     static PrefEntry pinchInsertEnabled
             = new PrefEntry("Enable pinch insert in lists", "pinchInsertEnabled", true, "**");
+    static PrefEntry pinchInsertActivateEditing
+            = new PrefEntry("Automatically start editing new task after pinch insert ", "pinchInsertActivateEditing", true, "**");
     static PrefEntry screenRotationDisabled
             = new PrefEntry("Disable screen rotation", "screenRotationDisabled", true, "**");
     static PrefEntry enableShowingSystemInfo

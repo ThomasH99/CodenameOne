@@ -127,7 +127,7 @@ public class ScreenListOfWorkSlots extends MyForm {
         }
         getContentPane().setScrollableY(false);
 //        expandedObjects = new ExpandedObjects(getUniqueFormId(), (ParseObject) owner); //no persistance if filename and is empty (e.g. like with list of project subtasks)
-        expandedObjects = new ExpandedObjects( owner.getObjectIdP()); //no persistance if filename and is empty (e.g. like with list of project subtasks)
+        expandedObjects = new ExpandedObjects(owner.getObjectIdP()); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         this.enableAddWorkSlots = enableAddWorkSlots;
         addCommandsToToolbar(getToolbar());
 //        setScrollableY(true);
@@ -606,7 +606,11 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                return (Container) getInlineInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
 //            return BoxLayout.encloseY(new Label("Add a " + WorkSlot.WORKSLOT + " using +"));
 //            return BorderLayout.centerCenter(new SpanLabel(getTextToShowIfEmptyList()));
-            return BorderLayout.centerCenter(new SpanLabel("Add a " + WorkSlot.WORKSLOT + " using +"));
+            if (enableAddWorkSlots) {
+                return BorderLayout.centerCenter(new SpanLabel(Format.f("Add a {0 workslot} using +", WorkSlot.WORKSLOT)));
+            } else {
+                return BorderLayout.centerCenter(new SpanLabel(Format.f("Add {0 workslots} in lists, categories or projects", WorkSlot.WORKSLOTS)));
+            }
         }
 
     }

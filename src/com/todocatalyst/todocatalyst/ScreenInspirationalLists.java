@@ -112,7 +112,7 @@ public class ScreenInspirationalLists extends MyForm {
         //TODO!! check old filters from first version of TodoCatalyst
         //the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)
         content.add(new Button(
-                MyReplayCommand.create(InspirationalLists.ROIoverRemaining_X.getCmdUniqueId(), InspirationalLists.ROIoverRemaining_X.getDefinition(), Icons.iconInspiration, (e) -> {
+                MyReplayCommand.create(InspirationalLists.ROIoverRemaining_X.getCmdUniqueId(), InspirationalLists.ROIoverRemaining_X.getDescription(), Icons.iconInspiration, (e) -> {
                     MyForm myForm = new ScreenListOfItems(InspirationalLists.ROIoverRemaining_X.getFilterName(), "No tasks",
                             () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(), InspirationalLists.ROIoverRemaining_X, true),
                             ScreenInspirationalLists.this, (i) -> {
@@ -125,7 +125,7 @@ public class ScreenInspirationalLists extends MyForm {
                 })));
 
         content.add(new Button(
-                MyReplayCommand.create(InspirationalLists.UrgentByCreated.getCmdUniqueId(), InspirationalLists.UrgentByCreated.getDefinition(), Icons.iconInspiration, (e) -> {
+                MyReplayCommand.create(InspirationalLists.UrgentByCreated.getCmdUniqueId(), InspirationalLists.UrgentByCreated.getDescription(), Icons.iconInspiration, (e) -> {
                     MyForm myForm = new ScreenListOfItems(InspirationalLists.UrgentByCreated.getFilterName(), "No tasks",
                             () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(), InspirationalLists.UrgentByCreated, true),
                             ScreenInspirationalLists.this, (i) -> {

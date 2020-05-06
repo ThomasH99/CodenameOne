@@ -124,9 +124,18 @@ public class Icons {
 //    final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, labelStyle);
 //    final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_NOTIFICATIONS, labelStyle);
     final static char iconAlarmDate = FontImage.MATERIAL_NOTIFICATIONS_NONE;
-    final static char iconAlarmTriggered = FontImage.MATERIAL_NOTIFICATIONS_ACTIVE;
+    final static char iconAlarmTriggered = FontImage.MATERIAL_NOTIFICATIONS_ACTIVE; //TODO: custom icon
+    final static char iconHideUntilDate = FontImage.MATERIAL_VISIBILITY_OFF; //TODO: custom icon
+    final static char iconAutoCancelByDate = FontImage.MATERIAL_CANCEL_PRESENTATION; //TODO: custom icon
+    final static char iconStartedOnDate = FontImage.MATERIAL_TIMELAPSE; //TODO: custom icon
+    final static char iconCreatedDate = FontImage.MATERIAL_TRIP_ORIGIN; //TODO: custom icon
+    final static char iconModifiedDate = FontImage.MATERIAL_EDIT; //TODO: custom icon
+    
+    final static char iconPriority = FontImage.MATERIAL_PRIORITY_HIGH; //TODO: custom icon
+    final static char iconImportance =FontImage.MATERIAL_GRID_ON; // FontImage.MATERIAL_ISO; //TODO: custom icon
+    final static char iconUrgency = FontImage.MATERIAL_APPS; //TODO: custom icon
 
-    final static char iconFilterSettings = FontImage.MATERIAL_LOW_PRIORITY;
+    final static char iconEditFilterSort = FontImage.MATERIAL_IMPORT_EXPORT; //MATERIAL_REORDER; //MATERIAL_LOW_PRIORITY;
     final static char iconFilter = FontImage.MATERIAL_FILTER_LIST;
     final static char iconHideDoneTasks = FontImage.MATERIAL_CHECK_CIRCLE;
     final static char iconShowDoneTasks = FontImage.MATERIAL_CHECK_CIRCLE_OUTLINE;
@@ -172,9 +181,11 @@ public class Icons {
     
     //LIST/CATEGORY icons
     final static char iconList = FontImage.MATERIAL_LIST;
-    final static char iconCategory = FontImage.MATERIAL_FOLDER;
-    final static char iconListNew = FontImage.MATERIAL_CREATE_NEW_FOLDER;
+    final static char iconCategory = FontImage.MATERIAL_FOLDER_OPEN; //FontImage.MATERIAL_FOLDER;
+    final static char iconListNew = FontImage.MATERIAL_CREATE_NEW_FOLDER; //TODO custom icon: outline with + inside
     final static char iconCategoryNew = FontImage.MATERIAL_CREATE_NEW_FOLDER;
+    final static char iconOwner = FontImage.MATERIAL_LIST_ALT;
+    final static char iconObjectId = FontImage.MATERIAL_VPN_KEY;
 
 //    final static char iconFilter = FontImage.MATERIAL_FILTER_LIST;
 //    final static Image iconSettingsLabelStyle = FontImage.createMaterial(iconSettings, labelStyle);
@@ -188,10 +199,11 @@ public class Icons {
 //    final static Image iconStarUnselectedLabelStyle = FontImage.createMaterial(iconStarUnselected, labelStyle);
 
     final static char iconStarSelected = FontImage.MATERIAL_STAR;
+    final static char iconStarLabel = FontImage.MATERIAL_STAR_HALF; //FontImage.MATERIAL_STARS;
 //    final static Image iconStarSelectedLabelStyle = FontImage.createMaterial(iconStarSelected, labelStyle);
 //    final static Image iconSelectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_RADIO_BUTTON_CHECKED, labelStyle, 2); //3mm
 
-    final static char iconSelected = FontImage.MATERIAL_CHECK_BOX;
+    final static char iconSelected = FontImage.MATERIAL_CHECK_BOX; //FontImage.MATERIAL_SELECT_ALL
 //    final static Image iconSelectedLabelStyle = FontImage.createMaterial(iconSelected, labelStyle, 2); //3mm
 
     final static char iconSelectAll = FontImage.MATERIAL_DONE_ALL; //TODO: find better symbol (with unchecked boxes)
@@ -228,6 +240,7 @@ public class Icons {
 //    static Image iconInsertNewTaskExdend= iconInsertNewTaskIndent.rotate180Degrees(true); //flip the above image
 
 //    final static Image iconCreateSubTask = FontImage.createMaterial(FontImage.MATERIAL_PLAYLIST_PLAY, labelStyle);
+    final static char iconSubTasks = FontImage.MATERIAL_FORMAT_INDENT_INCREASE; //TODO custom icon //MATERIAL_FORMAT_ALIGN_LEFT
 
     //TEMPLATE
     final static char iconNewItemFromTemplate = FontImage.MATERIAL_LIBRARY_ADD;
@@ -279,12 +292,12 @@ public class Icons {
 
     final static char iconCommentTimeStamp = FontImage.MATERIAL_SCHEDULE;
 
-    final static char iconWaitingAlarm = FontImage.MATERIAL_PAUSE;
-    final static char iconWaitingDateMaterial = FontImage.MATERIAL_PAUSE;
+    final static char iconWaitingAlarm = FontImage.MATERIAL_PAUSE; //TODO custom
+    final static char iconWaitingDateMaterial = FontImage.MATERIAL_PAUSE; //TODO custom
+    final static char iconSetWaitingDateMaterial = FontImage.MATERIAL_PAUSE_PRESENTATION;
 //    final static Image iconWaitingDate = FontImage.createMaterial(iconWaitingDateMaterial, labelStyle);
 
-    final static char iconHideUntilDate = FontImage.MATERIAL_VISIBILITY_OFF;
-    final static char iconStartByDate = FontImage.MATERIAL_PRESENT_TO_ALL; //FontImage.MATERIAL_EXIT_TO_APP;
+    final static char iconStartByDate = FontImage.MATERIAL_PRESENT_TO_ALL; //FontImage.MATERIAL_EXIT_TO_APP; //TODO custom icon
     final static char iconExpireByDate = FontImage.MATERIAL_CANCEL;//FontImage.MATERIAL_EVENT_BUSY;
 
     final static char iconDreadFunNeutral = FontImage.MATERIAL_THUMBS_UP_DOWN; //MATERIAL_SENTIMENT_VERY_SATISFIED;
@@ -319,8 +332,10 @@ public class Icons {
 //    final static Image iconRemainingEffortLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_EVENT_AVAILABLE, labelStyle);
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_EVENT_AVAILABLE;
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_RESTORE;
+    final static char iconEffortProject = FontImage.MATERIAL_MORE_VERT; //MATERIAL_EVENT_AVAILABLE;
 
     //REPEAT
+    final static char iconRepeat = FontImage.MATERIAL_REPLAY; //MATERIAL_REPEAT; MATERIAL_SYNC; //MATERIAL_BACKUP; //MATERIAL_EVENT_AVAILABLE;
     final static char iconSimulateRepeatDates = FontImage.MATERIAL_REFRESH; //MATERIAL_EVENT_AVAILABLE;
     final static char iconShowGeneratedTasks = FontImage.MATERIAL_SETTINGS_BACKUP_RESTORE; //MATERIAL_EVENT_AVAILABLE;
 
@@ -335,7 +350,7 @@ public class Icons {
 //    }
 //    final static Image iconBackToPrevFormToolbarStyle = FontImage.createMaterial(iconBackToPreviousScreen, toolBarStyle);
 
-    final static char iconEdit = FontImage.MATERIAL_CHEVRON_RIGHT;
+    final static char iconEdit = FontImage.MATERIAL_NAVIGATE_NEXT; //MATERIAL_ARROW_FORWARD_IOS; //; //MATERIAL_ARROW_FORWARD; //MATERIAL_CHEVRON_RIGHT;
     final static char iconEditMyFont = '\ue809';
 
 //    static Image iconEditPropertiesToolbarStyle() {

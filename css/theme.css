@@ -199,6 +199,7 @@ MyIcon {
     statusBarScrollsUpBool:true;
 
     /*https://stackoverflow.com/questions/19032940/how-can-i-get-the-ios-7-default-blue-color-programmatically/19033326*/
+    /* use as var(--left-padding)*/
     --iosbuttonblue: #007AFF;
     --left-padding: 3mm;
     --right-padding: 2mm;
@@ -286,7 +287,7 @@ TextField {
 
     /*->font-family :  "native:MainLight"; /*"native:MainRegular";*/
     /*margin: 1mm;*/
-    padding: var(--left-padding);/*2mm;*/
+    padding: 5mm; /*var(--left-padding);/*2mm;*/
     /*border: 1pt solid lightgray;  cn1-pill-border; /*cn1-round-border;*/
     color: black;
     text-align: left;
@@ -347,7 +348,7 @@ TitleCommand { /*the commands in the title bar*/
     cn1-derive: Button;
     /*margin-top: 0.5mm;/**/
     margin: 1.5mm 1.5mm;
-    padding: 0;
+    padding: 0mm;
     font-size: 160%; /*140%;*/
     background-color: transparent;
     /*color: green;
@@ -504,7 +505,7 @@ ScreenItemComment {
     /*font-size: 80%;*/
     padding: 2mm 3mm 2mm 3mm;
     /*border: 0mm solid red;/**/
-    margin: 0;
+    margin: 0mm;
     font-family :  "native:MainLight";/**/
     color: darkgray;/**/
     /*font-size: 90%;/**/
@@ -551,6 +552,8 @@ BaseListElementContainer { /*encapsulates each element in a list of ItemLists/Ca
 
 EditFieldContainer { /*encapsulates each edit field in ScreenItem and adds left/right margins*/
     cn1-derive: BaseFieldContainer;
+    padding: 2mm 2mm 2mm 2mm;
+
     /* color: darkslategray;
      background-color: blue;
      margin:3mm;
@@ -560,6 +563,11 @@ EditFieldContainer { /*encapsulates each edit field in ScreenItem and adds left/
     /*border-bottom: 4px solid yellow; /*black;/**/
     /*    padding: 1.5mm 2mm 1.5mm 2mm ;
         margin: 2px 0mm 0 0mm;*/
+}
+
+EditFieldContainerEditable { /*encapsulates each edit field *with edit arrow* in ScreenItem and adds left/right margins*/
+    cn1-derive: EditFieldContainer;
+    padding: 2mm 0mm 2mm 2mm;
 }
 
 /*LabelFieldXXX { used for (uneditable) field *labels* on the left of the screen 
@@ -584,17 +592,24 @@ ScreenItemFieldLabel {
     cn1-derive: Default;
     font-family :  "native:MainLight";
 
-    text-align: left;/**/
+    text-align: left; /**/
     /* font-size: 80%;*/
     color: black;
     /*background-color: #3399ff;*/
     /*padding:0mm 3mm 0 0mm; top+bottom right+left*/
     /*    padding-top: 1mm; 
         padding-bottom: 1mm; */
-    padding-left: 3mm; /*top+bottom right+left*/
-    margin:0mm 0mm;
+    /*padding-left: 3mm; top+bottom right+left*/
+    margin:0mm 0mm 0mm 0mm;
+    padding: 0mm 0mm 0mm 0mm;
     /*padding-left:0.5mm;
     padding-right:0.5mm;*/
+}
+
+ScreenItemFieldIcon{
+    cn1-derive: ScreenItemFieldLabel;
+    padding-right: 1mm;
+    /*padding: 1mm;*/
 }
 
 /*LabelValueXXX { used for editable fields on the right of the screen
@@ -617,8 +632,8 @@ ScreenItemEditableValue {/*used for field labels*/
     cn1-derive: ScreenItemFieldLabel;
     color: #666;
     /*padding:0mm 0mm 0 0mm; top+bottom right+left*/
-    padding:0mm 2mm 0 2mm; /*top+bottom right+left*/
-    margin:0mm 0mm;
+    padding:0mm 2mm 0mm 2mm; /*top+bottom right+left*/
+    margin:0mm 0mm 0mm 6mm;
 }
 
 ScreenItemValueInherited {
@@ -759,8 +774,24 @@ SettingContainer { /*container for each Setting */
     padding-bottom: 2mm;/**/
     padding-top: 2mm;/**/
     padding-right: 2mm;/**/
+    padding-left: 2mm;/* */
+
     border-bottom: 1px solid lightgray; /*black; */
     /*padding: 3mm;*/
+}
+SettingSectionLabel { /*label with explanation of following Settings */
+    cn1-derive: Label;
+    text-align: center;
+    color: lightslategrey;
+}
+
+SettingIndividualLabel { /*label with explanation of following Settings */
+    cn1-derive: Label;
+    text-align: left;
+    color: lightslategrey;
+    padding: 0mm;
+    margin: 0mm 2mm 2mm 2mm;
+    font-size: 80%;
 }
 
 
@@ -1090,26 +1121,9 @@ ListOfItemsTextBase { /*style for task text in lists*/
 }
 
 ListOfItemsText { /*style for task text in lists*/
-    cn1-derive: ListOfItemsTextBase;/**/
+    cn1-derive: ListOfItemsTextBase; /**/
     /*font-family :  "native:MainLight"; "native:MainLight";*/
 }
-ListOfItemsText.pressed { 
-    cn1-derive: ListOfItemsTextBase;
-    color: black;
-    text-align: left;
-    padding:0 0.5mm 0 0; /*top+bottom right+left*/
-    margin:0mm;
-}
-ListOfItemsText.unselected{ 
-    cn1-derive: ListOfItemsTextBase;
-}
-ListOfItemsText.selected{ 
-    cn1-derive: ListOfItemsTextBase;
-    color: black;
-    text-align: left;
-    padding:0 0.5mm 0 0; /*top+bottom right+left*/
-    margin:0mm;
-/**/
 
 ListOfItemsTextDone { /*style for DONE task text in lists*/
     cn1-derive: ListOfItemsText;
@@ -1175,9 +1189,9 @@ ItemListSmall {
     font-family :  "native:MainLight"; /*"native:MainRegular";*/
     font-size: 90%; /*80*/
     color: gray; /*darkgray; */
-        margin-right: 0.75mm;
-        /*    padding:0 0.5mm 0 0; top+bottom right+left
-            margin:0;*/
+    margin-right: 0.75mm;
+    /*    padding:0 0.5mm 0 0; top+bottom right+left
+        margin:0;*/
 }
 
 ListOfItemsItemDetailsLabel { /*style for task details labels */
@@ -1395,7 +1409,6 @@ ListOfItemListsShowItemsExpanded {
     background-color: lightgrey;/**/
 }
 
-
 /*************** Category/ItemList properties **************/
 
 CategoryContainer { /*inside swipeable*/
@@ -1414,6 +1427,8 @@ CategoryListContainer {
     border-top: 1pt solid darkgrey;
     /*border-bottom: 1pt solid darkgrey;*/
     background: #d1eded;
+    padding: 2mm 2mm 2mm 3mm; 
+    /*margin: 0mm 2mm 2mm 3mm;*/
     /*border-top: 1pt solid green;*/
     /*border-bottom: 1pt solid lightgray;*/
 }
@@ -1445,7 +1460,7 @@ CategoryListOtherText { /*the text/name of the category*/
 
 CategoryListIcon  { /*the icon to the left of the name of the itemlist*/
     cn1-derive: IconEdit;
-    padding-left: 2mm;
+    padding-left: 0mm;
     padding-right: 1mm;
     /*margin: 0 2mm;*/
 }
@@ -1668,8 +1683,7 @@ SwipeButtonInsertBelow{
     background-color:darkgreen;
 }
 
-/* INLINE INSERT
-*/
+/* INLINE INSERT */
 InlineInsertItemAsTask {
     cn1-derive: ItemContainer;
 }
@@ -1678,6 +1692,41 @@ InlineInsertItemAsSubtask {
     background: yellow;
     color:red;
 }
+
+InlineInsertNewItemContainer2 { 
+    cn1-derive: Container;
+    border-style: solid;
+    border-width: 0.5mm;/*0.3mm;*/
+    border-color: lightslategray;
+    margin: 0.5mm;
+    padding: 0.5mm;
+    background-color: yellow;
+}
+PinchInsertTextField { 
+    cn1-derive: TextField;
+    /*color: darkslategray;*/
+    /*background-color: #eee;*/
+    border-color: lightblue;
+    /*border-color: #007AFF; royalblue;*/
+    border-style: none;
+    /*border-width: 0.2mm;0.3mm;*/
+    
+    margin: 0mm;
+    padding: 0mm 1mm;
+}
+PinchInsertTextEditButton { 
+    cn1-derive: Button;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm 0mm;
+}
+PinchInsertTextCloseButton { 
+    cn1-derive: Button;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm 2mm;
+}
+
 
 /* WORKSLOT */
 WorkSlotContainer {
@@ -1770,11 +1819,13 @@ ToggleButton {
     /* text-align: right;*/
     /*color: #6eaeff; /**dodgerblue;*/
 }
+
 ToggleButton.pressed {
     background-color: #007AFF; /*blue;*/
     color: white;
     /*color: green; /**dodgerblue;*/
 }
+
 ToggleButton.selected {
     background-color: #007AFF; /*royalblue;*/
     color: white;
@@ -1791,13 +1842,16 @@ ToggleButtonFirst {
     /*border-style: solid;*/
     /*border-style: solid;
     border-right: 0mm;*/
-    /*    
-    border-top-left-radius: 1mm;
-        border-bottom-left-radius:  1mm; /*TEMP DISABLED*/
-    /*   margin: 0mm;
+   /* border-top-left-radius: 1mm;
+    border-bottom-left-radius: 1mm; /*TEMP DISABLED*/
+   /*border-top-right-radius: 1mm;
+    border-bottom-right-radius: 1mm; /*TEMP DISABLED*/
+    border-radius: 1mm 0mm 0mm 1mm; /*TEMP DISABLED*/
+     /*   margin: 0mm;
        margin-bottom: 0px;
        padding: 1mm;*/
 }
+
 ToggleButtonOnly {
     /*https://stackoverflow.com/questions/52163839/codename-one-componentgroupbool-on-android-by-css*/
     cn1-derive: ToggleButton;
@@ -1806,21 +1860,24 @@ ToggleButtonOnly {
     color: green;
     background: aqua;
     /*border-style: solid;*/
-    /*
-        border-top-left-radius: 1mm;
-    border-bottom-left-radius:  1mm;
-        border-top-right-radius: 1mm;
-        border-bottom-right-radius:  1mm;/*TEMP DISABLED*/
+  /*  border-top-left-radius: 1mm;
+    border-bottom-left-radius: 1mm;
+    border-top-right-radius: 1mm;
+    border-bottom-right-radius: 1mm; /*TEMP DISABLED*/
+        border-radius: 1mm 1mm 1mm 1mm; /*TEMP DISABLED*/
+
     /*   margin: 0mm;
        margin-bottom: 0px;
        padding: 1mm;*/
 }
+
 ToggleButtonLast {
     cn1-derive: ToggleButton;
-    /*   
-    border-top-right-radius: 1mm;
-        border-bottom-right-radius:  1mm;
-    /*TEMP DISABLED*/
+    border-radius: 0mm 1mm 1mm 0mm; 
+/*      border-top-left-radius: 1mm;
+    border-bottom-left-radius: 1mm; */
+/*    border-top-right-radius: 1mm;
+    border-bottom-right-radius: 1mm;*/
 }
 
 GroupElement{
@@ -1829,14 +1886,14 @@ GroupElement{
 
 GroupElementFirst{
     cn1-derive: ToggleButton;
-    /*    border-top-left-radius: 1mm;
-        border-top-right-radius:  1mm;/*TEMP DISABLED*/
+    border-top-left-radius: 1mm;
+    border-top-right-radius:  1mm;/*TEMP DISABLED*/
 
 }
 GroupElementLast{
     cn1-derive: ToggleButton;
-     /*   border-bottom-right-radius: 1mm;
-        border-bottom-left-radius:  1mm;/*TEMP DISABLED*/
+    border-bottom-right-radius: 1mm;
+    border-bottom-left-radius:  1mm;/* TEMP DISABLED*/
 
 }
 GroupElementOnly{
@@ -1869,22 +1926,22 @@ ButtonGroup { /*popup menu to select item status */
 
 ButtonGroupFirst {
     cn1-derive: ButtonGroup;
-    /*    border-top-left-radius: 1mm;
-        border-top-right-radius:  1mm;*/
+    border-top-left-radius: 1mm;
+    border-top-right-radius: 1mm;/*TEMP DISABLED*/
 }
 
 ButtonGroupLast {
     cn1-derive: ButtonGroup;
-      /*  border-bottom-right-radius: 1mm;
-        border-bottom-left-radius:  1mm;/*TEMP DISABLED*/
+    border-bottom-right-radius: 1mm;
+    border-bottom-left-radius: 1mm;/*TEMP DISABLED*/
 }
 
 ButtonGroupOnly {
     cn1-derive: ButtonGroup;
-    /*    border-top-left-radius: 1mm;
-        border-top-right-radius:  1mm;
-        border-bottom-right-radius: 1mm;
-        border-bottom-left-radius:  1mm;/*TEMP DISABLED*/
+    border-top-left-radius: 1mm;
+    border-top-right-radius:  1mm;
+    border-bottom-right-radius: 1mm;
+    border-bottom-left-radius:  1mm;/*TEMP DISABLED*/
     /*    margin: 2mm;
         padding: 2mm;*/
 }
@@ -1896,8 +1953,8 @@ ManualSorting {
 Switch {
     /*color: white;
     background: activeborder;*/
-    padding: 0 0mm 0 2mm;
+    margin-left: 5mm;
+    /*padding: 0 0mm 0 2mm;*/
+    padding: 0mm 0mm 0mm 0mm;
+
 }
-
-
-

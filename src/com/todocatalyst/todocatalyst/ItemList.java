@@ -1206,13 +1206,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        boolean status = subtasks.remove(subtask);
 //        setList(subtasks);
 //        return status;
-        removeItem(subItemOrList); //TODO: update removeItem to return boolean
+        boolean status = removeItem(subItemOrList); //TODO: update removeItem to return boolean
 //        assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subItemOrList=" + subItemOrList + ", owner=" + getOwner() + ", list=" + this;
         ASSERT.that(!(this instanceof ItemList) || subItemOrList.getOwner() == this, () -> "list not owner of removed subItemOrList (" + subItemOrList + "), owner=" + getOwner() + ", list=" + this); //
-        if (removeReferences) {
+        if (status && removeReferences) {
             subItemOrList.setOwner(null);
         }
-        return true;
+        return status;
     }
 
     private Bag cacheBag;
@@ -2242,9 +2242,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             setItemBag(itemBag);
         } else { //else remove normally
 
-            int listSize = getSize();
+            int fullListSize = getSize(); //return full list size
 
-            if (0 <= indexFull && indexFull < listSize) {
+            if (0 <= indexFull && indexFull < fullListSize) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 // if (index < listSize && index >= 0) {
 //                E baseItem = getItemAt(index);

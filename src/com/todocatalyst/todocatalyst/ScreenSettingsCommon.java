@@ -80,7 +80,9 @@ public class ScreenSettingsCommon extends MyForm {
             toolbar.addCommandToOverflowMenu(makeCancelCommand());
         }
 
-        if (false) toolbar.addCommandToOverflowMenu(new CommandTracked("Reset to default**")); //reset to default values
+        if (false) {
+            toolbar.addCommandToOverflowMenu(new CommandTracked("Reset to default**")); //reset to default values
+        }
     }
 
     static Switch addSettingBooleanXXX(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
@@ -175,7 +177,7 @@ public class ScreenSettingsCommon extends MyForm {
 //        cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener, prefEntry.getHelpText()));
         cont.add(settingBoolean(parseIdMap2, prefEntry, onOnAction, onOffAction));
     }
-    
+
     static void addSettingBoolean(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnOffAction) {
         addSettingBoolean(cont, parseIdMap2, prefEntry, onOnOffAction, onOnOffAction);
     }
@@ -253,6 +255,24 @@ public class ScreenSettingsCommon extends MyForm {
 
     static void addSettingBoolean(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
         addSettingBoolean(cont, parseIdMap2, prefEntry, null, null);
+    }
+
+    /**
+     * add a title to a section of settings
+     * @param cont
+     * @param title 
+     */
+    static void addSettingTitle(Container cont, String title) {
+        cont.add(new SpanLabel(title, "SettingSectionLabel"));
+    }
+
+    /**
+     * add an explantion to a specific setting
+     * @param cont
+     * @param explanation 
+     */
+    static void addSettingExplanation(Container cont, String explanation) {
+        cont.add(new SpanLabel(explanation, "SettingIndividualLabel"));
     }
 
     protected void addSettingTimeInMinutes(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
@@ -391,7 +411,7 @@ public class ScreenSettingsCommon extends MyForm {
                         return;
                     }
                 }
-            }, unselectAllowed,verticalLayout),
+            }, unselectAllowed, verticalLayout),
                     prefEntry.getHelpText()));
 
         }

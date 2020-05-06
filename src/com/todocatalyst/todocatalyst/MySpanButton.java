@@ -471,6 +471,24 @@ public class MySpanButton extends Container {
     public void addLongPressListener(ActionListener l) {
         actualButton.addLongPressListener(l);
     }
+    
+        /**
+     * Sets the position of the text relative to the icon if exists
+     *
+     * @param textPosition alignment value (LEFT, RIGHT, BOTTOM or TOP)
+     * @see #LEFT
+     * @see #RIGHT
+     * @see #BOTTOM
+     * @see #TOP
+     */
+    public void setTextPosition(int textPosition) {
+        if (textPosition != LEFT && textPosition != RIGHT && textPosition != BOTTOM && textPosition != TOP) {
+            throw new IllegalArgumentException("Text position can't be set to " + textPosition);
+        }
+        actualButton.setTextPosition(textPosition);
+    }
+
+
 
     
 }
