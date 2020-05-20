@@ -36,11 +36,11 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
-       ScreenType screenType= previousForm.getScreenType();
+        ScreenType screenType = previousForm.getScreenType();
 //       if (screenType)
         switch (screenType) {
             case TODAY:
-                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
+                addSettingTitle(content, Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeStartingToday);
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeWaitingExpiringToday);
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeAlarmsExpiringToday);
@@ -50,38 +50,43 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
                 content.add(makeSpacer());
                 break;
             case OVERDUE:
-                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
+                addSettingTitle(content, Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingInt(content, parseIdMap2, MyPrefs.overdueLogInterval, 1, 365, 1);
                 content.add(makeSpacer());
                 break;
             case CREATION_LOG:
-                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
+                addSettingTitle(content, Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingInt(content, parseIdMap2, MyPrefs.creationLogInterval, 1, 365, 1);
                 content.add(makeSpacer());
                 break;
             case COMPLETION_LOG:
-                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
+                addSettingTitle(content, Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingInt(content, parseIdMap2, MyPrefs.completionLogInterval, 1, 365, 1);
                 content.add(makeSpacer());
                 break;
             case TOUCHED:
-                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
+                addSettingTitle(content, Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingInt(content, parseIdMap2, MyPrefs.touchedLogInterval, 1, 365, 1);
                 content.add(makeSpacer());
                 break;
             case NEXT:
-                addSettingTitle(content,Format.f("Setings for {0}:", screenType.getTitle()));
+                addSettingTitle(content, Format.f("Setings for {0}:", screenType.getTitle()));
                 addSettingInt(content, parseIdMap2, MyPrefs.nextInterval, 1, 365, 1); //UI: max 60 days of overdue
                 content.add(makeSpacer());
                 break;
             case NOT_INIT:
         }
-        
+        if (Config.TEST) {
+            addSettingInt(content, parseIdMap2, MyPrefs.pinchAdjustUpper, 0, 10, 1);
+            addSettingInt(content, parseIdMap2, MyPrefs.pinchAdjustLower, 0, 10, 1);
+        }
         addSettingTitle(content, "Settings shared for all task lists:");
 
 //        cont.setScrollableY(true);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone);
-                if (Config.TEST)addSettingExplanation(content, "Test text to show a fairly long explanation for an individual setting");
+        if (Config.TEST) {
+            addSettingExplanation(content, "Test text to show a fairly long explanation for an individual setting");
+        }
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowRemainingEvenIfZero);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListHideRemainingWhenDefaultValue);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListEffortEstimate);

@@ -454,7 +454,7 @@ public class ScreenRepair extends MyForm {
     Label cont2Label;//= new Label();
     Label dropTarget1Label;// = new Label();
     Label dropTarget2Label;//= new Label();
-    private InlineInsertNewItemContainer2 pinchContainer;
+    private PinchInsertItemContainer pinchContainer;
     Item pinchItem;
 
     private boolean minimumPinchSizeReached() {
@@ -809,7 +809,7 @@ public class ScreenRepair extends MyForm {
             hi.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenRepair.this.showBack()));
             String logs = NativeLogs.getNativeLogs();
             TextArea textArea = new TextArea(logs);
-            hi.add(BorderLayout.CENTER, textArea); 
+            hi.add(BorderLayout.CENTER, textArea);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            hi.getToolbar().addSearchCommand((e) -> {
 //                String txt = (String) e.getSource();
@@ -1016,7 +1016,17 @@ public class ScreenRepair extends MyForm {
         content.add(new Button(new Command("Show Today badge count") {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                Dialog.show("INFO", "Today Badge Count = " + DAO.getInstance().getBadgeCount(true, true), "OK", null);
+                long start = System.currentTimeMillis(); //time query
+                List<ItemAndListCommonInterface> todayList = DAO.getInstance().getToday();
+                long end = System.currentTimeMillis();
+
+                List<ItemAndListCommonInterface> todayLeafList = DAO.getTodayLeafTaskList(todayList);
+
+//                Dialog.show("INFO", "Today Badge Count = " + DAO.getInstance().getBadgeCount(true, true), "OK", null);
+                Dialog.show("INFO", "Today Badge Count = " + todayLeafList.size() + "; millis=" + (end - start)
+                        + "\nLEAF TASKS(" + todayLeafList.size() + ")= [" + todayLeafList + "]"
+                        + "\nTOPLEVEL(" + todayList.size() + ")=[" + todayList + "]"
+                        ,                         "OK", null);
             }
         }));
 

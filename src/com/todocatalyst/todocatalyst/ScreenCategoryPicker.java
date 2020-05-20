@@ -208,7 +208,11 @@ public class ScreenCategoryPicker extends MyForm {
 //                    previousForm.showBack();
 //</editor-fold>
 //                        showPreviousScreenOrDefault(previousForm, false);
-                        showPreviousScreen(false);
+                        if (false) {
+                            showPreviousScreen(false);
+                        } else {
+                            showPreviousScreen(true); //could call w false, but for consistency use true
+                        }
                     }
             );
         }

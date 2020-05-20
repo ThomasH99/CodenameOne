@@ -92,7 +92,8 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
     }
 
     /**
-     * return the date the app was last launched and stores the now Date as current time for next launch, returns null if no previously stored date
+     * return the date the app was last launched and stores the now Date as
+     * current time for next launch, returns null if no previously stored date
      */
     private Date getAndUpdateLastAppStartDate(Date now) {
 //        Date now = new Date();
@@ -103,7 +104,8 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
     }
 
     /**
-     * return the time since the app was last launched, and MyDate.MAX_DATE if never launched before (or not date previously stored)
+     * return the time since the app was last launched, and MyDate.MAX_DATE if
+     * never launched before (or not date previously stored)
      *
      * @return
      */
@@ -391,14 +393,16 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         long timeSinceLastInit = getTimeSinceLastAppStartAndUpdateTimeMillis();
         Log.p("Time since last app start (call to init())= " + MyDate.formatDurationStd(timeSinceLastInit, true));
 
-        if (timeSinceLastInit < MyDate.MINUTE_IN_MILLISECONDS) {
+//        if (MyPrefs.deleteLocalStorageIfRestartedQuickly.getBoolean()&&timeSinceLastInit < MyDate.MINUTE_IN_MILLISECONDS) {
+        if (MyPrefs.deleteLocalStorageIfRestartedQuickly.getBoolean()
+                && timeSinceLastInit < MyPrefs.deleteLocalStorageIfRestartedBeforeSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS) {
 //            Log.p("Time since last restart less than " + MyDate.formatDuration(timeSinceLastInit,true) + " - deleting Replay");
-                Log.p("Time since last restart less than " + MyDate.formatDuration(timeSinceLastInit,true) );
+            Log.p("Time since last restart less than " + MyDate.formatDuration(timeSinceLastInit, true));
             if (ReplayLog.getInstance().deleteReplayInfo()) {
-                Log.p( " - Replay DELETED");
+                Log.p(" - Replay DELETED");
 //                Log.p("Replay info successfully deleted");
             } else {
-                Log.p( " - Replay delete FAILED");
+                Log.p(" - Replay delete FAILED");
 //                Log.p("Replay info NOT successfully deleted");
             }
             Log.p("Deleting ALL STORAGE (except user token");
@@ -999,9 +1003,9 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 
         //TODO!!! How to find and display previously expired alarms (corresponding to the #notificatins shown on the app badge)?
         //reset badge number when app is launched
-        if (false) {
-            Display.getInstance().setBadgeNumber(0);
-        }
+//        if (false) {
+//            Display.getInstance().setBadgeNumber(0);
+//        }
 //        Form current = Display.getInstance().getCurrent();
         if (current != null) {
 //            if (false && current == ScreenTimer.getInstance()) { //NOT necessary since current.show() should update the timemr
@@ -1027,7 +1031,6 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //            DAO.getInstance().saveNewExecuteUpdate();
 //        }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        switch (1) {
 //            case 1:
@@ -1147,7 +1150,8 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         //set the app icon badge count
         if (Display.getInstance().isBadgingSupported() || Display.getInstance().isSimulator()) {
             long t1 = MyDate.currentTimeMillis();
-            int badgeCount = DAO.getInstance().getBadgeCount(true, true);
+//            int badgeCount = DAO.getInstance().getBadgeCount(true, true);
+            int badgeCount = DAO.getInstance().getBadgeCount();
             if (Config.TEST) {
                 Log.p("Time for query to get badgeCount = " + (MyDate.currentTimeMillis() - t1) + "ms");
             }

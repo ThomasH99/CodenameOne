@@ -224,7 +224,7 @@ public class ScreenWorkSlot extends MyForm {
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("WorkSlotSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsWorkSlot(ScreenWorkSlot.this, () -> {
-                refreshAfterEdit();
+                if(false)refreshAfterEdit();
             }).show();
         }
         ));

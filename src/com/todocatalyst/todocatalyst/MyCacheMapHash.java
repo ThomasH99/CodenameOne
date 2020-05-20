@@ -23,8 +23,12 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.io.Log;
 import com.codename1.io.Storage;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Vector;
 
 /**
@@ -39,11 +43,11 @@ import java.util.Vector;
  * @author Shai Almog
  */
 public class MyCacheMapHash {
-
+    
     private int cacheSize = 10;
     private Hashtable memoryCache = new Hashtable();
     private Hashtable weakCache = new Hashtable();
-
+    
     private int storageCacheSize = 0;
 //    private Vector storageCacheContentVec;
     private Hashtable storageCacheContentVec;
@@ -144,7 +148,7 @@ public class MyCacheMapHash {
 //            Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value); //MUST always save to persist changes on device between app activations
 //</editor-fold>
         if (Config.TEST) {
-            ASSERT.that(key != null, "key==null for value=" + value);
+            ASSERT.that(key != null, ()->"key==null for value=" + value);
         }
         Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
         Object oldVal = memoryCache.put(key, value);
@@ -275,29 +279,57 @@ public class MyCacheMapHash {
     }
 
     /**
-     * Clears the caches for this cache object
-     */
-    private void clearAllCache() {
-        clearMemoryCache();
-//        clearStorageCache();
-    }
-
-    synchronized public void clearAllCache(String[] reservedNames) {
-        clearMemoryCache();
-        for (String name : reservedNames) {
-            delete(name);
-        }
-//        clearStorageCache();
-    }
-
-    /**
      * Clears the memory cache
      */
     public void clearMemoryCache() {
         memoryCache.clear();
 //        weakCache.clear();
     }
+    
+    public void clearStorageCache(List<String> filenames, List<String> prefixes) {
+        String[] allFilenames = Storage.getInstance().listEntries();
+        StringBuilder deletedFilenames = new StringBuilder();
+        for (String filename : allFilenames) {
+            for (String prefix : prefixes) {
+                if (filename.startsWith(prefix)) {
+                    Storage.getInstance().deleteStorageFile(filename);
+                    deletedFilenames.append(filename).append("*; "); // '*' indicates deleted based on prefix
+                }
+            }
+            if (filenames.contains(filename)) {
+                Storage.getInstance().deleteStorageFile(filename);
+                deletedFilenames.append(filename).append("; ");
+            }
+        }
+        Log.p("Deleted cache files: " + deletedFilenames.toString());
+    }
+    
+    public void clearStorageCache(List<String> filenames) {
+        clearStorageCache(filenames, Arrays.asList(cacheId));
+    }
 
+    public void clearStorageCache() {
+        clearStorageCache(new ArrayList(), Arrays.asList(cacheId));
+    }
+    
+    synchronized public void clearAllCache(String[] reservedNames) {
+        clearMemoryCache();
+//        if (reservedNames != null) {
+//            for (String name : reservedNames) {
+//                delete(name);
+//            }
+//        }
+        clearStorageCache(reservedNames==null?new ArrayList(): Arrays.asList(reservedNames));
+//        clearStorageCache();
+    }
+
+    /**
+     * Clears the caches for this cache object
+     */
+    public void clearAllCache() {
+        clearAllCache(null);
+    }
+    
     private void placeInStorageCache(Object key, long lastAccessed, Object value) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (storageCacheSize < 1) {

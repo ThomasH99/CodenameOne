@@ -179,7 +179,7 @@ public class ScreenTimer6 extends MyForm {
 //        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("TimerSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("TimerSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsTimer(ScreenTimer6.this, () -> {
-                refreshAfterEdit();
+                if(false)refreshAfterEdit();
             }).show();
         }
         ));

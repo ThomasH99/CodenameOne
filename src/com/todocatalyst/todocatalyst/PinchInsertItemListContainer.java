@@ -22,7 +22,7 @@ import com.parse4cn1.ParseObject;
  *
  * @author Thomas
  */
-public class InlineInsertNewItemListContainer extends InlineInsertNewContainer implements InsertNewElementFunc {
+public class PinchInsertItemListContainer extends PinchInsertContainer  {
 
     private MyTextField2 textEntryField;
     private MyForm myForm;
@@ -61,7 +61,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
      * @param myForm
      * @param refItemList
      */
-    public InlineInsertNewItemListContainer(MyForm form, ItemList refItemList, ItemListList ownerList, boolean insertBeforeRefElement) {
+    public PinchInsertItemListContainer(MyForm form, ItemList refItemList, ItemListList ownerList, boolean insertBeforeRefElement) {
 //        this(myForm, ItemListList.getInstance(), refItemList, insertBeforeRefElement);
 //    }
 //
@@ -79,13 +79,15 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 
         this.insertBeforeRefElement = insertBeforeRefElement;
 
-        Container contForTextEntry = new Container(new MyBorderLayout(MyBorderLayout.SIZE_EAST_BEFORE_WEST));
+//        Container cont = new Container(new MyBorderLayout(MyBorderLayout.SIZE_EAST_BEFORE_WEST));
+        Container cont = new Container(new BorderLayout());
+        cont.setUIID("InlineInsertListCont");
 
         textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
-        textEntryField.setUIID("PinchInsertTextField");
+        textEntryField.setUIID("ListPinchInsertTextField");
         textEntryField.setHint(ENTER_ITEMLIST);
         textEntryField.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
-        Container westCont = new Container(BoxLayout.x());
+//        Container westCont = new Container(BoxLayout.x());
 
         //DONE listener - create and insert new Category
 //        taskTextEntryField2.addActionListener((ev) -> {
@@ -96,9 +98,12 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 //                    myForm.setKeepPos(new KeepInSameScreenPosition(newItemList, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                     myForm.setKeepPos(new KeepInSameScreenPosition(refItemList, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
 //                            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : element, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
+                    insertNewItemListAndSaveChanges(newItemList);
+                    closePinchContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
+                } else {
+//                    closePinchContainer(false); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
+                    closePinchContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
                 }
-                insertNewItemListAndSaveChanges(newItemList);
-                closeInsertNewItemListContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
                 myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
         });
@@ -109,37 +114,39 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
         AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
 //        contForTextEntry.add(BorderLayout.CENTER, textEntryField);
-        contForTextEntry.add(MyBorderLayout.EAST, textEntryField);
+        cont.add(MyBorderLayout.CENTER, textEntryField);
 
         //close insert container
-        contForTextEntry.add(MyBorderLayout.WEST, westCont);
+//        cont.add(MyBorderLayout.WEST, westCont);
         if (itemOrItemListForNewItemLists != null && itemOrItemListForNewItemLists.getSize() > 0) { //only add close button if in a non-empty list
-            westCont.add(new Button(Command.createMaterial(null, Icons.iconCloseCircle, (ev) -> {
+            Button closeButton = new Button(Command.createMaterial(null, Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
 //                myForm.lastInsertNewElementContainer = null;
-                closeInsertNewItemListContainer(true);
-            })));
+                closePinchContainer(true);
+            }));
+            closeButton.setUIID("ListPinchInsertTextCloseButton");
+            cont.add(MyBorderLayout.WEST, closeButton);
         }
 
 //        editNewCmd = CommandTracked.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
-        editNewCmd = CommandTracked.create(null, Icons.iconEdit, (ev) -> {
+        editNewCmd = MyReplayCommand.create("PinchCreateItemList", "", Icons.iconEdit, (ev) -> {
             if ((newItemList = createNewItemList()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                 myForm.setKeepPos(new KeepInSameScreenPosition(newItemList, this, -1)); //if editing the new task in separate screen, 
                 myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
                 new ScreenItemListProperties(newItemList, (MyForm) getComponentForm(), () -> {
                     insertNewItemListAndSaveChanges(newItemList);
                     myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
-                    myForm.refreshAfterEdit();
+                    if(false)myForm.refreshAfterEdit();
                 }).show();
             } else {
                 ASSERT.that(false, "Something went wrong here, what to do? ...");
             }
-        }, "InlineEditItemList");
+        });
         //Enter full screen edit of the new Category:
-        Button editItemFullScreen=new Button(editNewCmd);
-         editItemFullScreen.setUIID( "PinchInsertTextEditButton");
-        contForTextEntry.add(BorderLayout.EAST, editItemFullScreen);
-        add(contForTextEntry);
+        Button editItemFullScreen = new Button(editNewCmd);
+        editItemFullScreen.setUIID("ListPinchInsertTextEditButton");
+        cont.add(BorderLayout.EAST, editItemFullScreen);
+        add(cont);
     }
 
     public MyTextField2 getTextField() {
@@ -152,19 +159,28 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
      * @return true if a task was created
      */
     private ItemList createNewItemList() {
-        return createNewItemList(false);
-    }
-
-    private ItemList createNewItemList(boolean createEvenIfNoTextInField) {
+//        return createNewItemList(false);
+//    }
+//
+//    private ItemList createNewItemList(boolean createEvenIfNoTextInField) {
         String text = textEntryField.getText();
+        text = MyUtil.removeTrailingPrecedingSpacesNewLinesEtc(text);
+        if (text.length() > 0) {
+
 //        if (createEvenIfNoTextInField || (text != null && text.length() > 0)) {
 //        if (ScreenItemListProperties.checkItemListIsValidForSaving(text)) {
-        if (ScreenItemListProperties.checkItemListIsValidForSaving(text, itemOrItemListForNewItemLists)) {
+            int count = 0;
+            String fixedCatName = text;
+            while (ScreenItemListProperties.checkItemListIsValidForSaving(fixedCatName, itemOrItemListForNewItemLists, false) != null) {
+                count++;
+                fixedCatName = text + "<" + count + ">";
+            }
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
-            ItemList newItemList = new ItemList(text, false); //true: interpret textual values
+            ItemList newItemList = new ItemList(fixedCatName, false); //true: interpret textual values
             return newItemList;
+        } else {
+            return null;
         }
-        return null;
     }
 
     /**
@@ -185,8 +201,8 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
 //        }
 //</editor-fold>
         itemOrItemListForNewItemLists.addToList(newItemList, refItemList, !insertBeforeRefElement); //add after item
-        ASSERT.that(myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT) == null, 
-                "old value left for SAVE_LOCALLY_INSERT_BEFORE_REF_ELT="+myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT));
+        ASSERT.that(myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT) == null,
+                "old value left for SAVE_LOCALLY_INSERT_BEFORE_REF_ELT=" + myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT));
 //        DAO.getInstance().saveNew((ParseObject)newItemList, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP()));
 //        DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewItemLists,true);
         DAO.getInstance().saveNew((ParseObject) newItemList);
@@ -198,19 +214,18 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
     }
 
-    private void closeInsertNewItemListContainer(boolean stopAddingInlineContainers) {
+//    public void closePinchCont(boolean newListInserted) {
+    public void closePinchContainer(boolean stopAddingInlineContainers) {
         //UI: close the text field
-        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnScrollYCont(this);
+        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(this);
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
-        if (stopAddingInlineContainers) {
-            myForm.setInlineInsertContainer(null); //remove this as inlineContainer
-            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
-            ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
+        if (true||stopAddingInlineContainers) {
+            if(false)myForm.setPinchInsertContainer(null); //remove this as inlineContainer
+//            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
+            myForm.previousValues.removePinchInsertKeys(); //delete the marker on exit
+//            ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
         }
-
-//        if (parent != null && parent.getParent() != null) {
-        if (parent != null) {
-//            parent.getParent().animateLayout(300); //parent of parent since pinchcontainer is kept inside a variable height container
+        if (parent != null && stopAddingInlineContainers) { //only animate if container was closed (otherwise slow update will mean 
             parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT); //parent of parent since pinchcontainer is kept inside a variable height container
         }
     }
@@ -231,7 +246,7 @@ public class InlineInsertNewItemListContainer extends InlineInsertNewContainer i
     }
 
     @Override
-    public InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
+    public PinchInsertContainer make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
         //no big need to create multiple categories in a row
         return null;
     }

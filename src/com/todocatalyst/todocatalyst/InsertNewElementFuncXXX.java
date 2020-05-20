@@ -14,7 +14,7 @@ import com.codename1.ui.TextArea;
  *
  * @author THJ
  */
-public interface InsertNewElementFunc {
+public interface InsertNewElementFuncXXX {
 
     /**
      * checks on element and if it corresponds to the previous element created
@@ -26,7 +26,7 @@ public interface InsertNewElementFunc {
      * @param targetList list into which a new element will be inserted
      * @return
      */
-    InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category);
+    InsertNewElementFuncXXX make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category);
 
     /**
      * close and remove the insertContainer

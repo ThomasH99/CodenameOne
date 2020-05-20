@@ -169,6 +169,7 @@ public class Icons {
     final static char iconMainWorkSlots = FontImage.MATERIAL_WORK_OUTLINE; //=iconWorkSlot; //FontImage.MATERIAL_WORK_OUTLINE; //MATERIAL_NEXT_WEEK; //WORK;  //TODO: MATERIAL_WORK_OUTLINE
     final static char iconMainTemplates = FontImage.MATERIAL_BORDER_STYLE;
     final static char iconMainStatistics = FontImage.MATERIAL_EVENT_AVAILABLE;
+    final static char iconMainImprove = FontImage.MATERIAL_LOUPE; //or feedback, perspective/helicopter, flight_takeoff
     final static char iconMainCompletionLog = FontImage.MATERIAL_PLAYLIST_ADD_CHECK; //.MATERIAL_EVENT_AVAILABLE;  
     final static char iconMainCreationLog = FontImage.MATERIAL_PLAYLIST_ADD; //FontImage.MATERIAL_ASSESSMENT;  //   FontImage.MATERIAL_POLL;  
     final static char iconMainTouched = FontImage.MATERIAL_PLAYLIST_PLAY; //FontImage.MATERIAL_DATE_RANGE; 
@@ -210,6 +211,7 @@ public class Icons {
     final static char iconSetMultiple = FontImage.MATERIAL_VIEW_LIST; //TODO: find better symbol (with unchecked boxes)
     final static char iconSetDeleteAll = FontImage.MATERIAL_DELETE_SWEEP; //TODO: find better symbol (with unchecked boxes)
     final static char iconMoveAllToTop = FontImage.MATERIAL_ARROW_UPWARD; //TODO: find better symbol (with unchecked boxes)
+    final static char iconMoveAllToEnd = FontImage.MATERIAL_ARROW_DOWNWARD; //TODO: find better symbol (with unchecked boxes)
     final static char iconInvertSelection = FontImage.MATERIAL_FLIP; //TODO: find better symbol (with unchecked boxes)
 
     final static char iconCompletedDate = FontImage.MATERIAL_DONE; //TODO: find better symbol (with unchecked boxes)

@@ -20,6 +20,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -1845,7 +1846,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return getOwner().getWorkSlotListN();
 //    }
     @Override
-    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
+//    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
+    public List<WorkSlot> getWorkSlotsFromParseN() {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
@@ -2025,10 +2027,16 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public void setWorkSlotList(WorkSlotList workSlotList) {
+//    @Override
+//    public void setWorkSlotList(WorkSlotList workSlotList) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+    @Override
+    public void setWorkSlotsInParse(List workSlotList) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
+    @Override
     public Object get(int index) {
         return getListFull().get(index);
     }
@@ -2073,7 +2081,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //</editor-fold>
         ItemAndListCommonInterface updatedOwner = removeFromOwner();
         ASSERT.that(updatedOwner != null, "softDeleting workSlot with no owner, workSlot=" + this);
-            DAO.getInstance().saveNew((ParseObject) updatedOwner, false);
+        DAO.getInstance().saveNew((ParseObject) updatedOwner, false);
 
         RepeatRuleParseObject myRepeatRule = getRepeatRuleN();
         if (myRepeatRule != null) {
@@ -2129,26 +2137,134 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             }
         }
     }
-    
+
     /**
-     * update this workslot to have same values as refWorkSlot, used to update future workslot repeat instances when one of them is edited. 
-     * Updates duration and text
-     * @param refWorkSlot 
-     * @return  true if this workslot was modified
+     * update this workslot to have same values as refWorkSlot, used to update
+     * future workslot repeat instances when one of them is edited. Updates
+     * duration and text
+     *
+     * @param refWorkSlot
+     * @return true if this workslot was modified
      */
     @Override
-    public boolean update(RepeatRuleObjectInterface refElt){
-        WorkSlot refWorkSlot = (WorkSlot)refElt;
-        boolean modified=false;
-        if(refWorkSlot.getDurationInMillis()!=getDurationInMillis()) {
+    public boolean update(RepeatRuleObjectInterface refElt) {
+        WorkSlot refWorkSlot = (WorkSlot) refElt;
+        boolean modified = false;
+        if (refWorkSlot.getDurationInMillis() != getDurationInMillis()) {
             setDurationInMillis(refWorkSlot.getDurationInMillis());
-            modified=true;
+            modified = true;
         }
-        if(!refWorkSlot.getText().equals(getText())) {
+        if (!refWorkSlot.getText().equals(getText())) {
             setText(refWorkSlot.getText());
-            modified=true;
+            modified = true;
         }
         return modified;
+    }
+
+    static Comparator<WorkSlot> getMultipleComparator(Comparator<WorkSlot>[] comparators) {
+        Comparator<WorkSlot> comp1 = comparators.length >= 1 ? comparators[0] : null;
+        Comparator<WorkSlot> comp2 = comparators.length >= 2 ? comparators[1] : null;
+        Comparator<WorkSlot> comp3 = comparators.length >= 3 ? comparators[2] : null;
+
+        return (i1, i2) -> {
+            //http://stackoverflow.com/questions/23981199/java-comparator-for-objects-with-multiple-fields            
+            int res1 = comp1.compare(i1, i2);
+            if (res1 != 0) {
+                return res1;
+            }
+            if (comp2 == null) {
+                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+            }
+            res1 = comp2.compare(i1, i2);
+            if (res1 != 0) {
+                return res1;
+            }
+            if (comp3 == null) {
+                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+            }
+            res1 = comp3.compare(i1, i2);
+            if (res1 != 0) {
+                return res1;
+            }
+            if (i1.getObjectIdP() != null && i2.getObjectIdP() != null) { //when adding just created workslots, we may compare them before they're saved and have their objId
+                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+            } else {
+                return 0;
+            }
+        };
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private static Comparator<WorkSlot> getMultipleComparatorOLD(Comparator<WorkSlot>[] comparators) {
+////        assert comparators.length >= 1 && comparators.length == sortDescending.length : "must be same length";
+////        for (int i = 0, size = getSortFieldId.length; i < size; i++) {
+////            Comparator<Item> comp1 = getSortingComparator(getSortFieldId[0], sortDescending[0]);
+////        }
+////        Comparator<Item> comp1 = getSortFieldId.length >= 1 ? getSortingComparator(getSortFieldId[0], sortDescending[0]) : null;
+////        Comparator<Item> comp2 = getSortFieldId.length >= 2 ? getSortingComparator(getSortFieldId[1], sortDescending[1]) : null;
+////        Comparator<Item> comp3 = getSortFieldId.length >= 3 ? getSortingComparator(getSortFieldId[2], sortDescending[2]) : null;
+//        Comparator<WorkSlot> comp1 = comparators.length >= 1 ? comparators[0] : null;
+//        Comparator<WorkSlot> comp2 = comparators.length >= 2 ? comparators[1] : null;
+//        Comparator<WorkSlot> comp3 = comparators.length >= 3 ? comparators[2] : null;
+//
+//        return (i1, i2) -> {
+//            int res1 = comp1.compare(i1, i2);
+//            if (res1 != 0) {
+//                return res1;
+//            } else {
+//                if (comp2 == null) {
+////                    return 0; //TODO!!!! should compare eg objectId to ensure a consistent ordering on every sort
+//                    return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+//                } else {
+//                    int res2 = comp2.compare(i1, i2);
+//                    if (res2 != 0) {
+//                        return res2;
+//                    } else {
+//                        if (comp3 == null) {
+////                            return 0;
+//                            return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+//                        } else {
+//                            int res3 = comp3.compare(i1, i2);
+//                            if (res3 != 0) {
+//                                return res3;
+//                            } else {
+////                                return 0;
+//                                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        };
+//    }
+//</editor-fold>
+    /**
+     * sort on startTime, then on duration (put longest timeslots first if
+     * several starting at same time),
+     *
+     * @param sortOnEndTime
+     * @return
+     */
+    public static void sortWorkSlotList(List<WorkSlot> sortedWorkslotList) {
+//        boolean sortOnEndTime            }) {
+//        Collections.sort(this, (i1, i2) -> FilterSortDef.compareDate(((WorkSlot) i1).getStartTimeD(), ((WorkSlot) i2).getStartTimeD()));
+//        if (sortOnEndTime) {
+//            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareLong(i1.getEndTime(), i2.getEndTime()));
+//        } else 
+        if (sortedWorkslotList != null) {
+//            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
+            Collections.sort(sortedWorkslotList,
+                    //                    (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
+//                    FilterSortDef.getMultipleComparator(new Comparator[]{ //TODO: update to enable use of FilterSortDef.getMultipleComparator!!
+                    getMultipleComparator(new Comparator[]{
+                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
+                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareLong(i2.getDurationInMillis(), i1.getDurationInMillis()), //longest slots first
+                (Comparator<WorkSlot>) (i1, i2) -> i1.getObjectIdP() == null
+                ? (i2.getObjectIdP() == null ? 0 : -1)
+                : (i2.getObjectIdP() == null ? 1 : i1.getObjectIdP().compareTo(i2.getObjectIdP())), //sort equal workslots on objectId to make it deterministic
+            }));
+        }
+//        return sortedWorkslotList;
     }
 
 }

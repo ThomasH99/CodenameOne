@@ -1,7 +1,6 @@
 package com.todocatalyst.todocatalyst;
 
 //import com.codename1.io.Log;
-
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Container;
@@ -29,7 +28,6 @@ import java.util.List;
 //import com.codename1.ui.table.TableLayout;
 //import com.todocatalyst.todocatalyst.MyForm;
 //import java.util.List;
-
 //import com.codename1.ui.*;
 //import com.codename1.ui.events.ActionEvent;
 //import com.codename1.ui.layouts.BoxLayout;
@@ -53,8 +51,7 @@ public class ScreenStatisticsLists extends MyForm {
     //DONE skip login screen when already logged in
 
     public final static String SCREEN_TITLE = "Statistics"; // "Sharpen the saw (statistics)"
-    
-    
+
 //    MyForm mainScreen;
     ScreenStatisticsLists(MyForm mainScreen) { // throws ParseException, IOException {
         super(SCREEN_TITLE, mainScreen, () -> {
@@ -71,8 +68,7 @@ public class ScreenStatisticsLists extends MyForm {
         getContentPane().removeAll();
         buildContentPane(getContentPane());
         restoreKeepPos();
-                super.refreshAfterEdit();
-
+        super.refreshAfterEdit();
     }
 
     private String CURRENT_USER_STORAGE_ID = "parseCurrentUser";
@@ -85,7 +81,6 @@ public class ScreenStatisticsLists extends MyForm {
         addStandardBackCommand();
 
 //        toolbar.addCommandToOverflowMenu(makeCancelCommand());
-
 //        toolbar.addCommandToOverflowMenu(new Command("Reset to default")); //reset to default values
     }
 
@@ -117,11 +112,9 @@ public class ScreenStatisticsLists extends MyForm {
 //            }
 //        });
 //        content.add(doubleOwnerButton);
-
-
         //TODO!!! Add an explanation to each of these (definition + why/when work on it)
         //TODO!! check old filters from first version of TodoCatalyst
-        content.add(new Button( MyReplayCommand.create("Cancelled tasks with time recorded")));  //take on challenging/difficult, dreaded tasks, important
+        content.add(new Button(MyReplayCommand.create("Cancelled tasks with time recorded")));  //take on challenging/difficult, dreaded tasks, important
         content.add(new Button(MyReplayCommand.create("Most interrupted tasks")));  //take on challenging/difficult, dreaded tasks, important
         content.add(new Button(MyReplayCommand.create("Days/times with most interrupts")));  //take on challenging/difficult, dreaded tasks, important
         content.add(new Button(MyReplayCommand.create("Over estimated tasks")));  //take on challenging/difficult, dreaded tasks, important

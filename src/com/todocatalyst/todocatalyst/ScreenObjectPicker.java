@@ -294,7 +294,11 @@ public class ScreenObjectPicker<E> extends MyForm {
             toolbar.addCommandToOverflowMenu(
                     "Cancel", null, (e) -> {
 //                        showPreviousScreenOrDefault(previousForm, false); //restore originally selected categories
-                        showPreviousScreen(false); //restore originally selected categories
+                        if (false) {
+                            showPreviousScreen(false); //restore originally selected categories
+                        } else {
+                            showPreviousScreen(true); //use true for consistency
+                        }
                     }
             );
         }

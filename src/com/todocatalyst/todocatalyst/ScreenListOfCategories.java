@@ -47,6 +47,7 @@ public class ScreenListOfCategories extends MyForm {
     //DONE add sum of effort of subtasks in each category
 
     public final static String SCREEN_TITLE = "Categories";
+    public final static String SCREEN_HELP = "Categories";
     private CategoryList categoryList;
     private MyTree2 dt;
 //    protected static String FORM_UNIQUE_ID = "ScreenListOfCategories"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
@@ -112,10 +113,18 @@ public class ScreenListOfCategories extends MyForm {
 //            });
 //        }
 //</editor-fold>
-        getToolbar().addSearchCommand(makeSearchFunctionSimple(categoryList), MyPrefs.defaultIconSizeInMM.getFloat());
+//        getToolbar().addSearchCommand(makeSearchFunctionSimple(categoryList), MyPrefs.defaultIconSizeInMM.getFloat());
+//        MySearchBar mySearchBar = new MySearchBar(getToolbar(), makeSearchFunctionSimple(categoryList));
+        getToolbar().addCommandToRightBar( new MySearchCommand(getContentPane(), makeSearchFunctionSimple(categoryList)));
 
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForListOfItems(this.categoryList));
         refreshAfterEdit();
+    }
+
+    @Override
+    public boolean isPinchInsertEnabled(ItemAndListCommonInterface refElt, boolean insertBeforeRefElt) {
+        boolean ok = refElt instanceof Category;
+        return ok;
     }
 
     protected void animateMyForm() {
@@ -129,14 +138,15 @@ public class ScreenListOfCategories extends MyForm {
         categoryList.resetWorkTimeDefinition();
         Container cont = buildContentPaneForItemList(categoryList);
         getContentPane().add(BorderLayout.CENTER, cont);
-        if (cont instanceof MyTree2) {
-//            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
-            InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
-            if (insertNewElementFunc != null) {
-                setStartEditingAsyncTextArea(insertNewElementFunc.getTextArea());
-                setInlineInsertContainer(insertNewElementFunc);
-            }
-        }
+        previousValues.setListenToYScrollComponent(cont);
+//        if (false&&cont instanceof MyTree2) { //now done in super.refreshAfterEdit();
+////            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
+//            InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
+//            if (insertNewElementFunc != null) {
+//                setStartEditingAsyncTextArea(insertNewElementFunc.getTextArea());
+//                setPinchInsertContainer(insertNewElementFunc);
+//            }
+//        }
 //        revalidate();
 ////        if (this.keepPos != null) {
 ////            this.keepPos.setNewScrollYPosition();
@@ -144,7 +154,7 @@ public class ScreenListOfCategories extends MyForm {
 //        restoreKeepPos();
 
         //check if there was an insertContainer active earlier
-        recreateInlineInsertContainerIfNeeded();
+        recreateInlineInsertContainerAndReplayCmdIfNeeded();
 
         super.refreshAfterEdit();
     }
@@ -167,7 +177,9 @@ public class ScreenListOfCategories extends MyForm {
                     DAO.getInstance().saveNew((ParseObject) categoryOwnerList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
                     DAO.getInstance().saveNewExecuteUpdate();
 //                        previousForm.revalidate(); //refresh list to show new items(??)
-                    refreshOnItemEdits.launchAction();
+                    if (refreshOnItemEdits != null) {
+                        refreshOnItemEdits.launchAction();
+                    }
                 }
             }).show();
         },
@@ -177,12 +189,13 @@ public class ScreenListOfCategories extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         super.addCommandsToToolbar(toolbar);
-        
-                //NEW TASK to Inbox
-        toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox()); 
+
+        //NEW TASK to Inbox
+        toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
 
         //NEW CATEGORY
-        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("New Category", categoryList, ScreenListOfCategories.this, () -> refreshAfterEdit()));
+//        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("New Category", categoryList, ScreenListOfCategories.this, () -> refreshAfterEdit()));
+        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("New Category", categoryList, ScreenListOfCategories.this, null));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToRightBar(MyReplayCommand.create("CreateNewCategory", "", Icons.iconNewToolbarStyle(), (e) -> {
 //            Category category = new Category();
@@ -223,7 +236,9 @@ public class ScreenListOfCategories extends MyForm {
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfCategoriesSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsListOfCategories(ScreenListOfCategories.this, () -> {
-                refreshAfterEdit();
+                if (false) {
+                    refreshAfterEdit();
+                }
             }).show();
         }
         ));
@@ -414,7 +429,7 @@ public class ScreenListOfCategories extends MyForm {
 //        cont.addComponent(BorderLayout.CENTER, new Label(category.getText()));
 //</editor-fold>
         Button expandCategorySubTasksButton = new Button();
-        WorkSlotList wSlots = category.getWorkSlotListN(false);
+        WorkSlotList wSlots = category.getWorkSlotListN();
 //        MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText(), swipCont, () -> true); //D&D
         MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText() + (Config.TEST && wSlots != null && wSlots.size() > 0 ? "[W]" : ""), swipCont, () -> {
             boolean enabled = ((MyForm) mainCont.getComponentForm()).isDragAndDropEnabled();
@@ -453,7 +468,7 @@ public class ScreenListOfCategories extends MyForm {
             ASSERT.that(category.isDataAvailable(), "Category \"" + category + "\" data not available");
 
 //                new ScreenListOfItems(category, ScreenListOfCategories.this,
-            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, mainCont)); //mainCont right container to use here??
+//            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, mainCont)); //mainCont right container to use here??
             new ScreenListOfItems(category.getText(), () -> category, (MyForm) swipCont.getComponentForm(), (itemsInCategory) -> {
                 ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, swipCont));
                 if (false) { // I don't think this makes any sense, all edits to items within the category should be updated directly (eg Item.softdelete should remove it from category, edit Item to remove the category should also update/save the category, ...)
@@ -463,7 +478,9 @@ public class ScreenListOfCategories extends MyForm {
                     DAO.getInstance().saveNewExecuteUpdate();
                 }
 //                    refreshAfterEdit();
-                refreshOnItemEdits.launchAction(); //refresh when items have been edited
+                if (refreshOnItemEdits != null) {
+                    refreshOnItemEdits.launchAction(); //refresh when items have been edited
+                }
             }, 0).show();
         });
         editCategoryCmd.setAnalyticsActionId("EditCategoryFromListOfCategories");
@@ -498,8 +515,9 @@ public class ScreenListOfCategories extends MyForm {
             expandCategorySubTasksButton.setUIID(expandedObjects != null
                     && expandedObjects.contains(category) ? "CategoryListShowItemsExpanded" : "CategoryListShowItems");
 
-            int numberItems = category.getNumberOfUndoneItems(false);
-            String subTaskStr = numberItems + "";
+//            int numberUndoneItems = category.getNumberOfUndoneItems(false);
+            int numberUndoneItems = category.getNumberOfUndoneItems(MyPrefs.listOfCategoriesShowTotalNumberOfLeafTasks.getBoolean());
+            String subTaskStr = numberUndoneItems + "";
             if (MyPrefs.listOfCategoriesShowNumberDoneTasks.getBoolean()) {
                 int totalNbTasks = category.getNumberOfItems(false, MyPrefs.listOfCategoriesShowTotalNumberOfLeafTasks.getBoolean());
                 if (totalNbTasks != 0) {
@@ -513,18 +531,21 @@ public class ScreenListOfCategories extends MyForm {
 //            cont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandCategorySubTasksButton);
         }
-        if (MyPrefs.listOfCategoriesShowRemainingEstimate.getBoolean()) {
 
+        if (MyPrefs.listOfCategoriesShowRemainingEstimate.getBoolean()) {
             long remainingEffort = category.getRemaining();
-            long totalEffort = MyPrefs.listOfCategoriesShowTotalTime.getBoolean() ? category.getEstimate() : 0;
+//            long totalEffort = MyPrefs.listOfCategoriesShowTotalTime.getBoolean() ? category.getEstimate() : 0;
+            long totalEffort = MyPrefs.listOfCategoriesShowTotalTime.getBoolean() ? category.getTotalEffort() : 0;
             String effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
                     + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
 
-            WorkSlotList workSlots = category.getWorkSlotListN();
-            long workTimeSumMillis = workSlots != null ? category.getWorkSlotListN().getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
+            if (MyPrefs.listOfCategoriesShowWorkTime.getBoolean()) {
+                WorkSlotList workSlots = category.getWorkSlotListN();
+                long workTimeSumMillis = workSlots != null ? category.getWorkSlotListN().getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
 
-            if (workTimeSumMillis != 0) {
-                effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
+                if (workTimeSumMillis != 0) {
+                    effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
+                }
             }
             east.addComponent(new Label(effortStr, "CategoryListRemainingTime")); //format: "remaining/workTime"
             east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
@@ -538,7 +559,7 @@ public class ScreenListOfCategories extends MyForm {
         if (MyPrefs.showCategoryDescriptionInCategoryList.getBoolean() && !category.getComment().equals("")) {
             mainCont.addComponent(BorderLayout.SOUTH,
                     new Container(BoxLayout.x()).add(
-                            new Label("(" + category.getComment() + ")")));
+                            new Label("(" + category.getComment() + ")", "CategoryListDescriptionLabel")));
         }
 
 //        east.addComponent(new Label(new SimpleDateFormat().format(new Date(itemList.getFinishTime(item, 0)))));
@@ -664,7 +685,8 @@ public class ScreenListOfCategories extends MyForm {
 //</editor-fold>
                         cmp = ScreenListOfItems.buildItemContainer(ScreenListOfCategories.this, (Item) node, null, cat); //hack: get access to the latest category (the one above the items in the Tree list)
                     } else if (node instanceof Category) {
-                        cmp = buildCategoryContainer((Category) node, categoryList, keepPos, () -> refreshAfterEdit(), expandedObjects); //, (ItemList) treeParent);
+//                        cmp = buildCategoryContainer((Category) node, categoryList, keepPos, () -> refreshAfterEdit(), expandedObjects); //, (ItemList) treeParent);
+                        cmp = buildCategoryContainer((Category) node, categoryList, keepPos, null, expandedObjects); //, (ItemList) treeParent);
                         category = (Category) node; //huge hack: store the category of the latest category container for use when constructing the following
                     } else {
                         assert false : "should only be Item or ItemList, was:" + node;

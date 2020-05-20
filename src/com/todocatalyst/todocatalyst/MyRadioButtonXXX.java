@@ -12,7 +12,7 @@ import com.codename1.ui.RadioButton;
  *
  * @author Thomas
  */
-public class MyRadioButton extends RadioButton {
+public class MyRadioButtonXXX extends RadioButton {
 
     /**
      * {@inheritDoc}

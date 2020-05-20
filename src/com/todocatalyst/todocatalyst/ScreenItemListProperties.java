@@ -74,10 +74,15 @@ public class ScreenItemListProperties extends MyForm {
     }
 
     /**
-     * return true if (possibly modified) category can be saved
+     * return null if no error and (possibly modified) category can be saved,
+     * otherwise displays an error dialog and returns a non-null error string
      */
 //    public  boolean checkItemListIsValidForSaving(ItemList itemList) {
-    public static boolean checkItemListIsValidForSaving(String itemListName, ItemList itemList) {
+    public static String checkItemListIsValidForSaving(String itemListName, ItemList itemList) {
+        return checkItemListIsValidForSaving(itemListName, itemList, true);
+    }
+
+    public static String checkItemListIsValidForSaving(String itemListName, ItemList itemList, boolean showErrorDialog) {
         //TODO extend to check valid subcategories, auto-words, ...
         String errorMsg = null;
 //        String itemListName = itemList.getText();
@@ -95,10 +100,12 @@ public class ScreenItemListProperties extends MyForm {
         }
 
         if (errorMsg != null) {
-            Dialog.show("Error", errorMsg, "OK", null);
-            return false;
+            if (showErrorDialog) {
+                Dialog.show("Error", errorMsg, "OK", null);
+            }
+            return errorMsg; //false;
         } else {
-            return true;
+            return errorMsg; //true;
         }
     }
 
@@ -150,7 +157,7 @@ public class ScreenItemListProperties extends MyForm {
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemListSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsItemListProperties(ScreenItemListProperties.this, () -> {
-                refreshAfterEdit();
+                if(false)refreshAfterEdit();
             }).show();
         }
         ));
@@ -224,7 +231,7 @@ public class ScreenItemListProperties extends MyForm {
         }
 
 //        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), (ItemList) itemList.getOwner()));
-        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), itemList));
+        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), itemList)!=null);
 
         return content;
     }

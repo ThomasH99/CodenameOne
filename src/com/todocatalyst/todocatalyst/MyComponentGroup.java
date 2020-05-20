@@ -91,129 +91,6 @@ class MyComponentGroup extends ComponentGroup {
         this(valueArray, names, unselectAllowed, verticalLayout, multipleSelectionAllowed, false);
     }
 
-//    boolean ignoreNextActionEvent = false;
-    MyComponentGroup(Object[] valueArray, String[] names, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed, boolean noSelectionAllowed) {
-        super();
-        this.values = valueArray;
-        if (names != null) {
-            this.names = names;
-            ASSERT.that(this.names.length == values.length, "MyComponentGroup called with different number of values and names, values=" + valueArray + ", names=" + names);
-        } else {
-            this.names = new String[values.length];
-            for (int i = 0, size = values.length; i < size; i++) {
-                this.names[i] = values[i].toString();
-            }
-        }
-
-        this.setHorizontal(!verticalLayout);
-
-//        buttonGroup = new ButtonGroup();
-        ActionListener buttonListener = (e) -> {
-//            if (ignoreNextActionEvent) {
-//                ignoreNextActionEvent = false;
-//                return;
-//            }
-
-            Button source = (Button) e.getSource();
-
-            //if noSelectionAllowed is not allowed, prevent unselecting the last selected checkbox (force it back to selected which triggers another actionEvent which must be ignored here)
-            if (!noSelectionAllowed && !source.isSelected() && source instanceof CheckBox && getSelectedCount() == 0) {
-//                ignoreNextActionEvent = true;
-                ((CheckBox) source).setSelected(true);
-            }
-
-            if (dispatcher != null) {
-                dispatcher.fireActionEvent(e);
-            }
-
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            for (int i = 0, size = this.getComponentCount(); i < size; i++) {
-//                if (source.equals(this.getComponentAt(i))) {
-//                    if (((Button) this.getComponentAt(i)).isSelected()) {
-//                        if (selectionListener != null) {
-//                            selectionListener.fireSelectionEvent(getSelectedIndex(), i);
-//                        }
-//                    } else if (selectionListener != null) {
-//                        selectionListener.fireSelectionEvent(getSelectedIndex(), -1); //CORRECT?!
-//                    }
-//                }
-//            }
-//</editor-fold>
-            for (int i = 0, size = buttonsArray.length; i < size; i++) {
-                if (source.equals(buttonsArray[i])) {
-                    if (buttonsArray[i].isSelected()) {
-                        if (selectionListener != null) {
-                            selectionListener.fireSelectionEvent(getSelectedIndex(), i);
-                        }
-                    } else if (selectionListener != null) {
-                        selectionListener.fireSelectionEvent(getSelectedIndex(), -1); //CORRECT?!
-                    }
-                }
-            }
-        };
-
-        buttonsArray = new Button[values.length];
-
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        ButtonGroup buttonGroup = new ButtonGroup() {
-//            @Override
-//            public void setSelected(RadioButton rb) {
-//                //if radionbutton is pressed when it is already selected then unselect (clearSelection)
-//                if (isSelected() && rb.isSelected()) {
-//                    clearSelection();
-//                } else {
-//                    super.setSelected(rb); //else handle it normally
-//                }
-//            }
-//        };
-//</editor-fold>
-        RadioButton radioButton;
-        ButtonGroup buttonGroup = null;
-//            RadioButton[] radioButtonArray = new RadioButton[values.length];
-        for (int i = 0; i < values.length; i++) {
-//            radioButton = new RadioButton(values[i]);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            radioButton = new RadioButton(values[i] instanceof String?(String)values[i]:values[i].toString());
-//            String s;
-//            if (fieldNames != null && fieldNames.length > 0) {
-//                s = fieldNames[i];
-//            } else {
-//                s = values[i].toString();
-//            }
-//            radioButton = new RadioButton(values[i] instanceof String ? (String) values[i] : values[i].toString());
-//</editor-fold>
-
-            if (multipleSelectionAllowed) {
-                buttonsArray[i] = new CheckBox(this.names[i]);
-                buttonsArray[i].setUIID("RadioButton");
-            } else {
-                if (buttonGroup == null) {
-                    buttonGroup = new ButtonGroup();
-                }
-                radioButton = new RadioButton(this.names[i]);
-//                radioButton.setToggle(true); //allow to de-select a selected button
-                radioButton.setUnselectAllowed(unselectAllowed); //allow to de-select a selected button
-//                radioButton.addActionListener(buttonListener); //allow to de-select a selected button
-                buttonGroup.add(radioButton);
-                buttonsArray[i] = radioButton;
-            }
-            this.add(buttonsArray[i]);
-            buttonsArray[i].setToggle(true); //allow to de-select a selected button
-            buttonsArray[i].addActionListener(buttonListener); //allow to de-select a selected button
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                radioButtonArray[i] = radioButton;
-//            if (selectedString != null && values[i].equals(selectedString)) {
-//            if (selectedString != null && (values[i] instanceof String?(String)values[i]:values[i].toString()).equals(selectedString)) {
-//            if (selectedString != null && values[i].toString().equals(selectedString)) {
-//            if (selectedString != null && fieldNames[i].equals(selectedString)) {
-//                radioButton.setSelected(true);
-//            }
-//            select(selectedString);
-//            select(selectedIndex);
-//</editor-fold>
-        }
-    }
-
     MyComponentGroup(Object[] valueArray, String[] names, int selectedIndex, boolean unselectAllowed, boolean verticalLayout) {
         this(valueArray, names, unselectAllowed, verticalLayout);
         selectIndex(selectedIndex);
@@ -384,6 +261,131 @@ class MyComponentGroup extends ComponentGroup {
 
     MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set) {
         this(values, parseIdMap, get, set, true);
+    }
+
+//    boolean ignoreNextActionEvent = false;
+    MyComponentGroup(Object[] valueArray, String[] names, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed, boolean noSelectionAllowed) {
+        super();
+        this.values = valueArray;
+        if (names != null) {
+            this.names = names;
+            ASSERT.that(this.names.length == values.length, "MyComponentGroup called with different number of values and names, values=" + valueArray + ", names=" + names);
+        } else {
+            this.names = new String[values.length];
+            for (int i = 0, size = values.length; i < size; i++) {
+                this.names[i] = values[i].toString();
+            }
+        }
+
+        this.setHorizontal(!verticalLayout);
+
+//        buttonGroup = new ButtonGroup();
+        ActionListener buttonListener = (e) -> {
+//            if (ignoreNextActionEvent) {
+//                ignoreNextActionEvent = false;
+//                return;
+//            }
+
+            Button source = (Button) e.getSource();
+
+            //if noSelectionAllowed is not allowed, prevent unselecting the last selected checkbox (force it back to selected which triggers another actionEvent which must be ignored here)
+            if (!noSelectionAllowed && !source.isSelected() && source instanceof CheckBox && getSelectedCount() == 0) {
+//                ignoreNextActionEvent = true;
+                ((CheckBox) source).setSelected(true);
+            }
+
+            if (dispatcher != null) {
+                dispatcher.fireActionEvent(e);
+            }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            for (int i = 0, size = this.getComponentCount(); i < size; i++) {
+//                if (source.equals(this.getComponentAt(i))) {
+//                    if (((Button) this.getComponentAt(i)).isSelected()) {
+//                        if (selectionListener != null) {
+//                            selectionListener.fireSelectionEvent(getSelectedIndex(), i);
+//                        }
+//                    } else if (selectionListener != null) {
+//                        selectionListener.fireSelectionEvent(getSelectedIndex(), -1); //CORRECT?!
+//                    }
+//                }
+//            }
+//</editor-fold>
+            for (int i = 0, size = buttonsArray.length; i < size; i++) {
+                if (source.equals(buttonsArray[i])) {
+                    if (buttonsArray[i].isSelected()) {
+                        if (selectionListener != null) {
+                            selectionListener.fireSelectionEvent(getSelectedIndex(), i);
+                        }
+                    } else if (selectionListener != null) {
+                        selectionListener.fireSelectionEvent(getSelectedIndex(), -1); //CORRECT?!
+                    }
+                }
+            }
+        };
+
+        buttonsArray = new Button[values.length];
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        ButtonGroup buttonGroup = new ButtonGroup() {
+//            @Override
+//            public void setSelected(RadioButton rb) {
+//                //if radionbutton is pressed when it is already selected then unselect (clearSelection)
+//                if (isSelected() && rb.isSelected()) {
+//                    clearSelection();
+//                } else {
+//                    super.setSelected(rb); //else handle it normally
+//                }
+//            }
+//        };
+//</editor-fold>
+        RadioButton radioButton;
+        ButtonGroup buttonGroup = null;
+//            RadioButton[] radioButtonArray = new RadioButton[values.length];
+        for (int i = 0; i < values.length; i++) {
+//            radioButton = new RadioButton(values[i]);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            radioButton = new RadioButton(values[i] instanceof String?(String)values[i]:values[i].toString());
+//            String s;
+//            if (fieldNames != null && fieldNames.length > 0) {
+//                s = fieldNames[i];
+//            } else {
+//                s = values[i].toString();
+//            }
+//            radioButton = new RadioButton(values[i] instanceof String ? (String) values[i] : values[i].toString());
+//</editor-fold>
+
+            if (multipleSelectionAllowed) {
+                buttonsArray[i] = new CheckBox(this.names[i]);
+                buttonsArray[i].setUIID("RadioButton");
+            } else {
+                if (buttonGroup == null) {
+                    buttonGroup = new ButtonGroup();
+                }
+                radioButton = new RadioButton(this.names[i]);
+//                radioButton.setToggle(true); //allow to de-select a selected button
+                radioButton.setUnselectAllowed(unselectAllowed); //allow to de-select a selected button
+//                radioButton.addActionListener(buttonListener); //allow to de-select a selected button
+                buttonGroup.add(radioButton);
+                buttonsArray[i] = radioButton;
+            }
+            if (Config.TEST)
+            buttonsArray[i].setName(this.names[i]);
+            this.add(buttonsArray[i]);
+            buttonsArray[i].setToggle(true); //allow to de-select a selected button
+            buttonsArray[i].addActionListener(buttonListener); //allow to de-select a selected button
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                radioButtonArray[i] = radioButton;
+//            if (selectedString != null && values[i].equals(selectedString)) {
+//            if (selectedString != null && (values[i] instanceof String?(String)values[i]:values[i].toString()).equals(selectedString)) {
+//            if (selectedString != null && values[i].toString().equals(selectedString)) {
+//            if (selectedString != null && fieldNames[i].equals(selectedString)) {
+//                radioButton.setSelected(true);
+//            }
+//            select(selectedString);
+//            select(selectedIndex);
+//</editor-fold>
+        }
     }
 
     /**
@@ -612,10 +614,12 @@ class MyComponentGroup extends ComponentGroup {
      * @param l implementation of the action listener interface
      */
     public void addActionListener(ActionListener l) {
-        if (dispatcher == null) {
-            dispatcher = new EventDispatcher();
+        if (l != null) {
+            if (dispatcher == null) {
+                dispatcher = new EventDispatcher();
+            }
+            dispatcher.addListener(l);
         }
-        dispatcher.addListener(l);
     }
 
     /**

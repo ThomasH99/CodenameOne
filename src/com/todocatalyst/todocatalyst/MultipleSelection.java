@@ -76,6 +76,17 @@ public class MultipleSelection {
             newItemList.addToList(item, false);
         };
     }
+    static ItemOperation moveToEndOfList(ItemAndListCommonInterface newItemList) {
+        return (item) -> {
+            newItemList.addToList(item, true);
+        };
+    }
+
+    static ItemOperation star(ItemAndListCommonInterface newItemList) {
+        return (item) -> {
+            item.setStarred(true);
+        };
+    }
 
     static ItemOperation delete() {
         return (item) -> {

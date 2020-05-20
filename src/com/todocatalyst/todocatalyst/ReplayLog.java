@@ -79,14 +79,23 @@ public class ReplayLog {
     void clearSetOfScreenCommands() {
 //        if (storeAllCommandsForScreen) {
 //        this.screenName = screenName;
-        Map<String, MyReplayCommand> newCmds = new HashMap<>();
-        for (String key : screenCommands.keySet()) {
-            MyReplayCommand cmd = screenCommands.get(key);
-            if (cmd.isKeep()) {
-                newCmds.put(key, cmd);
+        if (false) { //doesn't make sense to keep the screenCommands on refreshAfterEdit - since Replay will be called immediately after first creation of screen??!!
+            Map<String, MyReplayCommand> newCmds = new HashMap<>();
+            for (String key : screenCommands.keySet()) {
+                MyReplayCommand cmd = screenCommands.get(key);
+                if (cmd.isKeep()) {
+                    newCmds.put(key, cmd);
+                }
             }
+            screenCommands = newCmds;
         }
-        screenCommands = newCmds;
+        if (false) { //this method shouldn't be needed at all anymore?! only clearCommandsFromPreviousScreen()?!
+            screenCommands.clear();
+        }
+    }
+
+    void clearCommandsFromPreviousScreen() {
+        screenCommands.clear();
     }
 
     /**
@@ -195,10 +204,10 @@ public class ReplayLog {
                 } else {
 //                        +Display.getInstance().getCurrent() instanceof MyForm?((MyForm)Display.getInstance().getCurrent()).SCREEN_TITLE:"<not a MyForm>"Display.getInstance().getCurrent().getTitle());
 //                    in screen" + Display.getInstance().getCurrent().getTitle()
-                    ASSERT.that(false, "ERROR  ReplayCommand: \"" + cmdUIID + "\" not defined/FILTERED?, idx="+currentIndex
+                    ASSERT.that(false, "ERROR  ReplayCommand: \"" + cmdUIID + "\" not defined/FILTERED?, idx=" + currentIndex
                             + (Display.getInstance().getCurrent() != null ? " SCREEN=" + ((MyForm) Display.getInstance().getCurrent()).getUniqueFormId() + ", " : "")
-                            + "\nReplayLog=[" + this+"]"
-                            + "\nScreenCmds=[" + screenCommands +"]");
+                            + "\nReplayLog=[" + this + "]"
+                            + "\nScreenCmds=[" + screenCommands + "]");
                 }
             }
         } else {
@@ -355,6 +364,9 @@ public class ReplayLog {
 //            if (false) {
 //                ASSERT.that(screenCommands.get(replayCommand.getCmdUniqueID()) == null, "MyReplayCommand created twice:" + replayCommand.getCmdUniqueID() + " cmd=" + replayCommand);
 //            }
+        if (false) { //now normal to recreate the same commands, always only within the same screen so new ones simply overwrite olds ones, and replay cmds anyway only used the first time during replay and not after!
+            ASSERT.that(screenCommands.get(replayCommand.getCmdUniqueID()) == null, "MyReplayCommand created twice:" + replayCommand.getCmdUniqueID() + " cmd=" + replayCommand);
+        }
         screenCommands.put(replayCommand.getCmdUniqueID(), replayCommand);
 //        } else {
 ////            if (replayCommand.getCmdUniqueID().equals(getCurrentReplayCmdID())) {
@@ -364,15 +376,16 @@ public class ReplayLog {
 //            }
 //        }
     }
-    
+
     /**
      * delete the replay info, returns true if file was deleted
-     * @return 
+     *
+     * @return
      */
     public boolean deleteReplayInfo() {
         boolean replayInfoExists = Storage.getInstance().exists(REPLAY_LOG_FILE_NAME);
-         Storage.getInstance().deleteStorageFile(REPLAY_LOG_FILE_NAME);
-         return replayInfoExists;
+        Storage.getInstance().deleteStorageFile(REPLAY_LOG_FILE_NAME);
+        return replayInfoExists;
     }
 
 }

@@ -52,7 +52,7 @@ import javafx.scene.effect.DisplacementMap;
 public class ScreenListOfAlarms extends MyForm {
 
     public static String screenTitle = "Reminders"; //"Past reminders"; //"Past reminders", "Expired reminders"
-    private static String screenHelp = "Shows past reminders that have not yet been cancelled or snoozed. Starting Timer on a task or editing it will cancel the reminder";
+    public static String screenHelp = "Shows past reminders that have not yet been cancelled or snoozed. Starting Timer on a task or editing it will cancel the reminder"; //"See active reminders"
 //    private LocalNotificationsShadowList notificationList;
     private long now; //represent 'now' wrt latest update of the screen <8eg to ensure that an alarm that expires just after the screen is updated may be cancelled w/o being shown/seen
     /**

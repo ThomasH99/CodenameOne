@@ -22,15 +22,26 @@ import java.util.Map;
  */
 public class CleanUpDataInconsistencies {
 
-    private DAO dao;// = DAO.getInstance();
+    private static DAO dao;// = DAO.getInstance();
+    private static CleanUpDataInconsistencies INSTANCE;
     //////////////////////////   CLEAN UP    /////////////////////////////
     //TODO!!!! a subtask may be in the project's subtask list, but have a different owner (e.g. a List) --> fix: if a project has a subtask with another owner, make the project the subtask's owner
 //    private boolean badReference(ItemAndListCommonInterface parseObject) {
 //        return badReference((ParseObject)parseObject);
 //    }
 
-    CleanUpDataInconsistencies(DAO dao) {
-        this.dao = dao;
+//    CleanUpDataInconsistencies(DAO dao) {
+//        this.dao = dao;
+//    }
+    CleanUpDataInconsistencies() {
+    }
+
+    public static CleanUpDataInconsistencies getInstance() {
+        if (INSTANCE == null) {
+            INSTANCE = new CleanUpDataInconsistencies();
+            dao = DAO.getInstance();
+        }
+        return INSTANCE;
     }
 
     private List removeDuplicates(List list) {
@@ -397,6 +408,8 @@ public class CleanUpDataInconsistencies {
      */
     private void cleanUpTemplateList(TemplateList templateList, List<Item> topLevelTemplatesFromParse, boolean executeCleanup) {
 //        if (templatesFromParse.size()!=templateList.size()) {
+        Log.p("CLEANUP: number elements in TemplateList = " + templateList.size() + ", number of toplevel templates from Parse=" + topLevelTemplatesFromParse.size(), logLevel);
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        List templates = templateList.getList();
 //        for (int i = 0, size = topLevelTemplatesFromParse.size(); i < size; i++) {
@@ -749,16 +762,19 @@ public class CleanUpDataInconsistencies {
 //    private void cleanUpWorkSlots(List<WorkSlot> listOfWorkSlots) {
 //    private void cleanUpWorkSlots(WorkSlotList listOfWorkSlots) {
     void cleanUpWorkSlots(boolean executeCleanup) {
-        WorkSlotList listOfWorkSlots = dao.getAllWorkSlotsFromParse();
+//        WorkSlotList listOfWorkSlots = dao.getAllWorkSlotsFromParse();
+        List<WorkSlot> listOfWorkSlots = dao.getAllWorkSlotsFromParse();
         List updatedWorkSlots = new ArrayList<>();
         Log.p("CLEANUP: number elements in list = " + listOfWorkSlots.size(), logLevel);
         for (int i = 0, size = listOfWorkSlots.size(); i < size; i++) {
-            WorkSlot workSlot = listOfWorkSlots.get(i);
+            WorkSlot workSlotOrg = listOfWorkSlots.get(i);
+            WorkSlot workSlot = (WorkSlot) dao.fetchIfNeededReturnCachedIfAvail(workSlotOrg);
+            String WSObjId = workSlot.getObjectIdP();
             //test if workSlot has multiple owners (Category, Item, ItemList) - NOT necessary since the priority is defined by getOwner()
 //            if (workSlot.getOwner())
             boolean deleteWorkSlot = true; //if all owners are missing, then remove
             boolean noOwner = false; //if all owners are missing, then remove
-            boolean noRepeatRule = false; //if all owners are missing, then remove
+            boolean repeatRuleNotFound = false; //if all owners are missing, then remove
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (workSlot.getOwnerList() != null) {// || workSlot.getOwnerList().equals("")) {
 ////                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerList(" + workSlot.getOwnerList() + ")", logLevel);
@@ -769,35 +785,46 @@ public class CleanUpDataInconsistencies {
 //                clean = false;
 //            }
 //</editor-fold>
-            if (workSlot.getOwner() == null) {// || workSlot.getOwnerItem().equals("")) {
+            ItemAndListCommonInterface owner = workSlot.getOwner();
+            if (owner == null || notOnParseServer((ParseObject) owner)) {// || workSlot.getOwnerItem().equals("")) {
 //                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerItem(" + workSlot.getOwnerList() + ")", logLevel);
 //                deleteWorkSlot = false;
                 noOwner = true;
                 //TODO!!! check if any RepeatRule references the workslot but it doesn't reference the RR
                 //TODO!!! check if any Item/ItemList/Category references the workslot but it doesn't reference it back
+            } else {
+                WorkSlotList workSlotList = owner.getWorkSlotListN(); //true: fetch from cache so contains() below works
+                List<WorkSlot> workslots;
+                if (workSlotList != null && (workslots = workSlotList.getWorkSlotListFull()) != null && !workslots.contains(workSlot)) {
+                    Log.p("CLEANUP: WorkSlot \"" + workSlot.toString() + "\" not in owner's list of workSlots, owner=" + owner + ", owner workSlots=" + workSlotList);
+                    if (executeCleanup) {
+                        owner.addWorkSlot(workSlot);
+                        DAO.getInstance().saveNew((ParseObject) owner);
+                    }
+                }
             }
 
             //Check repeat rule exists
-            if (workSlot.getRepeatRuleN() != null) {
-                if (notOnParseServer((ParseObject) workSlot.getRepeatRuleN())) {
-                    Log.p("CLEANUP: WorkSlot \"" + workSlot.toString() + "\" with bad ref to RepeatRule objectId=" + ((ParseObject) workSlot.getRepeatRuleN()).getObjectIdP(), logLevel);
+            RepeatRuleParseObject repeatRule = workSlot.getRepeatRuleN();
+            if (repeatRule != null) {
+                String objId = repeatRule.getObjectIdP();
+                if (notOnParseServer((ParseObject) repeatRule)) {
+                    Log.p("CLEANUP: WorkSlot \"" + workSlot.toString() + "\" with bad ref to RepeatRule objectId=" + objId, logLevel);
                     if (executeCleanup) {
                         workSlot.setRepeatRule(null); //remove reference to inexisting RepeatRule
                         updatedWorkSlots.add(workSlot);
                     }
-                }
-                noRepeatRule = false;
-            } else {
-                noRepeatRule = true;
+                    repeatRuleNotFound = true;
+                } //else: other issues cleaned when going through RepeatRule list from Parse
             }
 
-            if (false && workSlot.getRepeatRuleN() == null) {// || workSlot.getRepeatRule().equals("")) {
-//                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerItem(" + workSlot.getOwnerList() + ")", logLevel);
-//                deleteWorkSlot = false;
-                noRepeatRule = true;
-            }
+//            if (false && workSlot.getRepeatRuleN() == null) {// || workSlot.getRepeatRule().equals("")) {
+////                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerItem(" + workSlot.getOwnerList() + ")", logLevel);
+////                deleteWorkSlot = false;
+//                repeatRuleNotFound = true;
+//            }
 //            if (deleteWorkSlot) {
-            if (noOwner && noRepeatRule) {
+            if (noOwner && repeatRuleNotFound) {
                 Log.p("CLEANUP: WorkSlot no owner and not referenced from RepeatRule: workSLot=" + workSlot + ") with null as Owner.", logLevel);
 //                try {
                 if (executeCleanup) {
@@ -817,8 +844,9 @@ public class CleanUpDataInconsistencies {
      *
      * @param category
      */
-    private void cleanUpRepeatRules() {
+    private void cleanUpRepeatRules(boolean executeCleanup) {
         List<RepeatRuleParseObject> allRepeatRules = dao.getAllRepeatRulesFromParse();
+        Log.p("CLEANUP: number RepeatRules in Parse= " + allRepeatRules.size(), logLevel);
 
         //delete repeat rules not referenced by any Item or WorkSlot
         //construct hashmpas to effectively search for elements that point to a filter
@@ -832,7 +860,9 @@ public class CleanUpDataInconsistencies {
 
         Map<RepeatRuleParseObject, WorkSlot> workSlotsWithRepeatRule = new HashMap<>();
 
-        for (WorkSlot workSlot : dao.getAllWorkSlotsFromParse().getWorkSlotListFull()) {
+//        for (WorkSlot workSlot : dao.getAllWorkSlotsFromParse().getWorkSlotListFull()) {
+        List<WorkSlot> workSlots = dao.getAllWorkSlotsFromParse();
+        for (WorkSlot workSlot : workSlots) {
             if (workSlot.getRepeatRuleN() != null) {
                 workSlotsWithRepeatRule.put(workSlot.getRepeatRuleN(), workSlot);
             }
@@ -1164,14 +1194,18 @@ public class CleanUpDataInconsistencies {
 
         }
 
+        //duplicate subtasks
         cleanUpDuplicatesInList("Item \"" + item + "\" has duplicated subtask (subtasks=" + subtasks + ")", subtasks, executeCleanup);
-        //finally save
+
+        //Workslots : WorkSlots point to their owner, NOT the other way around, so nothing to clean up here 
+        cleanUpWorkSlotList(item, executeCleanup);
+
+//finally save
         if (executeCleanup) {
             item.setList(subtasks);
             dao.saveNew(item, false);
         }
 
-        //Workslots : WorkSlots point to their owner, NOT the other way around, so nothing to clean up here 
     }
     //    private void cleanUpBadObjectReferencesCategory(Category category) {
 
@@ -1188,7 +1222,7 @@ public class CleanUpDataInconsistencies {
      */
     boolean cleanUpWorkSlotList(ItemAndListCommonInterface owner, boolean executeCleanup) {
         //TODO check if there are other elements which has a given workSlot in their list -> highly unlikely
-        WorkSlotList workSlotList = owner.getWorkSlotListN(false);
+        WorkSlotList workSlotList = owner.getWorkSlotListN();
         if (workSlotList == null) {
             return false;
         }
@@ -1204,15 +1238,22 @@ public class CleanUpDataInconsistencies {
             if (uniques.contains(workSlot)) {
                 hasDuplicates = true;
                 Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationInMinutes(), logLevel);
-                workSlots.remove(i);
+//                workSlots.remove(i);
                 //no i++!
             } else {
+                uniques.add(workSlot);
                 if (workSlot.getOwner() == null) {
                     Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") without valid ref to OwnerItemList, OwnerItem and RepeatRule. startTime=" + workSlot.getStartTimeD() + ", description=" + workSlot.getText() + ", adj.duration(minutes)=" + workSlot.getDurationInMinutes(), logLevel);
-                    workSlot.setOwner(owner);
+                    if (executeCleanup) {
+                        workSlot.setOwner(owner);
+                        dao.saveNew(workSlot, false);
+                    }
                 } else if (workSlot.getOwner() != owner) {
-                    workSlot.setOwner(owner);
-                    dao.saveNew(workSlot, false);
+                    Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectIdP() + ") does not have the Owner that owns it. Owner=" + owner + ", workSLot.owner=" + workSlot.getOwner(), logLevel);
+                    if (executeCleanup) {
+                        workSlot.setOwner(owner);
+                        dao.saveNew(workSlot, false);
+                    }
                 }
                 //repeatRule
                 RepeatRuleParseObject repeatRule = workSlot.getRepeatRuleN();
@@ -1220,11 +1261,14 @@ public class CleanUpDataInconsistencies {
                     //no relevant checks to do here? RepeatRule should check if all copies refer back to it?!
 //                Log.p("CLEANUP: WorkSlot (ObjId=" + workSlot.getObjectId() + ") without valid ref to OwnerItem(" + workSlot.getOwnerList() + ")", logLevel);
                 }
-                i++;
             }
+            i++;
         }
-        owner.setWorkSlotList(workSlotList);
-        dao.saveNew((ParseObject) owner, false);
+        if (executeCleanup) {
+//            owner.setWorkSlotList(workSlotList);
+            owner.setWorkSlotsInParse(uniques);
+            dao.saveNew((ParseObject) owner, false);
+        }
         return hasDuplicates;
     }
 
@@ -1300,8 +1344,6 @@ public class CleanUpDataInconsistencies {
                 itemListOrCategory.setOwner(ItemListList.getInstance());
             }
         }
-
-        cleanUpDuplicatesInItemListOrCategory(itemListOrCategory.getText(), itemListOrCategory, executeCleanup);
 
         int i = 0;
 //        List<Item> items = itemListOrCategory.getListFull();
@@ -1391,6 +1433,8 @@ public class CleanUpDataInconsistencies {
                 i++;
             }
         }
+
+        cleanUpDuplicatesInItemListOrCategory(itemListOrCategory.getText(), itemListOrCategory, executeCleanup);
 
         //check if all items on server that reference ItemList as owner, or which has Category in its categoryList are in the ItemList/Category:
         if (itemListOrCategory instanceof Category) {
@@ -1488,12 +1532,6 @@ public class CleanUpDataInconsistencies {
 //        cleanUpFilterSortDefs(getAllFilterSortDefsFromParse()); //Clean up links to removed ItemLists
 
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
-        Log.p("CLEANUP: WORKSLOTS", logLevel);
-        Log.p("CLEANUP: -----------------------------------------------------", logLevel);
-        cleanUpWorkSlots(executeCleanup); //Clean up links to removed ItemLists
-//        cleanUpWorkSlots(getAllWorkSlotsFromParse()); //Clean up links to removed ItemLists
-
-        Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: TEMPLATES", logLevel);
         //TODO!!!: check that tasks in AllTemplates list are all marked as templates!!
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
@@ -1508,7 +1546,13 @@ public class CleanUpDataInconsistencies {
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: REPEATRULES", logLevel);
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
-        cleanUpRepeatRules();
+        cleanUpRepeatRules(executeCleanup);
+
+        Log.p("CLEANUP: -----------------------------------------------------", logLevel);
+        Log.p("CLEANUP: WORKSLOTS", logLevel);
+        Log.p("CLEANUP: -----------------------------------------------------", logLevel);
+        cleanUpWorkSlots(executeCleanup); //NB! Execute cleanup of WorkSlots *after* clean up of all workslot owners (Item, WorkSlot, RepeatRule) to ensure that have added themselves as owners to WorkSlot (otherwise the workslots might get deleted here)
+//        cleanUpWorkSlots(getAllWorkSlotsFromParse()); //Clean up links to removed ItemLists
 
         Log.p("CLEANUP: -----------------------------------------------------", logLevel);
         Log.p("CLEANUP: ALL CLEANUP FINISHED --------------------------------", logLevel);

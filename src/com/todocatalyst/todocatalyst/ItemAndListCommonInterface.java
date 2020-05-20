@@ -10,6 +10,7 @@ import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.ItemList.PARSE_WORKSLOTS;
 import static com.todocatalyst.todocatalyst.MyUtil.eql;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,6 +18,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -58,24 +60,63 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     /**
      * returns null if no workslots
      *
-     * @param refreshWorkSlotListFromDAO
      * @return
      */
-    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO);
+//    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO);
+    public List<WorkSlot> getWorkSlotsFromParseN();
+
+    /**
+     *
+     * @return
+     */
+    default public WorkSlotList getWorkSlotListN() {
+        List<WorkSlot> workslots = getWorkSlotsFromParseN();
+        if (workslots != null) {
+//            WorkSlotList workSlotList = new WorkSlotList(this, workslots, true); //true=already sorted
+            WorkSlotList workSlotList = new WorkSlotList(this, workslots, false); //TODO optimization: normally workshots should always be kept sorted, so can use true. //true=already sorted
+//            setWorkSlotList(workSlotList);
+            return workSlotList;
+        } else {
+            return null;
+        }
+    }
 //    public WorkSlotList getWorkSlotListN();
+
+    /**
+     * set the list of workslots in Parse
+     * @param workSlots
+     */
+//    public void setWorkSlots(List<WorkSlot> workSlots);
+    public void setWorkSlotsInParse(List workSlots);
 
     /**
      * get list of current & future workslots (exclude all that have expired ie
      * endTime is in the past)
      *
+     * @param workSlotList
      * @return
      */
-    default public WorkSlotList getWorkSlotListN() {
-//        return getWorkSlotListN(true);
-        return getWorkSlotListN(false);
+//    default public WorkSlotList getWorkSlotListN() {
+////        return getWorkSlotListN(true);
+//        return getWorkSlotListN();
+//    }
+//    public void setWorkSlotList(WorkSlotList workSlotList);
+    default public void setWorkSlotListXXX(WorkSlotList workSlotList) {
+        //TODO currently not stored in ItemList but get from DAO
+//        workSlotListBuffer = null;
+//        workSlotListBuffer = workSlotList;
+//        workTimeAllocator = null;
+//        if (workSlotList != null && workSlotList.getWorkSlotListFull().size() > 0) {
+//            put(PARSE_WORKSLOTS, workSlotList.getWorkSlots());
+WorkSlot.sortWorkSlotList(workSlotList.getWorkSlotListFull());
+        if (Config.TEST) {
+            ASSERT.that(workSlotList != null || workSlotList.getWorkSlotListFull().size() == 0 || MyUtil.isSorted(workSlotList.getWorkSlotListFull(),
+                    (ws1, ws2) -> ((int) ((((WorkSlot) ws2).getStartTime()) - ((WorkSlot) ws1).getStartTime()))),
+                    () -> "setting list of workslots which is NOT sorted: " + workSlotList.getWorkSlotListFull());
+        }
+        workSlotList.setOwner(this);
+        setWorkSlotsInParse(workSlotList.getWorkSlotListFull());
     }
-
-    public void setWorkSlotList(WorkSlotList workSlotList);
 
     /**
      * return overlapping workslots, or null if none
@@ -115,7 +156,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
             workSlotList.add(workSlot); //adds *sorted*!
             workSlot.setOwner(this);
         }
-        setWorkSlotList(workSlotList);
+//        setWorkSlotList(workSlotList);
     }
 
     /**
@@ -130,7 +171,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
                 workSlotList.remove(workSlot); //adds *sorted*!
             }
         }
-        setWorkSlotList(workSlotList);
+//        setWorkSlotList(workSlotList);
     }
 
     default public void addWorkSlot(WorkSlot workSlot) {
@@ -158,12 +199,17 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
             if (workSlotList != null) {
                 workSlotList.remove(workSlot);
                 workSlot.setOwner(null);
-                setWorkSlotList(workSlotList);
+//                setWorkSlotList(workSlotList);
             }
         }
     }
 
-    public int getNumberOfUndoneItems(boolean includeSubTasks);
+    /**
+     *
+     * @param countLeafTasks
+     * @return
+     */
+    public int getNumberOfUndoneItems(boolean countLeafTasks);
 
     public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus, boolean changingFromDone);
 
@@ -425,19 +471,20 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     /**
      * move item from its current position within the ItemList to after/before
      * the refItem's position (or if refItem not found, to beginning/end of list
-     * depending on addAfterRefEltOrEndOfList) If item not already in the list,
-     * it will do nothing (to avoid adding it if the user had not inserted it in
-     * the first place)
+     * depending on addAfterRefEltOrEndOfList). If item not already in the list,
+     * it will be inserted into the given position.
      *
      * @param item
      * @param refItem
      * @param addCategoryToItem
      * @param addAfterRefEltOrEndOfList
      */
-    default public void moveItemInList(Item item, Item refItem, boolean addAfterRefEltOrEndOfList) {
-        if (removeFromList(item, false)) { //only add if already there
-            addToList(item, refItem, addAfterRefEltOrEndOfList);
-        }
+    default public void moveOrAddItemInList(Item item, Item refItem, boolean addAfterRefEltOrEndOfList) {
+//        if (removeFromList(item, false)) { //only add if already there
+//            addToList(item, refItem, addAfterRefEltOrEndOfList);
+//        }
+        removeFromList(item, false); //remove in case it is already ther (but it may no be)
+        addToList(item, refItem, addAfterRefEltOrEndOfList);
     }
 
     /**
@@ -1291,6 +1338,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default public boolean isInherited(Object ownValue, Object potentiallyInheritedValue, boolean inheritanceEnabledForField) {
 //        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
         return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && inheritanceEnabledForField
+//                && Objects.equals(ownValue, potentiallyInheritedValue);
                 && eql(ownValue, potentiallyInheritedValue);
     }
 
@@ -1331,4 +1379,17 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         }
         return changed;
     }
+    
+        static public List<String> convListToObjectIdList(List<ItemAndListCommonInterface> eltList) {
+        List<String> eltIds = new ArrayList();
+        if (eltList != null) {
+            for (ItemAndListCommonInterface e : eltList) {
+                eltIds.add(e.getObjectIdP());
+            }
+        }
+        return eltIds;
+    }
+
+
+    
 }

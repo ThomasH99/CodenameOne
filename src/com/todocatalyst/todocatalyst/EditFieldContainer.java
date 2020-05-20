@@ -95,7 +95,7 @@ public class EditFieldContainer extends Container {
                 ((Container) visibleField).setLeadComponent(((WrapButton) field).getLeadComponent());
 //                ((Container) visibleField).setLeadComponent(((WrapButton) field).setLeadComponent(field));
 //                ((Container) visibleField).setLeadComponent(field.getALeadComponent());
-            } else {
+            } else if (!(field instanceof ComponentGroup)){
                 ((Container) visibleField).setLeadComponent(field);
             }
         }

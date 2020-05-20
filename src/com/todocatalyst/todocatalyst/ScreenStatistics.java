@@ -34,13 +34,12 @@ public class ScreenStatistics extends MyForm {
 //    Command draggableOnOff = null;
     List<Item> doneItemsFromParseSortedOnDate;
     ItemList itemListStats;
-    WorkSlotList workSlots;
+    List<WorkSlot> workSlots;
 
     /**
      * edit a list of statistics over recently done tasks
      *
      */
-
     ScreenStatistics(String screenTitle, MyForm previousForm, Runnable updateActionOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(screenTitle, previousForm, updateActionOnDone);
 //        this.itemListList = itemListList;
@@ -101,7 +100,8 @@ public class ScreenStatistics extends MyForm {
         Date startDate = new MyDate(MyDate.currentTimeMillis() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
         Date endDate = new MyDate();
 //        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
-        workSlots = new WorkSlotList(null, DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted
+//        workSlots = new WorkSlotList(null, DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted
+        workSlots = DAO.getInstance().getWorkSlots(startDate); //true=already sorted
         doneItemsFromParseSortedOnDate = DAO.getInstance().getCompletedItems(startDate, endDate);
 //        sortItems(itemsSortedOnDate, SortStatsOn.valueOf(MyPrefs.statisticsSortBy.getString()) );
     }
@@ -121,11 +121,15 @@ public class ScreenStatistics extends MyForm {
                     compList.getComponentAt(i).setHidden(((Item) doneItemsFromParseSortedOnDate.get(i)).getText().toLowerCase().indexOf(text) < 0);
                 }
                 compList.animateLayout(ANIMATION_TIME_FAST);
-            },MyPrefs.defaultIconSizeInMM.getFloat());
+            }, MyPrefs.defaultIconSizeInMM.getFloat());
         }
         //SEARCH
-        if (false) //TODO!!!: seardh algo crashes on statistics and won't let you exit/remove the search field
-            getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats),MyPrefs.defaultIconSizeInMM.getFloat());
+        if (false) { //TODO!!!: seardh algo crashes on statistics and won't let you exit/remove the search field
+//            getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats), MyPrefs.defaultIconSizeInMM.getFloat());
+//            MySearchBar mySearchBar = new MySearchBar(getToolbar(), makeSearchFunctionSimple(itemListStats));
+            getToolbar().addCommandToRightBar(  new MySearchCommand(getContentPane(), makeSearchFunctionSimple(itemListStats)));
+
+        }
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", null, Icons.iconSettings, (e) -> {
             int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
@@ -133,7 +137,7 @@ public class ScreenStatistics extends MyForm {
                 if (daysInThePast != MyPrefs.statisticsScreenNumberPastDaysToShow.getInt()) {
                     reloadData(); //reload data after (possibly) changing settings (number of days in the past to show)
                 }
-                refreshAfterEdit();
+                if(false)refreshAfterEdit();
             }).show();
         }
         ));
@@ -150,15 +154,15 @@ public class ScreenStatistics extends MyForm {
      */
     enum SortStatsOn {
 //        dateAndTime("Dates"), //dateAndTime
-        dateAndTime("Dat","Date and time"), //dateAndTime
+        dateAndTime("Dat", "Date and time"), //dateAndTime
         //        dateThenLists("Lists"), //dateThenLists Lists
-        dateThenLists("Lis","Date, then lists"), //dateThenLists Lists
+        dateThenLists("Lis", "Date, then lists"), //dateThenLists Lists
         //        dateThenCategories("Categories"), //dateThenCategories Categories
-        dateThenCategories("Cat","Date, then category"), //dateThenCategories Categories
+        dateThenCategories("Cat", "Date, then category"), //dateThenCategories Categories
         //        listsThenDates("Lists-Dates"), //listsThenDates Lists_Date
-        listsThenDates("LisD","List, then date"), //listsThenDates Lists_Date
+        listsThenDates("LisD", "List, then date"), //listsThenDates Lists_Date
         //        categoriesThenDate("Categories-Dates"); //categoriesThenDate Cat_Date
-        categoriesThenDate("CatD","Category, then date"); //categoriesThenDate Cat_Date
+        categoriesThenDate("CatD", "Category, then date"); //categoriesThenDate Cat_Date
         String str;
         String longStr;
 
@@ -270,17 +274,18 @@ public class ScreenStatistics extends MyForm {
      * @param makeNewListListLabel
      * @return
      */
-    private static ItemList buildStatisticsSortedByTime(List<Item> itemsSortedOnDate, WorkSlotList workSlotsSortedByStartDate) {
+    private static ItemList buildStatisticsSortedByTime(List<Item> itemsSortedOnDate, List<WorkSlot> workSlotsSortedByStartDate) {
         return buildStatisticsSortedByTime(itemsSortedOnDate, workSlotsSortedByStartDate,
                 SortStatsOn.valueOfDefault(MyPrefs.statisticsSortBy.getString()),
                 ShowGroupedBy.valueOf(MyPrefs.statisticsGroupBy.getString()));
     }
 
-    private static void addWorkSlotsToItemList(ItemList itemList, WorkSlotList workSlotsSortedByStartDate, Date startDate, Date endDate) {
-        itemList.setWorkSlotList(workSlotsSortedByStartDate.getWorkSlotsInInterval(startDate, endDate, true, true));
+    private static void addWorkSlotsToItemList(ItemList itemList, List<WorkSlot> workSlotsSortedByStartDate, Date startDate, Date endDate) {
+//        itemList.setWorkSlotsInParse(workSlotsSortedByStartDate.getWorkSlotsInInterval(startDate, endDate, true, true).getWorkSlotListFull());
+        itemList.setWorkSlotsInParse(WorkSlotList.getWorkSlotsInInterval(workSlotsSortedByStartDate, startDate, endDate, true, true));
     }
 
-    private static ItemList buildStatisticsSortedByTime(List<Item> itemsSortedOnDate, WorkSlotList workSlots, SortStatsOn sortOn, ShowGroupedBy groupBy) {
+    private static ItemList buildStatisticsSortedByTime(List<Item> itemsSortedOnDate, List<WorkSlot> workSlots, SortStatsOn sortOn, ShowGroupedBy groupBy) {
 //        boolean groupByDate = true || groupBy == ShowGroupedBy.day;
 //        boolean groupByDate = true || groupBy == ShowGroupedBy.day;
         boolean groupByDate = groupBy != ShowGroupedBy.none && (sortOn == SortStatsOn.dateAndTime || sortOn == SortStatsOn.dateThenLists || sortOn == SortStatsOn.dateThenCategories);
@@ -760,7 +765,7 @@ public class ScreenStatistics extends MyForm {
 //</editor-fold>
     protected Container buildContentPane(ItemList itemListStats) {
         parseIdMap2.parseIdMapReset();
-        if ((itemListStats != null && itemListStats.size() > 0 )) {
+        if ((itemListStats != null && itemListStats.size() > 0)) {
             MyTree2 cl = new MyTree2(itemListStats, expandedObjects, null, null) {
                 @Override
                 protected Component createNode(Object node, int depth) {
@@ -770,14 +775,14 @@ public class ScreenStatistics extends MyForm {
 //                    cmp = buildItemContainer((Item) node, null, () -> isDragAndDropEnabled(), () -> refreshAfterEdit(), false, //selectionMode not allowed for list of itemlists //TODO would some actions make sense on multiple lists at once??
 //                            null, null, keepPos, expandedObjects, () -> animateMyForm(), false, false); //TODO!!! store expanded itemLists
 //                    cmp = buildItemContainer(itemList, work);
-                        cmp = ScreenListOfItems.buildItemContainer(ScreenStatistics.this, (Item) node, itemListStats, null,expandedObjects);
+                        cmp = ScreenListOfItems.buildItemContainer(ScreenStatistics.this, (Item) node, itemListStats, null, expandedObjects);
                     } else if (node instanceof ItemList) {
 //                      cmp = buildCategoryContainer((Category) node, categoryList, keepPos, ()->refreshAfterEdit());
 //                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node);
 //                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, keepPos);
 //                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, keepPos, true);
 //                        cmp = ScreenListOfItemLists.buildItemListContainerStatistics((ItemList) node, null, true,expandedObjects);
-                        cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, null, true,expandedObjects);
+                        cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, null, true, expandedObjects);
                     } else {
                         assert false : "should only be Item or ItemList";
                     }
@@ -789,7 +794,7 @@ public class ScreenStatistics extends MyForm {
             return cl;
         } else {
 //            if (getShowIfEmptyList() != null)
-                return BorderLayout.centerCenter(new SpanLabel("No completed tasks the last " + MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() + " days to show statistics for"));
+            return BorderLayout.centerCenter(new SpanLabel("No completed tasks the last " + MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() + " days to show statistics for"));
         }
     }
 

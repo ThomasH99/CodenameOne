@@ -44,7 +44,7 @@ public class MyPrefs {
             = new PrefEntry("**", "automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual", true, "**");
 
     static PrefEntry itemRemoveTrailingPrecedingSpacesAndNewlines
-            = new PrefEntry("**", "itemRemoveTrailingPrecedingSpacesAndNewlines", true, "**");
+            = new PrefEntry("Always remove trailing spaces/newlines from task or comment text", "itemRemoveTrailingPrecedingSpacesAndNewlines", false, "Leaving such invisible characters can make the editing confusing");
 
     static PrefEntry useEstimateDefaultValueForZeroEstimatesInMinutes
             = new PrefEntry("Use default time estimate", "useEstimateDefaultValueForZeroEstimatesInMinutes", true,
@@ -397,8 +397,8 @@ public class MyPrefs {
             = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.DUE_DATE), "itemInheritOwnerProjectDueDate", true,
                     INHERITS + Item.DUE_DATE);
 
-    static PrefEntry itemInheritOwnerProjectExpiresOnDate
-            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.EXPIRES_ON_DATE), "itemInheritOwnerProjectExpiresOnDate", true,
+    static PrefEntry itemInheritOwnerProjectExpiresOnDateXXX
+            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.EXPIRES_ON_DATE), "itemInheritOwnerProjectExpiresOnDate", false,
                     INHERITS + Item.EXPIRES_ON_DATE);
 
     static PrefEntry itemInheritOwnerProjectStartByDate
@@ -409,16 +409,16 @@ public class MyPrefs {
             = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.WAIT_UNTIL_DATE), "itemInheritOwnerProjectWaitingTillDate", true,
                     INHERITS + Item.WAIT_UNTIL_DATE);
 
-    static PrefEntry itemInheritOwnerProjectDateWhenSetWaiting
-            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.DATE_WHEN_SET_WAITING), "itemInheritOwnerProjectDateWhenSetWaiting", true,
+    static PrefEntry itemInheritOwnerProjectDateWhenSetWaitingXXX
+            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.DATE_WHEN_SET_WAITING), "itemInheritOwnerProjectDateWhenSetWaiting", false,
                     INHERITS + Item.DATE_WHEN_SET_WAITING);
 
     static PrefEntry itemInheritOwnerProjectHideUntilDate
             = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.HIDE_UNTIL), "itemInheritOwnerProjectHideUntilDate", true,
                     INHERITS + Item.HIDE_UNTIL);
 
-    static PrefEntry itemInheritOwnerProjectTemplate //doesn't make sense to inherit this, each template subtask should have this set directly?! 
-            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.TEMPLATE), "itemInheritOwnerProjectTemplate", true,
+    static PrefEntry itemInheritOwnerProjectTemplateXXX //doesn't make sense to inherit this, each template subtask should have this set directly?! 
+            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.TEMPLATE), "itemInheritOwnerProjectTemplate", false,
                     INHERITS + Item.TEMPLATE);
     static PrefEntry itemInheritEvenDoneSubtasksInheritOwnerValues
             = new PrefEntry(Format.f("Even completed subtasks inherit valhes from their project", Item.TEMPLATE), "itemInheritEvenDoneSubtasksInheritOwnerValues", false,
@@ -516,7 +516,22 @@ public class MyPrefs {
             = new PrefEntry("Do not allow content on top/bottom part of iPhone X type devices (safe area)", "enableSafeArea", true, "**");
     static PrefEntry hideStatusBar
             = new PrefEntry("Hide the status bar at the top of the screen", "hideStatusBar", false, "**");
+    static PrefEntry pinchAdjustUpper //used to play with/tune the adjustment factor used if pinch fingers are far apart
+            = new PrefEntry("Pinch adjust value upper (sum upper+lower<=10!!)", "pinchAdjustUpper", 4, "**");
+    static PrefEntry pinchAdjustLower
+            = new PrefEntry("Pinch adjust value upper", "pinchAdjustLower", 3, "**");
+    static PrefEntry deleteLocalStorageIfRestartedQuickly
+            = new PrefEntry("Delete local copy of data if app is restarted quickly", "deleteLocalStorageIfRestartedQuickly", false, "**");
+    static PrefEntry deleteLocalStorageIfRestartedBeforeSeconds
+            = new PrefEntry("Delete local copy of data if app is within this many seconds", "deleteLocalStorageIfRestartedBeforeSeconds", 15, "**");
 
+    //SECURITY / ENCRYPTION
+    static PrefEntry encryptTaskTextAndComments
+            = new PrefEntry("Scramble task text and comments stored in the cloud", "encryptTaskTextAndComments", true, 
+                    "Makes the text unreadable to a human (NB. The text is not encrypted and there is no risk of losing the text by forgetting a password");
+    static PrefEntry encryptTaskTextAndCommentsSecret
+            = new PrefEntry("Delete local copy of data if app is within this many seconds", "encryptTaskTextAndComments", "0923jsdo932", "**");
+    
     //REPEATRULE
     static PrefEntry repeatMaxInterval = new PrefEntry("repeatMaxInterval**", "repeatMaxInterval", 365, "maximun value for repeat interval**");
     static PrefEntry repeatMaxNumberFutureInstancesToGenerateAhead

@@ -140,10 +140,10 @@ public class DAO {
         ASSERT.that(parseObject instanceof ParseObject, () -> "trying to store non-ParseObject in cache: parseObject=" + parseObject);
         //above just caches the singletons, so now also cache other objects, with a special treatment for workSlots
         if (parseObject instanceof WorkSlot) {
-            ASSERT.that(parseObject.getObjectIdP() != null, "cachPut of parseObject with objectIdP==null, parseObject=" + parseObject);
+            ASSERT.that(parseObject.getObjectIdP() != null, () -> "cachPut of parseObject with objectIdP==null, parseObject=" + parseObject);
             cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject);
         } else {
-            ASSERT.that(parseObject.getObjectIdP() != null, "cachPut of parseObject with objectIdP==null, parseObject=" + parseObject);
+            ASSERT.that(parseObject.getObjectIdP() != null, () -> "cachPut of parseObject with objectIdP==null, parseObject=" + parseObject);
             cache.put(parseObject.getObjectIdP(), parseObject); //will override any previously put object with same ojectId
         }
 //        ASSERT.that(parseObject instanceof ParseObject, () -> "trying to store non-ParseObject in cache: parseObject=" + parseObject);
@@ -202,7 +202,7 @@ public class DAO {
         Object cachedObjIdStr = cache.get(name);
 //        ASSERT.that(cachedObjIdStr != null);
 //        if (cachedObjIdStr != null) 
-        return cachedObjIdStr!=null?(ParseObject) cache.get(cachedObjIdStr):null; //cahce: name -> objectIdP
+        return cachedObjIdStr != null ? (ParseObject) cache.get(cachedObjIdStr) : null; //cahce: name -> objectIdP
     }
 
     private synchronized ParseObject cacheGet(ParseObject parseObject) {
@@ -556,7 +556,9 @@ public class DAO {
         for (int i = 0, size = list.size(); i < size; i++) {
             Object val = list.get(i);
             if (val == null) {//&& Config.TEST) {
-                ASSERT.that(val != null, "null element in list from cache:" + list);
+                ASSERT.that(val != null, "NULL ELEMENT IN LIST - REMOVING IT!!!! List=" + list);
+                list.remove(i);
+                size--;
             }
             list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) val));
             if (Config.TEST) {
@@ -578,17 +580,19 @@ public class DAO {
     }
 
     /**
-     * gets cached elements**
+     * gets cached elements
+     *
+     **
      * @param list
-     * @return 
+     * @return
      */
-    public  List<ItemAndListCommonInterface> fetchListOfItemInterfaceFromListOfObjectIds(List<String> list) {
+    public List<ItemAndListCommonInterface> fetchListOfItemInterfaceFromListOfObjectIds(List<String> list) {
         if (Config.TEST) {
             ASSERT.that((list != null), "updating null list from cache");
         }
         ArrayList<ItemAndListCommonInterface> items = new ArrayList<>();
         for (String objectId : list) {
-            items.add((ItemAndListCommonInterface)cacheGet(objectId));
+            items.add((ItemAndListCommonInterface) cacheGet(objectId));
         }
         return items;
     }
@@ -697,13 +701,13 @@ public class DAO {
                 parseObject.fetchIfNeeded();
                 if (Config.TEST) {
                     if (parseObject instanceof ItemAndListCommonInterface) {
-                        ASSERT.that(!((ItemAndListCommonInterface) parseObject).isSoftDeleted(), "DAO.fetch of deleted object:" + parseObject);
+                        ASSERT.that(!((ItemAndListCommonInterface) parseObject).isSoftDeleted(), () -> "DAO.fetch of deleted object:" + parseObject);
                     } else if (parseObject instanceof FilterSortDef) {
                         //                        assert !((FilterSortDef) parseObject).isDeleted();
-                        ASSERT.that(!((FilterSortDef) parseObject).isDeleted(), "DAO.fetch of deleted object:" + parseObject);
+                        ASSERT.that(!((FilterSortDef) parseObject).isDeleted(), () -> "DAO.fetch of deleted object:" + parseObject);
                     } else if (parseObject instanceof RepeatRuleParseObject) {
 //                        assert !((RepeatRuleParseObject) parseObject).isSoftDeleted();
-                        ASSERT.that(!((RepeatRuleParseObject) parseObject).isSoftDeleted(), "DAO.fetch of deleted object:" + parseObject);
+                        ASSERT.that(!((RepeatRuleParseObject) parseObject).isSoftDeleted(), () -> "DAO.fetch of deleted object:" + parseObject);
                     }
                 }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1210,6 +1214,65 @@ public class DAO {
         return null;//new ItemList();
     }
 
+    public static List<ItemAndListCommonInterface> getTodayLeafTaskList(List<ItemAndListCommonInterface> all) {
+        //UI: badgecount includes all elements shown in Today view (counting leaf-tasks for Projects!)
+        List<ItemAndListCommonInterface> leafList = new ArrayList();
+        for (ItemAndListCommonInterface elt : all) {
+            if (elt instanceof WorkSlot) {
+//                count += ((WorkSlot) elt).getItemsInWorkSlot().size();
+//                leafList.addAll(((WorkSlot) elt).getItemsInWorkSlot());
+                List<Item> tasksInWorkSlot = ((WorkSlot) elt).getItemsInWorkSlot();
+                for (Item t : tasksInWorkSlot) {
+                    leafList.addAll(t.getLeafTasksAsList((itm) -> !itm.isDone()));
+                }
+            } else if (elt instanceof Item) {
+                Item item = (Item) elt;
+                if (item.isProject()) {
+//                    count += item.getLeafTasksAsList((itm) -> !itm.isDone()).size();
+                    leafList.addAll(item.getLeafTasksAsList((itm) -> !itm.isDone()));
+                }
+            } else {
+                leafList.add(elt);
+            }
+        }
+        return leafList;
+    }
+
+    /**
+     * return number of undone tasks due today (between midnigth and midnight)
+     *
+     * @param onlyDone
+     * @return
+     */
+//    public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
+    public int getBadgeCount() {
+        //UI: badgecount includes all elements shown in Today view (counting leaf-tasks for Projects!)
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        return getDueAndOrWaitingTodayCount(includeWaiting, includeStartingToday);
+//        if (true) {
+//            List<ItemAndListCommonInterface> all = getToday(null);
+//            int count = 0;
+//            for (ItemAndListCommonInterface elt : all) {
+//                if (elt instanceof WorkSlot) {
+//                    count += ((WorkSlot) elt).getItemsInWorkSlot().size();
+//                } else if (elt instanceof Item) {
+//                    Item item = (Item) elt;
+//                    if (item.isProject()) {
+//                        count += item.getLeafTasksAsList((itm) -> !itm.isDone()).size();
+//                    }
+//                } else {
+//                    count++;
+//                }
+//            }
+//            return count;
+//        } else {
+//            List todayList = DAO.this.getToday(null);
+//            return todayList.size();
+//        }
+//</editor-fold>
+        return getTodayLeafTaskList(getToday(null)).size();
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public int getDueAndOrWaitingTodayCount(boolean includeWaiting, boolean includeStartingToday) {
 //        //DONE!!!! include Waiting expiring today (OrQuery)
@@ -1297,37 +1360,6 @@ public class DAO {
         }
         return null; //new ItemList();
 //        return (List<Item>) getAll(Item.CLASS_NAME);
-    }
-
-    /**
-     * return number of undone tasks due today (between midnigth and midnight)
-     *
-     * @param onlyDone
-     * @return
-     */
-    public int getBadgeCount(boolean includeWaiting, boolean includeStartingToday) {
-        //UI: badgecount includes all elements shown in Today view (counting leaf-tasks for Projects!)
-//        return getDueAndOrWaitingTodayCount(includeWaiting, includeStartingToday);
-        if (true) {
-            List<ItemAndListCommonInterface> all = DAO.this.getToday(null);
-            int count = 0;
-            for (ItemAndListCommonInterface elt : all) {
-                if (elt instanceof WorkSlot) {
-                    count += ((WorkSlot) elt).getItemsInWorkSlot().size();
-                } else if (elt instanceof Item) {
-                    Item item = (Item) elt;
-                    if (item.isProject()) {
-                        count += item.getLeafTasksAsList((itm) -> !itm.isDone()).size();
-                    }
-                } else {
-                    count++;
-                }
-            }
-            return count;
-        } else {
-            List todayList = DAO.this.getToday(null);
-            return todayList.size();
-        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="//<editor-fold defaultstate="collapsed" desc="comment">
@@ -1444,7 +1476,7 @@ public class DAO {
             return listCached;
         }
 
-        List<CategoryList> results = null;
+        List<CategoryList> results;
         ParseQuery<CategoryList> query = ParseQuery.getQuery(CategoryList.CLASS_NAME);
 //        query.selectKeys(new ArrayList());
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //normally never deleted, but could happen in the future
@@ -1452,7 +1484,7 @@ public class DAO {
             results = query.find();
             if (results.size() > 0) {
                 if (Config.TEST) {
-                    ASSERT.that(results.size() <= 1, "error: more than one TemplateList element (" + results + ")"); //TODO create error log for this 
+                    ASSERT.that(results.size() <= 1, () -> "error: more than one TemplateList element (" + results + ")"); //TODO create error log for this 
                 }
                 listCached = results.get(0); //return first element
 //                cachePut(CategoryList.CLASS_NAME, listCached); //MUST cache first, otherwise the categoryList's elements won't get the right (this categoryList) as owner
@@ -1743,7 +1775,7 @@ public class DAO {
 ////        return itemListList;
 //        return null;
 //</editor-fold>
-        List<ItemListList> results = null;
+        List<ItemListList> results;
         ParseQuery<ItemListList> query = ParseQuery.getQuery(ItemListList.CLASS_NAME);
 //        query.selectKeys(new ArrayList());
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //normally never deleted, but could happen in the future
@@ -1751,7 +1783,7 @@ public class DAO {
             results = query.find();
             if (results.size() > 0) {
                 if (Config.TEST) {
-                    ASSERT.that(results.size() <= 1, "error: more than one TemplateList element (" + results + ")"); //TODO create error log for this 
+                    ASSERT.that(results.size() <= 1, () -> "error: more than one TemplateList element (" + results + ")"); //TODO create error log for this 
                 }
 //                ItemListList itemListListParse = results.get(0); //return first element
                 itemListListCached = results.get(0); //return first element
@@ -1911,7 +1943,7 @@ public class DAO {
             return templateList;
         }
 
-        List<TemplateList> results = null;
+        List<TemplateList> results;
         ParseQuery<TemplateList> query = ParseQuery.getQuery(TemplateList.CLASS_NAME);
 //        query.selectKeys(new ArrayList()); //NO: must fetch list of templates!!
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //normally never deleted, but could happen in the future
@@ -1919,7 +1951,7 @@ public class DAO {
             results = query.find();
             if (results.size() > 0) {
                 if (Config.TEST) {
-                    ASSERT.that(results.size() <= 1, "error: more than one TemplateList element (" + results + ")"); //TODO create error log for this 
+                    ASSERT.that(results.size() <= 1, () -> "error: more than one TemplateList element (" + results + ")"); //TODO create error log for this 
                 }
                 templateList = results.get(0); //return first element
 //                cachePut(TemplateList.CLASS_NAME, templateList); //MUST cache first, otherwise the categoryList's elements won't get the right (this categoryList) as owner
@@ -2170,7 +2202,7 @@ public class DAO {
                 return newInbox;
             } else { //check if list is already cached, use that object instance instead of the one returned by getSpecialNamedItemListFromParse
                 Object temp2 = cacheGet(inbox);
-                ASSERT.that(temp2 instanceof ItemList || temp2 == null, "cached Inbox is NOT an ItemList, inbox=" + temp2);
+                ASSERT.that(temp2 instanceof ItemList || temp2 == null, () -> "cached Inbox is NOT an ItemList, inbox=" + temp2);
                 if (temp2 instanceof ItemList) {
                     inbox = (ItemList) temp2; //reuse an already cached list
 //                    cache.put(name, inbox.getObjectIdP()); //can't be sure it's already cached under name "Inbox"
@@ -3775,7 +3807,7 @@ public class DAO {
      * @param anyParseObject
      */
 //    static public void saveBatch(List<ParseObject> listOfParseObjectsToBatchSave) {
-    public void saveBatch(List<ParseObject> listCopyOfParseObjectsToBatchSave, boolean saveToCache) {
+    public void saveBatchXXX(List<ParseObject> listCopyOfParseObjectsToBatchSave, boolean saveToCache) {
 //        Display.getInstance().callSerially(() -> {
         if (!listCopyOfParseObjectsToBatchSave.isEmpty()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -5004,7 +5036,7 @@ public class DAO {
                 } else if (o instanceof WorkSlot) {
                     saveWorkSlotNew2(((WorkSlot) o), null);
                 } else {
-                    ASSERT.that(false, "element other than Item/ItemList/WorkSlot in list, list=" + list);
+                    ASSERT.that(false, () -> "element other than Item/ItemList/WorkSlot in list, list=" + list);
                 }
 
             }
@@ -5338,7 +5370,7 @@ public class DAO {
             List categories = item.getCategories();
             if (categories != null && categories.size() > 0) {
                 if (Config.TEST) {
-                    ASSERT.that(!listContainsUnsaved(categories), "ERROR: Item=" + item + " contains references to unsaved categories=" + categories);
+                    ASSERT.that(!listContainsUnsaved(categories), () -> "ERROR: Item=" + item + " contains references to unsaved categories=" + categories);
                 }
                 if (listContainsUnsaved(categories)) {
                     item.setCategories(null);
@@ -6241,7 +6273,7 @@ public class DAO {
                 saveFilterSortDefNew2((FilterSortDef) p, postSaveAction);
             } else { //e.g. Category, WorkSlot
                 if (Config.TEST) {
-                    ASSERT.that(false, "uncovered type, p=" + p + "; list=" + parseObjects);
+                    ASSERT.that(false, () -> "uncovered type, p=" + p + "; list=" + parseObjects);
                 }
             }
         }
@@ -6694,7 +6726,7 @@ public class DAO {
      * @return null if no workslots defined
      */
 //    public List<WorkSlot> getAllWorkSlotsFromParse() {
-    WorkSlotList getAllWorkSlotsFromParse() {
+    List<WorkSlot> getAllWorkSlotsFromParse() {
         List<WorkSlot> results = null;
 //        WorkSlotList results = null;
         ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
@@ -6707,7 +6739,8 @@ public class DAO {
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        return new WorkSlotList(null, fetchListElementsIfNeededReturnCachedIfAvail(results), true);
+//        return new WorkSlotList(null, fetchListElementsIfNeededReturnCachedIfAvail(results), true);
+        return results;
     }
 
     /**
@@ -7602,7 +7635,6 @@ public class DAO {
     public List<Category> getAllCategoriesFromParse() {
 //        return getAllCategoriesFromParse(new Date(MyDate.MIN_DATE), new Date(MyDate.MAX_DATE));
         return getAllCategoriesFromParse(null, null);
-
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -7634,6 +7666,10 @@ public class DAO {
         }
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+        //exclude the full data of the following fields (only keep Category's own data=Category.PARSE_COMMENT, Category.PARSE_TEXT, Category.PARSE_SYSTEM_NAME)
+//        query.selectKeys(Arrays.asList(Category.PARSE_ITEMLIST,Category.PARSE_FILTER_SORT_DEF, 
+//                Category.PARSE_ITEM_BAG, Category.PARSE_META_LISTS, Category.PARSE_SOURCE_LISTS,
+//                Category.PARSE_OWNER, Category.PARSE_WORKSLOTS        ));
         List<Category> results = null;
 
         try {
@@ -7645,14 +7681,31 @@ public class DAO {
         return results;
     }
 
-    private boolean cacheAllCategoriesFromParse(Date reloadUpdateAfterThis,
-            Date now
-    ) {
+    public List<Category> convCatObjectIdsListToCategoryList(List<String> categoryIdList) {
+        List<Category> categories = new ArrayList();
+        if (categoryIdList != null) {
+            for (String c : categoryIdList) {
+                categories.add(fetchCategory(c));
+            }
+        }
+        return categories;
+    }
+    
+    public List<Item> convItemObjectIdsListToItemList(List<String> itemIdList) {
+        List<Item> items = new ArrayList();
+        if (itemIdList != null) {
+            for (String itm : itemIdList) {
+                items.add(fetchItem(itm));
+            }
+        }
+        return items;
+    }
+
+    private boolean cacheAllCategoriesFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         List<Category> results = getAllCategoriesFromParse(reloadUpdateAfterThis, now);
         cacheList(results);
         return !results.isEmpty();
-
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -8176,13 +8229,13 @@ public class DAO {
         }
         if (cacheWorkSlots != null) {
 //            cache.clearStorageCache(); //delete any locally cached data/files
-//            cache.clearAllCache(); //clear any cached data (even in memory to make sure we get a completely fresh copy)
+            cacheWorkSlots.clearAllCache(); //clear any cached data (even in memory to make sure we get a completely fresh copy)
 //            cacheWorkSlots.clearAllCache(RESERVED_LIST_NAMES); //clear any cached data (even in memory to make sure we get a completely fresh copy)
             cacheWorkSlots = null;  //force GC and creation of new cache in initAndConfigureCache()
         }
 //        initAndConfigureCache(true);
         initAndConfigureCache();
-        cacheLoadDataChangedOnServer(true, false);
+        cacheLoadDataChangedOnServer(true); //, false);
         ip.dispose();
     }
 
@@ -8209,47 +8262,50 @@ public class DAO {
 //    }
     /**
      *
-     * @param loadingChangedDataFromParseServerForTesting skip checking server
-     * for updates to optimize app startup time during testing. will initialize
-     * (or reset if resetAndDeleteAllCachedData) the cache and update cache with
-     * objects that have been changed on Parse server since last update. First
-     * time called will cache everything. Assumes that local cache is large
-     * enough to hold everything, if not, ???
+     * @param forceLoadData skip checking server for updates to optimize app
+     * startup time during testing. will initialize (or reset if
+     * resetAndDeleteAllCachedData) the cache and update cache with objects that
+     * have been changed on Parse server since last update. First time called
+     * will cache everything. Assumes that local cache is large enough to hold
+     * everything, if not, ???
      */
 //    public boolean cacheLoadDataChangedOnServer(boolean loadingChangedDataFromParseServerForTesting) {
 //        
 //    }
-    public boolean cacheLoadDataChangedOnServer(boolean loadingChangedDataFromParseServerForTesting, boolean inBackground) {
+    public void cacheLoadDataChangedOnServer(boolean forceLoadData) {//, boolean inBackground) {
         //TODO!!!! what happens if cache is too small??? WIll it drop oldest objects?
 //        initAndConfigureCache(); //now done in DAO constructor
 ////\        loadCacheToMemory(); //first load 
 
-        if (false) {
-            cache.loadCacheToMemory(); //first load to memory
-        }
-        if (loadingChangedDataFromParseServerForTesting) {
-            Dialog ip = null;
-            if (false && !inBackground) { //false since this creates a new Form just to show the infinte progress
-                ip = new InfiniteProgress().showInfiniteBlocking();
-            }
-            Date now = new MyDate(); //UI: only cache data that was already changed when update was launched
-            Date lastCacheRefreshDate = new Date(MyDate.MIN_DATE);
+//        if (false) {
+//            cache.loadCacheToMemory(); //first load to memory
+//        }
+//        if (forceLoadData) {
+//            Dialog ip = null;
+//            if (false && !inBackground) { //false since this creates a new Form just to show the infinte progress
+//                ip = new InfiniteProgress().showInfiniteBlocking();
+//            }
+//        Date now = new MyDate(); //UI: only cache data that was already changed when update was launched
+        Date lastCacheRefreshDate = null; //new Date(MyDate.MIN_DATE);
 
-            if (true || MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active -> test doesn't make sense since app cannot currently function without cache
-                //get date when local cache was last updated
-                if (Storage.getInstance().exists(FILE_DATE_FOR_LAST_CACHE_REFRESH)) {
-                    lastCacheRefreshDate = (Date) Storage.getInstance().readObject(FILE_DATE_FOR_LAST_CACHE_REFRESH); //read in when initializing the Timer - from here on it is only about saving updates
-                }
-                Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
-            }
-            boolean result = cacheAllData(lastCacheRefreshDate, now);
-            Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date only *after* caching is done, in case app is interrupted (so it will restart from same place next time)!
-            if (ip != null) {
-                ip.dispose();
-            }
-            return result;
+//        if (true || MyPrefs.cacheLocalStorageSize.getInt() > 0) { //only store if local cache is active -> test doesn't make sense since app cannot currently function without cache
+        //get date when local cache was last updated
+        if (Storage.getInstance().exists(FILE_DATE_FOR_LAST_CACHE_REFRESH)) {
+            lastCacheRefreshDate = (Date) Storage.getInstance().readObject(FILE_DATE_FOR_LAST_CACHE_REFRESH); //read in when initializing the Timer - from here on it is only about saving updates
         }
-        return false;
+//        Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, now); //save date
+//        }
+        if (lastCacheRefreshDate == null || forceLoadData) { //only cache once
+            lastCacheRefreshDate = new MyDate(); //force caching all data from ParseServer
+            boolean result = cacheAllData(); //lastCacheRefreshDate, lastCacheRefreshDate);
+            Storage.getInstance().writeObject(FILE_DATE_FOR_LAST_CACHE_REFRESH, lastCacheRefreshDate); //save date only *after* caching is done, in case app is interrupted (so it will restart from same place next time)!
+        }
+//            if (ip != null) {
+//                ip.dispose();
+//            }
+//            return result;
+//        }
+//        return false;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -8361,64 +8417,70 @@ public class DAO {
      * as unique instances where all references should point to the same
      * physical object instance)
      *
-     * @param afterDate
-     * @param beforeDate
+     * @param firstDateXXX
+     * @param lastDateXXX
      * @return
      */
-    public boolean cacheAllData(Date afterDate, Date beforeDate) {
-        if (true) {
+    public boolean cacheAllData() {//Date firstDateXXX, Date lastDateXXX) {
+        if (false) {
             return false;
         }
         boolean somethingWasLoaded = false;
 
         //ALWAYS for complete reload of all data
-        afterDate = new MyDate(MyDate.MIN_DATE);
-        beforeDate = new MyDate(MyDate.MAX_DATE);
+        Date firstDateXXX = new MyDate(MyDate.MIN_DATE);
+        Date lastDateXXX = new MyDate(MyDate.MAX_DATE);
 
         Log.p("Caching Categories");
-        somethingWasLoaded = cacheAllCategoriesFromParse(afterDate, beforeDate) || somethingWasLoaded;
+        somethingWasLoaded = cacheAllCategoriesFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
 
-        Log.p("Caching CategoryList");
+        if (false) {
+            Log.p("Caching CategoryList");
 //        somethingWasLoaded = cacheCategoryList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Categories
 //        CategoryList.getInstance().reloadFromParse();
 //        CategoryList.getInstance();
 //        somethingWasLoaded = CategoryList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
-        CategoryList.getInstance();
+            CategoryList.getInstance();
 //            cachePut(CategoryList.getInstance());
+        }
 
         Log.p("Caching Filters");
-        somethingWasLoaded = cacheAllFilterSortDefsFromParse(afterDate, beforeDate) || somethingWasLoaded;
+        somethingWasLoaded = cacheAllFilterSortDefsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
 //        getAllCategoriesFromParse();
 //        getAllCategoriesFromParse(reloadUpdateAfterThis, now);
 //        getAllItemListsFromParse();
 //        getAllItemListsFromParse(reloadUpdateAfterThis, now);
 
         Log.p("Caching Items");
-        somethingWasLoaded = cacheAllItemsFromParse(afterDate, beforeDate) || somethingWasLoaded;
+        somethingWasLoaded = cacheAllItemsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
 
         Log.p("Caching ItemLists");
-        somethingWasLoaded = cacheAllItemListsFromParse(afterDate, beforeDate) || somethingWasLoaded;
+        somethingWasLoaded = cacheAllItemListsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
 
-        Log.p("Caching ItemListList");
+        if (false) {
+            Log.p("Caching ItemListList");
 //        somethingWasLoaded = cacheItemListList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of ItemLists
 //        somethingWasLoaded = ItemListList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
-        ItemListList.getInstance();
+            ItemListList.getInstance();
 //            cachePut(ItemListList.getInstance());
+        }
 
         Log.p("Caching RepeatRules");
-        somethingWasLoaded = cacheAllRepeatRulesFromParse(afterDate, beforeDate) || somethingWasLoaded;
+        somethingWasLoaded = cacheAllRepeatRulesFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
 //        getCategoryList(); //will cache the list of Categories
 //        getItemListList(); //will cache the list of ItemLists
 //        getTemplateList(); //will cache the list of Templates
 
-        Log.p("Caching TemplateList");
+        if (false) {
+            Log.p("Caching TemplateList");
 //        somethingWasLoaded = cacheTemplateList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Templates
 //        somethingWasLoaded = TemplateList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
-        TemplateList.getInstance();
+            TemplateList.getInstance();
 //            cachePut(TemplateList.getInstance());
+        }
 
         Log.p("Caching WorkSlots");
-        somethingWasLoaded = cacheAllWorkSlotsFromParse(afterDate, beforeDate) || somethingWasLoaded;
+        somethingWasLoaded = cacheAllWorkSlotsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
 
 //        cacheUpdateAllCategoryItemReferences(categoryList);
 //        cacheUpdateAllItemListItemReferences(itemListLists);
@@ -8428,30 +8490,36 @@ public class DAO {
     }
 
     public void cleanUpAllBadObjectReferences(boolean executeCleanup) {
-        CleanUpDataInconsistencies clean = new CleanUpDataInconsistencies(this);
-        clean.cleanUpAllBadObjectReferences(executeCleanup);
+//        CleanUpDataInconsistencies clean = new CleanUpDataInconsistencies(this);
+//        clean.cleanUpAllBadObjectReferences(executeCleanup);
+        CleanUpDataInconsistencies.getInstance().cleanUpAllBadObjectReferences(executeCleanup);
     }
 
     boolean cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup) {
-        return new CleanUpDataInconsistencies(this).cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, false);
+//        return new CleanUpDataInconsistencies(this).cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, false);
+        return CleanUpDataInconsistencies.getInstance().cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, false);
     }
 
     public void cleanUpTemplateListInParse(boolean executeCleanup) {
 //        cleanUpTemplateList(DAO.getInstance().getTemplateList(), getTopLevelTemplatesFromParse(), true);
 //        cleanUpTemplateList(TemplateList.getInstance(), dao.getTopLevelTemplatesFromParse(), executeCleanup);
-        new CleanUpDataInconsistencies(this).cleanUpTemplateListInParse(executeCleanup);
+//        new CleanUpDataInconsistencies(this).cleanUpTemplateListInParse(executeCleanup);
+        CleanUpDataInconsistencies.getInstance().cleanUpTemplateListInParse(executeCleanup);
     }
 
     void cleanUpWorkSlots(boolean executeCleanup) {
-        new CleanUpDataInconsistencies(this).cleanUpWorkSlots(executeCleanup);
+//        new CleanUpDataInconsistencies(this).cleanUpWorkSlots(executeCleanup);
+        CleanUpDataInconsistencies.getInstance().cleanUpWorkSlots(executeCleanup);
     }
 
     void cleanUpItemsWithNoValidOwner(boolean executeCleanup) {
-        new CleanUpDataInconsistencies(this).cleanUpItemsWithNoValidOwner(executeCleanup);
+//        new CleanUpDataInconsistencies(this).cleanUpItemsWithNoValidOwner(executeCleanup);
+        CleanUpDataInconsistencies.getInstance().cleanUpItemsWithNoValidOwner(executeCleanup);
     }
 
     boolean cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup, boolean cleanupItems) {
-        return new CleanUpDataInconsistencies(this).cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, cleanupItems);
+//        return new CleanUpDataInconsistencies(this).cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, cleanupItems);
+        return CleanUpDataInconsistencies.getInstance().cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, cleanupItems);
     }
 
     static void emailLog(ActionEvent evt) {

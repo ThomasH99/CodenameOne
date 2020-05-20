@@ -365,14 +365,14 @@ public class ScreenRepeatRule extends MyForm {
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleInstancesOverview", "Show all instances", Icons.iconRepeatOverview, (e) -> {
             new ScreenRepeatRuleInstancesOverview(repeatRuleEdited, ScreenRepeatRule.this, () -> {
-                refreshAfterEdit();
+                if(false)refreshAfterEdit();
             }).show();
         }
         ));
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsRepeatRules(ScreenRepeatRule.this, () -> {
-                refreshAfterEdit();
+                if(false)refreshAfterEdit();
             }).show();
         }
         ));

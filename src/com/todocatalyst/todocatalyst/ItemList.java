@@ -53,7 +53,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     final static String PARSE_COMMENT = Item.PARSE_COMMENT; //"comment";
     final static String PARSE_ITEMLIST = "itemList"; //subtasks
     final static String PARSE_ITEM_BAG = "itemBag"; //??
-    final static String PARSE_WORKTIME_DEFINITION = "workTimeDef";
+//    final static String PARSE_WORKTIME_DEFINITION = "workTimeDef";
     final static String PARSE_OWNER = "owner";
     final static String PARSE_SOURCE_LISTS = "sourceLists"; //for meta-lists, not used yet
     final static String PARSE_META_LISTS = "metaLists";
@@ -2330,7 +2330,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * returns the number of Items that are not done. If the list contains
      * something else than Items, returns zero
      */
-    static public int getNumberOfUndoneItems(List list, boolean recurse) {
+//    static public int getNumberOfUndoneItems(List list, boolean recurse) {
+    static public int getNumberOfUndoneItems(List list, boolean countLeafTasks) {
         if (list == null || list.size() == 0) {
             return 0;
         }
@@ -2338,17 +2339,31 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        for (Object item : itemList) {
 //        for (E item : itemList) {
         for (Object elt : list) {
-//            if (!((ItemAndListCommonInterface) item).isDone()) {
-            if (elt instanceof Item && !(((Item) elt).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
-                countUndone++;
-                //only count undone subtasks if project is not done
-//                if (includeSubTasks) {
-////                    countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems();
-//                    countUndone += ((Item) item).getNumberOfUndoneItems();
-//                }
-            } else if (elt instanceof ItemAndListCommonInterface) {
-                countUndone += ((ItemAndListCommonInterface) elt).getNumberOfUndoneItems(recurse);
-            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+////            if (!((ItemAndListCommonInterface) item).isDone()) {
+////            if (elt instanceof Item && !(((Item) elt).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
+//            if (elt instanceof Item) {
+//                Item item = (Item) elt;
+////                if (countLeafTasks) {
+////                    if (!item.isDone()) { //use Item to optimize (since implementing isDone() on a list would be expensive
+////                        countUndone +=item.getNumberOfUndoneItems(countLeafTasks);
+//////<editor-fold defaultstate="collapsed" desc="comment">
+//////only count undone subtasks if project is not done
+//////                if (includeSubTasks) {
+////////                    countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems();
+//////                    countUndone += ((Item) item).getNumberOfUndoneItems();
+//////                }
+//////</editor-fold>
+////                    }
+////                } else {
+////                    countUndone+= item.isDone() ? 0 : 1;
+////                }
+//                        countUndone +=item.getNumberOfUndoneItems(countLeafTasks);
+//            } else if (elt instanceof ItemAndListCommonInterface) {
+//                countUndone += ((ItemAndListCommonInterface) elt).getNumberOfUndoneItems(countLeafTasks);
+//            }
+//</editor-fold>
+            countUndone += ((ItemAndListCommonInterface) elt).getNumberOfUndoneItems(countLeafTasks);
         }
         return countUndone;
     }
@@ -2442,8 +2457,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return getNumberOfUndoneItems(getList(), false); //by default, only count direct subtasks (how many remaining subtasks *this* project has)
 //    }
     @Override
-    public int getNumberOfUndoneItems(boolean includeSubTasks) {
-        return getNumberOfUndoneItems(getListFull(), includeSubTasks); //by default, only count direct subtasks (how many remaining subtasks *this* project has)
+    public int getNumberOfUndoneItems(boolean countLeafTasks) {
+        return getNumberOfUndoneItems(getListFull(), countLeafTasks); //by default, only count direct subtasks (how many remaining subtasks *this* project has)
     }
 
     public static int getNumberOfItems(List list, boolean onlyUndone, boolean countLeafTasks) {
@@ -3498,6 +3513,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
     @Override
     public long getRemaining() {
+        return getRemaining(false);
+    }
+
+    public long getRemaining(boolean includeDoneTasks) {
         long sum = 0;
 //        for (int i = 0, size = getSize(); i < size; i++) {
 //            Object o = getItemAt(i);
@@ -3506,13 +3525,17 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //        }
         for (ItemAndListCommonInterface o : getListFull()) {//use full list to include any hidden elements which still have remaining (eg Waiting)
-            sum += o.getRemaining();
+            sum += (!o.isDone() || includeDoneTasks) ? o.getRemaining() : 0;
         }
         return sum;
     }
 
     @Override
     public long getEstimate() {
+        return getEstimate(false);
+    }
+
+    public long getEstimate(boolean includeDoneTasks) {
         long sum = 0;
 //        for (int i = 0, size = getSize(); i < size; i++) {
 //            Object o = getItemAt(i);
@@ -3521,13 +3544,17 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //        }
         for (ItemAndListCommonInterface o : getListFull()) {
-            sum += o.getEstimate();
+            sum += (!o.isDone() || includeDoneTasks) ? o.getEstimate() : 0;
         }
         return sum;
     }
 
     @Override
     public long getActual() {
+        return getActual(false); //normally in list overview we want Actual for completed tasks only
+    }
+
+    public long getActual(boolean includeUndoneTasks) {
         long sum = 0;
 //        for (int i = 0, size = getSize(); i < size; i++) {
 //            Object o = getItemAt(i);
@@ -3536,7 +3563,20 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //        }
         for (ItemAndListCommonInterface o : getListFull()) {
-            sum += o.getActual();
+            sum += (o.isDone() || includeUndoneTasks) ? o.getActual() : 0;
+        }
+        return sum;
+    }
+
+    /**
+     * calculates the total effort for a list or category as the sum of Actual for done tasks and the sum of both Actual and Remaining for undone tasks.
+     * @param includeUndoneTasks
+     * @return 
+     */
+    public long getTotalEffort() {
+        long sum = 0;
+        for (ItemAndListCommonInterface o : getListFull()) {
+            sum += o.isDone()  ?  o.getActual():o.getActual()+o.getRemaining();
         }
         return sum;
     }
@@ -3720,7 +3760,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        workTimeAllocator = null;
 //    }
     @Override
-    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
+//    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
+    public List<WorkSlot> getWorkSlotsFromParseN() {
 //        if (workSlotListBuffer == null || refreshWorkSlotListFromDAO) {
 //            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
 //        }
@@ -3737,7 +3778,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             if (Config.CHECK_OWNERS) {
                 checkOwners(workslots);
             }
-            return new WorkSlotList(this, workslots, true);
+//            return new WorkSlotList(this, workslots, true);
+            return workslots;
         } else {
             return null; //new WorkSlotList();
         }
@@ -3756,19 +3798,26 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
 //    public void setWorkSlotList(List<WorkSlot> workSlotList) {
     @Override
-    public void setWorkSlotList(WorkSlotList workSlotList) {
+    public void setWorkSlotsInParse(List workSlots) {
         //TODO currently not stored in ItemList but get from DAO
 //        workSlotListBuffer = null;
 //        workSlotListBuffer = workSlotList;
 //        workTimeAllocator = null;
-        if (workSlotList != null && workSlotList.getWorkSlotListFull().size() > 0) {
+//        if (workSlotList != null && workSlotList.getWorkSlotListFull().size() > 0) {
+        if (workSlots != null && workSlots.size() > 0) {
 //            put(PARSE_WORKSLOTS, workSlotList.getWorkSlots());
-            workSlotList.setOwner(this);
-            put(PARSE_WORKSLOTS, workSlotList.getWorkSlotListFull());
+//            workSlotList.setOwner(this);
+//            put(PARSE_WORKSLOTS, workSlotList.getWorkSlotListFull());
+            if (false) { //done in WorkSlotList            
+                WorkSlot.sortWorkSlotList(workSlots);
+            }
+            put(PARSE_WORKSLOTS, workSlots);
         } else {
             remove(PARSE_WORKSLOTS);
         }
-        resetWorkTimeDefinition(); //need to reset this each time the WorkSlot list is changed
+        if (false) { //done in WorkSlotList
+            resetWorkTimeDefinition(); //need to reset this each time the WorkSlot list is changed
+        }
     }
 
     /**

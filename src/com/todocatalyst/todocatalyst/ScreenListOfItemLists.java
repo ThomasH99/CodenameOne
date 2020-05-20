@@ -108,6 +108,12 @@ public class ScreenListOfItemLists extends MyForm {
         refreshAfterEdit();
     }
 
+    @Override
+    public boolean isPinchInsertEnabled(ItemAndListCommonInterface refElt, boolean insertBeforeRefElt) {
+        boolean ok = refElt instanceof ItemList;
+        return ok;
+    }
+
     protected void animateMyForm() {
         ((Container) ((BorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(ANIMATION_TIME_FAST);
     }
@@ -122,15 +128,16 @@ public class ScreenListOfItemLists extends MyForm {
         getContentPane().add(BorderLayout.CENTER, cont);
         if (cont instanceof MyTree2) {
 //            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
-            InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
-            if (insertNewElementFunc != null) {
-                setStartEditingAsyncTextArea(insertNewElementFunc.getTextArea());
-                setInlineInsertContainer(insertNewElementFunc);
-            }
+//            InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
+            PinchInsertContainer insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
+//            if (false && insertNewElementFunc != null) {
+//                setStartEditingAsyncTextArea(insertNewElementFunc.getTextArea());
+//                setPinchInsertContainer(insertNewElementFunc);
+//            }
         }
 
         //check if there was an insertContainer active earlier
-        recreateInlineInsertContainerIfNeeded();
+        recreateInlineInsertContainerAndReplayCmdIfNeeded();
 
 //        revalidate();
 //        revalidateWithAnimationSafety();
@@ -186,10 +193,13 @@ public class ScreenListOfItemLists extends MyForm {
 //            });
 //        }
 //</editor-fold>
-        getToolbar().addSearchCommand(makeSearchFunctionSimple(this.itemListList),MyPrefs.defaultIconSizeInMM.getFloat());
+//        getToolbar().addSearchCommand(makeSearchFunctionSimple(this.itemListList),MyPrefs.defaultIconSizeInMM.getFloat());
+//        MySearchBar mySearchBar = new MySearchBar(getToolbar(), makeSearchFunctionSimple(this.itemListList));
+        getToolbar().addCommandToRightBar( new MySearchCommand(getContentPane(),  makeSearchFunctionSimple(itemListList)));
+
 
         //NEW TASK to Inbox
-        toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox()); 
+        toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
 
         //NEW ITEMLIST
 //        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconNew, (e) -> {
@@ -210,7 +220,9 @@ public class ScreenListOfItemLists extends MyForm {
 //                    DAO.getInstance().saveInBackground((ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    previousForm.revalidate(); //refresh list to show new items(??)
 //                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
-                    refreshAfterEdit();//refresh list to show new items(??)
+                    if (false) {
+                        refreshAfterEdit();//refresh list to show new items(??)
+                    }
                 }
             }).show();
         }
@@ -221,7 +233,9 @@ public class ScreenListOfItemLists extends MyForm {
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemListsSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsListOfItemLists(ScreenListOfItemLists.this, () -> {
-                refreshAfterEdit();
+                if (false) {
+                    refreshAfterEdit();
+                }
             }).show();
         }
         ));
@@ -410,7 +424,7 @@ public class ScreenListOfItemLists extends MyForm {
 //        cont.addComponent(BorderLayout.CENTER, new Label(itemList.getText()));
 //</editor-fold>
 //        Button itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText()+(itemList.getWorkSlotListN()!=null?"#":""), swipCont, () -> true); //D&D
-        WorkSlotList wSlots = itemList.getWorkSlotListN(false);
+        WorkSlotList wSlots = itemList.getWorkSlotListN();
 //        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotListN(false).size() > 0 ? "%" : ""), swipCont, () -> true); //D&D
         MyButtonInitiateDragAndDrop itemListLabel = new MyButtonInitiateDragAndDrop(itemList.getText()
                 + (Config.TEST && wSlots != null && wSlots.size() > 0 ? "[W]" : ""),
@@ -457,7 +471,9 @@ public class ScreenListOfItemLists extends MyForm {
                         DAO.getInstance().saveNew((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
                         DAO.getInstance().saveNewExecuteUpdate(); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
-if (false)                        swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
+                        if (false) {
+                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
+                        }
                     } else {
 
                     }
@@ -715,7 +731,7 @@ if (false)                        swipCont.getParent().replace(swipCont, buildIt
             keepPos.testItemToKeepInSameScreenPosition(itemList, swipCont);
         }
 
-        MyButtonInitiateDragAndDrop itemListLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotListN(false).size() > 0 ? "%" : ""),
+        MyButtonInitiateDragAndDrop itemListLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotListN().size() > 0 ? "%" : ""),
                 swipCont, () -> true); //D&D
 
         mainCont.addComponent(BorderLayout.CENTER, itemListLabel);
@@ -870,7 +886,7 @@ if (false)                        swipCont.getParent().replace(swipCont, buildIt
                             cmp.setName(((ItemList) node).getText());
                         }
                     } else {
-                        ASSERT.that( false , "node should only be Item or ItemList: node=" + node);
+                        ASSERT.that(false, "node should only be Item or ItemList: node=" + node);
                     }
                     setIndent(cmp, depth);
                     return cmp;

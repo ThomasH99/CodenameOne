@@ -154,12 +154,14 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        //if no earlier slot found above, then insert at start of (possibly empty) list
 //        sortedOnStartTimeWorkslotList.add(0, workSlot);
         sortedOnStartTimeWorkslotList.add(workSlot);
-        sortWorkSlotList(sortedOnStartTimeWorkslotList); //ONLY sure way to always keep sorted on startTime, then duration (if multiple with same startTime)
+        WorkSlot.sortWorkSlotList(sortedOnStartTimeWorkslotList); //ONLY sure way to always keep sorted on startTime, then duration (if multiple with same startTime)
+        owner.setWorkSlotsInParse(sortedOnStartTimeWorkslotList); //save updated list
         //simple solution: new workSlots are likely be the most recent, so simply search from end of list to find where to insert
     }
 
     public void remove(WorkSlot workSlot) {
         sortedOnStartTimeWorkslotList.remove(workSlot);
+        owner.setWorkSlotsInParse(sortedOnStartTimeWorkslotList); //save updated list
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -330,113 +332,11 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         return sum;
     }
 
-    private static Comparator<WorkSlot> getMultipleComparator(Comparator<WorkSlot>[] comparators) {
-        Comparator<WorkSlot> comp1 = comparators.length >= 1 ? comparators[0] : null;
-        Comparator<WorkSlot> comp2 = comparators.length >= 2 ? comparators[1] : null;
-        Comparator<WorkSlot> comp3 = comparators.length >= 3 ? comparators[2] : null;
-
-        return (i1, i2) -> {
-            //http://stackoverflow.com/questions/23981199/java-comparator-for-objects-with-multiple-fields            
-            int res1 = comp1.compare(i1, i2);
-            if (res1 != 0) {
-                return res1;
-            }
-            if (comp2 == null) {
-                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
-            }
-            res1 = comp2.compare(i1, i2);
-            if (res1 != 0) {
-                return res1;
-            }
-            if (comp3 == null) {
-                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
-            }
-            res1 = comp3.compare(i1, i2);
-            if (res1 != 0) {
-                return res1;
-            }
-            if (i1.getObjectIdP() != null && i2.getObjectIdP() != null) { //when adding just created workslots, we may compare them before they're saved and have their objId
-                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
-            } else {
-                return 0;
-            }
-        };
-    }
-
-//    private static Comparator<WorkSlot> getMultipleComparatorOLD(Comparator<WorkSlot>[] comparators) {
-////        assert comparators.length >= 1 && comparators.length == sortDescending.length : "must be same length";
-////        for (int i = 0, size = getSortFieldId.length; i < size; i++) {
-////            Comparator<Item> comp1 = getSortingComparator(getSortFieldId[0], sortDescending[0]);
-////        }
-////        Comparator<Item> comp1 = getSortFieldId.length >= 1 ? getSortingComparator(getSortFieldId[0], sortDescending[0]) : null;
-////        Comparator<Item> comp2 = getSortFieldId.length >= 2 ? getSortingComparator(getSortFieldId[1], sortDescending[1]) : null;
-////        Comparator<Item> comp3 = getSortFieldId.length >= 3 ? getSortingComparator(getSortFieldId[2], sortDescending[2]) : null;
-//        Comparator<WorkSlot> comp1 = comparators.length >= 1 ? comparators[0] : null;
-//        Comparator<WorkSlot> comp2 = comparators.length >= 2 ? comparators[1] : null;
-//        Comparator<WorkSlot> comp3 = comparators.length >= 3 ? comparators[2] : null;
-//
-//        return (i1, i2) -> {
-//            int res1 = comp1.compare(i1, i2);
-//            if (res1 != 0) {
-//                return res1;
-//            } else {
-//                if (comp2 == null) {
-////                    return 0; //TODO!!!! should compare eg objectId to ensure a consistent ordering on every sort
-//                    return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
-//                } else {
-//                    int res2 = comp2.compare(i1, i2);
-//                    if (res2 != 0) {
-//                        return res2;
-//                    } else {
-//                        if (comp3 == null) {
-////                            return 0;
-//                            return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
-//                        } else {
-//                            int res3 = comp3.compare(i1, i2);
-//                            if (res3 != 0) {
-//                                return res3;
-//                            } else {
-////                                return 0;
-//                                return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
-//                            }
-//                        }
-//                    }
-//                }
-//            }
-//        };
-//    }
-    /**
-     * sort on startTime, then on duration (put longest timeslots first if
-     * several starting at same time),
-     *
-     * @param sortOnEndTime
-     * @return
-     */
-    private static void sortWorkSlotList(List<WorkSlot> sortedWorkslotList) {
-//        boolean sortOnEndTime            }) {
-//        Collections.sort(this, (i1, i2) -> FilterSortDef.compareDate(((WorkSlot) i1).getStartTimeD(), ((WorkSlot) i2).getStartTimeD()));
-//        if (sortOnEndTime) {
-//            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareLong(i1.getEndTime(), i2.getEndTime()));
-//        } else 
-        if (sortedWorkslotList != null) {
-//            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
-            Collections.sort(sortedWorkslotList,
-                    //                    (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
-                    getMultipleComparator(new Comparator[]{
-                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
-                (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareLong(i2.getDurationInMillis(), i1.getDurationInMillis()), //longest slots first
-                (Comparator<WorkSlot>) (i1, i2) -> i1.getObjectIdP() == null
-                ? (i2.getObjectIdP() == null ? 0 : -1)
-                : (i2.getObjectIdP() == null ? 1 : i1.getObjectIdP().compareTo(i2.getObjectIdP())), //sort equal workslots on objectId to make it deterministic
-            }));
-        }
-//        return sortedWorkslotList;
-    }
-
     private void sortWorkSlotList() {
-        sortWorkSlotList(sortedOnStartTimeWorkslotList);
+        WorkSlot.sortWorkSlotList(sortedOnStartTimeWorkslotList);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * sort on WorkSLot startTime
      */
@@ -454,6 +354,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //            Collections.sort(sortedOnStartTimeWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
 //        }
 //    }
+//</editor-fold>
     /**
      * returns a list with all the workSlots that has some work time between
      * startDate and endDate (e.g. includes workslots that start *before*
@@ -475,7 +376,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
      * startDate
      * @return
      */
-    public WorkSlotList getWorkSlotsInInterval(Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
+    public static List<WorkSlot> getWorkSlotsInInterval( List<WorkSlot>sortedOnStartTimeWorkslotList, Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
 //        return removeWorkSlotsInInterval(this, startDate, endDate, includeFullDay, isSorted);
         //skip all elements that end *before* startTime, stops nu with workSlot
         ArrayList<WorkSlot> result = new ArrayList<>();
@@ -486,7 +387,22 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
                 result.add(ws);
             }
         }
-        return new WorkSlotList(owner, result, true);
+//        return new WorkSlotList(owner, result, true);
+        return result;
+    }
+
+    public WorkSlotList getWorkSlotsInInterval(Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
+//        return removeWorkSlotsInInterval(this, startDate, endDate, includeFullDay, isSorted);
+        //skip all elements that end *before* startTime, stops nu with workSlot
+//        ArrayList<WorkSlot> result = new ArrayList<>();
+//        long endTime = endDate.getTime();
+//        long startTime = startDate.getTime();
+//        for (WorkSlot ws : sortedOnStartTimeWorkslotList) { //optimization: optimize for fact that workslotList is now sorted
+//            if (ws.getStartTimeD().getTime() < endTime && ws.hasDurationInInterval(startTime, endTime)) {
+//                result.add(ws);
+//            }
+//        }
+        return new WorkSlotList(owner, getWorkSlotsInInterval(sortedOnStartTimeWorkslotList, startDate, endDate, includeFullDay, isSorted), true);
     }
 
     public int size() {
@@ -504,6 +420,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         return getWorkSlots().contains(workSlot);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * remove workSlots that are expired, used to only calculate finishTime
      * based on current workslots
@@ -529,6 +446,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        //if we get to here, no workslots had endTime in the past, so we don't have to remove
 //        return workSlots;
 //    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public static WorkSlotList removeWorkSlotsInIntervalXXX(WorkSlotList workSlotList, Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
 //        final int WORKSLOT_LIMIT = 200;

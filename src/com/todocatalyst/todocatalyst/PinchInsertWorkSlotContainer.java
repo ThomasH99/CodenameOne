@@ -24,7 +24,7 @@ import java.util.List;
  *
  * @author Thomas
  */
-public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer implements InsertNewElementFunc {
+public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
 
 //    private Container oldNewTaskCont=null;
     private MyTextField2 textEntryField;
@@ -71,7 +71,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
 //        this(myForm, new ItemList(), refWorkSlot2, insertBeforeRefElement);
 //    }
 //    public InlineInsertNewWorkSlotContainer(MyForm myForm, ItemList itemList2, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeRefElement) {
-    public InlineInsertNewWorkSlotContainer(MyForm form, WorkSlot refWorkSlot2N, ItemAndListCommonInterface workSlotListOwner, boolean insertBeforeRefElement) {
+    public PinchInsertWorkSlotContainer(MyForm form, WorkSlot refWorkSlot2N, ItemAndListCommonInterface workSlotListOwner, boolean insertBeforeRefElement) {
         this.myForm = form;
 //        this.workSlotList = workSlotList2;
 //        ASSERT.that(refWorkSlot2N != null, "why itemOrItemListForNewTasks2==null here?");
@@ -85,15 +85,16 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         this.insertBeforeRefElement = insertBeforeRefElement;
         continueAddingNewWorkSlots = MyPrefs.workSlotContinueAddingInlineWorkslots.getBoolean();
 
-        Container contForTextEntry = new Container(new BorderLayout());
+        Container cont = new Container(new BorderLayout());
+        cont.setUIID("InlineInsertWorkSlotCont");
 
-        SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), contForTextEntry);
-        add(swipC);
-
+//        SwipeableContainer swipC = new SwipeableContainer(new Label("Subtask"), new Label("Task"), cont);
+//        add(swipC);
         textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
         textEntryField.setHint(ENTER_WORKSLOT);
+        textEntryField.setUIID("WorkSlotPinchInsertTextField");
         textEntryField.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
-        Container westCont = new Container(BoxLayout.x());
+//        Container westCont = new Container(BoxLayout.x());
 
         //DONE listener - create and insert new Category
         textEntryField.setDoneListener((ev) -> { //When pressing ENTER, insert new task
@@ -105,7 +106,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
 
                 }
                 insertNewAndSaveChanges(newWorkSlot);
-                closeInsertContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
+                closePinchContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
                 this.myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
         });
@@ -115,24 +116,26 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         }
         AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
-        contForTextEntry.add(BorderLayout.CENTER, textEntryField);
+        cont.add(BorderLayout.CENTER, textEntryField);
 
-        //close insert container
-        contForTextEntry.add(BorderLayout.WEST, westCont);
 //        if (refWorkSlot != null && refWorkSlot.size() > 0) { //only add close button if in a non-empty list
         if (refWorkSlotN != null) { //only add close button if in a non-empty list, which is the case if there is a refWorkSlot
-            westCont.add(new Button(CommandTracked.create(null, Icons.iconCloseCircle, (ev) -> {
+            Button closeButton = new Button(Command.createMaterial("", Icons.iconCloseCircle, (ev) -> {
                 //TODO!!! Replay: store the state/position of insertContainer 
 //                myForm.lastInsertNewElementContainer = null;
 //                closeInsertNewCategoryContainer(myForm); //close without inserting new task
 //                getParent().removeComponent(this); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
-                this.remove(); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
-                this.myForm.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
-            }, "EditItemFromInsertNewContainer")));
+//                this.remove(); //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
+//                this.myForm.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+                closePinchContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
+            }));
+            closeButton.setUIID("WorkSlotPinchInsertTextCloseButton");
+            //close insert container
+            cont.add(BorderLayout.WEST, closeButton);
         }
 
 //        editNewCmd = CommandTracked.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
-        editNewCmd = CommandTracked.create(null, Icons.iconEdit, (ev) -> {
+        editNewCmd = MyReplayCommand.create("InlineEditWorkSlot","", Icons.iconEdit, (ev) -> {
             if ((newWorkSlot = createNewWorkSlot()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                 lastCreatedWorkSlot = null; //reset value (in case ScreenItem does a Cancel meaning no more inserts)
                 this.myForm.setKeepPos(new KeepInSameScreenPosition(newWorkSlot, this, -1)); //if editing the new task in separate screen,
@@ -141,14 +144,17 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
                     insertNewAndSaveChanges(newWorkSlot);
                     lastCreatedWorkSlot = continueAddingNewWorkSlots ? newWorkSlot : null; //ensures that MyTree2 will create a new insertContainer after newTask
                     myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
-                    this.myForm.refreshAfterEdit();
+                    if(false)this.myForm.refreshAfterEdit();
                 }).show();
             } else {
                 ASSERT.that(false, "Something went wrong here, what to do? ...");
             }
-        }, "InlineEditWorkSlot");
+        });
         //Enter full screen edit of the new WorkSlot:
-        contForTextEntry.add(BorderLayout.EAST, new Button(editNewCmd));
+        Button editButton = new Button(editNewCmd);
+        editButton.setUIID("WorkSlotPinchInsertTextEditButton");
+        cont.add(BorderLayout.EAST, editButton);
+        add(cont);
     }
 
     public MyTextField2 getTextField() {
@@ -170,7 +176,7 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         WorkSlot newWorkSlot = new WorkSlot(); //true: interpret textual values
         newWorkSlot.setText(text); //will interpret a textual duration like "5m" as 5 minutes
         if (newWorkSlot.getDurationInMillis() == 0) {
-            newWorkSlot.setDurationInMinutes(MyPrefs.workSlotDefaultDurationInMinutes.getInt()*MyDate.MINUTE_IN_MILLISECONDS); //UI: if no textual definition, use normal default value
+            newWorkSlot.setDurationInMinutes(MyPrefs.workSlotDefaultDurationInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //UI: if no textual definition, use normal default value
         }//        if (true || createEvenIfNoTextInField || (text != null && text.length() > 0)) {
         if (refWorkSlotN != null && refWorkSlotN.getStartTimeD() != null) {
             if (insertBeforeRefElement) {
@@ -227,21 +233,24 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
         DAO.getInstance().saveNew(newWorkSlot);
         DAO.getInstance().saveNew((ParseObject) workSlotListOwner);
         DAO.getInstance().saveNewExecuteUpdate();
-         myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newWorkSlot.getObjectIdP());
+        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newWorkSlot.getObjectIdP());
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
 //        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
     }
 
-    private void closeInsertContainer(boolean stopAddingInlineContainers) {
+    @Override
+    public void closePinchContainer(boolean stopAddingInlineContainers) {
 //        closeInsertNewWorkSlotContainer(null);
-        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnScrollYCont(this);
+        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(this);
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
         if (stopAddingInlineContainers) {
-            myForm.setInlineInsertContainer(null); //remove this as inlineContainer
-            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
-            ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
+            if(false)myForm.setPinchInsertContainer(null); //remove this as inlineContainer
+//            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
+            myForm.previousValues.removePinchInsertKeys(); //delete the marker on exit
+            
+            if(false)ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
         }
         if (parent != null) {
             parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
@@ -279,9 +288,9 @@ public class InlineInsertNewWorkSlotContainer extends InlineInsertNewContainer i
 //    }
 //</editor-fold>
     @Override
-    public InsertNewElementFunc make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
+    public PinchInsertContainer make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
         if (element == lastCreatedWorkSlot && element instanceof WorkSlot) {
-            return new InlineInsertNewWorkSlotContainer(myForm, (WorkSlot) lastCreatedWorkSlot, workSlotListOwner, false); //element == lastCreatedWorkSlot, so both are the previously created (now reference) element
+            return new PinchInsertWorkSlotContainer(myForm, (WorkSlot) lastCreatedWorkSlot, workSlotListOwner, false); //element == lastCreatedWorkSlot, so both are the previously created (now reference) element
         }
         return null;
     }

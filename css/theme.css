@@ -375,8 +375,44 @@ CommandList { /* the overflow menu itself */
     /*color: greenyellow;*/
 }
 
+SearchFieldContainer {
+    cn1-derive: Container;
+    padding-top: 1mm;
+    margin-top: 1mm;
+    border-top-width: 1px;
+    /*    border-top-color: black;*/
+    border: gray;
+    border: solid;
+    /*    margin-top: 0.5mm;
+        font-size: 120%;
+        background-color: transparent;
+        /*color: green;
+        /*background-color: red;*/
+}
 TextFieldSearch {
     cn1-derive: Label;
+    /*    margin-top: 0.5mm;
+        font-size: 120%;
+        background-color: transparent;
+        /*color: green;
+        /*background-color: red;*/
+}
+SearchFieldText {
+    cn1-derive: Label;
+    border-radius:  1mm;
+    padding: 0.5mm 2mm;
+    margin: 0mm 1mm 1mm 3mm;
+    background: white;
+    color: darkslategray;
+    /*    margin-top: 0.5mm;
+        font-size: 120%;
+        background-color: transparent;
+        /*color: green;
+        /*background-color: red;*/
+}
+TextHintSearch {
+    cn1-derive: SearchFieldText;
+    color: lightgray;
     /*    margin-top: 0.5mm;
         font-size: 120%;
         background-color: transparent;
@@ -469,6 +505,8 @@ ScreenItemTaskText {
 
 ScreenItemTaskTextHint {
     cn1-derive: ScreenItemTaskText;
+    margin: 0mm;
+    padding: 0mm; 
     font-family:  "native:MainThin";
     color: lightgray;
     /*color: red;*/
@@ -866,7 +904,7 @@ BigTimerTimer {
     /*https://stackoverflow.com/questions/60801160/how-to-select-a-native-monospace-font-in-theme-css/60931071#60931071*/
     font-family :  monospace; /*should now be valid*/
     /*font-size: 200%;*/
-    font-size: 56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
+    font-size: 200%;/**56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
     border: 1mm solid gray;
     background-color: blue;
     text-align: center;
@@ -1399,6 +1437,7 @@ ListOfItemListsShowItems  { /*the icon to the left of the name of the itemlist*/
     cn1-derive: Label;
     /*    background-color: lightgrey;/**/
     text-decoration: none;
+    color: black;
     /*color:white;*/
     padding: 0 0.5mm 0 0.5mm;
     margin: 0 1mm;
@@ -1427,7 +1466,7 @@ CategoryListContainer {
     border-top: 1pt solid darkgrey;
     /*border-bottom: 1pt solid darkgrey;*/
     background: #d1eded;
-    padding: 2mm 2mm 2mm 3mm; 
+    padding: 2mm 0mm 2mm 3mm; 
     /*margin: 0mm 2mm 2mm 3mm;*/
     /*border-top: 1pt solid green;*/
     /*border-bottom: 1pt solid lightgray;*/
@@ -1437,6 +1476,7 @@ CategoryListBase {
     cn1-derive: Label;
     margin: 0;/**/
     padding: 0;/**/
+    color: #666;
     /*background: white;*/
     /*margin-left: 2mm;/**/
     font-family :  "native:MainBold"; /*"native:MainLight";*/
@@ -1445,7 +1485,8 @@ CategoryListBase {
 
 CategoryListTextCont { /*the 'span' container of the wrap button with the icon/text of the itemlist*/
     cn1-derive: CategoryListBase;
-
+    margin: 0;/**/
+    padding: 0;/**/
     /*text-decoration: bold;xxx*/
 }
 
@@ -1460,7 +1501,7 @@ CategoryListOtherText { /*the text/name of the category*/
 
 CategoryListIcon  { /*the icon to the left of the name of the itemlist*/
     cn1-derive: IconEdit;
-    padding-left: 0mm;
+    padding-left: 1mm;
     padding-right: 1mm;
     /*margin: 0 2mm;*/
 }
@@ -1474,6 +1515,9 @@ CategoryListShowItems  { /*the icon to the left of the name of the itemlist*/
 }
 
 CategoryListShowItemsExpanded { 
+    cn1-derive: ListOfItemListsShowItemsExpanded;
+}
+CategoryListDescriptionLabel { 
     cn1-derive: ListOfItemListsShowItemsExpanded;
 }
 
@@ -1683,7 +1727,8 @@ SwipeButtonInsertBelow{
     background-color:darkgreen;
 }
 
-/* INLINE INSERT */
+
+/* INLINE INSERT ** ITEM ***/
 InlineInsertItemAsTask {
     cn1-derive: ItemContainer;
 }
@@ -1698,33 +1743,155 @@ InlineInsertNewItemContainer2 {
     border-style: solid;
     border-width: 0.5mm;/*0.3mm;*/
     border-color: lightslategray;
-    margin: 0.5mm;
+    margin: 0mm;
     padding: 0.5mm;
-    background-color: yellow;
+    background-color: #eee;
 }
 PinchInsertTextField { 
     cn1-derive: TextField;
     /*color: darkslategray;*/
     /*background-color: #eee;*/
-    border-color: lightblue;
+    /*border-color: lightblue;*/
     /*border-color: #007AFF; royalblue;*/
     border-style: none;
-    /*border-width: 0.2mm;0.3mm;*/
-    
+    /*border-width: 0.2mm;*/ 
+    background-color: transparent;
     margin: 0mm;
     padding: 0mm 1mm;
 }
 PinchInsertTextEditButton { 
-    cn1-derive: Button;
-    /*background-color: #eee;*/
-    margin: 0mm;
-    padding: 0mm 0mm;
+    cn1-derive: IconEdit; 
+    /*    margin: 0mm;
+        padding: 0mm 0mm; */
 }
 PinchInsertTextCloseButton { 
     cn1-derive: Button;
     /*background-color: #eee;*/
     margin: 0mm;
     padding: 0mm 2mm;
+}
+PinchInsertHintLabel { 
+    cn1-derive: Label;
+    font-size: 80%;
+    color: lightslategray;
+    text-align: center;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm;
+}
+
+/* INLINE INSERT ** ITEMLIST ***/
+
+InlineInsertListCont{
+    cn1-derive: ItemListContainer;
+}
+ListPinchInsertTextField { 
+    cn1-derive: TextField;
+    /*color: darkslategray;*/
+    /*background-color: #eee;*/
+    /*border-color: lightblue;*/
+    /*border-color: #007AFF; royalblue;*/
+    border-style: none;
+    /*border-width: 0.2mm;*/ 
+    background-color: transparent;
+    margin: 0mm;
+    padding: 0mm 1mm;
+}
+ListPinchInsertTextEditButton { 
+    cn1-derive: IconEdit; 
+    /*    margin: 0mm;
+        padding: 0mm 0mm; */
+}
+ListPinchInsertTextCloseButton { 
+    cn1-derive: Button;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm 2mm;
+}
+ListPinchInsertHintLabelXXX { 
+    cn1-derive: Label;
+    font-size: 80%;
+    color: lightslategray;
+    text-align: center;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm;
+}
+
+/* INLINE INSERT ** CATEGORY ***/
+
+InlineInsertCategoryCont{
+    cn1-derive: ItemListContainer;
+}
+CatPinchInsertTextField { 
+    cn1-derive: TextField;
+    /*color: darkslategray;*/
+    /*background-color: #eee;*/
+    /*border-color: lightblue;*/
+    /*border-color: #007AFF; royalblue;*/
+    border-style: none;
+    /*border-width: 0.2mm;*/ 
+    background-color: transparent;
+    margin: 0mm;
+    padding: 0mm 1mm;
+}
+CatPinchInsertTextEditButton { 
+    cn1-derive: IconEdit; 
+    /*    margin: 0mm;
+        padding: 0mm 0mm; */
+}
+CatPinchInsertTextCloseButton { 
+    cn1-derive: Button;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm 2mm;
+}
+CatPinchInsertHintLabelXXX { 
+    cn1-derive: Label;
+    font-size: 80%;
+    color: lightslategray;
+    text-align: center;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm;
+}
+
+/* INLINE INSERT ** WORKSLOT ***/
+
+InlineInsertWorkSlotCont{
+    cn1-derive: ItemListContainer;
+}
+WorkSlotPinchInsertTextField { 
+    cn1-derive: TextField;
+    /*color: darkslategray;*/
+    /*background-color: #eee;*/
+    /*border-color: lightblue;*/
+    /*border-color: #007AFF; royalblue;*/
+    border-style: none;
+    /*border-width: 0.2mm;*/ 
+    background-color: transparent;
+    margin: 0mm;
+    padding: 0mm 1mm;
+}
+WorkSlotPinchInsertTextEditButton { 
+    cn1-derive: IconEdit; 
+    /*    margin: 0mm;
+        padding: 0mm 0mm; */
+}
+WorkSlotPinchInsertTextCloseButton { 
+    cn1-derive: Button;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm 2mm;
+}
+WorkSlotPinchInsertHintLabelXXX { 
+    cn1-derive: Label;
+    font-size: 80%;
+    color: lightslategray;
+    text-align: center;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm;
 }
 
 
@@ -1842,14 +2009,14 @@ ToggleButtonFirst {
     /*border-style: solid;*/
     /*border-style: solid;
     border-right: 0mm;*/
-   /* border-top-left-radius: 1mm;
-    border-bottom-left-radius: 1mm; /*TEMP DISABLED*/
-   /*border-top-right-radius: 1mm;
-    border-bottom-right-radius: 1mm; /*TEMP DISABLED*/
+    /* border-top-left-radius: 1mm;
+     border-bottom-left-radius: 1mm; /*TEMP DISABLED*/
+    /*border-top-right-radius: 1mm;
+     border-bottom-right-radius: 1mm; /*TEMP DISABLED*/
     border-radius: 1mm 0mm 0mm 1mm; /*TEMP DISABLED*/
-     /*   margin: 0mm;
-       margin-bottom: 0px;
-       padding: 1mm;*/
+    /*   margin: 0mm;
+      margin-bottom: 0px;
+      padding: 1mm;*/
 }
 
 ToggleButtonOnly {
@@ -1860,11 +2027,11 @@ ToggleButtonOnly {
     color: green;
     background: aqua;
     /*border-style: solid;*/
-  /*  border-top-left-radius: 1mm;
-    border-bottom-left-radius: 1mm;
-    border-top-right-radius: 1mm;
-    border-bottom-right-radius: 1mm; /*TEMP DISABLED*/
-        border-radius: 1mm 1mm 1mm 1mm; /*TEMP DISABLED*/
+    /*  border-top-left-radius: 1mm;
+      border-bottom-left-radius: 1mm;
+      border-top-right-radius: 1mm;
+      border-bottom-right-radius: 1mm; /*TEMP DISABLED*/
+    border-radius: 1mm 1mm 1mm 1mm; /*TEMP DISABLED*/
 
     /*   margin: 0mm;
        margin-bottom: 0px;
@@ -1874,10 +2041,10 @@ ToggleButtonOnly {
 ToggleButtonLast {
     cn1-derive: ToggleButton;
     border-radius: 0mm 1mm 1mm 0mm; 
-/*      border-top-left-radius: 1mm;
-    border-bottom-left-radius: 1mm; */
-/*    border-top-right-radius: 1mm;
-    border-bottom-right-radius: 1mm;*/
+    /*      border-top-left-radius: 1mm;
+        border-bottom-left-radius: 1mm; */
+    /*    border-top-right-radius: 1mm;
+        border-bottom-right-radius: 1mm;*/
 }
 
 GroupElement{

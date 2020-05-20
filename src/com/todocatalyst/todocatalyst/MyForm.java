@@ -100,23 +100,24 @@ public class MyForm extends Form {
 //    protected InlineInsertNewElementContainer lastInsertNewElementContainer;
 //    protected InsertNewElementFunc lastInsertNewElementContainer;
 //    private TextArea editFieldOnShowOrRefresh;
-    private InsertNewElementFunc inlineInsertContainer;
+//    private InsertNewElementFunc pinchInsertContainer;
+    private PinchInsertContainer pinchInsertContainer;
 //    private BooleanFunction testIfEdit;
     private String uniqueFormId = null; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     private TextArea startEditingAsyncTextArea = null;
     protected ScreenType screenType = null;
-
+    
     private String showIfEmptyList = null; //holds Container with actual content, typically MyTree2
 
     SwipeableContainer openSwipeContainer = null; //stores the currently open SwipeContainer for this screen
     public final static int ANIMATION_TIME_DEFAULT = 300; //in milliseconds
     final static int ANIMATION_TIME_FAST = 150; //in milliseconds
     private Container smallTimer = null;
-
+    
     protected void expandedObjectsInit(String objIdOrOtherUniqueName) {
         expandedObjects = new ExpandedObjects(getUniqueFormId(), objIdOrOtherUniqueName);
     }
-
+    
     public CheckIfDataIsComplete getCheckIfSaveOnExit() {
         return checkDataIsCompleteBeforeExit;
     }
@@ -130,7 +131,7 @@ public class MyForm extends Form {
     public void setCheckIfSaveOnExit(CheckIfDataIsComplete errorMsgIfDataIncomplete) {
         this.checkDataIsCompleteBeforeExit = errorMsgIfDataIncomplete;
     }
-
+    
     public String getTextToShowIfEmptyList() {
         return showIfEmptyList;
     }
@@ -154,11 +155,11 @@ public class MyForm extends Form {
     protected void setStartEditingAsyncTextArea(TextArea startEditTextArea) {
         this.startEditingAsyncTextArea = startEditTextArea;
     }
-
+    
     public TextArea getStartEditingAsyncTextArea() {
         return startEditingAsyncTextArea;
     }
-
+    
     public String getUniqueFormId() {
         return uniqueFormId != null ? uniqueFormId : (getTitle() != null && getTitle().length() > 0 ? getTitle() : "NoScreenId");
     }
@@ -174,7 +175,7 @@ public class MyForm extends Form {
 //        return editFieldOnShowOrRefresh;
 //    }
     interface BooleanFunction {
-
+        
         boolean test();
     }
 
@@ -183,11 +184,18 @@ public class MyForm extends Form {
      *
      * @param editFieldOnShowOrRefresh
      */
-    public InsertNewElementFunc getInlineInsertContainer() {
-        return inlineInsertContainer;
+//    public InsertNewElementFunc getPinchInsertContainer() {
+    public PinchInsertContainer getPinchInsertContainer() {
+        return pinchInsertContainer;
     }
 
-    public void setInlineInsertContainer(InsertNewElementFunc inlineInsertContainer) {
+//    public void setPinchInsertContainer(InsertNewElementFunc inlineInsertContainer) {
+    public void setPinchInsertContainer(PinchInsertContainer inlineInsertContainer) {
+//        setPinchInsertContainer(inlineInsertContainer, false); //false since refreshAfterEdit should always activate the right one
+//    }
+//
+////    public void setPinchInsertContainer(InsertNewElementFunc inlineInsertContainer, boolean startEditingAsyncOnThisCall) {
+//    public void setPinchInsertContainer(InlineInsertNewContainer inlineInsertContainer, boolean startEditingAsyncOnThisCall) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //if resetting to null, remove previous container with animation
 //        if (inlineInsertContainer == null && this.inlineInsertContainer != null && this.inlineInsertContainer instanceof Component) {
@@ -202,10 +210,12 @@ public class MyForm extends Form {
 //            setEditOnShow(inlineInsertContainer.getTextArea());
 //        }
 //</editor-fold>
-        this.inlineInsertContainer = inlineInsertContainer;
-        if (inlineInsertContainer != null) {
-            setStartEditingAsyncTextArea(inlineInsertContainer.getTextArea()); //set to ensure it starts up in edit-model
-        }//        if (this.inlineInsertContainer != null)
+        this.pinchInsertContainer = inlineInsertContainer;
+//        if (this.pinchInsertContainer != null && startEditingAsyncOnThisCall) {
+//        if (false && this.pinchInsertContainer != null) {//&& startEditingAsyncOnThisCall) {
+//            setStartEditingAsyncTextArea(this.pinchInsertContainer.getTextArea()); //set to ensure it starts up in edit-model
+//        }
+//        if (this.inlineInsertContainer != null)
 ////            setStartEditingAsync(this.inlineInsertContainer.getTextArea());
 //            setStartEditingAsyncTextArea(inlineInsertContainer.getTextArea()); //set to ensure it starts up in edit-model
     }
@@ -241,20 +251,34 @@ public class MyForm extends Form {
 //    String SCREEN_TITLE = "";
     //TODO: move titles into Screens
     static final String SCREEN_LISTS_TITLE = "Lists";
+    static final String SCREEN_LISTS_HELP = "Lists";
     static final String SCREEN_ALL_TASKS_TITLE = "All tasks";
+    static final String SCREEN_ALL_TASKS_HELP = "All tasks";
     static final String SCREEN_INBOX_TITLE = "Inbox"; // "Inbox (no owner)" "Inbox"
+    static final String SCREEN_INBOX_HELP = "Inbox"; // "Inbox (no owner)" "Inbox"
     static final String SCREEN_PROJECTS_TITLE = "Projects";
+    static final String SCREEN_PROJECTS_HELP = "Projects";
     static final String SCREEN_TEMPLATES_TITLE = "Templates";
+    static final String SCREEN_TEMPLATES_HELP = "Templates";
     static final String SCREEN_COMPLETION_LOG_TITLE = "Log"; // "Work og", "Completion log", "Completed tasks"
+    static final String SCREEN_COMPLETION_LOG_HELP = "Log"; // "Work og", "Completion log", "Completed tasks"
     static final String SCREEN_TEMPLATE_PICKER = "Select Template";
     static final String SCREEN_CREATION_LOG_TITLE = "Diary"; // "Log book", "Creation log", "Created tasks"
+    static final String SCREEN_CREATION_LOG_HELP = "Diary"; // "Log book", "Creation log", "Created tasks"
     static final String SCREEN_NEXT_TITLE = "Next"; // "What's next", "Calendar"
+    static final String SCREEN_NEXT_HELP = "Have a look at what's up the next month";
     static final String SCREEN_TODAY_TITLE = "Today"; // "Creation log", "Created tasks"
+    static final String SCREEN_TODAY_HELP = "What is scheduled for today, due tasks, waiting tasks scheduled for today and tasks that fit today's workslots";
     static final String SCREEN_OVERDUE_TITLE = "Overdue"; // "Creation log", "Created tasks"
+    static final String SCREEN_OVERDUE_HELP = "Overdue tasks, you probably want to deal with these before moving on to other tasks"; // "Creation log", "Created tasks"
     static final String SCREEN_TUTORIAL = "Tutorial";
+    static final String SCREEN_TUTORIAL_HELP = "Tutorial";
     static final String SCREEN_TOUCHED = "Touched";
+    static final String SCREEN_TOUCHED_HELP = "Touched";
     static final String SCREEN_TOUCHED_24H = "Touched last 24h";
     static final String SCREEN_STATISTICS = "Achievements"; //"Statistics", "History"
+    static final String SCREEN_IMPROVE = "Improve"; //how to improve, more precise estimates, analysis per type of tasks (respect due date, estimates, split up, allow to become interrupted, ...)
+    static final String SCREEN_IMPROVE_HELP = "Shows you insights on how well you do and gives feedback on how you may improve. COMING..."; //how to improve, more precise estimates, analysis per type of tasks (respect due date, estimates, split up, allow to become interrupted, ...)
     static final String SETTINGS_SCREEN_TITLE = "Settings for "; //"Statistics", "History"
 
     public enum ScreenType {
@@ -263,16 +287,16 @@ public class MyForm extends Form {
         COMPLETION_LOG(SCREEN_COMPLETION_LOG_TITLE), CREATION_LOG(SCREEN_CREATION_LOG_TITLE),
         NEXT(SCREEN_NEXT_TITLE), OVERDUE(SCREEN_OVERDUE_TITLE), TOUCHED(SCREEN_TOUCHED), STATISTICS(SCREEN_STATISTICS);
         private String screenTitle;
-
+        
         ScreenType(String title) {
             screenTitle = title;
         }
-
+        
         String getTitle() {
             return screenTitle;
         }
     }
-
+    
     protected static final String REPEAT_RULE_KEY = "$REPEAT_RULE$73"; //used to store repeatRules in ParseId2Map so they can be calculated last
     protected static final String SUBTASK_KEY = "$SUBTASK$73"; //used to store repeatRules in ParseId2Map so they can be calculated last
 
@@ -341,17 +365,18 @@ public class MyForm extends Form {
     MyForm(ScreenType screenType, MyForm previousForm, Runnable updateActionOnDone) { //throws ParseException, IOException {
         this(screenType.getTitle(), previousForm, updateActionOnDone);
         this.screenType = screenType;
-
+        
     }
-
+    
     MyForm(String title, MyForm previousForm, Runnable updateActionOnDone) { //throws ParseException, IOException {
         this(title, previousForm, updateActionOnDone, null);
     }
-
+    
     MyForm(String title, MyForm previousForm, Runnable updateActionOnDone, Runnable updateActionOnCancel) { //throws ParseException, IOException {
 //    MyForm(String title, UpdateField updateActionOnDone) { //throws ParseException, IOException {
 //        super(title);
         super();
+        ReplayLog.getInstance().clearCommandsFromPreviousScreen(); //always clear the ReplayCommands from the previous screen!
         setTitle(title); //must do here to use overridden version of setTitle()
         this.previousForm = previousForm;
         if (false) {
@@ -454,7 +479,7 @@ public class MyForm extends Form {
             getToolbar().setScrollOffUponContentPane(MyPrefs.addNewCategoriesToBeginningOfCategoryList.getBoolean()); //see https://github.com/codenameone/CodenameOne/issues/2295
         }
     }
-
+    
     @Override
     public void setTitle(String title) {
         if (false) {
@@ -556,44 +581,50 @@ public class MyForm extends Form {
                         }
                     }
                 }
-
+                
             });
         }
     }
-
+    
     protected void setKeepPos(KeepInSameScreenPosition keepPos) {
         this.keepPos = keepPos;
 //        previousValues.put(KEEP_POS_KEY,keepPos);
     }
-
+    
+    protected void setKeepPos() {
+        setKeepPos(new KeepInSameScreenPosition());
+    }
+    
     protected KeepInSameScreenPosition getKeepPos() {
         return keepPos;
     }
 
 //    private static String KEEP_POS_KEY = "KeepPos";
-    protected void restoreKeepPos() {
+    protected boolean restoreKeepPos() {
         if (Config.TEST) {
             Log.p("calling MyForm.restoreKeepPos(), with keepPos=" + keepPos);
         }
-        if (this.keepPos != null) {
-            this.keepPos.setNewScrollYPosition();
-            this.keepPos = null;
+        if (keepPos != null) {
+            keepPos.setNewScrollYPosition();
+            keepPos = null;
+            return true;
         }
+        return false;
 //        else if (previousValues.get(KEEP_POS_KEY)!=null)
 //            this.keepPos.setNewScrollYPosition();
     }
-
+    
     @Override
     public void revalidate() {
         super.revalidate();
 //        Log.p("REVALIDATE for form=" + getUniqueFormId());
         ASSERT.that(true, "REVALIDATE for form=" + getUniqueFormId());
     }
-
+    
     protected ScreenType getScreenType() {
         return screenType == null ? ScreenType.NOT_INIT : screenType; //avoid returning null
     }
-
+    
     protected void setScreenType(ScreenType screenType) {
         this.screenType = screenType;
     }
@@ -688,7 +719,7 @@ public class MyForm extends Form {
             return false;
         }
     }
-
+    
     public boolean addSmallTimerCont(Container smallTimer) {
         removeSmallTimerCont(); //remove previous in case
         this.smallTimer = smallTimer;
@@ -703,9 +734,9 @@ public class MyForm extends Form {
         }
         return false;
     }
-
+    
     interface GetParseValue {
-
+        
         void saveEditedValueInParseObject();
     }
 
@@ -749,10 +780,10 @@ public class MyForm extends Form {
 //    }
 //</editor-fold>
     interface CreateAndEditListItem {
-
+        
         void editNewItemListItem(ItemList itemList);
     }
-
+    
     interface UpdateItemListAfterEditing {
 
         /**
@@ -789,87 +820,87 @@ public class MyForm extends Form {
          */
         boolean check();
     }
-
+    
     interface GetUpdatedList {
-
+        
         List getList();
     }
-
+    
     interface ContainerBuilder {
-
+        
         Component makeContainer(Object listItem);
     }
-
+    
     interface GetString {
-
+        
         String get();
     }
-
+    
     interface GetStringFrom {
-
+        
         String get(Object input);
     }
-
+    
     interface PutString {
-
+        
         void accept(String s);
     }
-
+    
     interface GetInt {
-
+        
         int get();
     }
-
+    
     interface PutInt {
-
+        
         void accept(int i);
     }
-
+    
     interface GetLong {
-
+        
         long get();
     }
-
+    
     interface PutLong {
-
+        
         void accept(long l);
     }
-
+    
     interface GetDouble {
-
+        
         double get();
     }
-
+    
     interface PutDouble {
-
+        
         void accept(double i);
     }
-
+    
     interface GetDate {
-
+        
         Date get();
     }
-
+    
     interface PutDate {
-
+        
         void accept(Date d);
     }
-
+    
     interface GetBoolean {
-
+        
         boolean get();
     }
-
+    
     interface PutBoolean {
-
+        
         void accept(boolean b);
     }
-
+    
     interface Action {
-
+        
         void launchAction();
     }
-
+    
     interface GetItemListFct {
 
 //        ItemList getUpdatedItemList();
@@ -937,7 +968,7 @@ public class MyForm extends Form {
         waitingAlarmPicker.addActionListener((e) -> item.setWaitingAlarmDate(waitingAlarmPicker.getDate()));
 //        cont.add(new Label("Waiting alarm")).add(waitingAlarmPicker).add("Set a special alarm for waiting tasks.");
         cont.add(new Label(Item.WAITING_ALARM_DATE)).add(waitingAlarmPicker).add(new SpanLabel("Set a reminder to follow up on a waiting task."));
-
+        
         cont.addComponent(new Button(Command.create("OK", null, (e) -> {
 //            putEditedValues2(parseIdMap2);
             dia.dispose(); //close dialog
@@ -945,7 +976,7 @@ public class MyForm extends Form {
         dia.show();
 //        return dia;
     }
-
+    
     static void showDialogUpdateActualTimeIfAppropriate(Item item) {
         if (false && (item.isDone()
                 || !(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean() //                || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZeroXXX.getBoolean() && item.getActual() == 0)))
@@ -961,13 +992,14 @@ public class MyForm extends Form {
 
         Container cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         dia.add(cont);
-
+        
         cont.add(new SpanLabel(Format.f("Enter how much {0 actual effort} for this task?", Item.EFFORT_ACTUAL)));
 
         //TODO!!!! if marking a project, with undone subtasks, Done, then also show sum of subtask actuals to know how much time was spend on them
         MyDurationPicker actualPicker = new MyDurationPicker(item.getActualForProjectTaskItself(), "0:00");
         actualPicker.addActionListener((e) -> {
             item.setActual(actualPicker.getDuration(), false); //false, since this dialog is ONLY called when setting a task status, so no reason
+            actualPicker.stopEditing(null);
             dia.dispose(); //dispose of dialog on Done on picker
         });
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -989,8 +1021,9 @@ public class MyForm extends Form {
             dia.dispose(); //close dialog
         })));
         dia.show();
+        actualPicker.startEditingAsync();
     }
-
+    
     static Dialog showDialogUpdateRemainingTime(MyDurationPicker remainingTimePicker) {
         Dialog dia = new Dialog();
         dia.setTitle(Format.f("Update {0 remaining effort}", Item.EFFORT_REMAINING));
@@ -1014,13 +1047,13 @@ public class MyForm extends Form {
         })));
         return dia;
     }
-
+    
     static void showDialogUpdateRemainingTimeXXXhow(MyDurationPicker remainingTimePicker) {
         if (MyPrefs.timerAlwaysShowDialogToAskToUpdateRemainingTimeAterTimingAnItem.getBoolean()) {
             showDialogUpdateRemainingTime(remainingTimePicker).show();
         }
     }
-
+    
     static boolean showDialogPauseActiveTimer(ItemAndListCommonInterface newTimedElt) {
         TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
         String timerText = "";
@@ -1222,7 +1255,7 @@ public class MyForm extends Form {
 //    };
 //</editor-fold>
     static int COLUMNS_FOR_INT = 5;
-
+    
     static int COLUMNS_FOR_STRING = 20;
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1342,7 +1375,7 @@ public class MyForm extends Form {
         }
         return commands;
     }
-
+    
     void setAllCommands(Vector commands) {
 //        Vector commands = new Vector(getCommandCount());
         for (int i = 0, size = commands.size(); i < size; i++) {
@@ -1441,11 +1474,11 @@ public class MyForm extends Form {
         }
         this.updateActionOnDone = updateActionOnDone;
     }
-
+    
     Runnable getUpdateActionOnDone() {
         return updateActionOnDone;
     }
-
+    
     void setUpdateActionOnCancel(Runnable updateActionOnCancel) {
         if (Config.TEST) {
             ASSERT.that(updateActionOnCancel == null || this.updateActionOnCancel == null, "Setting updateActionOnCancel twice, old="
@@ -1453,11 +1486,11 @@ public class MyForm extends Form {
         }
         this.updateActionOnCancel = updateActionOnCancel;
     }
-
+    
     Runnable getUpdateActionOnCancel() {
         return updateActionOnCancel;
     }
-
+    
     void addToContentContainerXXX(Component content) {
         getContentPane().add(BorderLayout.CENTER, content);
     }
@@ -1503,10 +1536,10 @@ public class MyForm extends Form {
             ASSERT.that(false, "Calling RefreshAfterEdit");
         }
 //        if (editFieldOnShowOrRefresh != null) { // && (testIfEdit == null || testIfEdit.test())) {
-        if (false && inlineInsertContainer != null && inlineInsertContainer.getTextArea() != null) { // && (testIfEdit == null || testIfEdit.test())) {
-//            editFieldOnShowOrRefresh.startEditingAsync();
-            inlineInsertContainer.getTextArea().startEditingAsync();
-        }
+//        if (false && getPinchInsertContainer() != null && getPinchInsertContainer().getTextArea() != null) { // && (testIfEdit == null || testIfEdit.test())) {
+////            editFieldOnShowOrRefresh.startEditingAsync();
+//            getPinchInsertContainer().getTextArea().startEditingAsync();
+//        }
 //        TimerStack.addSmallTimerWindowIfTimerIsRunning(this);
 //        if (true || !(this instanceof ScreenTimer6)) //don't refresh if Timer6 is being shown
 //        if (!ReplayLog.getInstance().isReplayInProgress()) //don't refresh (which may show big timer) if replay is still ongoing
@@ -1517,10 +1550,12 @@ public class MyForm extends Form {
 
         if (true) {
             revalidateWithAnimationSafety();
-            restoreKeepPos();
+//            restoreKeepPos();
             if (getStartEditingAsyncTextArea() != null) {
                 getStartEditingAsyncTextArea().startEditingAsync();
                 Log.p("---->>> startEditingAsync() for TextArea named=" + getStartEditingAsyncTextArea().getName());
+            } else if (getPinchInsertContainer() != null) {
+                getPinchInsertContainer().getTextArea().startEditingAsync();
             }
 //            if (getStartEditingAsyncTextArea() != null) {
 //                getStartEditingAsyncTextArea().startEditingAsync();
@@ -1529,8 +1564,10 @@ public class MyForm extends Form {
         if (Config.TEST) {
             Log.p("******* finished refreshAfterEdit for Screen: " + getTitle());
         }
-        if (previousValues != null && previousValues.getScrollY() != null) {
-            previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
+        if (true || !restoreKeepPos()) { //an explicitly set restorePos takes precedence over normal scroll
+            if (previousValues != null) {// && previousValues.getScrollY() != null) {
+                previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
+            }
         }
     }
 
@@ -1557,7 +1594,7 @@ public class MyForm extends Form {
     public static String getListAsCommaSeparatedString(List<ItemAndListCommonInterface> setOrList) {
         return getListAsCommaSeparatedString(setOrList, false);
     }
-
+    
     public static String getListAsCommaSeparatedString(List<ItemAndListCommonInterface> setOrList, boolean showObjIds) {
         String str = "";
         String separator = "";
@@ -1572,11 +1609,11 @@ public class MyForm extends Form {
         }
         return str;
     }
-
+    
     public static String getCategoriesAsCommaSeparatedString(List<Category> setOrList) {
         return getCategoriesAsCommaSeparatedString(setOrList, false);
     }
-
+    
     public static String getCategoriesAsCommaSeparatedString(List<Category> setOrList, boolean showObjIds) {
         String str = "";
         String separator = "";
@@ -1591,7 +1628,7 @@ public class MyForm extends Form {
         }
         return str;
     }
-
+    
     public static String getStringListAsCommaSeparatedString(List<String> setOrList) {
         String str = "";
         String separator = "";
@@ -1603,7 +1640,7 @@ public class MyForm extends Form {
         }
         return str;
     }
-
+    
     public static String getListAsSeparatedString(List setOrList, GetStringFrom listName, String separator, int maxLength) {
         String str = "";
         String sep = "";
@@ -1618,11 +1655,11 @@ public class MyForm extends Form {
         }
         return str;
     }
-
+    
     public static String getListAsSeparatedString(List setOrList, GetStringFrom listName, String separator) {
         return getListAsSeparatedString(setOrList, listName, separator, -1);
     }
-
+    
     public static String getListAsCommaSeparatedString(List setOrList, GetStringFrom listName) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        String str = "";
@@ -1648,7 +1685,7 @@ public class MyForm extends Form {
             return str;
         }
     }
-
+    
     public static String getEmptyStrIfStrEmpty(String str) {
         if (str == null || str.equals("")) {
             return "";
@@ -1656,7 +1693,7 @@ public class MyForm extends Form {
             return str;
         }
     }
-
+    
     public String makeUniqueIdForExpandedObjects(ItemAndListCommonInterface elt, String defaultString) {
 //        String s = "";
         if (elt.getObjectIdP() != null) {
@@ -1725,6 +1762,10 @@ public class MyForm extends Form {
         if (Config.TEST) {
             ASSERT.that(previousForm != null, "In showPreviousScreenOrDefault() in form=" + getUniqueFormId() + ", previousForm==null!");
         }
+        if (previousForm.getPinchInsertContainer() != null) {
+//            MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(getPinchInsertContainer());
+            previousForm.getPinchInsertContainer().closePinchContainer(true);
+        }
         if (callRefreshAfterEdit) {
             previousForm.refreshAfterEdit();
 
@@ -1748,7 +1789,7 @@ public class MyForm extends Form {
         parseIdMap2.update();
         if (getUpdateActionOnDone() != null) {
             getUpdateActionOnDone().run();
-
+            
         }
     }
 
@@ -1774,7 +1815,7 @@ public class MyForm extends Form {
 //    }
 //</editor-fold>
     interface ComponentListForSearch {
-
+        
         Container get();
     }
 
@@ -1782,6 +1823,7 @@ public class MyForm extends Form {
     protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemAndListCommonInterface itemListOrg, ComponentListForSearch getCompList) {
         return (e) -> {
             String text;
+            Component firstVisibleComp = null;
             if (e != null) {
                 text = (String) e.getSource();
             } else {
@@ -1798,8 +1840,8 @@ public class MyForm extends Form {
             Container compList = getCompList.get();
             MyForm myForm = (MyForm) getComponentForm();
             //UI: search will automatically remove an insert container (since it breaks the below algorithm)
-            if (myForm != null && myForm.getInlineInsertContainer() != null) {
-                Component topLevelComp = (Component) myForm.getInlineInsertContainer();
+            if (myForm != null && myForm.getPinchInsertContainer() != null) {
+                Component topLevelComp = (Component) myForm.getPinchInsertContainer();
 //                Component topLevelParent = topLevelComp.getParent();
                 while (topLevelComp != null && topLevelComp.getParent() != compList) {
                     topLevelComp = topLevelComp.getParent();
@@ -1808,7 +1850,7 @@ public class MyForm extends Form {
                 if (true || topLevelComp != null) { //should never be null?!
                     topLevelComp.remove();
                 }
-                myForm.setInlineInsertContainer(null);
+                myForm.setPinchInsertContainer(null);
             }
             if (compList != null) {
                 int labelCount = 0;
@@ -1821,9 +1863,15 @@ public class MyForm extends Form {
                     searchOnLowerCaseOnly = text.equals(text.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
 
                     Component comp = compList.getComponentAt(i);
+                    if (firstVisibleComp == null) {
+                        firstVisibleComp = comp;
+                    }
                     if (comp instanceof Label || comp instanceof StickyHeader) {
                         if (lastLabel != null) {
                             lastLabel.setHidden(nonLabelCount == 0); //hide previous label if nothing is shown after it
+                            if (nonLabelCount != 0 && firstVisibleComp == null) {
+                                firstVisibleComp = comp;
+                            }
                         }
                         nonLabelCount = 0; //reset count on every Label
                         labelCount++; //hack: StickyHeaders are Labels, so count them and add to count
@@ -1838,6 +1886,9 @@ public class MyForm extends Form {
                         }
                         comp.setHidden(hide);
                         if (!hide) {
+                            if (firstVisibleComp == null) {
+                                firstVisibleComp = comp;
+                            }
                             nonLabelCount++;
                         }
                     }
@@ -1849,10 +1900,18 @@ public class MyForm extends Form {
                 for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
                     Component comp = compList.getComponentAt(i);
                     Object sourceObj = comp.getClientProperty(KEY_OBJECT);
-                    comp.setHidden(sourceObj != null && sourceObj instanceof ItemAndListCommonInterface && ((ItemAndListCommonInterface) sourceObj).getText().toLowerCase().indexOf(text) < 0);
+//                    comp.setHidden(sourceObj != null && sourceObj instanceof ItemAndListCommonInterface && ((ItemAndListCommonInterface) sourceObj).getText().toLowerCase().indexOf(text) < 0);
+                    boolean hide = sourceObj != null && sourceObj instanceof ItemAndListCommonInterface && ((ItemAndListCommonInterface) sourceObj).getText().toLowerCase().indexOf(text) < 0;
+                    if (firstVisibleComp == null && !hide) {
+                        firstVisibleComp = comp;
+                    }
+                    comp.setHidden(hide);
                 }
             }
             if (compList != null) {
+                if (firstVisibleComp != null) {
+                    compList.scrollComponentToVisible(firstVisibleComp);
+                }
                 compList.animateLayout(ANIMATION_TIME_FAST);
             }
         };
@@ -1862,7 +1921,7 @@ public class MyForm extends Form {
     protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemAndListCommonInterface itemListOrg) {
         return makeSearchFunctionUpperLowerStickyHeaders(itemListOrg, () -> (Container) ((BorderLayout) getContentPane().getLayout()).getCenter());
     }
-
+    
     protected ActionListener makeSearchFunctionSimple(ItemList itemListList, ComponentListForSearch getCompList) {
         return (e) -> {
             String text = (String) e.getSource();
@@ -1870,8 +1929,8 @@ public class MyForm extends Form {
             Container compList = getCompList.get();
             MyForm myForm = (MyForm) getComponentForm();
             //UI: search will automatically remove an insert container (since it breaks the below algorithm)
-            if (myForm != null && myForm.getInlineInsertContainer() != null) {
-                Component topLevelComp = (Component) myForm.getInlineInsertContainer();
+            if (myForm != null && myForm.getPinchInsertContainer() != null) {
+                Component topLevelComp = (Component) myForm.getPinchInsertContainer();
 //                Component topLevelParent = topLevelComp.getParent();
                 while (topLevelComp != null && topLevelComp.getParent() != compList) {
                     topLevelComp = topLevelComp.getParent();
@@ -1881,7 +1940,7 @@ public class MyForm extends Form {
                 {
                     topLevelComp.remove();
                 }
-                myForm.setInlineInsertContainer(null);
+                myForm.setPinchInsertContainer(null);
             }
             boolean showAll = text == null || text.length() == 0;
             for (int i = 0, size = itemListList.getSize(); i < size; i++) {
@@ -1893,7 +1952,7 @@ public class MyForm extends Form {
             compList.animateLayout(ANIMATION_TIME_FAST);
         };
     }
-
+    
     protected ActionListener makeSearchFunctionSimple(ItemList itemListList) {
         return makeSearchFunctionUpperLowerStickyHeaders(itemListList, () -> (Container) ((BorderLayout) getContentPane().getLayout()).getCenter());
     }
@@ -1942,9 +2001,9 @@ public class MyForm extends Form {
                 if ((getCheckIfDataIsCompleteOnExit != null && (getCheckIfDataIsCompleteOnExit.check() || allowExitOnIncompleteData))
                         || (getCheckIfSaveOnExit() != null && (getCheckIfSaveOnExit().check() || allowExitOnIncompleteData))
                         || allowExitOnIncompleteData) {
-                    if (getInlineInsertContainer() != null) {//if an insertContainer is left when pushing Back, then save the new element if some text was entered
-                        getInlineInsertContainer().done();
-                    }
+//                    if (false&&getPinchInsertContainer() != null) {//false since too smart! //if an insertContainer is left when pushing Back, then save the new element if some text was entered
+//                        getPinchInsertContainer().done();
+//                    }
                     updateEditedValuesOnExit();
                     showPreviousScreen(callRefreshAfterEdit);
                 }
@@ -1987,11 +2046,11 @@ public class MyForm extends Form {
 //        return makeDoneUpdateWithParseIdMapCommand("", Icons.iconBackToPreviousScreen, callRefreshAfterEdit, getCheckIfSaveOnExit());
         return makeDoneUpdateWithParseIdMapCommand("", callRefreshAfterEdit, null, true);
     }
-
+    
     public Command makeDoneUpdateWithParseIdMapCommand() {
         return makeDoneUpdateWithParseIdMapCommand("", true, null, true); //false); //default false since otherwise edited values will be lost
     }
-
+    
     public Command addStandardBackCommand() {
         Command backCmd = makeDoneUpdateWithParseIdMapCommand();
         backCmd.putClientProperty("android:showAsAction", "withText");
@@ -2025,7 +2084,7 @@ public class MyForm extends Form {
     public Command makeCancelCommand() {
         return makeCancelCommand("Cancel", null);
     }
-
+    
     private Command makeCancelCommand(String title, Image icon) {
 //        Command cmd = new CommandTracked(title, icon) {
 //            @Override
@@ -2054,7 +2113,7 @@ public class MyForm extends Form {
         cmd.putClientProperty("android:showAsAction", "withText");
         return cmd;
     }
-
+    
     public Command makeInterruptCommand(boolean includeText) {
 //        return makeInterruptCommand("", Icons.iconInterruptToolbarStyle()); //"Interrupt", "New Interrupt"
 //    }
@@ -2088,7 +2147,7 @@ public class MyForm extends Form {
 //        }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean()); //only push this command if we start with BigTimer (do NOT always start with smallTimer)
         }, "InterruptInScreen" + getUniqueFormId()); //only push this command if we start with BigTimer (do NOT always start with smallTimer)
     }
-
+    
     public Command makeStartTimerCommand(boolean includeText, ItemAndListCommonInterface itemListOrg) {
 //        return CommandTracked.create(TimerStack.getInstance().isTimerActive() ? "Open Timer" : "Start Timer on list",
         return CommandTracked.create("Start Timer",
@@ -2194,9 +2253,9 @@ public class MyForm extends Form {
 //        return makeCommandNewItemSaveToItemList(itemListOrg, cmdText, Icons.iconNewTaskToolbarStyle());
         return makeCommandNewItemSaveToItemList(itemListOrg, cmdText, Icons.iconNewTaskToInbox);
     }
-
-    public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText, Image icon) {
-
+    
+    private Command makeCommandNewItemSaveToItemListXXX(ItemList itemListOrg, String cmdText, Image icon) {
+        
         Command cmd = MyReplayCommand.createKeep("CreateNewItem", cmdText, icon, (e) -> {
             Item item = new Item(true);
             item.setOwner(itemListOrg); //need to set owner here (even if cancelled) for repeatRule
@@ -2216,8 +2275,9 @@ public class MyForm extends Form {
                     DAO.getInstance().saveNewExecuteUpdate();
 
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                    refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
-//                    }
+                    if (false) {
+                        refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
+                    }//                    }
                 } else {
                     //if no saveable data, do nothing
 //                        itemListOrg.removeFromList(item); //if no saveable data, undo the 
@@ -2230,7 +2290,7 @@ public class MyForm extends Form {
 
 //    public Command makeCommandNewItemSaveToItemList(ItemList itemListOrg, String cmdText, char icon) {
     public Command makeCommandNewItemSaveToItemList(ItemAndListCommonInterface itemListOrg, String cmdUniqueID, String cmdText, char icon) {
-
+        
         Command cmd = MyReplayCommand.createKeep(cmdUniqueID, cmdText, icon, (e) -> {
             Item newItem = new Item(true);
             //first insert owner / category into Item before editing
@@ -2270,8 +2330,9 @@ public class MyForm extends Form {
                     ASSERT.that(false);
                 }
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
-//                    }
+                if (false) {
+                    refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
+                }//                    }
 //                } else {
 //                    //if no saveable data, do nothing
 ////                        itemListOrg.removeFromList(item); //if no saveable data, undo the 
@@ -2281,13 +2342,13 @@ public class MyForm extends Form {
         });
         return cmd;
     }
-
+    
     public Command makeCommandNewItemSaveToItemList(ItemAndListCommonInterface itemListOrg, String cmdText, char icon) {
         return makeCommandNewItemSaveToItemList(itemListOrg, "CreateNewItem", cmdText, icon);
     }
-
-    public Command makeCommandNewItemSaveToItemListORG(ItemList itemListOrg, String cmdText, char icon) {
-
+    
+    private Command makeCommandNewItemSaveToItemListORG(ItemList itemListOrg, String cmdText, char icon) {
+        
         Command cmd = MyReplayCommand.createKeep("CreateNewItem", cmdText, icon, (e) -> {
             Item item = new Item(true);
             item.setOwner(itemListOrg);
@@ -2307,8 +2368,9 @@ public class MyForm extends Form {
                     DAO.getInstance().saveNewExecuteUpdate();
 
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                    refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
-//                    }
+                    if (false) {
+                        refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
+                    }//                    }
                 } else {
                     //if no saveable data, do nothing
 //                        itemListOrg.removeFromList(item); //if no saveable data, undo the 
@@ -2318,20 +2380,20 @@ public class MyForm extends Form {
         });
         return cmd;
     }
-
+    
     public Command makeCommandNewItemSaveToInboxXXX(String cmdText) {
         return makeCommandNewItemSaveToItemList(Inbox.getInstance(), cmdText);
     }
-
+    
     public Command makeCommandNewItemSaveToInbox(boolean useStdCmdText) {
         return makeCommandNewItemSaveToItemList(Inbox.getInstance(), useStdCmdText ? "Add task to Inbox" : "");
     }
-
+    
     public Command makeCommandNewItemSaveToInbox() {
 //        return makeCommandNewItemSaveToInbox(true);
         return makeCommandNewItemSaveToItemList(Inbox.getInstance(), "CreateNewItemInInbox", "Add task to Inbox", Icons.iconNewTaskToInbox);
     }
-
+    
     public MyReplayCommand makeEditFilterSortCommand(ItemAndListCommonInterface itemListOrItem) {
         return MyReplayCommand.createKeep("FilterSortSettings", "Edit filter/sort", Icons.iconEditFilterSort, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2374,12 +2436,14 @@ public class MyForm extends Form {
                 DAO.getInstance().saveNew((ParseObject) itemListOrItem);
                 DAO.getInstance().saveNewExecuteUpdate();
                 //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
-                refreshAfterEdit(); //TODO optimize the application of a filter? 
+                if (false) {
+                    refreshAfterEdit(); //TODO optimize the application of a filter? 
+                }
             }).show();
         }
         );
     }
-
+    
     public static Button makeAddTimeStampToCommentAndStartEditing(TextArea comment) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
@@ -2409,29 +2473,29 @@ public class MyForm extends Form {
     boolean addLongPressCmdToToolbarCmdButton(Command cmd, Command longPressCmd) {
         Button oldCmdButton = getToolbar().findCommandComponent(cmd);
         if (oldCmdButton != null) {
-
+            
             MyButtonLongPressXXX newLongPressButton = new MyButtonLongPressXXX(cmd, longPressCmd);
-
+            
             newLongPressButton.setUIID(oldCmdButton.getUIID()); //keep the same UIID
             newLongPressButton.putClientProperty("TitleCommand", oldCmdButton.getClientProperty("TitleCommand")); //keep the same values as set in addCommandToLeft/Right/Bar
             newLongPressButton.putClientProperty("Left", oldCmdButton.getClientProperty("Left"));
-
+            
             oldCmdButton.getParent().replace(oldCmdButton, newLongPressButton, null);
             return true;
         }
         return false;
     }
-
+    
     boolean replaceCommandButton(Command cmd, Button newCmdButton) {
         ASSERT.that(newCmdButton.getCommand() == cmd || newCmdButton.getCommand().equals(cmd));
-
+        
         Button oldCmdButton = getToolbar().findCommandComponent(cmd);
         if (oldCmdButton != null) {
-
+            
             newCmdButton.setUIID(oldCmdButton.getUIID()); //keep the same UIID
             newCmdButton.putClientProperty("TitleCommand", oldCmdButton.getClientProperty("TitleCommand")); //keep the same values as set in addCommandToLeft/Right/Bar
             newCmdButton.putClientProperty("Left", oldCmdButton.getClientProperty("Left"));
-
+            
             MenuBar sideMenu = getToolbar().getMenuBar();
 //        sideMenu.replace(oldCmdButton, newCmdButton, null);
             oldCmdButton.getParent().replace(oldCmdButton, newCmdButton, null);
@@ -2439,19 +2503,19 @@ public class MyForm extends Form {
         }
         return false;
     }
-
+    
     public Component makeSpacer() {
         Label l = new Label("", "Spacer");
         l.setShowEvenIfBlank(true);
         return l;
     }
-
+    
     public Component makeSpacerThin() {
         Label l = new Label("", "SpacerThin");
         l.setShowEvenIfBlank(true);
         return l;
     }
-
+    
     public Component makeSpacerThick() {
         Label l = new Label("", "SpacerThick");
         l.setShowEvenIfBlank(true);
@@ -2491,7 +2555,7 @@ public class MyForm extends Form {
     static void showToastBar(String message) {
         showToastBar(message, 0);
     }
-
+    
     static void showToastBar(String message, int timeMillis) {
         ToastBar.Status status = ToastBar.getInstance().createStatus();
         status.setMessage(message);
@@ -2528,15 +2592,15 @@ public class MyForm extends Form {
         }
         return comp;
     }
-
+    
     protected static Component makeHelpButton(String label, String helpText) {
         return makeHelpButton(label, helpText, true);
     }
-
+    
     protected static Component makeHelpButton(String label, String helpText, boolean makeSpanButton) {
         return makeHelpButton(label, helpText, makeSpanButton, null);
     }
-
+    
     protected static Component makeHelpButton(String label, String helpText, boolean makeSpanButton, Character materialIcon) {
         if (label == null) {
             return null;
@@ -2559,14 +2623,14 @@ public class MyForm extends Form {
             }
             spanB = button;
         }
-
+        
         if (helpText != null && !helpText.isEmpty()) {
             return addHelp(spanB, helpText);
         } else {
             return spanB;
         }
     }
-
+    
     public static String SHOW_ALARM_SCREEN_REPLAY_CMD_ID = "ShowAlarmsId";
     private MyReplayCommand showAlarmsReplayCmd = null;
 
@@ -2588,7 +2652,9 @@ public class MyForm extends Form {
             MyForm currentForm = MyForm.getCurrentFormAfterClosingDialogOrMenu();
             currentForm = this;
             if (currentForm instanceof ScreenListOfAlarms) {
-                currentForm.refreshAfterEdit();
+                if (false) {
+                    currentForm.refreshAfterEdit();
+                }
                 if (Config.TEST) {
                     ASSERT.that("shouldn't happen since no LarmsReplayCmd should be generated/added for ScreenListOfAlarms");
                 }
@@ -2597,26 +2663,26 @@ public class MyForm extends Form {
                 ScreenListOfAlarms.getInstance().show(currentForm);
             }
         });
-
+        
         return showOrRefreshScreenListOfAlarms;
     }
-
+    
     protected void setMyShowAlarmsReplayCmd(MyReplayCommand showAlarmsReplayCmd) {
         this.showAlarmsReplayCmd = showAlarmsReplayCmd;
     }
-
+    
     protected MyReplayCommand getMyShowAlarmsReplayCmd() {
         return showAlarmsReplayCmd;
-
+        
     }
-
+    
     interface CreateItem {
-
+        
         Item createNewTask(boolean xxx);
     }
-
+    
     interface SetItem {
-
+        
         Item setLastCreatedItem(Item lastCreatedItem);
     }
 
@@ -2714,17 +2780,17 @@ public class MyForm extends Form {
     protected static Component layoutNXXX(String fieldLabelTxt, MyComponentGroup group, String help) {
         return layoutN(fieldLabelTxt, group, help, null, true, false, false, true);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, MyToggleButton toggleButton, String help) {
         return layoutN(fieldLabelTxt, toggleButton, help, null, true, false, false, true);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help) {
         return layoutN(fieldLabelTxt, field, help, field instanceof MyDurationPicker ? (() -> ((MyDurationPicker) field).swipeClear())
                 : (field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear() : () -> ((MyDateAndTimePicker) field).swipeClear()),
                 true, false, false, false);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help, Character materialIcon) {
         return new EditFieldContainer(fieldLabelTxt, field, help,
                 field instanceof MyDurationPicker ? (() -> ((MyDurationPicker) field).swipeClear())
@@ -2734,7 +2800,7 @@ public class MyForm extends Form {
 //                : (field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear() : () -> ((MyDateAndTimePicker) field).swipeClear()),
 //                true, false, false, false, false,materialIcon);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
         return layoutOLD(fieldLabelTxt, field, help,
@@ -2743,24 +2809,24 @@ public class MyForm extends Form {
                                 : () -> ((MyDateAndTimePicker) field).swipeClear(),
                 wrapText, makeFieldUneditable, hideEditButton, false);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear) {
         return layoutN(fieldLabelTxt, field, help, swipeClear, true, false, true, false);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help) { //normal edit field with [>]
         return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, Character materialIcon) { //normal edit field with [>]
         return layoutN(fieldLabelTxt, field, help, null, true, false, true, true, false, materialIcon);
     }
-
+    
     protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help) { //normal edit field with [>]
 //        return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
         return new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, true, false, sizeWestBeforeEast, null);
     }
-
+    
     protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help, Character materialIcon) { //normal edit field with [>]
 //        return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
         return new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, true, false, sizeWestBeforeEast, materialIcon);
@@ -2772,64 +2838,64 @@ public class MyForm extends Form {
     protected static Component layoutN(String fieldLabelTxt, MyOnOffSwitch onOffSwitch, String help) { //normal edit field with [>]
         return layoutN(fieldLabelTxt, onOffSwitch, help, null, true, false, false, true);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable) {
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, false, false);
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
         return new EditFieldContainer(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable, Character materialIcon) {
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, false, false);
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
         return new EditFieldContainer(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false, materialIcon);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton) {
 //        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
         return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, null);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, Character materialIcon) {
 //        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
         return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon);
     }
-
+    
     protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton) {
 //        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
         return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, sizeWestBeforeEast, null);
-
+        
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help,
             boolean showAsFieldUneditable, boolean visibleEditButton) {
         return layoutN(fieldLabelTxt, field, help, null, false, showAsFieldUneditable, visibleEditButton, false);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton) {
         return layoutN(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, false);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, Character materialIcon) {
 //        return layoutN(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, false);
         return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton) {
         return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, boolean sizeWestBeforeEast) {
         return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, sizeWestBeforeEast, null);
     }
-
+    
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton,
             boolean sizeWestBeforeEast, Character materialIcon) {
@@ -2961,7 +3027,7 @@ public class MyForm extends Form {
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton) {
         return layoutOLD(fieldLabelTxt, field, help, swipeClear, wrapText, makeFieldUneditable, hideEditButton, false);
     }
-
+    
     protected static Component layoutOLD(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean makeFieldUneditable, boolean hideEditButton, boolean forceVisibleEditButton) {
 
@@ -3005,7 +3071,7 @@ public class MyForm extends Form {
                 ((Container) visibleField).setLeadComponent(field);
             }
         }
-
+        
         Container fieldContainer = new Container(new MyBorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
 
         //SWIPE CLEAR
@@ -3077,16 +3143,16 @@ public class MyForm extends Form {
             fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
             fieldContainer.add(MyBorderLayout.EAST, visibleField);
         }
-
+        
         return fieldContainer;
     }
-
+    
     protected static Component layoutSetting(String fieldLabelTxt, Component field, String help) {
-
+        
         if (!(field instanceof MyOnOffSwitch) && field != null) {
             field.setUIID("ScreenItemEditableValue");
         }
-
+        
         MyBorderLayout layout = MyBorderLayout.center();
 //        layout.setScaleEdges(false);
         layout.setSizeEastWestMode(MyBorderLayout.SIZE_EAST_BEFORE_WEST);
@@ -3518,22 +3584,22 @@ public class MyForm extends Form {
 //        }
 //    }
     interface GetVal {
-
+        
         Object getVal();
     }
-
+    
     interface PutVal {
-
+        
         void setVal(Object val);
     }
-
+    
     interface GetBool {
-
+        
         boolean getVal();
     }
-
+    
     interface SetBool {
-
+        
         void setVal(boolean value);
     }
 
@@ -3543,19 +3609,19 @@ public class MyForm extends Form {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
         initField(identifier, field, getVal, putVal, getField, putField, null, null, null, previousValues, parseIdMap2);
     }
-
+    
     void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
         initField(identifier, field, getVal, putVal, getField, putField, null, null, isInherited, previousValues, parseIdMap2);
     }
-
+    
     void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, Object undefinedValue, GetVal defaultValue) {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
         initField(identifier, field, getVal, putVal, getField, putField, undefinedValue, defaultValue, null, previousValues, parseIdMap2);
     }
-
+    
     void initField(String identifier, Object field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited, Object undefinedValue, GetVal defaultValue) {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
@@ -3583,10 +3649,10 @@ public class MyForm extends Form {
 //        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues, parseIdMap2);
         initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, null, previousValues, parseIdMap2);
     }
-
+    
     private static String INHERITED = "Inherited";
     private static int INHERITED_LEN = INHERITED.length();
-
+    
     public static void updateUIIDForInherited(Component field, boolean isInherited) {
 //        if (isInherited.getVal()) {
         String fieldUIID = field.getUIID();
@@ -3662,7 +3728,7 @@ public class MyForm extends Form {
 
         //set actionListener on edited field, to store edited values (only if different from the original one)
         if (getField != null && getOrg != null) {
-            MyActionListener al = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
+            MyActionListener storeEditedValueLocallyAL = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (actionListener != null) {
 //                    actionListener.actionPerformed(e);
@@ -3695,7 +3761,7 @@ public class MyForm extends Form {
 
             //add change listenerlisten to changes an update+save if edited to different value than item.orgValue
             if (field instanceof Picker) {
-                ((Picker) field).addActionListener(al);
+                ((Picker) field).addActionListener(storeEditedValueLocallyAL);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (field instanceof MyDurationPicker) {
 //                ((MyDurationPicker) field).addActionListener(al);
@@ -3711,15 +3777,15 @@ public class MyForm extends Form {
 //            } else if (field instanceof MyTextArea) {
 //</editor-fold>
             } else if (field instanceof TextArea) {
-                ((TextArea) field).addActionListener(al);
+                ((TextArea) field).addActionListener(storeEditedValueLocallyAL);
             } else if (field instanceof Button) {
-                ((Button) field).addActionListener(al);
+                ((Button) field).addActionListener(storeEditedValueLocallyAL);
             } else if (field instanceof MySpanButton) {
-                ((MySpanButton) field).addActionListener(al);
+                ((MySpanButton) field).addActionListener(storeEditedValueLocallyAL);
             } else if (field instanceof Switch) {
-                ((Switch) field).addActionListener(al);
+                ((Switch) field).addActionListener(storeEditedValueLocallyAL);
             } else if (field instanceof MyComponentGroup) {
-                ((MyComponentGroup) field).addActionListener(al);
+                ((MyComponentGroup) field).addActionListener(storeEditedValueLocallyAL);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            ((MyTextArea) field).addActionListener((e) -> {
 ////            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
@@ -3734,7 +3800,7 @@ public class MyForm extends Form {
             } else {
                 assert false;
             }
-
+            
         }
 
         //set edited value on exit 
@@ -3770,7 +3836,7 @@ public class MyForm extends Form {
 //        return layoutN(fieldLabel, (Component) field, fieldHelp);
 //</editor-fold>
     }
-
+    
     protected void animateMyForm() {
 //        ASSERT.that(false, "not implemented!!!");
 //        getContentPane().animateLayoutAndWait(300); //need AndWait to ensure that form is animited into place before setting InlineAddTask text field in focus??! 
@@ -3791,7 +3857,7 @@ public class MyForm extends Form {
         }));
         return FlowLayout.encloseRightMiddle(comp, clearButton);
     }
-
+    
     static MyForm getCurrentFormAfterClosingDialogOrMenu() {
         Form current = Display.getInstance().getCurrent();
         if (current instanceof Dialog) {
@@ -3806,11 +3872,11 @@ public class MyForm extends Form {
 //        return current;
         return current instanceof MyForm ? (MyForm) current : null;
     }
-
+    
     boolean isSelectionMode() {
         return selectedObjects != null;
     }
-
+    
     void setSelectionMode(boolean activateSelectionMode, Collection referenceSet) {
         if (activateSelectionMode) {
             if (oldSelectedObjects != null) {
@@ -3842,7 +3908,7 @@ public class MyForm extends Form {
     public void scrollListToTopOrBottom(boolean toBottom) {
         getContentPane().scrollComponentToVisible(getContentPane().getComponentAt(toBottom ? getContentPane().getComponentCount() : 0));
     }
-
+    
     @Override
     public void show() {
 //        Command replayCommand = ReplayLog.getInstance().getNextReplayCmd();
@@ -3876,14 +3942,14 @@ public class MyForm extends Form {
             }
         }
     }
-
+    
     public void showBack(boolean popCommand) {
         if (popCommand) {
             ReplayLog.getInstance().popCmd(); //pop any previous command
         }
         super.showBack();
     }
-
+    
     @Override
     public void showBack() {
 //        ReplayLog.getInstance().popCmd(); //pop any previous command
@@ -3911,13 +3977,13 @@ public class MyForm extends Form {
 //    }
     private Container pinchContainer; //Container holding the pinchComponent (and implementing the resize)
     private Container oldPinchContainer; //keeping the old pinchContainer to decrease while pinching out the new (and to swap back to old if new is too small to keep)
-    private Component previousPinchContainer; //Container holding the pinchComponent (and implementing the resize)
+    private Container previousPinchContainer; //Container holding the pinchComponent (and implementing the resize)
 //    private Component pinchComponent;
 //    private Component prevComponentAbove;
 //    private Component prevComponentBelow;
 //    private Item pinchItem;
-    private boolean pinchInsertEnabled = false; //is pinch insert enabled for this screen? TODO!! only true for testing
-    private boolean pinchInsertInitiated = false; //tracks whenever a pinch was initiated (to ensure we only finish when it makes sense)
+    private boolean pinchInsertEnabled; // = false; //is pinch insert enabled for this screen? TODO!! only true for testing
+    private boolean pinchInsertInitiated; // = false; //tracks whenever a pinch was initiated (to ensure we only finish when it makes sense)
     private int pinchInitialYDistance = Integer.MIN_VALUE;
     private int pinchDistance = Integer.MAX_VALUE;
 //    private boolean pinchOut;
@@ -3926,18 +3992,19 @@ public class MyForm extends Form {
 //        return pinchInsertEnabled;
         return pinchInsertEnabled && MyPrefs.pinchInsertEnabled.getBoolean();
     }
-
+    
     public void setPinchInsertEnabled(boolean pinchInsertEnabled) {
         this.pinchInsertEnabled = pinchInsertEnabled;
     }
-
+    
     public boolean isPinchOngoing() {
 //        return pinchInsertEnabled;
         return pinchInsertInitiated;
     }
-
+    
     private static boolean minimumPinchSizeReached(int pinchYDistance, Component pinchContainer) {
         int minH = pinchContainer.getPreferredH() / 3 * 2;
+        Log.p("minimumPinch: pinchYDistance=" + pinchYDistance + ", pinchContainer.getPreferredH()=" + pinchContainer.getPreferredH() + ", minH=" + minH + ", minPinch=" + (pinchYDistance > minH));
         return pinchYDistance > minH; //true if over 2/3 of the required size has been pinched out
     }
 
@@ -3952,7 +4019,8 @@ public class MyForm extends Form {
      * @param insertBeforeRefElement
      * @return
      */
-    private InsertNewElementFunc createInsertContainer(ItemAndListCommonInterface typeElement, ItemAndListCommonInterface refElement,
+//    private InsertNewElementFunc createInsertContainer(ItemAndListCommonInterface typeElement, ItemAndListCommonInterface refElement,
+    private PinchInsertContainer createInsertContainer(ItemAndListCommonInterface typeElement, ItemAndListCommonInterface refElement,
             ItemAndListCommonInterface ownerList, Category category, boolean insertBeforeRefElement) {//, boolean insertAsSubtask) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        return createInsertContainer(refElement, list, insertBeforeRefElement, null);
@@ -3960,8 +4028,9 @@ public class MyForm extends Form {
 //
 //    private Container createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface list, boolean insertBeforeRefElement, Action closeAction) {
 //        ASSERT.that(!insertBeforeRefElement, "not implemented yet");
+//        InsertNewElementFunc insertContainer = null;
+        PinchInsertContainer insertContainer = null;
 //</editor-fold>
-        InsertNewElementFunc insertContainer = null;
         if (refElement instanceof Item || typeElement instanceof Item) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (ownerList instanceof Category) {
@@ -3982,18 +4051,18 @@ public class MyForm extends Form {
 //            return wrapInPinchableContainer(new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, ownerList, category, insertBeforeRefElement));
 //</editor-fold>
 //            insertContainer = new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, ownerList, category, insertBeforeRefElement);
-            insertContainer = new InlineInsertNewItemContainer2(MyForm.this, (Item) refElement, ownerList, category, insertBeforeRefElement);
-
+            insertContainer = new PinchInsertItemContainer(MyForm.this, (Item) refElement, ownerList, category, insertBeforeRefElement);
+            
         } else if (refElement instanceof Category || typeElement instanceof Category) {
 //            return wrapInPinchableContainer(new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement, insertBeforeRefElement));
-            insertContainer = new InlineInsertNewCategoryContainer(MyForm.this, (Category) refElement, (CategoryList) ownerList, insertBeforeRefElement);
+            insertContainer = new PinchInsertCategoryContainer(MyForm.this, (Category) refElement, (CategoryList) ownerList, insertBeforeRefElement);
         } else if (refElement instanceof ItemList || typeElement instanceof ItemList) {
 //            return wrapInPinchableContainer(new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, insertBeforeRefElement));
-            insertContainer = new InlineInsertNewItemListContainer(MyForm.this, (ItemList) refElement, (ItemListList) ownerList, insertBeforeRefElement);
+            insertContainer = new PinchInsertItemListContainer(MyForm.this, (ItemList) refElement, (ItemListList) ownerList, insertBeforeRefElement);
         } else if (refElement instanceof WorkSlot || typeElement instanceof WorkSlot) {
 //            WorkSlotList workSlotList = ((WorkSlot) refElement).getWorkSlotListN();
 //            insertContainer = new InlineInsertNewWorkSlotContainer(MyForm.this, (WorkSlot) refElement, workSlotList, insertBeforeRefElement); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
-            insertContainer = new InlineInsertNewWorkSlotContainer(MyForm.this, (WorkSlot) refElement, ownerList, insertBeforeRefElement); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
+            insertContainer = new PinchInsertWorkSlotContainer(MyForm.this, (WorkSlot) refElement, ownerList, insertBeforeRefElement); //TODO!!!!! implement pinch insert of new WorkSlots, require adapting InlineContainer!
         } else {
             ASSERT.that(false, () -> "error2 in createInsertContainer: refElt=" + refElement + "; list=" + ownerList + "; insertBefore=" + insertBeforeRefElement);
         }
@@ -4001,7 +4070,8 @@ public class MyForm extends Form {
         return insertContainer;
     }
 
-    private InsertNewElementFunc createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface ownerList,
+//    private InsertNewElementFunc createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface ownerList,
+    private PinchInsertContainer createInsertContainer(ItemAndListCommonInterface refElement, ItemAndListCommonInterface ownerList,
             Category category, boolean insertBeforeRefElement) {//, boolean insertAsSubtask) {
         return createInsertContainer(null, refElement, ownerList, category, insertBeforeRefElement);
     }
@@ -4013,12 +4083,12 @@ public class MyForm extends Form {
      * @return
      */
     private boolean isInsertNewContainer(Component comp) {
-        return (comp instanceof InlineInsertNewItemContainer2
-                || comp instanceof InlineInsertNewCategoryContainer
-                || comp instanceof InlineInsertNewItemListContainer
-                || comp instanceof InlineInsertNewWorkSlotContainer);
+        return (comp instanceof PinchInsertItemContainer
+                || comp instanceof PinchInsertCategoryContainer
+                || comp instanceof PinchInsertItemListContainer
+                || comp instanceof PinchInsertWorkSlotContainer);
     }
-
+    
     private boolean isOrPartOfInsertNewContainer(Component x) {
         if (isInsertNewContainer(x)) {
             return true;
@@ -4032,8 +4102,8 @@ public class MyForm extends Form {
         }
         return false;
     }
-
-    protected void createAndAddInsertContainer(MyDragAndDropSwipeableContainer refComponentN, ItemAndListCommonInterface itemElt,
+    
+    protected void createAndAddPinchInsertContainer(MyDragAndDropSwipeableContainer refComponentN, ItemAndListCommonInterface itemElt,
             boolean insertBeforeRefElement) {//, boolean insertAsSubtask) {
         if (false && (itemElt == null || refComponentN == null)) { //both can be null when inserting first element into a list
 //            return null;
@@ -4043,22 +4113,29 @@ public class MyForm extends Form {
 //        MyDragAndDropSwipeableContainer refComponent = null;xx;
 //        Category category = refComponentN.getDragAndDropCategory();
 //        InsertNewElementFunc insertContainer = createInsertContainer(itemElt, itemElt.getOwner(), category, insertBeforeRefElement, insertAsSubtask); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
-        InsertNewElementFunc insertContainer = createInsertContainer(itemElt, itemElt.getOwner(), refComponentN.getDragAndDropCategory(), insertBeforeRefElement);//, insertAsSubtask); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+//        if (pinchContainer == null) { //NO, done in InlineInsertCont when closing the previous container (ensure latest scroll pos is used)// store scrollPos on first insert
+//            setKeepPos();
+//        }
+//        InsertNewElementFunc insertContainer = createInsertContainer(itemElt, itemElt.getOwner(), refComponentN.getDragAndDropCategory(), insertBeforeRefElement);//, insertAsSubtask); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+        PinchInsertContainer insertContainer = createInsertContainer(itemElt, itemElt.getOwner(), refComponentN.getDragAndDropCategory(), insertBeforeRefElement);//, insertAsSubtask); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
         Container wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
         MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(refComponentN, wrappedInsertContainer, insertBeforeRefElement ? 0 : 1); //insert insertContainer at position of dropComponentBelow
-        setInlineInsertContainer(insertContainer); //call this *after* inserting the new container to ensure that text field starts in editing mode
+//        setPinchInsertContainer(insertContainer, false); //NOW done in pinchInsertFinished // call this *after* inserting the new container to ensure that text field starts in editing mode
+        setPinchInsertContainer(insertContainer); //NOW done in pinchInsertFinished // call this *after* inserting the new container to ensure that text field starts in editing mode
 //        return wrappedInsertContainer;
         pinchContainer = wrappedInsertContainer;
     }
-
-    private void createAndAddInsertIntoEmptyContainer(Container insertIntoContainer, ItemAndListCommonInterface typeElement,
+    
+    private void createAndAddPinchInsertIntoEmptyContainer(Container insertIntoContainer, ItemAndListCommonInterface typeElement,
             ItemAndListCommonInterface owner, Category category) {
-        InsertNewElementFunc insertContainer = createInsertContainer(typeElement, null, owner, category, false);//, insertAsSubtask); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+//        InsertNewElementFunc insertContainer = createInsertContainer(typeElement, null, owner, category, false);//, insertAsSubtask); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
+        PinchInsertContainer insertContainer = createInsertContainer(typeElement, null, owner, category, false);//, insertAsSubtask); //if Item: can only be list of items (not in list of category or itemList), if ItemList/Category: owner
         Container wrappedInsertContainer = wrapInPinchableContainer(insertContainer);
 //        MyDragAndDropSwipeableContainer.addDropPlaceholderToAppropriateParentCont(refComponentN, wrappedInsertContainer, insertBeforeRefElement ? 0 : 1); //insert insertContainer at position of dropComponentBelow
         insertIntoContainer.removeAll(); //remove any previous content (eg label with "Insert new task with +...")
         insertIntoContainer.addComponent(wrappedInsertContainer);
-        setInlineInsertContainer(insertContainer); //call this *after* inserting the new container to ensure that text field starts in editing mode
+//        setPinchInsertContainer(insertContainer, true); //call this *after* inserting the new container to ensure that text field starts in editing mode
+        setPinchInsertContainer(insertContainer); //call this *after* inserting the new container to ensure that text field starts in editing mode
         pinchContainer = wrappedInsertContainer;
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -4088,7 +4165,7 @@ public class MyForm extends Form {
         }
         return null;
     }
-
+    
     private MyDragAndDropSwipeableContainer findMyDDContWithObjIdN(List<Component> compList, String refObjId) {
 //        Container cont = getContentPane();
 //        if (comp instanceof MyDragAndDropSwipeableContainer && ((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP().equals(refObjId))
@@ -4152,16 +4229,16 @@ public class MyForm extends Form {
         if (this instanceof ScreenListOfItems) {
             ItemAndListCommonInterface ownerList = ((ScreenListOfItems) this).itemListOrg;
             if (ownerList instanceof Category) {
-                createAndAddInsertIntoEmptyContainer(getContentContainer(), new Item(false), null, (Category) ownerList); //NB: createAndAddInsertContainer checks for null values
+                createAndAddPinchInsertIntoEmptyContainer(getContentContainer(), new Item(false), null, (Category) ownerList); //NB: createAndAddInsertContainer checks for null values
             } else if (ownerList instanceof ItemList || ownerList instanceof Item) {
-                createAndAddInsertIntoEmptyContainer(getContentContainer(), new Item(false), ownerList, null); //NB: createAndAddInsertContainer checks for null values
+                createAndAddPinchInsertIntoEmptyContainer(getContentContainer(), new Item(false), ownerList, null); //NB: createAndAddInsertContainer checks for null values
             }
         } else if (this instanceof ScreenListOfItemLists) {
-            createAndAddInsertIntoEmptyContainer(getContentContainer(), new ItemList(), ItemListList.getInstance(), null); //NB: createAndAddInsertContainer checks for null values
+            createAndAddPinchInsertIntoEmptyContainer(getContentContainer(), new ItemList(), ItemListList.getInstance(), null); //NB: createAndAddInsertContainer checks for null values
         } else if (this instanceof ScreenListOfCategories) {
-            createAndAddInsertIntoEmptyContainer(getContentContainer(), new Category(), CategoryList.getInstance(), null); //NB: createAndAddInsertContainer checks for null values
+            createAndAddPinchInsertIntoEmptyContainer(getContentContainer(), new Category(), CategoryList.getInstance(), null); //NB: createAndAddInsertContainer checks for null values
         } else if (this instanceof ScreenListOfWorkSlots) {
-            createAndAddInsertIntoEmptyContainer(getContentContainer(), new WorkSlot(), ((ScreenListOfWorkSlots) this).workSlotListOwner, null); //NB: createAndAddInsertContainer checks for null values
+            createAndAddPinchInsertIntoEmptyContainer(getContentContainer(), new WorkSlot(), ((ScreenListOfWorkSlots) this).workSlotListOwner, null); //NB: createAndAddInsertContainer checks for null values
         } else if (Config.TEST) {
             ASSERT.that("pinchinsert into empty screen not handled for this screen=" + this);
         }
@@ -4173,7 +4250,7 @@ public class MyForm extends Form {
      *
      * @return
      */
-    protected void recreateInlineInsertContainerIfNeeded() {
+    protected void recreateInlineInsertContainerAndReplayCmdIfNeeded() {
 //        if (previousValues != null && (previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY) != null)) {
 //            createAndAddInsertContainer((String) previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY), 
 //                    (String) previousValues.get(SAVE_LOCALLY_REF_ELT_PARSE_CLASS), 
@@ -4189,7 +4266,7 @@ public class MyForm extends Form {
                 boolean insertBefore = previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT) != null; //!=null;
 //                createAndAddInsertContainer(refEltObjId, refClass, insertBefore);
 
-                ItemAndListCommonInterface refElement = null;
+                ItemAndListCommonInterface refElement;// = null;
                 if (refClass != null) {
                     switch (refClass) {
                         case Item.CLASS_NAME:
@@ -4197,15 +4274,80 @@ public class MyForm extends Form {
                             refElement = DAO.getInstance().fetchItem(refEltObjId);
                             break;
                         case ItemList.CLASS_NAME:
-//                ItemList aboveItemList = DAO.getInstance().fetchItemList(refEltObjId);
                             refElement = DAO.getInstance().fetchItemList(refEltObjId);
                             break;
                         case Category.CLASS_NAME:
-//                ItemList aboveCategory = DAO.getInstance().fetchCategory(refEltObjId);
                             refElement = DAO.getInstance().fetchCategory(refEltObjId);
                             break;
                         case WorkSlot.CLASS_NAME:
-//                ItemList aboveWorkSlot = DAO.getInstance().fetchCategory(refEltObjId);
+                            refElement = DAO.getInstance().fetchCategory(refEltObjId);
+                            break;
+                        default:
+                            if (Config.TEST) {
+                                ASSERT.that(false, "Error in createAndAddInsertContainer: wrong element ParseClass=" + refClass);
+                            }
+                            refElement = null;  //needed to only initialize once to use in lambda expression below
+                    }
+                } else {
+                    refElement = null; //needed to only initialize once to use in lambda expression below
+                }
+                
+                MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltObjId);
+                if (Config.TEST) {
+                    ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltObjId + ", eltParseClass=" + refClass + ", insertAfter=" + insertBefore);
+                }
+                if (myDDContN != null && refElement != null) {
+                    createAndAddPinchInsertContainer(myDDContN, refElement, insertBefore); //NB: createAndAddInsertContainer checks for null values
+
+                    //if full screen edit was launched from inline container, then do so here:
+                    if (previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null) {
+//                        if (false) {
+//                            InsertNewElementFunc inlineCont = getPinchInsertContainer();
+//                            inlineCont.getEditTaskCmd().actionPerformed(null);
+//                        }
+                        if (false && myDDContN != null && refElement != null) { //don't need this, the ReplayCmd is created in InlineInsert 
+//                        makeAndAddCreatePinchContCommand(myDDContN, refElement, insertBefore); //inserts the command into Screen's cmds for Replay
+                            MyReplayCommand.create(PinchInsertItemContainer.REPLAY_CMD_ID, null, (e) -> {
+//                                createAndAddInsertContainer(myDDContN, refElement, insertBefore); //NB: createAndAddInsertContainer checks for null values
+                                if (getPinchInsertContainer() != null) {
+                                    getPinchInsertContainer().getEditTaskCmd().actionPerformed(null); //run the cmd to edit task in screen
+                                }
+                            });
+                        }
+                    }
+                } else if (false) {
+                    createAndInsertInlineInsertContainerEmptyScreen();
+                }
+                
+            }
+        }
+//        }
+    }
+
+    /**
+     * recreate the ReplayCommand for Replay if
+     */
+    protected void recreateInlineInsertCommandOLD() {
+        if (previousValues != null && previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null) {
+            //if inlineInsert was left active when app was last active, then re-insert the container again
+            if (previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY) != null) { //check if there were an earlier inline container
+                String refEltObjId = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY);
+                String refClass = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_PARSE_CLASS);
+                boolean insertBefore = previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT) != null; //!=null;
+
+                ItemAndListCommonInterface refElement = null;
+                if (refClass != null) {
+                    switch (refClass) {
+                        case Item.CLASS_NAME:
+                            refElement = DAO.getInstance().fetchItem(refEltObjId);
+                            break;
+                        case ItemList.CLASS_NAME:
+                            refElement = DAO.getInstance().fetchItemList(refEltObjId);
+                            break;
+                        case Category.CLASS_NAME:
+                            refElement = DAO.getInstance().fetchCategory(refEltObjId);
+                            break;
+                        case WorkSlot.CLASS_NAME:
                             refElement = DAO.getInstance().fetchCategory(refEltObjId);
                             break;
                         default:
@@ -4214,44 +4356,96 @@ public class MyForm extends Form {
                             }
                     }
                 }
-//        MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane(), refEltObjId);
+                
                 MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltObjId);
-                if (Config.TEST) {
+                
+                if (refElement != null && myDDContN != null) {
+                    makeAndAddCreatePinchContCommand(myDDContN, refElement, insertBefore); //inserts the command into Screen's cmds for Replay
+                } else if (Config.TEST) {
                     ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltObjId + ", eltParseClass=" + refClass + ", insertAfter=" + insertBefore);
                 }
-//        createAndAddInsertContainer(myDDContN, refElement, myDDContN.getDragAndDropCategory(), insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
-                if (myDDContN != null && refElement != null) {
-                    createAndAddInsertContainer(myDDContN, refElement, insertBefore); //NB: createAndAddInsertContainer checks for null values
-                } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                    if (this instanceof ScreenListOfItems) {
-//                        ItemAndListCommonInterface ownerList = ((ScreenListOfItems) this).itemListOrg;
-//                        if (ownerList instanceof Category) {
-//                            createAndAddInsertContainer(getContentPane(), new Item(), null, (Category) ownerList); //NB: createAndAddInsertContainer checks for null values
-//                        } else if (ownerList instanceof ItemList || ownerList instanceof Item) {
-//                            createAndAddInsertContainer(getContentPane(), new Item(), ownerList, null); //NB: createAndAddInsertContainer checks for null values
-//                        }
-//                    } else if (this instanceof ScreenListOfItemLists) {
-//                        createAndAddInsertContainer(getContentPane(), new ItemList(), ItemListList.getInstance(), null); //NB: createAndAddInsertContainer checks for null values
-//                    } else if (this instanceof ScreenListOfCategories) {
-//                        createAndAddInsertContainer(getContentPane(), new Category(), CategoryList.getInstance(), null); //NB: createAndAddInsertContainer checks for null values
-//                    } else if (this instanceof ScreenListOfWorkSlots) {
-//                        createAndAddInsertContainer(getContentPane(), new WorkSlot(), ((ScreenListOfWorkSlots) this).workSlotListOwner, null); //NB: createAndAddInsertContainer checks for null values
-//                    } else if (Config.TEST) {
-//                        ASSERT.that("pinchinsert into empty screen not handled for this screen=" + this);
+////        createAndAddInsertContainer(myDDContN, refElement, myDDContN.getDragAndDropCategory(), insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
+//                if (myDDContN != null && refElement != null) {
+//                    createAndAddInsertContainer(myDDContN, refElement, insertBefore); //NB: createAndAddInsertContainer checks for null values
+//                } else {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    if (this instanceof ScreenListOfItems) {
+////                        ItemAndListCommonInterface ownerList = ((ScreenListOfItems) this).itemListOrg;
+////                        if (ownerList instanceof Category) {
+////                            createAndAddInsertContainer(getContentPane(), new Item(), null, (Category) ownerList); //NB: createAndAddInsertContainer checks for null values
+////                        } else if (ownerList instanceof ItemList || ownerList instanceof Item) {
+////                            createAndAddInsertContainer(getContentPane(), new Item(), ownerList, null); //NB: createAndAddInsertContainer checks for null values
+////                        }
+////                    } else if (this instanceof ScreenListOfItemLists) {
+////                        createAndAddInsertContainer(getContentPane(), new ItemList(), ItemListList.getInstance(), null); //NB: createAndAddInsertContainer checks for null values
+////                    } else if (this instanceof ScreenListOfCategories) {
+////                        createAndAddInsertContainer(getContentPane(), new Category(), CategoryList.getInstance(), null); //NB: createAndAddInsertContainer checks for null values
+////                    } else if (this instanceof ScreenListOfWorkSlots) {
+////                        createAndAddInsertContainer(getContentPane(), new WorkSlot(), ((ScreenListOfWorkSlots) this).workSlotListOwner, null); //NB: createAndAddInsertContainer checks for null values
+////                    } else if (Config.TEST) {
+////                        ASSERT.that("pinchinsert into empty screen not handled for this screen=" + this);
+////                    }
+////</editor-fold>
+//                    if (false) {
+//                        createAndInsertInlineInsertContainerEmptyScreen();
 //                    }
+//                }
+//
+//                //if full screen edit was launched from inline container, then do so here:
+//                if (previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null) {
+//                    InsertNewElementFunc inlineCont = getInlineInsertContainer();
+//                    inlineCont.getEditTaskCmd().actionPerformed(null);
+//                }
 //</editor-fold>
-                    createAndInsertInlineInsertContainerEmptyScreen();
-                }
-
-                //if full screen edit was launched from inline container, then do so here:
-                if (previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null) {
-                    InsertNewElementFunc inlineCont = getInlineInsertContainer();
-                    inlineCont.getEditTaskCmd().actionPerformed(null);
-                }
             }
         }
 //        }
+    }
+    
+    protected void recreateInlineInsertCommandXXX() {
+        if (previousValues != null && previousValues.get(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE) != null) {
+            MyReplayCommand cmd = MyReplayCommand.create("InlineInsert", "Add template", null, (e) -> {
+
+                //if inlineInsert was left active when app was last active, then re-insert the container again
+                if (previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY) != null) { //check if there were an earlier inline container
+                    String refEltObjId = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY);
+                    String refClass = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_PARSE_CLASS);
+                    boolean insertBefore = previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT) != null; //!=null;
+
+                    ItemAndListCommonInterface refElement = null;
+                    if (refClass != null) {
+                        switch (refClass) {
+                            case Item.CLASS_NAME:
+                                refElement = DAO.getInstance().fetchItem(refEltObjId);
+                                break;
+                            case ItemList.CLASS_NAME:
+                                refElement = DAO.getInstance().fetchItemList(refEltObjId);
+                                break;
+                            case Category.CLASS_NAME:
+                                refElement = DAO.getInstance().fetchCategory(refEltObjId);
+                                break;
+                            case WorkSlot.CLASS_NAME:
+                                refElement = DAO.getInstance().fetchCategory(refEltObjId);
+                                break;
+                            default:
+                                if (Config.TEST) {
+                                    ASSERT.that(false, "Error in createAndAddInsertContainer: wrong element ParseClass=" + refClass);
+                                }
+                        }
+                    }
+                    
+                    MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltObjId);
+                    
+                    if (refElement != null && myDDContN != null) {
+                        makeAndAddCreatePinchContCommand(myDDContN, refElement, insertBefore); //inserts the command into Screen's cmds for Replay
+                    } else if (Config.TEST) {
+                        ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltObjId + ", eltParseClass=" + refClass + ", insertAfter=" + insertBefore);
+                    }
+                    createAndAddPinchInsertContainer(myDDContN, refElement, insertBefore); //NB: createAndAddInsertContainer checks for null values
+                }
+            });
+        }
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    /**
@@ -4282,7 +4476,38 @@ public class MyForm extends Form {
 
     /* adjust x and y to adjust for imprecise finger placement. Notably, the top (index) finger more easily moves up faster than the lower thumb. */
     private void adjustXAndY(int[] x, int[] y) {
+        
+    }
 
+    /**
+     * create the command that will create the inline insert pinch container and
+     * insert it correctly relative to refComp and refElt. the ReplayCommand can
+     * either be called when pinching out to create the container, OR on replay
+     * to recreate the container (it will automatically be inserted into the
+     * MyForm's list of replayable commands).
+     *
+     * @param refComp
+     * @param refElt
+     * @param insertBeforeRefElement
+     */
+    protected MyReplayCommand makeAndAddCreatePinchContCommand(MyDragAndDropSwipeableContainer refComp, ItemAndListCommonInterface refElt, boolean insertBeforeRefElement) {
+        MyReplayCommand cmd = MyReplayCommand.create("InlineInsert", "Add template", null, (e) -> {
+            
+            createAndAddPinchInsertContainer(refComp, refElt, insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
+        });
+        return cmd;
+    }
+
+    /**
+     * override to indicate whether pinchinsert is possible for the given refElt
+     * and insertBefore value
+     *
+     * @param refElt
+     * @param insertBeforeRefElt
+     * @return
+     */
+    public boolean isPinchInsertEnabled(ItemAndListCommonInterface refElt, boolean insertBeforeRefElt) {
+        return false;
     }
 
     /**
@@ -4338,15 +4563,14 @@ public class MyForm extends Form {
 //</editor-fold>
         //find the drop containers
         MyDragAndDropSwipeableContainer dropComponentAbove = MyDragAndDropSwipeableContainer.findMyDDContStartingFrom(compAbove);
-
+        
         MyDragAndDropSwipeableContainer dropComponentBelow = null;
         if (dropComponentAbove != null) { //UI: be default we ignore the lowest placed finger and always create insertCont below the highest placed finger
 //            if (isOrPartOfInsertNewContainer(compAbove) || isOrPartOfInsertNewContainer(compBelow)) return null; //UI: cannot pinchinsert next to an existing insertContainer
             dropComponentBelow = MyDragAndDropSwipeableContainer.findNextDDCont(dropComponentAbove);
         } else if (compBelow != null) { //if dropComponentAbove==null, then use the container , can happen eg if inserting above top-most item in list (above finger is on toolbar)
             dropComponentBelow = MyDragAndDropSwipeableContainer.findMyDDContStartingFrom(compBelow);
-            if (false && dropComponentBelow != null) //false: why set dropComponentAbove if it was originally null (indicating that top finger was on toolbar)?!
-            {
+            if (false && dropComponentBelow != null) { //false: why set dropComponentAbove if it was originally null (indicating that top finger was on toolbar)?!
                 dropComponentAbove = MyDragAndDropSwipeableContainer.findPrecedingMyDDCont(dropComponentBelow, null);
             }
         }
@@ -4382,23 +4606,20 @@ public class MyForm extends Form {
             int idxOldDrop = MyDragAndDropSwipeableContainer.getPositionInParentContainerScrollY(oldPinchContainer);
             ASSERT.that(idxOldDrop != -1);
             if (dropComponentAbove != null) {
-
                 int idxAbove = MyDragAndDropSwipeableContainer.getPositionInParentContainerScrollY(dropComponentAbove);
                 ASSERT.that(idxAbove != -1);
-                if (idxOldDrop == idxAbove + 1) //                    return null;
-                {
+                if (idxOldDrop == idxAbove + 1) { //                    return null;
                     return;
                 }
             } else if (dropComponentBelow != null) {
                 int idxBelow = MyDragAndDropSwipeableContainer.getPositionInParentContainerScrollY(dropComponentBelow);
                 ASSERT.that(idxBelow != -1);
-                if (idxOldDrop == idxBelow - 1) //                    return null;
-                {
+                if (idxOldDrop == idxBelow - 1) { //                    return null;
                     return;
                 }
             }
         }
-
+        
         if (Config.TEST_PINCH && itemEltAbove != null) {
             Log.p("PinchAbove=" + itemEltAbove);//.getText());
         }
@@ -4645,9 +4866,12 @@ public class MyForm extends Form {
 //        makeInlineInsertReplayCmd().actionPerformed(null);
 //        createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement); //will setInlineInsertContainer() as a side effect
 //</editor-fold>
-        if (refComp != null && refElt != null) {
-            createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
-        } else {
+        if (false) {
+            if (refComp != null && refElt != null) {
+//            createAndAddInsertContainer(refComp, refElt, insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
+                MyReplayCommand insertCmd = makeAndAddCreatePinchContCommand(refComp, refElt, insertBeforeRefElement);
+                insertCmd.actionPerformed(null);
+            } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (this instanceof ScreenListOfItems) {
 //                ItemAndListCommonInterface ownerList = ((ScreenListOfItems) this).itemListOrg;
@@ -4660,9 +4884,13 @@ public class MyForm extends Form {
 //                ASSERT.that("pinchinsert into empty screen not handled for this screen=" + this);
 //            }
 //</editor-fold>
-            if (false) { //don't create for now since may happen if pinch didn't capture any of the actual 
-                createAndInsertInlineInsertContainerEmptyScreen();
+                if (false) { //don't create for now since may happen if pinch didn't capture any of the actual 
+                    createAndInsertInlineInsertContainerEmptyScreen();
+                }
             }
+        }
+        if (isPinchInsertEnabled(refElt, insertBeforeRefElement)) {
+            createAndAddPinchInsertContainer(refComp, refElt, insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
         }
 //        if (getInlineInsertContainer().getTextArea() != null) { //Moved to pinchFinished to avoid opening keyboard while pinching
 //            getInlineInsertContainer().getTextArea().startEditingAsync();
@@ -4702,7 +4930,8 @@ public class MyForm extends Form {
 //</editor-fold>
     }
 
-    private Container wrapInPinchableContainer(final InsertNewElementFunc pinchComponent) {
+//    private Container wrapInPinchableContainer(final InsertNewElementFunc pinchComponent) {
+    private Container wrapInPinchableContainer(final PinchInsertContainer pinchComponent) {
         //TODO!! make more fancy animation for container (eg fold like Clear)
 //        Container pinchCont;
         if (pinchComponent != null) { //pinchOut makes sense here, a new pinchInsert container with the right type of element is created and inserted
@@ -4732,13 +4961,18 @@ public class MyForm extends Form {
                 }
             };
             pinchCont.add(MyBorderLayout.CENTER, (Component) pinchComponent);
-
+            
             if (Config.TEST_PINCH) {
                 pinchCont.setName("wrapPinchContainer");
             }
             return pinchCont;
         }
         return null;
+    }
+    
+    private Component getWrappedPinchableContainer(Container wrapped) {
+        BorderLayout wrappedLayout = (BorderLayout) wrapped.getLayout(); //unwrap the actual pinchInsert container (wrapped above in a pinchable container)
+        return wrappedLayout.getCenter();
     }
 
     /**
@@ -4758,8 +4992,8 @@ public class MyForm extends Form {
                         Log.p("[A] removing  pinchContainerPrevious");
                     }
 //                    if (!minimumPinchSizeReached(pinchDistance, previousPinchContainer)) {
-                    if (!minimumPinchSizeReached(pinchDistance, previousPinchContainer)) {
-                        parentToAnimate = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnScrollYCont(previousPinchContainer); //just remove it
+                    if (!minimumPinchSizeReached(pinchDistance, getWrappedPinchableContainer(previousPinchContainer))) {
+                        parentToAnimate = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(previousPinchContainer); //just remove it
                         ASSERT.that(parentToAnimate != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent());
                         previousPinchContainer = null;
                     }
@@ -4767,7 +5001,7 @@ public class MyForm extends Form {
                 //TODO!!! what if we do a new pinch out at the same place as before (where a pinch cont is already inserted)?? ideally do nothing, but complicated to detect
             } else { //a new pinch created, pinchContainer != null
                 //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
-                if (minimumPinchSizeReached(pinchDistance, pinchContainer)) {
+                if (minimumPinchSizeReached(pinchDistance, getWrappedPinchableContainer(pinchContainer))) {
                     if (Config.TEST_PINCH) {
                         Log.p("pinchContainerPrevious left visible");
                     }
@@ -4783,15 +5017,15 @@ public class MyForm extends Form {
 
                     parentToAnimate = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
                     //once container is inserted, activate editing 
-                    if (MyPrefs.pinchInsertActivateEditing.getBoolean() && getInlineInsertContainer().getTextArea() != null) {
-                        getInlineInsertContainer().getTextArea().startEditingAsync();
+                    if (MyPrefs.pinchInsertActivateEditing.getBoolean() && getPinchInsertContainer() != null && getPinchInsertContainer().getTextArea() != null) {
+                        getPinchInsertContainer().getTextArea().startEditingAsync();
                     }
                     ASSERT.that(parentToAnimate != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent()); //possible when inserting the very first element
                 } else {
                     if (Config.TEST_PINCH) {
                         Log.p("[B] removing  pinchContainer");
                     }
-                    MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(pinchContainer); //remove new pinch container, leave old one (if exists) in pinchContainerPrevious
+                    parentToAnimate = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(pinchContainer); //remove new pinch container, leave old one (if exists) in pinchContainerPrevious
                     ASSERT.that(pinchContainer.getParent() == null, "removeFromParentScrollYContainer) did not remove pinchContainer from its parent");
                     if (true || pinchContainer.getParent() != null) {
                         pinchContainer.remove(); //TODO just use .remove() - should be enough to remove the pinchContainer and faster/safer than removeFromParentScrollYContainer
@@ -4939,11 +5173,11 @@ public class MyForm extends Form {
                 Log.p("pointerReleased(int[] x, int[] y) called!!!!");
             }
             pinchInsertFinished();
-            return;
+//            return;
         }
         super.pointerReleased(x, y);
     }
-
+    
     @Override
     public void pointerReleased(int x, int y) {
         if (pinchInsertInitiated) {
@@ -4951,13 +5185,13 @@ public class MyForm extends Form {
                 Log.p("pointerReleased(int x, int y) called!!!!");
             }
             pinchInsertFinished();
-            return;
+//            return;
         }
         super.pointerReleased(x, y);
     }
-
+    
     private int initY = -1;
-
+    
     @Override
     public void pointerDragged(int[] x, int[] y) {
 //<editor-fold defaultstate="collapsed" desc="code to simulate two fingers on CN1 Simulator">
@@ -5061,7 +5295,9 @@ public class MyForm extends Form {
             int yMin = Math.min(y[1], y[0]); //y[1] <= y[0] ? y[1] : y[0];
             int yMax = Math.max(y[1], y[0]); // y[1] > y[0] ? y[1] : y[0];
             int newYDist = yMax - yMin;
+            int pinchOutThreshold = Display.getInstance().convertToPixels((float) 0.7); //threshold for starting to pinch out about 1.5mm
 //                if (newYDist<0)newYDist=0; //should not be allowed to become negative
+            boolean pinchingOut = pinchInitialYDistance != Integer.MIN_VALUE && newYDist > pinchInitialYDistance + pinchOutThreshold;
             if (pinchInitialYDistance == Integer.MIN_VALUE) {
                 pinchInitialYDistance = newYDist; //Math.abs(y[1]-y[0]);
             }
@@ -5070,7 +5306,7 @@ public class MyForm extends Form {
             if (false && Config.TEST) {
                 Log.p("PointerDragged pinchInitialYDistance=" + pinchInitialYDistance + "; newYDist=" + newYDist + "; pinchDistance=" + pinchDistance + ", y[0]=" + y[0] + ", y[1]=" + y[1]);
             }
-
+            
             if (pinchContainer == null) { // && pinchDistance > 0) { if we wait till pinchDistance is >0, then the finger may already have moved in to another item than the one we started in(?!)
 //DONE!! if existing pinch container is elsewhere, insert a new one between the two fingers and decrease the size of the old one inversely wrt new size
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -5085,15 +5321,25 @@ public class MyForm extends Form {
 //                });
 //                pinchContainer = createAndInsertPinchContainer(x, y);
 //</editor-fold>
-                int[] yAdj = new int[2];
-                yAdj[0] = yMin + newYDist / 3;
-                yAdj[1] = yMax;
-                createAndInsertPinchContainer(x, yAdj);
-
-                if (Config.TEST_PINCH) {
-                    Log.p("inserted pinchContainer");
+                Container parent;
+                if (pinchingOut) {
+                    int[] yAdj = new int[2];
+                    if (Config.TEST) { //TODO set values in hard, or improve efficiencys
+                        yAdj[0] = yMin + newYDist / 10 * MyPrefs.pinchAdjustUpper.getInt();
+                        yAdj[1] = yMax - newYDist / 10 * MyPrefs.pinchAdjustLower.getInt();
+                    } else {
+                        yAdj[0] = yMin + newYDist / 10 * MyPrefs.pinchAdjustUpper.getInt();
+                        yAdj[1] = yMax - newYDist / 10 * MyPrefs.pinchAdjustLower.getInt();
+                    }
+                    createAndInsertPinchContainer(x, yAdj);
+                    
+                    if (Config.TEST_PINCH) {
+                        Log.p("inserted pinchContainer");
+                    }
+                    parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
+                } else { //we're pinching in, if there's already previous pinch container, animate to squeeze it in (and remove)
+                    parent = previousPinchContainer != null ? previousPinchContainer.getParent() : null;
                 }
-                Container parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
 //                    MyForm.this.animateLayout(300);//.revalidate(); //refresh
                 if (parent != null) {
 //                        parent.animateLayout(300);
@@ -5258,7 +5504,7 @@ public class MyForm extends Form {
         }
         return null;
     }
-
+    
     public static ContainerScrollY findScrollableContYChild(Container c) {
         if (c instanceof ContainerScrollY) {
             return (ContainerScrollY) c;
@@ -5278,7 +5524,7 @@ public class MyForm extends Form {
         }
         return null;
     }
-
+    
     public ContainerScrollY findScrollableContYChild() {
         return findScrollableContYChild(getContentPane());
     }
@@ -5356,7 +5602,7 @@ public class MyForm extends Form {
     public Component findDropTargetAt(int x, int y) {
         return findDropTargetAt(this, x, y);
     }
-
+    
     static Component findDropTargetAt(Container cont, int x, int y) {
         int count = cont.getComponentCount();
 //        for (int i = count - 1; i >= 0; i--) {
@@ -5410,7 +5656,7 @@ public class MyForm extends Form {
         }
         return null;
     }
-
+    
     public void showStatusBar(boolean show) {
 //        if (getUIManager().isThemeConstant("paintsTitleBarBool", false)) {
         Hashtable<String, Object> theme = new Hashtable<>();

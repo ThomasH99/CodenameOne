@@ -44,6 +44,7 @@ public class ScreenListOfWorkSlots extends MyForm {
     //TODO!! make the workSlots editable directly inline in the list (more natural to edit in an overview of all workslots
 
     static String SCREEN_TITLE = "Work time";
+    static String SCREEN_HELP = "Work time";
 //    private ItemList workSlotList;
 //    private Object owner;
     ItemAndListCommonInterface workSlotListOwner;
@@ -147,6 +148,12 @@ public class ScreenListOfWorkSlots extends MyForm {
     }
 
     @Override
+    public boolean isPinchInsertEnabled(ItemAndListCommonInterface refElt, boolean insertBeforeRefElt) {
+        boolean ok = refElt instanceof WorkSlot;
+        return ok;
+    }
+
+    @Override
     public void refreshAfterEdit() {
         if (getKeepPos() == null) { //if no position set before, try to keep same scroll position
             setKeepPos(new KeepInSameScreenPosition());
@@ -181,8 +188,8 @@ public class ScreenListOfWorkSlots extends MyForm {
             workSlotListN.setIncludeExpiredWorkSlots(showAlsoExpiredWorkSlots);
         }
         Container contentContainer = buildContentPaneForWorkSlotList(workSlotListN);
-        if (contentContainer instanceof MyTree2) {
-            setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
+        if (false&&contentContainer instanceof MyTree2) {
+            setPinchInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
         }
         getContentPane().add(BorderLayout.CENTER, contentContainer);
 //        if (getInlineInsertContainer()!= null)
@@ -194,7 +201,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //            this.keepPos.setNewScrollYPosition();
 //        }
         //check if there was an insertContainer active earlier
-        recreateInlineInsertContainerIfNeeded();
+        recreateInlineInsertContainerAndReplayCmdIfNeeded();
 
         super.refreshAfterEdit();
 //        revalidate();
@@ -263,7 +270,7 @@ public class ScreenListOfWorkSlots extends MyForm {
                         DAO.getInstance().saveNew(newWorkSlot, (ParseObject) workSlotListOwner);
                         DAO.getInstance().saveNewExecuteUpdate();
 
-                        refreshAfterEdit();
+                        if(false)refreshAfterEdit();
                     }
                 }).show();
             }
@@ -584,7 +591,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        return cont;}
 //</editor-fold>
         if (workSlotListN != null && workSlotListN.size() > 0) {
-            MyTree2 myTree = new MyTree2(workSlotListN, expandedObjects, getInlineInsertContainer(), stickyHeaderGen) {//                    lastInsertNewElementContainer != null ? 
+            MyTree2 myTree = new MyTree2(workSlotListN, expandedObjects, getPinchInsertContainer(), stickyHeaderGen) {//                    lastInsertNewElementContainer != null ? 
                 @Override
                 protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
                     Container cmp = null;

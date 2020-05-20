@@ -82,38 +82,40 @@ public class ScreenLogin extends MyForm {
 //                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            }
 //            boolean refreshDataInBackground = true;
-        if (refreshDataInBackground) {
-            thread.run((success) -> {
-//                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true)) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
-                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),
-                        MyPrefs.reloadChangedDataInBackground.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
-                    success.onSucess(null);
-                }
-                thread.kill();
-//                success.onSucess(success); //CN1 Support: is there an error in CN1 for the run(r,t) call?!!!
-            }, (notUsed) -> {
-                Display.getInstance().callSerially(() -> {
-//                if (newDataLoaded) {
-                    Form f = Display.getInstance().getCurrent();
-                    //don't removeFromCache: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values - not with new version!)
-                    if (f instanceof MyForm && !(f instanceof ScreenLogin) && !(f instanceof ScreenMain)) { // && !(f instanceof ScreenItem)) {
-                        //TODO!!! show "Running" symbyl after like 2 seconds
-//                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
-                        ((MyForm) f).refreshAfterEdit(); //to show any new data which may have been loaded
-                        Log.p("Screen " + getComponentForm().getTitle() + " refreshed after loading new data from network");
-                    }
-//                    thread.kill();
+//        if (false && refreshDataInBackground) {
+//            thread.run((success) -> {
+////                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true)) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+////                if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),
+////                        MyPrefs.reloadChangedDataInBackground.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+//                if (DAO.getInstance().cacheLoadDataChangedOnServer(false)) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+//                    success.onSucess(null);
 //                }
-                });
-            });
-        } else {
+//                thread.kill();
+////                success.onSucess(success); //CN1 Support: is there an error in CN1 for the run(r,t) call?!!!
+//            }, (notUsed) -> {
+//                Display.getInstance().callSerially(() -> {
+////                if (newDataLoaded) {
+//                    Form f = Display.getInstance().getCurrent();
+//                    //don't removeFromCache: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values - not with new version!)
+//                    if (f instanceof MyForm && !(f instanceof ScreenLogin) && !(f instanceof ScreenMain)) { // && !(f instanceof ScreenItem)) {
+//                        //TODO!!! show "Running" symbyl after like 2 seconds
+////                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
+//                        ((MyForm) f).refreshAfterEdit(); //to show any new data which may have been loaded
+//                        Log.p("Screen " + getComponentForm().getTitle() + " refreshed after loading new data from network");
+//                    }
+////                    thread.kill();
+////                }
+//                });
+//            });
+//        } else {
 //            Dialog ip = new InfiniteProgress().showInfiniteBlocking(); //DONE in DAO.cacheLoadDataChangedOnServer
-            //TODO!!!! show waiting symbol "loading your tasks..."
+        //TODO!!!! show waiting symbol "loading your tasks..."
 //            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
-            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),
-                    MyPrefs.reloadChangedDataInBackground.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+//            DAO.getInstance().cacheLoadDataChangedOnServer(true || MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),
+//                    false && MyPrefs.reloadChangedDataInBackground.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+        DAO.getInstance().cacheLoadDataChangedOnServer(false); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            ip.dispose();
-        }
+//        }
         //ALARMS - initialize
 //        AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
         AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(); //TODO!!!! optimization: do in background

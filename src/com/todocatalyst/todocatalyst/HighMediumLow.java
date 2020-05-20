@@ -28,6 +28,9 @@ package com.todocatalyst.todocatalyst;
         static int[] getDescriptionOrdinals() {
             return new int[]{LOW.ordinal(), MEDIUM.ordinal(), HIGH.ordinal()};
         }
+        static HighMediumLow[] getEnumList() {
+            return new HighMediumLow[]{LOW, MEDIUM, HIGH};
+        }
 
         /**
          * returns the enum corresponding to the description string

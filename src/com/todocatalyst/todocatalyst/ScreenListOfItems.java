@@ -102,6 +102,7 @@ public class ScreenListOfItems extends MyForm {
 //    private ItemList itemListOrg;
     protected ItemAndListCommonInterface itemListOrg; //accessed when inserting inlinecontainer
     private GetItemListFct getItemListFct;
+    MySearchCommand mySearchCommand;
     private ActionListener searchListener = null;
 //    private ItemList itemListFilteredSorted;
 //    private java.util.List workSlotList;
@@ -511,7 +512,9 @@ public class ScreenListOfItems extends MyForm {
 //        setupList();
 //</editor-fold>
         searchListener = makeSearchFunctionUpperLowerStickyHeaders(itemListOrg);
-        getToolbar().addSearchCommand(searchListener, MyPrefs.defaultIconSizeInMM.getFloat());
+//        getToolbar().addSearchCommand(searchListener, MyPrefs.defaultIconSizeInMM.getFloat());
+//        mySearchBar = new MySearchBar(getToolbar(), searchListener);
+        mySearchCommand = new MySearchCommand(getContentPane(),  searchListener);
         addCommandsToToolbar(getToolbar());
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                removeShowListener(startAsyncListener);
@@ -526,8 +529,14 @@ public class ScreenListOfItems extends MyForm {
     }
 
     @Override
+    public boolean isPinchInsertEnabled(ItemAndListCommonInterface refElt, boolean insertBeforeRefElt) {
+        boolean ok = refElt instanceof Item;
+        return ok;
+    }
+
+    @Override
     public boolean isPinchInsertEnabled() {
-        return !itemListOrg.isNoSave() && !isSortOn(); //not saved lists like Today etc should not allow pinch insert, sorted lists should not allow (//TODO!!!! find the clever way to insert and keep place in sorted list, e.g. workslots where new starts after previous ends)
+        return !itemListOrg.isNoSave() && !isSortOn() && super.isPinchInsertEnabled(); //not saved lists like Today etc should not allow pinch insert, sorted lists should not allow (//TODO!!!! find the clever way to insert and keep place in sorted list, e.g. workslots where new starts after previous ends)
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -551,7 +560,7 @@ public class ScreenListOfItems extends MyForm {
     @Override
     public void refreshAfterEdit() {
 //    public void setupList() {
-        if (getKeepPos() == null) { //if no position set before, try to keep same scroll position
+        if (false && getKeepPos() == null) { //NOT necessary since scrollY is automatically saved?! //if no position set before, try to keep same scroll position
             setKeepPos(new KeepInSameScreenPosition());
         }
         ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
@@ -586,32 +595,37 @@ public class ScreenListOfItems extends MyForm {
 //        itemListOrg.refreshWorkTimeDefinition();
 //        getContentPane().add(CENTER, buildContentPaneForListOfItems(this.itemListFilteredSorted));
 //</editor-fold>
-        Container contentContainer = buildContentPaneForListOfItems(itemListOrg);
-        if (contentContainer instanceof MyTree2) {
-            setInlineInsertContainer(((MyTree2) contentContainer).getInlineInsertField()); //save for next update
-        }//        if (getInlineInsertContainer()!= null)
+        Container newContentContainer = buildContentPaneForListOfItems(itemListOrg);
+        if (false && newContentContainer instanceof MyTree2) {
+            setPinchInsertContainer(((MyTree2) newContentContainer).getInlineInsertField()); //save for next update
+        }
+//        if (getInlineInsertContainer()!= null)
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
 //        getContentPane().add(MyBorderLayout.CENTER, contentContainer); //NB!!! this doesn't actually replace the old contentPane immediately (in the below calls!!!) meaning recreateInlineInsertContainerIfNeeded() doesn't work
 //        addToContentContainer(contentContainer);
-        getContentPane().add(BorderLayout.CENTER, contentContainer);
-        if (contentContainer != null) {
-            ContainerScrollY scrollable = findScrollableContYChild(contentContainer);
+        getContentPane().add(BorderLayout.CENTER, newContentContainer);
+        if (newContentContainer != null) {
+            ContainerScrollY scrollable = findScrollableContYChild(newContentContainer);
             if (scrollable != null) {
                 scrollable.setScrollVisible(true);
             }
             if (true && previousValues != null) {//            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
-                previousValues.setScrollComponent(scrollable);
+                previousValues.setListenToYScrollComponent(scrollable);
+            }
+            if (previousValues != null) {
+                previousValues.scrollToSavedYOnFirstShow(scrollable);
             }
         }
 
-        setTitleAnimation(contentContainer); //MUST do this here since we create a new container on each refresh
+        setTitleAnimation(newContentContainer); //MUST do this here since we create a new container on each refresh
 
-        if (searchListener != null && getToolbar().getTitleComponent() instanceof TextField) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
+//        if (searchListener != null && getToolbar().getTitleComponent() instanceof TextField) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
+        if (mySearchCommand != null && mySearchCommand.cont != null && !mySearchCommand.cont.isHidden()) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
             searchListener.actionPerformed(null); //refresh search, eg when returning to screen
         }
 
         if (false) { //TODO!!! re-activate (currently clashes with drag&drop: when trying to drag an element at the top of the list, it also activates pullToRefresh) -> consume the dragged event?!
-            contentContainer.addPullToRefresh(() -> {
+            newContentContainer.addPullToRefresh(() -> {
                 Log.p("Pull to refresh... DEACTIVATED");
                 DAO.getInstance().removeFromCache((ParseObject) itemListOrg);
                 //refresh worktime
@@ -672,9 +686,10 @@ public class ScreenListOfItems extends MyForm {
             });
         }
 
-        //check if there was an insertContainer active earlier
-        if (getInlineInsertContainer() == null) {
-            recreateInlineInsertContainerIfNeeded();
+        //check that is not already an insertContainer active earlier
+        if (true || getPinchInsertContainer() == null) {
+//            ASSERT.that(getInlineInsertContainer() == null, "should never have the case"); //YES, happens on exit from an inlineinsertcontainer
+            recreateInlineInsertContainerAndReplayCmdIfNeeded();
         }
 
         super.refreshAfterEdit();
@@ -718,6 +733,9 @@ public class ScreenListOfItems extends MyForm {
             fab.bindFabToContainer(getContentPane());
         }
         super.addCommandsToToolbar(toolbar);
+        
+        toolbar.addCommandToRightBar(mySearchCommand);
+        
 
         //BACK
 //        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(),Toolbar.BackCommandPolicy.AS_ARROW,MyPrefs.defaultIconSizeInMM.getFloat());
@@ -873,8 +891,9 @@ public class ScreenListOfItems extends MyForm {
                         DAO.getInstance().saveNew((ParseObject) newTemplate, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
                         DAO.getInstance().saveNewExecuteUpdate();
 //                            DAO.getInstance().saveInBackground(template); //must save item since adding it to itemListOrg changes its owner
-                        refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
-//                        } 
+                        if (false) {
+                            refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
+                        }//                        } 
 //                        else {
 //                            itemListOrg.removeFromList(template); //if no saveable data, undo the 
 //                            //TODO!!!! how to remove from eg Categories if finally the task is not saved??
@@ -1014,7 +1033,9 @@ public class ScreenListOfItems extends MyForm {
                             DAO.getInstance().saveNew((ParseObject) newTemplateInstantiation, (ParseObject) itemListOrg); //must save item since adding it to itemListOrg changes its owner
                             DAO.getInstance().saveNewExecuteUpdate();
                             setKeepPos(new KeepInSameScreenPosition(newTemplateInstantiation)); //scroll to position of new item, whereever it is inserted
-                            refreshAfterEdit();
+                            if (false) {
+                                refreshAfterEdit();
+                            }
                         }, false, null).show();
                     }
                 }
@@ -1060,7 +1081,9 @@ public class ScreenListOfItems extends MyForm {
 //                    itemListOrg.setWorkSlotList((WorkSlotList) iList); //NOT necessary, done in the screen on each change
 //                    itemListOrg.resetWorkTimeDefinition(); //ensure workTime is recalculated
 //                            ScreenListOfItems.this.refreshAfterEdit();
-                    refreshAfterEdit();
+                    if (false) {
+                        refreshAfterEdit();
+                    }
                 }, false).show();
             }
             ));
@@ -1074,8 +1097,9 @@ public class ScreenListOfItems extends MyForm {
                 MyPrefs.flipBoolean(MyPrefs.showDetailsForAllTasks);
 //                setupList(); //TODO optimize the application of a filter?
                 //TODO!!!! scroll to 'same' place in list after expansion, e.g. keep top-most visible item before expand visible in same place, use Container.getClosestComponentTo(x, y) with upper-left-most position of contentPane?! c.getVisibleBounds(), c.getComponentAt(x,y)?
-                refreshAfterEdit(); //TODO optimize the application of a filter?
-                //TODO!!! animate each detail container (e.g. make visible for each task and animate)
+                if (false) {
+                    refreshAfterEdit(); //TODO optimize the application of a filter?
+                }                //TODO!!! animate each detail container (e.g. make visible for each task and animate)
             }
 
             @Override
@@ -1304,6 +1328,7 @@ public class ScreenListOfItems extends MyForm {
                     if (isSelectionMode()) {
 //                        setKeepPos(new KeepInSameScreenPosition()); //NOT needed, natural to move to top of list
                         MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToTopOfList(itemListOrg));
+//                        scrollComponentToVisible(selectedObjects.getSelected());
 //                    selectedObjects.clear(); //DO NOT unselect objects to allow for additional operations on selection
 //                    setupList(); //TODO optimize the application of a filter?
 //                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg); //save after having moved items around
@@ -1319,28 +1344,176 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
+            Command cmdMoveSelectedToEndOfList = new CommandTracked("Move to end", Icons.iconMoveAllToEnd) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    //TODO!!! warning that this cannot be undone!!
+                    if (isSelectionMode()) {
+                        if (isSortOn()) {
+//                        ToastBar.showErrorMessage("Move to top not possible when list is shown sorted");
+                            ToastBar.showErrorMessage("[Move to top] moves tasks to top of manually sorted list, turn Sort off to see this"); //TODO 
+                        } else {
+//                        setKeepPos(new KeepInSameScreenPosition()); //NOT needed, natural to move to top of list
+                            MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToEndOfList(itemListOrg));
+//                    selectedObjects.clear(); //DO NOT unselect objects to allow for additional operations on selection
+//                    setupList(); //TODO optimize the application of a filter?
+//                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg); //save after having moved items around
+                            DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
+                            DAO.getInstance().saveNewExecuteUpdate();
+                            refreshAfterEdit(); //TODO optimize the application of a filter?
+                        }
+                    }
+                }
+            };
+            Command cmdMoveToAfterSelectedItem = new CommandTracked("Move to after", Icons.iconMoveAllToEnd) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    //TODO!!! warning that this cannot be undone!!
+                    if (isSelectionMode()) {
+                        if (isSortOn()) {
+//                        ToastBar.showErrorMessage("Move to top not possible when list is shown sorted");
+                            ToastBar.showErrorMessage("[Move to top] moves tasks to top of manually sorted list, turn Sort off to see this"); //TODO 
+                        } else {
+//                        setKeepPos(new KeepInSameScreenPosition()); //NOT needed, natural to move to top of list
+                            MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToEndOfList(itemListOrg));
+//                    selectedObjects.clear(); //DO NOT unselect objects to allow for additional operations on selection
+//                    setupList(); //TODO optimize the application of a filter?
+//                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg); //save after having moved items around
+                            DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
+                            DAO.getInstance().saveNewExecuteUpdate();
+                            refreshAfterEdit(); //TODO optimize the application of a filter?
+                        }
+                    }
+                }
+            };
+
+            Command cmdMarkCompleted = new CommandTracked("Completed", Icons.iconStarSelected) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    if (isSelectionMode()) {
+                        MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToEndOfList(itemListOrg));
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
+                        DAO.getInstance().saveNewExecuteUpdate();
+                        refreshAfterEdit(); //TODO optimize the application of a filter?
+                    }
+                }
+            };
+            Command cmdSetWaiting = new CommandTracked("Waiting", Icons.iconStarSelected) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    if (isSelectionMode()) {
+                        MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToEndOfList(itemListOrg));
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
+                        DAO.getInstance().saveNewExecuteUpdate();
+                        refreshAfterEdit(); //TODO optimize the application of a filter?
+                    }
+                }
+            };
+            Command cmdSetStarred = new CommandTracked("Star", Icons.iconStarSelected) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    if (isSelectionMode()) {
+                        MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToEndOfList(itemListOrg));
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
+                        DAO.getInstance().saveNewExecuteUpdate();
+                        refreshAfterEdit(); //TODO optimize the application of a filter?
+                    }
+                }
+            };
+            Command cmdSetPriority = new CommandTracked("SelectionSetPriority", Icons.iconStarSelected) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    if (isSelectionMode()) {
+                        MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToEndOfList(itemListOrg));
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
+                        DAO.getInstance().saveNewExecuteUpdate();
+                        refreshAfterEdit(); //TODO optimize the application of a filter?
+                    }
+                }
+            };
+            Command cmdDueDate = new CommandTracked("SelectionSetDueDate", Icons.iconStarSelected) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    if (isSelectionMode()) {
+                        //TODO: find a way to pick the date
+                        MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToEndOfList(itemListOrg));
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
+                        DAO.getInstance().saveNewExecuteUpdate();
+                        refreshAfterEdit(); //TODO optimize the application of a filter?
+                    }
+                }
+            };
+            Command cmdAddToCategory = new CommandTracked("SelectionAddCategory", Icons.iconStarSelected) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    if (isSelectionMode()) {
+                        //TODO: find a way to pick the date
+                        MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToEndOfList(itemListOrg));
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
+                        DAO.getInstance().saveNewExecuteUpdate();
+                        refreshAfterEdit(); //TODO optimize the application of a filter?
+                    }
+                }
+            };
+            Command cmdMoveToList = new CommandTracked("SelectionMoveToList", Icons.iconStarSelected) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    if (isSelectionMode()) {
+                        //TODO: find a way to pick the date
+                        MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToEndOfList(itemListOrg));
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
+                        DAO.getInstance().saveNewExecuteUpdate();
+                        refreshAfterEdit(); //TODO optimize the application of a filter?
+                    }
+                }
+            };
+            Command cmdSetEstimate = new CommandTracked("SelectionSetEstimate", Icons.iconStarSelected) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    if (isSelectionMode()) {
+                        //TODO: find a way to pick the date
+                        MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToEndOfList(itemListOrg));
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
+                        DAO.getInstance().saveNewExecuteUpdate();
+                        refreshAfterEdit(); //TODO optimize the application of a filter?
+                    }
+                }
+            };
+            Command cmdAddComment = new CommandTracked("SelectionAddToComment", Icons.iconStarSelected) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    if (isSelectionMode()) {
+                        //TODO: find a way to enter the text
+                        MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.moveToEndOfList(itemListOrg));
+                        DAO.getInstance().saveNew((ParseObject) itemListOrg); //save after having moved items around
+                        DAO.getInstance().saveNewExecuteUpdate();
+                        refreshAfterEdit(); //TODO optimize the application of a filter?
+                    }
+                }
+            };
+
             if (true) {
                 if (false) {
 //            Button draggableOnOff = new Button();
 //                Command draggableOnOff = new CommandTracked("Move ON", Icons.iconMoveUpDownToolbarStyle) {
-                Command draggableOnOff = new CommandTracked("Move ON", Icons.iconMoveUpDown) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
-                        Container cont = getComponentForm().getContentPane();
-                        for (int i = 0, size = cont.getComponentCount(); i < size; i++) {
-                            Object o = cont.getComponentAt(i);
-                            if (o instanceof Component) {
-                                Component comp = (Component) o;
-                                comp.setDraggable(!comp.isDraggable());
-                                comp.setFocusable(!comp.isFocusable());
+                    Command draggableOnOff = new CommandTracked("Move ON", Icons.iconMoveUpDown) {
+                        @Override
+                        public void actionPerformed(ActionEvent evt) {
+                            Container cont = getComponentForm().getContentPane();
+                            for (int i = 0, size = cont.getComponentCount(); i < size; i++) {
+                                Object o = cont.getComponentAt(i);
+                                if (o instanceof Component) {
+                                    Component comp = (Component) o;
+                                    comp.setDraggable(!comp.isDraggable());
+                                    comp.setFocusable(!comp.isFocusable());
+                                }
                             }
+                            setCommandName(getCommandName().equals("Move ON") ? "Move OFF" : "Move ON");
                         }
-                        setCommandName(getCommandName().equals("Move ON") ? "Move OFF" : "Move ON");
-                    }
-                };
+                    };
                     toolbar.addCommandToOverflowMenu(draggableOnOff); //TODO disactivated until implemented
                 }
-                
+
                 //SELECTION ON/OFF
 //                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
                 toolbar.addCommandToOverflowMenu(CommandTracked.create("Select", Icons.iconSelected, (e) -> {
@@ -1411,7 +1584,18 @@ public class ScreenListOfItems extends MyForm {
             if (!optionTemplateEditMode) {
                 toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemsSettings", "Settings", Icons.iconSettings, (e) -> {
                     new ScreenSettingsListOfItems(ScreenListOfItems.this, () -> {
-                        refreshAfterEdit();
+                        if (false) {
+                            refreshAfterEdit();
+                        }
+                    }).show();
+                }
+                ));
+            } else {
+                toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemsSettings", "Settings", Icons.iconSettings, (e) -> {
+                    new ScreenSettingsTemplates(ScreenListOfItems.this, () -> {
+                        if (false) {
+                            refreshAfterEdit();
+                        }
                     }).show();
                 }
                 ));
@@ -1455,9 +1639,7 @@ public class ScreenListOfItems extends MyForm {
                 };
                 toolbar.addCommandToOverflowMenu(cleanUpList);
             }
-
         }
-
     }
 
     /**
@@ -2150,7 +2332,7 @@ public class ScreenListOfItems extends MyForm {
 //        }
 //</editor-fold>
         //ITEM TEXT
-        WorkSlotList wSlots = item.getWorkSlotListN(false);
+        WorkSlotList wSlots = item.getWorkSlotListN();
         MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(
                 item.getText()
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getObjectIdP() == null ? "-ID" : "")
@@ -3372,21 +3554,28 @@ refreshAfterEdit();
             }
         }
 
-        if (true || !((ScreenListOfItems) myForm).projectEditMode) {
-            Button insertInlineContAbove = new Button(MyReplayCommand.create("NewItemSwipeInsertAbove", null, Icons.iconInsertTaskAbove, (e) -> {
-                ((MyForm) swipCont.getComponentForm()).createAndAddInsertContainer(swipCont, item, true);
+        if (false) { //create inlineinsert container
+            MyReplayCommand.create("CreateNewTemplate", "Add template", Icons.iconNew, (e) -> {
+            });
+        }
+
+        if (myForm.isPinchInsertEnabled()) {//|| !((ScreenListOfItems) myForm).projectEditMode) {
+//            Button insertInlineContAbove = new Button(MyReplayCommand.create("NewItemSwipeInsertAbove", null, Icons.iconInsertTaskAbove, (e) -> {
+            Button insertInlineContAbove = new Button(MyReplayCommand.create("SwipeInsertAbove-" + item.getObjectIdP(), null, Icons.iconInsertTaskAbove, (e) -> {
+                ((MyForm) swipCont.getComponentForm()).createAndAddPinchInsertContainer(swipCont, item, true);
                 swipCont.close();
                 swipCont.revalidate();
             }));
             insertInlineContAbove.setUIID("SwipeButtonInsertAbove");
             buttonSwipeRightContainer.add(insertInlineContAbove);
 
-            Button insertInlineContBelow = new Button(MyReplayCommand.create("NewItemSwipeInsertBelow", null, Icons.iconInsertTaskBelow, (e) -> {
-                ((MyForm) swipCont.getComponentForm()).createAndAddInsertContainer(swipCont, item, false);
+//            Button insertInlineContBelow = new Button(MyReplayCommand.create("NewItemSwipeInsertBelow", null, Icons.iconInsertTaskBelow, (e) -> {
+            Button insertInlineContBelow = new Button(MyReplayCommand.create("SwipeInsertBelow-" + item.getObjectIdP(), null, Icons.iconInsertTaskBelow, (e) -> {
+                ((MyForm) swipCont.getComponentForm()).createAndAddPinchInsertContainer(swipCont, item, false);
                 swipCont.close();
                 swipCont.revalidate();
             }));
-            insertInlineContBelow.setUIID("SwipeButtonInsertBelow");
+            insertInlineContBelow.setUIID("ButtonSwipeInsertBelow");
             buttonSwipeRightContainer.add(insertInlineContBelow);
         }
 
@@ -4471,7 +4660,7 @@ refreshAfterEdit();
 //        return cont;
 //</editor-fold>
         if (listOfItems != null && listOfItems.size() > 0) {
-            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, getInlineInsertContainer(), stickyHeaderGen) { //                    lastInsertNewElementContainer != null ? 
+            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, getPinchInsertContainer(), stickyHeaderGen) { //                    lastInsertNewElementContainer != null ? 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        myTree = new MyTree2(listOfItems, expandedObjects, filterSortDef) {
 //            MyTree2 myTree = new MyTree2(listOfItems, expandedObjects, itemListOrg.getFilterSortDef(), (item, itemOrItemList) -> InsertNewTaskContainer.getInsertNewTaskContainerFromForm(item, itemOrItemList)) 
@@ -4576,11 +4765,11 @@ refreshAfterEdit();
 //            return new InsertNewTaskContainer(null, listOfItems, ScreenListOfItems.this);
 //            return new InlineInsertNewElementContainer(this, null, listOfItems);
             } else if (listOfItems instanceof Category) {
-                setInlineInsertContainer(new InlineInsertNewItemContainer2(this, null, null, (Category) listOfItems, false)); //UI: in an empty list you can insert a new task via the inlineInsert container
-                return (Container) getInlineInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
+                setPinchInsertContainer(new PinchInsertItemContainer(this, null, null, (Category) listOfItems, false)); //UI: in an empty list you can insert a new task via the inlineInsert container
+                return (Container) getPinchInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
             } else {
-                setInlineInsertContainer(new InlineInsertNewItemContainer2(this, null, listOfItems, null, false)); //UI: in an empty list you can insert a new task via the inlineInsert container
-                return (Container) getInlineInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
+                setPinchInsertContainer(new PinchInsertItemContainer(this, null, listOfItems, null, false)); //UI: in an empty list you can insert a new task via the inlineInsert container
+                return (Container) getPinchInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
             }
         }
 

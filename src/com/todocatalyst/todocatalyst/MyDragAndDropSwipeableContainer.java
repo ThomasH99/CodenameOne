@@ -711,32 +711,39 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @param comp
      */
     static boolean removeFromParentScrollYContainer(Component comp) {
-        if (comp == null) {
-            return false;
-        }
-        Container myDDContParent = comp.getParent();
-        //iterate up the container hierarchy to find a MyTree2 or ContainerScrollY container which has a task *after* this one
-        while (myDDContParent != null && !(myDDContParent instanceof ContainerScrollY)) {
-            comp = myDDContParent;
-            myDDContParent = myDDContParent.getParent();
-        }
-        if (myDDContParent != null) {
-            myDDContParent.removeComponent(comp);
-            return true;
-        } else {
-            return false;
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (comp == null) {
+//            return false;
+//        }
+//        Container myDDContParent = comp.getParent();
+//        //iterate up the container hierarchy to find a MyTree2 or ContainerScrollY container which has a task *after* this one
+//        while (myDDContParent != null && !(myDDContParent instanceof ContainerScrollY)) {
+//            comp = myDDContParent;
+//            myDDContParent = myDDContParent.getParent();
+//        }
+//        if (myDDContParent != null) {
+//            myDDContParent.removeComponent(comp);
+//            return true;
+//        } else {
+//            return false;
+//        }
+//</editor-fold>
+        return removeFromParentScrollYAndReturnParent(comp) != null;
     }
 
-    static ContainerScrollY removeFromParentScrollYContAndReturnScrollYCont(Component comp) {
-        Container myDDContParent = comp.getParent();
+    static ContainerScrollY removeFromParentScrollYAndReturnParent(Component comp) {
+        if (comp == null) {
+            return null;
+        }
+        Component c = comp;
+        Container myDDContParent = c.getParent();
         //iterate up the container hierarchy to find a MyTree2 or ContainerScrollY container which has a task *after* this one
         while (myDDContParent != null && !(myDDContParent instanceof ContainerScrollY)) {
-            comp = myDDContParent;
+            c = myDDContParent;
             myDDContParent = myDDContParent.getParent();
         }
         if (myDDContParent instanceof ContainerScrollY) {
-            myDDContParent.removeComponent(comp);
+            myDDContParent.removeComponent(c);
             return (ContainerScrollY) myDDContParent;
         } else {
             return null;

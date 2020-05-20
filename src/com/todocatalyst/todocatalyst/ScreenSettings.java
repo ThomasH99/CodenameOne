@@ -34,6 +34,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
     //DONE skip login screen when already logged in
 
     public final static String SCREEN_TITLE = "Global Settings";
+    public final static String SCREEN_HELP = "Global Settings";
 // protected static String FORM_UNIQUE_ID = "ScreenSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 //    MyForm mainScreen;
@@ -50,12 +51,14 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
 
-        content.add(new Button(Command.create("Reload theme**", null, (ev) -> {
-            Resources theme;
-            if (MyPrefs.themeNameWithoutBackslash.getString().length() > 0) {
-                theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
-            }
-        })));
+        if (false) {
+            content.add(new Button(Command.create("Reload theme**", null, (ev) -> {
+                Resources theme;
+                if (MyPrefs.themeNameWithoutBackslash.getString().length() > 0) {
+                    theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
+                }
+            })));
+        }
 
 //        if (MyPrefs.loginIncognitoMode.getBoolean()) {
 //            content.add(layout("Account email", new SpanLabel(ParseUser.getCurrent().getEmail(), "Button"), true));
@@ -82,6 +85,16 @@ public class ScreenSettings extends ScreenSettingsCommon {
         if (true) {
             addSettingBoolean(content, parseIdMap2, MyPrefs.hideStatusBar, () -> showStatusBar(false), () -> showStatusBar(true));
         }
+
+        if (false) {
+            addSettingBoolean(content, parseIdMap2, MyPrefs.encryptTaskTextAndComments);
+        }
+        if (false) {
+            addSettingBoolean(content, parseIdMap2, MyPrefs.deleteLocalStorageIfRestartedQuickly);
+        }
+        addSettingInt(content, parseIdMap2, MyPrefs.deleteLocalStorageIfRestartedBeforeSeconds, 5, 5, 120);
+
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemRemoveTrailingPrecedingSpacesAndNewlines);
 
         addSettingBoolean(content, parseIdMap2, MyPrefs.showSourceItemInEditScreens);
         addSettingBoolean(content, parseIdMap2, MyPrefs.pinchInsertEnabled);

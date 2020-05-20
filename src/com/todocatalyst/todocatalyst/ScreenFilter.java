@@ -365,12 +365,12 @@ public class ScreenFilter extends MyForm {
                     }
             ), "**")); //if show hidden tasks, then no add'l query constraint
         }
-        if (false) {
-//        Vector v=new Vector(new ArrayList.[]{1,3});
-            Vector v = new Vector(Arrays.asList(1, 3));
-            MyToggleButtonList t = new MyToggleButtonList(new String[]{"A", "B", "C"}, new int[]{1, 2, 3}, v);
-            content.add(t);
-        }
+//        if (false) {
+////        Vector v=new Vector(new ArrayList.[]{1,3});
+//            Vector v = new Vector(Arrays.asList(1, 3));
+//            MyToggleButtonList t = new MyToggleButtonList(new String[]{"A", "B", "C"}, new int[]{1, 2, 3}, v);
+//            content.add(t);
+//        }
 
 //        ButtonGroup taskStatusSwitches = new ButtonGroup(); //TODO mutually exclusive choices (necessary??)
         //SAVE filter

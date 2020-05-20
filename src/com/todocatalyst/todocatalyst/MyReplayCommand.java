@@ -99,8 +99,8 @@ public class MyReplayCommand extends CommandTracked {
         return keep;
     }
 
-    public static MyReplayCommand create(String cmdUniquePrefix, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev, boolean keep) {
-        return create(cmdUniquePrefix, cmdUniquePostfix, commandName, icon, ev, keep, () -> true);
+    public static MyReplayCommand create(String cmdUniqueId, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev, boolean keep) {
+        return create(cmdUniqueId, cmdUniquePostfix, commandName, icon, ev, keep, () -> true);
     }
 
     /**
@@ -226,7 +226,7 @@ public class MyReplayCommand extends CommandTracked {
 
     /**
      *
-     * @param name
+     * @param cmdUniqueNameAndId
      * @param icon
      * @param ev
      * @return
@@ -238,8 +238,8 @@ public class MyReplayCommand extends CommandTracked {
 ////        return c;
 //        return create(name, name, analyticsActionId, icon, ev);
 //    }
-    public static MyReplayCommand create(String name, Image icon, final ActionListener ev) {
-        return create(name, "", name, icon, ev, false);
+    public static MyReplayCommand create(String cmdUniqueNameAndId, Image icon, final ActionListener ev) {
+        return create(cmdUniqueNameAndId, "", cmdUniqueNameAndId, icon, ev, false);
     }
 
 }

@@ -1834,12 +1834,12 @@ class TimerStack {
 //        return timerContainer;
 //    }
 //</editor-fold>
-    private static void refreshFormOnTimerUpdateXXX() {
-        Form form = Display.getInstance().getCurrent();
-        if (form instanceof MyForm && !(form instanceof ScreenTimer6)) { //don't do when showing full screen timer
-            ((MyForm) form).refreshAfterEdit();
-        }
-    }
+//    private static void refreshFormOnTimerUpdateXXX() {
+//        Form form = Display.getInstance().getCurrent();
+//        if (form instanceof MyForm && !(form instanceof ScreenTimer6)) { //don't do when showing full screen timer
+//            ((MyForm) form).refreshAfterEdit();
+//        }
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private Container getSmallContainerXXX() {
@@ -2111,9 +2111,9 @@ class TimerStack {
                         Container smallTimer = buildContentPaneSmallN(myCurrentForm); //refresh the small container
                         if (smallTimer != null) {
                             myCurrentForm.addSmallTimerCont(smallTimer);
-                            if (false && smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
-                                myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
-                            }
+//                            if (false && smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
+//                                myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
+//                            }
                         }
                         myCurrentForm.refreshAfterEdit();
                     } else { //small not default, so show big and save as default
@@ -2298,9 +2298,9 @@ class TimerStack {
                     Container smallTimer = buildContentPaneSmallN(myCurrentForm); //refresh the small container
                     if (smallTimer != null) {
                         myCurrentForm.addSmallTimerCont(smallTimer);
-                        if (false && smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
-                            myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
-                        }
+//                        if (false && smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING) != null) {
+//                            myCurrentForm.setStartEditingAsyncTextArea((TextArea) smallTimer.getClientProperty(SMALL_TIMER_TEXT_AREA_TO_START_EDITING)); //on interrupt, start editing the text area
+//                        }
                     }
                 }
             }

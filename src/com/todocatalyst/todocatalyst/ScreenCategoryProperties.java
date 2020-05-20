@@ -76,25 +76,34 @@ public class ScreenCategoryProperties extends MyForm {
     }
 
     /**
-    return true if (possibly modified) category can be saved
+     * return true if (possibly modified) category can be saved
      */
-    public static boolean checkCategoryIsValidForSaving(String categoryName, Category category) {
+    public static String checkCategoryIsValidForSaving(String categoryName, Category category) {
+        return checkCategoryIsValidForSaving(categoryName, category, true);
+    }
+
+    public static String checkCategoryIsValidForSaving(String categoryName, Category category, boolean showErrorDialog) {
         //TODO extend to check valid subcategories, auto-words, ...
         String errorMsg = null;
 //        String type = listOrCategory instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST;
         categoryName = MyUtil.removeTrailingPrecedingSpacesNewLinesEtc(categoryName);
-        if (categoryName.isEmpty()&& category.getObjectIdP() != null)
+        if (categoryName.isEmpty() && category.getObjectIdP() != null) {
             errorMsg = Format.f("{0 category_or_list} name cannot be empty", Category.CATEGORY);
-        else if (CategoryList.getInstance().findCategoryWithName(categoryName) != null
-                && CategoryList.getInstance().findCategoryWithName(categoryName) != category)
-            //                return "Category \"" + description.getText() + "\" already exists";
-            //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
+        } else if (CategoryList.getInstance().findCategoryWithName(categoryName) != null
+                && CategoryList.getInstance().findCategoryWithName(categoryName) != category) //                return "Category \"" + description.getText() + "\" already exists";
+        //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
+        {
             errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists, and more than one {0} with same name is not allowed. Please set a different name.", Category.CATEGORY, categoryName);
+        }
 
         if (errorMsg != null) {
-            Dialog.show("Error", errorMsg, "OK", null);
-            return false;
-        } else return true;
+            if (showErrorDialog) {
+                Dialog.show("Error", errorMsg, "OK", null);
+            }
+            return errorMsg; //false;
+        } else {
+            return errorMsg; //true;
+        }
     }
 
     @Override
@@ -180,7 +189,7 @@ public class ScreenCategoryProperties extends MyForm {
 //            previousForm.showBack(); //drop any changes
 //            showPreviousScreenOrDefault(previousForm, true);
 //</editor-fold>
-            DAO.getInstance().delete(category,false,true);
+            DAO.getInstance().delete(category, false, true);
             showPreviousScreen(true);
         }));
         if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
@@ -254,7 +263,7 @@ public class ScreenCategoryProperties extends MyForm {
 //        content.add(new Label(Category.CATEGORY)).add(categoryName);
         setEditOnShow(categoryName); //UI: start editing this field
 //        content.add(layoutN(Category.CATEGORY, categoryName, "**", true));
-        content.add( categoryName);
+        content.add(categoryName);
 
 //        MyTextArea description = new MyTextArea("Description", parseIdMap2, () -> category.getComment(), (s) -> category.setComment(s));
         MyTextField description = new MyTextField("Description", parseIdMap2, () -> category.getComment(), (s) -> category.setComment(s));
@@ -300,12 +309,12 @@ public class ScreenCategoryProperties extends MyForm {
 //            v.setShowErrorMessageForFocusedComponent(true);
 //        }
 //</editor-fold>
-        if (MyPrefs.enableShowingSystemInfo.getBoolean()&&MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
+        if (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(category.getObjectIdP() == null ? "<set on save>" : category.getObjectIdP(), "ScreenItemValueUneditable");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
-        setCheckIfSaveOnExit(() -> checkCategoryIsValidForSaving(categoryName.getText(), category));
+        setCheckIfSaveOnExit(() -> checkCategoryIsValidForSaving(categoryName.getText(), category)!=null);
 
         return content;
     }

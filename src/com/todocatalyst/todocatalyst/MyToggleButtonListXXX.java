@@ -20,7 +20,7 @@ import java.util.Vector;
  *
  * @author Thomas
  */
-public class MyToggleButtonComponentGroup extends List {
+public class MyToggleButtonListXXX extends List {
 
     int[] values;
     String[] names;
@@ -55,7 +55,7 @@ public class MyToggleButtonComponentGroup extends List {
 //    MyToggleButton(String[] names, int[] values, String initiallySelectedString) {
 //        this(names, values, names.);
 //    }
-    MyToggleButtonComponentGroup(String[] names, int[] values, int initiallySelectedValue) {
+    MyToggleButtonListXXX(String[] names, int[] values, int initiallySelectedValue) {
         ASSERT.that((values == null && names != null && names.length > 0) || (values != null && names != null && values.length == names.length && values.length > 0), "Both values and names arrays must have same length, and be non-empty");
 
         this.names = names;
@@ -81,7 +81,7 @@ public class MyToggleButtonComponentGroup extends List {
      * selected by default. Values that are not in the values array are ignored
      * w/o warning.
      */
-    MyToggleButtonComponentGroup(String[] names, int[] values, Vector initiallySelectedValues) {
+    MyToggleButtonListXXX(String[] names, int[] values, Vector initiallySelectedValues) {
         super();
 
         ASSERT.that((values == null && names != null && names.length > 0) || (values != null && names != null && values.length == names.length && values.length > 0), "Both values and names arrays must have same length, and be non-empty");
@@ -104,7 +104,7 @@ public class MyToggleButtonComponentGroup extends List {
      * @param valueIndex index of value in values
      * @param names
      */
-    MyToggleButtonComponentGroup(final int[] values, int valueIndex, String[] names) {
+    MyToggleButtonListXXX(final int[] values, int valueIndex, String[] names) {
         this(names, values, values[valueIndex]);
 //        int valueIndex=0; //0 is default choice if value is not found in values
 //        for (int i = 0, size = Math.min(values.length, names.length); i < size; i++) {
@@ -113,7 +113,7 @@ public class MyToggleButtonComponentGroup extends List {
 //        this(values, names, valueIndex);
     }
 
-    MyToggleButtonComponentGroup(String[] names, int[] values) {
+    MyToggleButtonListXXX(String[] names, int[] values) {
         this(names, values, -1);
     }
 

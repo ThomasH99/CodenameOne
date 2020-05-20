@@ -96,15 +96,19 @@ public class MyTree2 extends ContainerScrollY {
 //    private HashSet expandedObjects; // = new HashSet();
     private ExpandedObjects expandedObjects; // = new HashSet();
 //    private FilterSortDef itemListFilteredSorted;
-    private InsertNewElementFunc insertNewElementFunc = null;
-    private InsertNewElementFunc newInsertContainer = null;
+//    private InsertNewElementFunc insertNewElementFunc = null;
+//    private InsertNewElementFunc newInsertContainer = null;
+    private PinchInsertContainer insertNewElementFunc = null;
+    private PinchInsertContainer newInsertContainer = null;
 //    private TextArea startEditTextArea = null;
 
-    private void setInsertField(InsertNewElementFunc newInsertContainer) {
+//    private void setInsertField(InsertNewElementFunc newInsertContainer) {
+    private void setInsertField(PinchInsertContainer newInsertContainer) {
         this.newInsertContainer = newInsertContainer;
     }
 
-    public InsertNewElementFunc getInlineInsertField() {
+//    public InsertNewElementFunc getInlineInsertField() {
+    public PinchInsertContainer getInlineInsertField() {
         return newInsertContainer;
     }
 //    private void setAsyncEditField(TextArea startEditTextArea) {
@@ -160,7 +164,8 @@ public class MyTree2 extends ContainerScrollY {
 //        this(model, expandedObjects, insertNewTask, null);
 //    }
 //    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
-    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
+//    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
+    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, PinchInsertContainer insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
         super();
         this.model = model;
 //        setUIID("MyTree2");
@@ -724,8 +729,9 @@ public class MyTree2 extends ContainerScrollY {
             }
             //check if a new insertNewTask container should be created for current and if so insert it:
 //            if (insertNewTask != null && current instanceof Item && model instanceof ItemAndListCommonInterface) {
-            InsertNewElementFunc newInsertCont;
-            if (insertNewElementFunc != null) {
+//            InsertNewElementFunc newInsertCont;
+            PinchInsertContainer newInsertCont;
+            if (false && insertNewElementFunc != null) { //now handled directly in the Screen.refreshAfterEdit
                 if (current instanceof WorkSlot) {
 //                    newInsertCont = insertNewElementFunc.make((ItemAndListCommonInterface) current, null, null);
                     newInsertCont = insertNewElementFunc.make((ItemAndListCommonInterface) current, ((WorkSlot) current).getOwner(), null); //insert add'l workslots in same list as current, category has no sense for workslots
