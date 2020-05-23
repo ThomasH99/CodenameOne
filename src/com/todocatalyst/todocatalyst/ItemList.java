@@ -1182,12 +1182,17 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return true;
     }
 
+    @Override
+    public boolean addToList(int index, ItemAndListCommonInterface subtask, boolean addAsOwner) {
+        return addItemAtIndex((E) subtask, index, addAsOwner);
+    }
+
     public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner) {
 //        addToList( subItemOrList,MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists));
-        addItemAtIndex((E) subItemOrList, addToEndOfList ? getSize() : 0);
-        if (addAsOwner && !isNoSave()) { //never override owner temporary lists as owner
-            subItemOrList.setOwner(this);
-        }
+        addItemAtIndex((E) subItemOrList, addToEndOfList ? getSize() : 0, addAsOwner);
+//        if (addAsOwner && !isNoSave()) { //never override owner temporary lists as owner
+//            subItemOrList.setOwner(this);
+//        }
         return true;
     }
 
@@ -1872,33 +1877,38 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
 //</editor-fold>
     /**
-     * Adding an item to list at given index. OK to add to a position *after*
-     * the last element (at position getSize()). items will only be added if not
+     * Adding an item to list at given index.OK to add to a position *after* the
+     * last element (at position getSize()).items will only be added if not
      * already in list!
      *
      * @param item - the item to add
      * @param index - the index position in the list
+     * @param addAsOwner
+     * @return true if successfully added (even in case where the item was
+     * *already* in the list)
      */
-    public void addItemAtIndex(E item, int index) {
+    public boolean addItemAtIndex(E item, int index, boolean addAsOwner) {
 
         List listFull = getListFull();
 //        List list = getList();
-
-        int indexFull;
+//        int index;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (list != listFull) { //optimize for the case where list is not filtered
 //            if (index >= 0 && index < list.size())
 //                indexFull = listFull.indexOf(list.get(index));
 //            else indexFull = 0;
 //        } else
-        indexFull = index;
-
+//</editor-fold>
+//        index = index;
+//        boolean status = false;
         Bag updatedBag = getItemBag(); //TODO: 
 //        if (hasSubLists() && updatedBag != null && updatedBag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
-        if (hasSubListsZZZ() && updatedBag != null && indexFull != -1) { //if there are sublists and item has already been added at least once (so appears in list)
+        if (hasSubListsZZZ() && updatedBag != null && index != -1) { //if there are sublists and item has already been added at least once (so appears in list)
 //            itemBag.add(item); //then don't add to list, but just add to bag to keep track of how many times added
             updatedBag.add(item); //item already in list, so add to bag to keep count
             setItemBag(updatedBag); //then don't add to list, but just add to bag to keep track of how many times added
             //TODO!!! should the next statement be an 'else'?? 
+//            status=true;
         } else {
 
 //            if (!getListFull().contains(item)) {
@@ -1920,17 +1930,20 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                List listCopy = new ArrayList(list);
 //                listCopy.add(index, item);
 //            list.add(index, item);
-//</editor-fold>
 //                listFull.add(index, item);
-                listFull.add(indexFull, item);
+//            status=true;
 //            assert list.indexOf(item) != -1 : "item NOT in list thouygh just added (" + item + " already in list [" + this + "] at pos=" +list.indexOf(item); //if (getItemIndex(item) == -1) {
+//</editor-fold>
+                listFull.add(index, item);
                 if (Config.TEST) {
                     ASSERT.that(listFull.indexOf(item) != -1, () -> "1.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
-                }//            setList(editedList);
+                }
                 setList(listFull);
                 if (Config.TEST) {
                     ASSERT.that(listFull.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
-                }//                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
+                }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
 //                    selectedIndex++;
 //                }
 //                int selIdx = getSelectedIndex();
@@ -1939,8 +1952,18 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                }
 //                fireDataChangedEvent(DataChangedListener.ADDED, index);
 //            }
+//</editor-fold>
             }
         }
+        //always add owner whether added to bag or not
+        if (addAsOwner && !isNoSave()) { //never override owner temporary lists as owner
+            item.setOwner(this);
+        }
+        return true;
+    }
+
+    public void addItemAtIndex(E item, int index) {
+        addItemAtIndex(item, index, false);
     }
 
 //    public void moveToPositionOf(E item, E itemRef, boolean insertAfter) {
@@ -3569,14 +3592,16 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     /**
-     * calculates the total effort for a list or category as the sum of Actual for done tasks and the sum of both Actual and Remaining for undone tasks.
+     * calculates the total effort for a list or category as the sum of Actual
+     * for done tasks and the sum of both Actual and Remaining for undone tasks.
+     *
      * @param includeUndoneTasks
-     * @return 
+     * @return
      */
     public long getTotalEffort() {
         long sum = 0;
         for (ItemAndListCommonInterface o : getListFull()) {
-            sum += o.isDone()  ?  o.getActual():o.getActual()+o.getRemaining();
+            sum += o.isDone() ? o.getActual() : o.getActual() + o.getRemaining();
         }
         return sum;
     }

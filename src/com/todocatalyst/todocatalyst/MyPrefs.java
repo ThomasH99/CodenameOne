@@ -333,6 +333,8 @@ public class MyPrefs {
     static PrefEntry askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZeroXXX
             = new PrefEntry("Enter Actual effort when none was set", "askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero",
                     true, "When marking a task Done outside the timer, show popup to enter Actual effort");
+    
+    //TEMPLATES
     static PrefEntry askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem //TODO!!! No, only ask if overwriting an alreadyd defined value!
             = new PrefEntry("Confirm before inserting a template into an existing task", "askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem",
                     false, "**");
@@ -342,6 +344,8 @@ public class MyPrefs {
     static PrefEntry maxNbTemplatesAllowedToChoseForInsertion //TODO!!! No, only ask if overwriting an alreadyd defined value!
             = new PrefEntry("Maximum number of templates that can chosen for insertion", "maxNbTemplatesAllowedToChoseForInsertion",
                     3, "Allows you to immediately make edits to the just created template"); //"helpful to easily make small adjustments
+    static PrefEntry addTemplateTaskTextToExistingTaskText             = new PrefEntry("Add template task text when inserting a template", "addTemplateTaskTextToExistingTaskText",
+                    true, "**"); //"helpful to easily make small adjustments
 //    static PrefEntry keepDoneTasksVisibleTheDayTheyreCompletedXXX //TODO!!! No, only ask if overwriting an alreadyd defined value!
 //            //            = new PrefEntry("If Completed tasks are hidden, keep them visible until midnight of the day they were completed", //"Don't hide Completed tasks the day they were completed
 //            = new PrefEntry("Show just Completed tasks until midnight", //"Don't hide Completed tasks the day they were completed
@@ -421,7 +425,7 @@ public class MyPrefs {
             = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.TEMPLATE), "itemInheritOwnerProjectTemplate", false,
                     INHERITS + Item.TEMPLATE);
     static PrefEntry itemInheritEvenDoneSubtasksInheritOwnerValues
-            = new PrefEntry(Format.f("Even completed subtasks inherit valhes from their project", Item.TEMPLATE), "itemInheritEvenDoneSubtasksInheritOwnerValues", false,
+            = new PrefEntry(Format.f("Even completed subtasks inherit values from their project", Item.TEMPLATE), "itemInheritEvenDoneSubtasksInheritOwnerValues", false,
                     INHERITS + Item.TEMPLATE);
 
 //    static PrefEntry useDefaultFilterInItemsWhenNoneDefinedXXX

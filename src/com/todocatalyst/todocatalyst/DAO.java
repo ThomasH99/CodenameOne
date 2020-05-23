@@ -4115,9 +4115,18 @@ public class DAO {
         });
     }
 
-    public boolean deleteAll(List<ItemAndListCommonInterface> parseObjects, boolean hardDelete, boolean triggerUpdate) {
-        for (ItemAndListCommonInterface p : parseObjects) {
-            delete((ParseObject) p, hardDelete, false); //do triggerUpdate below
+//    public boolean deleteAll(List<ItemAndListCommonInterface> parseObjects, boolean hardDelete, boolean triggerUpdate) {
+//        for (ItemAndListCommonInterface p : parseObjects) {
+//            delete((ParseObject) p, hardDelete, false); //do triggerUpdate below
+//        }
+//        if (triggerUpdate) {
+//            triggerParseUpdate();
+//        }
+//        return true;
+//    }
+    public boolean deleteAll(List<ParseObject> parseObjects, boolean hardDelete, boolean triggerUpdate) {
+        for (ParseObject p : parseObjects) {
+            delete( p, hardDelete, false); //do triggerUpdate below
         }
         if (triggerUpdate) {
             triggerParseUpdate();
@@ -8492,19 +8501,23 @@ public class DAO {
     public void cleanUpAllBadObjectReferences(boolean executeCleanup) {
 //        CleanUpDataInconsistencies clean = new CleanUpDataInconsistencies(this);
 //        clean.cleanUpAllBadObjectReferences(executeCleanup);
-        CleanUpDataInconsistencies.getInstance().cleanUpAllBadObjectReferences(executeCleanup);
+        CleanUpDataInconsistencies.getInstance().cleanUpEverything(executeCleanup);
     }
 
-    boolean cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup) {
+    void cleanUpItemList(ItemList itemList, boolean makeTemplate, boolean executeCleanup) {
 //        return new CleanUpDataInconsistencies(this).cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, false);
-        return CleanUpDataInconsistencies.getInstance().cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, false);
+         CleanUpDataInconsistencies.getInstance().cleanUpItemList(itemList, makeTemplate, executeCleanup);
+    }
+    void cleanUpCategory(Category category, boolean executeCleanup) {
+//        return new CleanUpDataInconsistencies(this).cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, false);
+         CleanUpDataInconsistencies.getInstance().cleanUpCategory(category, executeCleanup);
     }
 
     public void cleanUpTemplateListInParse(boolean executeCleanup) {
 //        cleanUpTemplateList(DAO.getInstance().getTemplateList(), getTopLevelTemplatesFromParse(), true);
 //        cleanUpTemplateList(TemplateList.getInstance(), dao.getTopLevelTemplatesFromParse(), executeCleanup);
 //        new CleanUpDataInconsistencies(this).cleanUpTemplateListInParse(executeCleanup);
-        CleanUpDataInconsistencies.getInstance().cleanUpTemplateListInParse(executeCleanup);
+        CleanUpDataInconsistencies.getInstance().cleanUpTemplates(executeCleanup);
     }
 
     void cleanUpWorkSlots(boolean executeCleanup) {
@@ -8512,14 +8525,16 @@ public class DAO {
         CleanUpDataInconsistencies.getInstance().cleanUpWorkSlots(executeCleanup);
     }
 
-    void cleanUpItemsWithNoValidOwner(boolean executeCleanup) {
-//        new CleanUpDataInconsistencies(this).cleanUpItemsWithNoValidOwner(executeCleanup);
-        CleanUpDataInconsistencies.getInstance().cleanUpItemsWithNoValidOwner(executeCleanup);
-    }
+//    void cleanUpItemsWithNoValidOwner(boolean executeCleanup) {
+////        new CleanUpDataInconsistencies(this).cleanUpItemsWithNoValidOwner(executeCleanup);
+//        CleanUpDataInconsistencies.getInstance().cleanUpItemsWithNoValidOwner(executeCleanup);
+//    }
 
-    boolean cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup, boolean cleanupItems) {
+    void cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup, boolean cleanupItems) {
 //        return new CleanUpDataInconsistencies(this).cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, cleanupItems);
-        return CleanUpDataInconsistencies.getInstance().cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, cleanupItems);
+if(itemListOrCategory instanceof Category)
+         CleanUpDataInconsistencies.getInstance().cleanUpCategory((Category)itemListOrCategory, executeCleanup);
+else  CleanUpDataInconsistencies.getInstance().cleanUpItemList(itemListOrCategory, executeCleanup, cleanupItems);
     }
 
     static void emailLog(ActionEvent evt) {

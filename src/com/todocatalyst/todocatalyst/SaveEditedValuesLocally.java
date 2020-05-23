@@ -199,7 +199,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
             ASSERT.that(value != null, "SaveEditedValuesLocally: put key=\"" + key + "\" with null value - missing objectIdP??");
         }
         if (previousValues != null) {
-            Object previousValue = previousValues.put(key, value);
+            Object previousValue = previousValues.put(key, value); // value.toString());
             saveFile();
             return previousValue;
         } else {
@@ -393,7 +393,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
             remove(Item.PARSE_CATEGORIES);
         }
 //        put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(categories));
-        put(Item.PARSE_CATEGORIES, ItemAndListCommonInterface.convListToObjectIdList((List)categories));
+        put(Item.PARSE_CATEGORIES, ItemAndListCommonInterface.convListToObjectIdList((List) categories));
     }
 
     public List<Category> getCategories() {
@@ -423,7 +423,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         if (list == null) {
             remove(key);
         } else {
-            List objIdList = new ArrayList();
+            List<String> objIdList = new ArrayList();
             for (ItemAndListCommonInterface e : list) {
                 objIdList.add(e.getObjectIdP());
             }
@@ -459,8 +459,8 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //                : null;
 //    }
 //</editor-fold>
-    
-      public void putItems(List<ItemAndListCommonInterface> subtasks) {
+
+    public void putItems(List<ItemAndListCommonInterface> subtasks) {
         putListOfElements(Item.PARSE_SUBTASKS, subtasks);
     }
 
@@ -505,8 +505,8 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
 
     public List<Item> getItemsN() {
-         if (get(Item.PARSE_SUBTASKS) != null) {
-            List<String> ids = (List) get(Item.PARSE_SUBTASKS);
+        List<String> ids = (List) get(Item.PARSE_SUBTASKS);
+        if (ids != null) {
             List<Item> items = new ArrayList();
             for (String id : ids) {
                 Item item = DAO.getInstance().fetchItem(id);

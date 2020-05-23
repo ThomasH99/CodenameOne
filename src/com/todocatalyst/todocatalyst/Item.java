@@ -153,11 +153,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 //, ExpandableInterface {
 
-    @Override
-    public void copyMeInto(ItemAndListCommonInterface destiny) {
-        throw new RuntimeException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
 //    @Override
 //    public List getChildrenList() {
 //        List itemList = getList();
@@ -1712,6 +1707,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static int COPY_EXCLUDE_STARRED = COPY_EXCLUDE_DREAD_FUN * 2;
     final static int COPY_EXCLUDE_USE_ACTUALS_AS_NEW_ESTIMATE = COPY_EXCLUDE_STARRED * 2; //SPECIAL case: use previous Actuals as new Estimate // TODO!!
     final static int COPY_EXCLUDE_WAITING_ALARM_DATE = COPY_EXCLUDE_USE_ACTUALS_AS_NEW_ESTIMATE * 2;
+    final static int COPY_EXCLUDE_FILTER_SORT_DEF = COPY_EXCLUDE_WAITING_ALARM_DATE * 2;
 
     private final static CopyMode COPY_FIELD_DEFINITION_DEFAULT = CopyMode.COPY_ALL_FIELDS;
 
@@ -1744,8 +1740,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param destiny
      * @inherit
      */
-    public Item copyMeInto(Item destiny) {
-        return copyMeInto(destiny, CopyMode.COPY_ALL_FIELDS);
+    @Override
+    public void copyMeInto(ItemAndListCommonInterface destiny) {
+        copyMeInto((Item) destiny, CopyMode.COPY_ALL_FIELDS);
     }
 
     Item copyMeInto(Item destination, CopyMode copyFieldDefintion) {
@@ -1810,8 +1807,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
             //TEXT
 //            if ((copyExclusions & COPY_EXCLUDE_TEXT) == 0) { //UI: DOESN'T make sense to not copy task description (especially with projects)
-            if (destination.getText().equals("")) { //copy from template, iff nothing's already set for item
-                destination.setText(getText());
+            if (destination.getText().equals("") || MyPrefs.addTemplateTaskTextToExistingTaskText.getBoolean()) { //copy from template, iff nothing's already set for item
+                destination.setText(destination.getText() + getText());
             }
 //            }
 
@@ -1944,6 +1941,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     destination.setSource(getSource()); //link to the very first originator/source if available
                 } else {
                     destination.setSource(this); //otherwise (this is first copy) use this
+                }
+            }
+
+            //FILTERSORTDEF
+            if ((copyExclusions & COPY_EXCLUDE_FILTER_SORT_DEF) == 0) {
+                if (destination.getFilterSortDefN() == null && getFilterSortDefN() != null) {
+                    destination.setFilterSortDef(new FilterSortDef(getFilterSortDefN()));
                 }
             }
 
@@ -2336,6 +2340,89 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     /**
+     * undo a previous delete
+     *
+     * @param deleteRefDate the date of the original delete to undo, necessary
+     * to avoid undeleting e.g. subtasks that were deleted earlier on. If null,
+     * ignored.
+     * @param limitDate only undelete if deleted *on or after* this date, used
+     * to undelete only tasks that were deleted during a particular editing
+     * session (in ScreenItem2)
+     * @return
+     */
+    public boolean undelete(Date deleteRefDate, Date limitDate) {
+
+        //do nothing if item is not soft-deleted on the deleteRefDate or is deleted *before* limitDate
+        if ((deleteRefDate != null && !deleteRefDate.equals(getSoftDeletedDateN())
+                || (getSoftDeletedDateN() != null && limitDate != null && getSoftDeletedDateN().getTime() <= limitDate.getTime()))) {
+            //i.getSoftDeletedDateN().getTime() > undeleteAfter.getTime()
+            return false;
+        }
+
+        //DELETE SUBTASKS - delete all subtasks (since they are owned by this item)
+        List<Item> itemsSubtasksOfThisItem = getListFull();
+        for (Item item : itemsSubtasksOfThisItem) {
+            item.undelete(deleteRefDate, limitDate); //let each item delete itself properly, will recurse down the project hierarchy
+        }
+
+        //TODO!!! (?)anything to do to handle case where subtasks are created and saved, but where the new mother task is finally not saved?
+        //CATEGORIES
+        //add item back to all its categories 
+        List<Category> categories = getCategories();
+        for (Category cat : categories) {
+            ((Category) cat).addItemToCategory(this, false); //add references to this item from the category babck again
+        }
+        DAO.getInstance().saveList(categories, null);//now done in DAO.save
+
+        //DELETE IN OWNERS/PROJECTS
+        ItemAndListCommonInterface owner = getOwner();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (owner instanceof ItemList) {
+//            ((ItemList) owner).addToList(this, MyPrefs.insertNewItemsInStartOfLists.getBoolean(), false);
+//            DAO.getInstance().saveNew((ParseObject) owner);
+//        } else if (owner instanceof Item) {
+//            ((Item) owner).addToList(this, MyPrefs.insertNewItemsInStartOfLists.getBoolean(), false);
+//            DAO.getInstance().saveNew((ParseObject) owner);
+//        }
+//</editor-fold>
+        owner.addToList(this, MyPrefs.insertNewItemsInStartOfLists.getBoolean(), false);
+        DAO.getInstance().saveNew((ParseObject) owner);
+        //handle repeatrule
+        //TODO!!!! handle repeatRules when deleting an Item
+        if (false) { //for now, simply leave the RR in the undeleted item, should work?!
+            RepeatRuleParseObject myRepeatRule = getRepeatRuleN();
+            if (myRepeatRule != null) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (deleteAllRepeatInstances) {
+////                myRepeatRule.deleteAllInstances();
+//                myRepeatRule.softDelete(false);
+//            } else //            myRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //if we
+//            //            myRepeatRule.deleteThisRepeatInstanceFromRepeatRuleListOfInstances(this);
+//            {
+//                myRepeatRule.updateRepeatInstancesOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+//            }            //NB. We don't delete the item's refs to repeatrule
+//            Log.p("line 2278: opsUpdateRepeatRule.add(() -> myRepeatRule.updateItemsOnDoneCancelOrDelete(this));");
+//            opsUpdateRepeatRule.add(() -> myRepeatRule.updateItemsOnDoneCancelOrDelete(this)); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
+//            DAO.getInstance().saveNew(myRepeatRule, false);
+//</editor-fold>
+                //TODO!!! is there a meaningful way to undelete a repeatRule? //UI: for now, undeleting an item will NOT restore its repeatrule
+                //A soft-deleted task will normally stay in the RRs done list, so we could simply leave the RR when undeleting?!
+                setRepeatRule(null);
+            }
+        }
+
+        FilterSortDef filter = getFilterSortDefN();
+        if (filter != null && filter.getDeletedDateN() != null) {
+            filter.setDeletedDate(null);
+            DAO.getInstance().saveNew(filter);
+        }
+
+        setSoftDeletedDate(null);
+
+        return true;
+    }
+
+    /**
      * delete the item, as well as sub-tasks. Remove it from categories and
      * alarm server. Stop timer if running. For items with repeatrules, user
      * must decide if only to delete this instance or all instances.
@@ -2506,8 +2593,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param subtask
      * @return
      */
-//    @Override
-    private boolean addToList(int index, ItemAndListCommonInterface subtask) {
+    @Override
+    public boolean addToList(int index, ItemAndListCommonInterface subtask, boolean addAsOwner) {
         boolean status = true;
         List listFull = getListFull();
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2526,7 +2613,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         listFull.add(index, subtask);
         ASSERT.that(subtask.getOwner() == null || this == subtask.getOwner(), "subItemOrList owner not null when adding to list, SUBTASK=" + subtask + ", OLD OWNER=" + subtask.getOwner() + ", NEW OWNER=" + this);
         ItemAndListCommonInterface oldOwner = subtask.getOwner();
-        subtask.setOwner(this);
+        if (addAsOwner && !isNoSave()) {
+            subtask.setOwner(this);
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) { //now done in setOwner() above
 //            ((Item) subtask).removeValuesInheritedFromOwner(oldOwner);
@@ -2538,13 +2627,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return status;
     }
 
+    private boolean addToList(int index, ItemAndListCommonInterface subtask) {
+        return addToList(index, subtask, true);
+    }
+
+    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner) {
+        return addToList(addToEndOfList ? getSize() : 0, subItemOrList, addAsOwner);
+    }
+
     @Override
     public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList) {
         List listFull = getListFull();
 //        listFull.add(addToEndOfList ? listFull.size() : 0, subItemOrList);
 //        setList(listFull);
-        addToList(addToEndOfList ? listFull.size() : 0, subItemOrList);
-        return true;
+        return addToList(addToEndOfList ? listFull.size() : 0, subItemOrList);
+//        return true;
     }
 
     @Override
@@ -2575,6 +2672,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return this;
     }
 
+//    @Override
+//        public boolean addToList(ItemAndListCommonInterface subItemOrList, int index, boolean addAsOwner) {
+//        return addToList(subItemOrList, addToEndOfList ? getSize() : 0, addAsOwner);
+//        if (addAsOwner && !isNoSave()) { //never override owner temporary lists as owner
+//            subItemOrList.setOwner(this);
+//        }
+////        return true;
+//    }
     @Override
     public boolean addToList(ItemAndListCommonInterface newItem, ItemAndListCommonInterface referenceItem, boolean addAfterItemOrEndOfList) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -6362,7 +6467,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getOwnerItem() != null ? isWaitingTillInherited(getOwnerItem().getWaitingTillDateD()) : false;
         return isWaitingTillInherited(getWaitingTillDate());
     }
-    
+
     public boolean isWaitingTillInheritanceOn() {
         return MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean();
     }
@@ -6375,7 +6480,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getWaitingAlarmDateD().getTime();
 //    }
 //</editor-fold>
-
     public void setWaitingTillDate(long waitingTillDate) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        this.dueDate = val;
@@ -7229,6 +7333,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public static boolean isRemainingDefaultValue(long remaining) {
         return remaining == getRemainingDefaultValue();
     }
+
     public boolean isRemainingDefaultValue() {
 //        return getRemainingForProjectTaskItself() == getRemainingDefaultValue();
         return isRemainingDefaultValue(getRemainingForProjectTaskItself());
@@ -8679,10 +8784,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public String toString(boolean showSubtasks) {
 //        return getText();
 //        return getText().length() != 0 ? getText()+" ("+getObjectId()+")" : getObjectId();
-        return getText() + "[" + getObjectIdP() + "]"
+        return getText() + (isTemplate() ? "%" : "") + "[" + getObjectIdP() + "]"
                 + (getDueDateD().getTime() != 0 ? " Due" + MyDate.formatDateSmart(getDueDateD()) : "")
                 + (isDone() ? " [DONE]" : (getRemaining() > 0 ? " " + MyDate.formatDurationShort(getRemaining()) : ""))
-                + (showSubtasks ? (getListFull().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getListFull()) + "}") : "");
+                + (showSubtasks ? (getListFull().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getListFull(), true) + "}") : "");
     }
 
     /**
@@ -9258,7 +9363,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public boolean isTemplate() {
         Boolean template = getBoolean(PARSE_TEMPLATE);
-        return (template == null) ? false : template;
+//        return (template == null) ? false : template;
+        return (template == null);
+//        return (getOwnerItem()!=null && getOwnerItem().isTemplate()) || (getOwnerTemplateList()!=null);
     }
 
     /**

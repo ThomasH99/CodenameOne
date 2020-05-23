@@ -35,6 +35,7 @@ public class ScreenStatistics extends MyForm {
     List<Item> doneItemsFromParseSortedOnDate;
     ItemList itemListStats;
     List<WorkSlot> workSlots;
+    MySearchCommand mySearchCmd;
 
     /**
      * edit a list of statistics over recently done tasks
@@ -51,7 +52,7 @@ public class ScreenStatistics extends MyForm {
 //        expandedObjects = new HashSet();
 //        expandedObjects = new ExpandedObjects(getUniqueFormId()); //,null);
         expandedObjectsInit(""); //,null);
-        addCommandsToToolbar(getToolbar());
+        addCommandsToToolbar(getToolbar()); //since Search refers to itemListStatus which is rebuild everytime, search must also be updated in refreshAfterEdit
 
         reloadData();
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForListOfItems(this.itemListList));
@@ -65,6 +66,14 @@ public class ScreenStatistics extends MyForm {
         sortItems(doneItemsFromParseSortedOnDate, sortOn);
         itemListStats = buildStatisticsSortedByTime(doneItemsFromParseSortedOnDate, workSlots);
         getContentPane().add(BorderLayout.CENTER, buildContentPane(itemListStats));
+
+        //refresh searchCmd on new list
+        if (mySearchCmd != null) {
+            getToolbar().removeCommand(mySearchCmd);
+        }
+        mySearchCmd = new MySearchCommand(getContentPane(), makeSearchFunctionSimple(itemListStats));
+        getToolbar().addCommandToRightBar(mySearchCmd);
+
         revalidate();
         restoreKeepPos();
         super.refreshAfterEdit();
@@ -124,20 +133,23 @@ public class ScreenStatistics extends MyForm {
             }, MyPrefs.defaultIconSizeInMM.getFloat());
         }
         //SEARCH
-        if (false) { //TODO!!!: seardh algo crashes on statistics and won't let you exit/remove the search field
+        if (true) { //TODO!!!: seardh algo crashes on statistics and won't let you exit/remove the search field
 //            getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats), MyPrefs.defaultIconSizeInMM.getFloat());
 //            MySearchBar mySearchBar = new MySearchBar(getToolbar(), makeSearchFunctionSimple(itemListStats));
-            getToolbar().addCommandToRightBar(  new MySearchCommand(getContentPane(), makeSearchFunctionSimple(itemListStats)));
+//            mySearchCmd =   new MySearchCommand(getContentPane(), makeSearchFunctionSimple(itemListStats));
+//            getToolbar().addCommandToRightBar(  new MySearchCommand(getContentPane(), makeSearchFunctionSimple(itemListStats)));
 
         }
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", null, Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", "Settings", Icons.iconSettings, (e) -> {
             int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
             new ScreenSettingsStatistics(ScreenStatistics.this, () -> {
                 if (daysInThePast != MyPrefs.statisticsScreenNumberPastDaysToShow.getInt()) {
                     reloadData(); //reload data after (possibly) changing settings (number of days in the past to show)
                 }
-                if(false)refreshAfterEdit();
+                if (false) {
+                    refreshAfterEdit();
+                }
             }).show();
         }
         ));

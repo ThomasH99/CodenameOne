@@ -144,23 +144,27 @@ public class ScreenItemListProperties extends MyForm {
                 showPreviousScreen(true); //false);
             });
         }
-        if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
-            toolbar.addCommandToOverflowMenu("Show data issues", null, (e) -> {
-                DAO.getInstance().cleanUpItemListOrCategory(itemList, false);
-            });
-        }
-        if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
-            toolbar.addCommandToOverflowMenu("Repair data issues", null, (e) -> {
-                DAO.getInstance().cleanUpItemListOrCategory(itemList, false);
-            });
-        }
-
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemListSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsItemListProperties(ScreenItemListProperties.this, () -> {
-                if(false)refreshAfterEdit();
+                if (false) {
+                    refreshAfterEdit();
+                }
             }).show();
         }
         ));
+
+        if (false&&Config.TEST) {
+            if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
+                toolbar.addCommandToOverflowMenu("Show data issues", null, (e) -> {
+                    DAO.getInstance().cleanUpItemList(itemList, itemList.getOwner().equals(TemplateList.getInstance()), false);
+                });
+            }
+            if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
+                toolbar.addCommandToOverflowMenu("Repair data issues", null, (e) -> {
+                    DAO.getInstance().cleanUpItemList(itemList, itemList.getOwner().equals(TemplateList.getInstance()), true);
+                });
+            }
+        }
 
     }
 
@@ -231,7 +235,7 @@ public class ScreenItemListProperties extends MyForm {
         }
 
 //        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), (ItemList) itemList.getOwner()));
-        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), itemList)!=null);
+        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), itemList) != null);
 
         return content;
     }

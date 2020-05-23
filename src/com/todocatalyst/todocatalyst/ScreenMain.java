@@ -506,7 +506,7 @@ public class ScreenMain extends MyForm {
 //</editor-fold>
         if (false&&Config.TEST) {
 //        Command cleanTemplates = MyReplayCommand.create("Clean up templates", Icons.get().iconSettingsLabelStyle, (e) -> {
-            Command cleanTemplates = MyReplayCommand.create("Clean up templates", Icons.iconSettings, (e) -> {
+            Command cleanTemplates = Command.createMaterial("Clean up templates", Icons.iconSettings, (e) -> {
                 DAO.getInstance().cleanUpTemplateListInParse(true);
             }
             );

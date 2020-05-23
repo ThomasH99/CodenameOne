@@ -192,15 +192,18 @@ public class ScreenCategoryProperties extends MyForm {
             DAO.getInstance().delete(category, false, true);
             showPreviousScreen(true);
         }));
-        if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
-            toolbar.addCommandToOverflowMenu("Show data issues", null, (e) -> {
-                DAO.getInstance().cleanUpItemListOrCategory(category, false);
-            });
-        }
-        if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
-            toolbar.addCommandToOverflowMenu("Repair data issues", null, (e) -> {
-                DAO.getInstance().cleanUpItemListOrCategory(category, false);
-            });
+        
+        if (Config.TEST) {
+            if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
+                toolbar.addCommandToOverflowMenu("Show data issues", null, (e) -> {
+                    DAO.getInstance().cleanUpCategory(category, false);
+                });
+            }
+            if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
+                toolbar.addCommandToOverflowMenu("Repair data issues", null, (e) -> {
+                    DAO.getInstance().cleanUpCategory(category, true);
+                });
+            }
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToSideMenu("New Task", icon, (e) -> {
@@ -314,7 +317,7 @@ public class ScreenCategoryProperties extends MyForm {
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
-        setCheckIfSaveOnExit(() -> checkCategoryIsValidForSaving(categoryName.getText(), category)!=null);
+        setCheckIfSaveOnExit(() -> checkCategoryIsValidForSaving(categoryName.getText(), category) != null);
 
         return content;
     }

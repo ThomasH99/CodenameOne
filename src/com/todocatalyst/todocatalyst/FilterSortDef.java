@@ -1770,14 +1770,14 @@ public class FilterSortDef extends ParseObject {
         }
     }
 
-    public Date getDeletedDate() {
+    public Date getDeletedDateN() {
         Date date = getDate(PARSE_DELETED_DATE);
 //        return (date == null) ? new Date(0) : date;
         return date; //return null to indicate NOT deleted
     }
 
     public boolean isDeleted() {
-        return getDeletedDate() != null;
+        return getDeletedDateN() != null;
     }
 
 //    public boolean delete(Date deletedDate) {

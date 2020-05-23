@@ -84,6 +84,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     /**
      * set the list of workslots in Parse
+     *
      * @param workSlots
      */
 //    public void setWorkSlots(List<WorkSlot> workSlots);
@@ -108,7 +109,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        workTimeAllocator = null;
 //        if (workSlotList != null && workSlotList.getWorkSlotListFull().size() > 0) {
 //            put(PARSE_WORKSLOTS, workSlotList.getWorkSlots());
-WorkSlot.sortWorkSlotList(workSlotList.getWorkSlotListFull());
+        WorkSlot.sortWorkSlotList(workSlotList.getWorkSlotListFull());
         if (Config.TEST) {
             ASSERT.that(workSlotList != null || workSlotList.getWorkSlotListFull().size() == 0 || MyUtil.isSorted(workSlotList.getWorkSlotListFull(),
                     (ws1, ws2) -> ((int) ((((WorkSlot) ws2).getStartTime()) - ((WorkSlot) ws1).getStartTime()))),
@@ -399,6 +400,8 @@ WorkSlot.sortWorkSlotList(workSlotList.getWorkSlotListFull());
 
     public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList);
 
+        public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner);
+
     /**
      * add subItemOrList to the list (for an ItemList or Category) or the list
      * of subtasks (for a project Item) at position index and setsubItemOrList's
@@ -414,6 +417,8 @@ WorkSlot.sortWorkSlotList(workSlotList.getWorkSlotListFull());
      * unfiltered list!
      */
 //    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList);
+        
+       public  boolean addToList(int index, ItemAndListCommonInterface subtask, boolean addAsOwner) ;
     /**
      *
      * @param newElement new item
@@ -423,6 +428,9 @@ WorkSlot.sortWorkSlotList(workSlotList.getWorkSlotListFull());
      * @return
      */
     public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefEltOrEndOfList);
+    
+//    public boolean addToList(ItemAndListCommonInterface newElement, int index, boolean addAfterRefEltOrEndOfList);
+
 
     /**
      *
@@ -1338,7 +1346,7 @@ WorkSlot.sortWorkSlotList(workSlotList.getWorkSlotListFull());
     default public boolean isInherited(Object ownValue, Object potentiallyInheritedValue, boolean inheritanceEnabledForField) {
 //        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerStarredProperties.getBoolean()
         return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && inheritanceEnabledForField
-//                && Objects.equals(ownValue, potentiallyInheritedValue);
+                //                && Objects.equals(ownValue, potentiallyInheritedValue);
                 && eql(ownValue, potentiallyInheritedValue);
     }
 
@@ -1379,8 +1387,8 @@ WorkSlot.sortWorkSlotList(workSlotList.getWorkSlotListFull());
         }
         return changed;
     }
-    
-        static public List<String> convListToObjectIdList(List<ItemAndListCommonInterface> eltList) {
+
+    static public List<String> convListToObjectIdList(List<ItemAndListCommonInterface> eltList) {
         List<String> eltIds = new ArrayList();
         if (eltList != null) {
             for (ItemAndListCommonInterface e : eltList) {
@@ -1390,6 +1398,10 @@ WorkSlot.sortWorkSlotList(workSlotList.getWorkSlotListFull());
         return eltIds;
     }
 
+    default public List<ItemAndListCommonInterface> getAdded(List newList, List oldList) {
+        List<ItemAndListCommonInterface> added = new ArrayList(newList);//make a copy of the edited list 
+        added.removeAll(oldList); //remove all that were already set of the item to get only the newly added categories
+        return added;
+    }
 
-    
 }

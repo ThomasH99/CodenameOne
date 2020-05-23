@@ -56,6 +56,10 @@ public enum DreadFunValue {
         return new int[]{FUN.ordinal(), NEUTRAL.ordinal(), DREAD.ordinal()};
     }
 
+    static String[] getNameList() {
+        return new String[]{FUN.name(), NEUTRAL.name(), DREAD.name()};
+    }
+
     /**
      * returns the enum corresponding to the description string
      *

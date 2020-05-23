@@ -118,18 +118,18 @@ public class ScreenRepairData extends MyForm {
                 DAO.getInstance().cleanUpWorkSlots(true);
             }
         }));
-        content.add(new Button(new Command("Show Items with no valid owner") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                DAO.getInstance().cleanUpItemsWithNoValidOwner(false);
-            }
-        }));
-        content.add(new Button(new Command("Repair with no valid owner (add to new list)") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                DAO.getInstance().cleanUpItemsWithNoValidOwner(true);
-            }
-        }));
+//        content.add(new Button(new Command("Show Items with no valid owner") {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                DAO.getInstance().cleanUpItemsWithNoValidOwner(false);
+//            }
+//        }));
+//        content.add(new Button(new Command("Repair with no valid owner (add to new list)") {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                DAO.getInstance().cleanUpItemsWithNoValidOwner(true);
+//            }
+//        }));
         content.add(new Button(new Command("Show Item problems") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -154,6 +154,7 @@ public class ScreenRepairData extends MyForm {
                 DAO.getInstance().cleanUpTemplateListInParse(true);
             }
         }));
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        content.add(new Button(new Command("Repair list of Categories") {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
@@ -172,7 +173,7 @@ public class ScreenRepairData extends MyForm {
 //            }
 //        }));
 
-        //add ItemListList as owner of all ItemLists
+//add ItemListList as owner of all ItemLists
 //        content.add(new Button(new Command("Migrate ItemItemList refs to ItemListList test values") {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
@@ -185,6 +186,7 @@ public class ScreenRepairData extends MyForm {
 //                DAO.getInstance().saveInBackground((ParseObject)ItemListList.getInstance());
 //            }
 //        }));
+//</editor-fold>
 
         return content;
     }

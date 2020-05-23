@@ -448,22 +448,24 @@ public class AlarmHandler {
     }
 
     private void cancelExpiredAlarmsOnItemUpdate(Item item) {
-        long now = MyDate.currentTimeMillis();
-        boolean normalAlarmUpdatedToFuture = item.getAlarmDate().getTime() > now;
-        boolean waitingAlarmUpdatedToFuture = item.getWaitingAlarmDate().getTime() > now;
+        if (item.getObjectIdP() != null) { //can't have any alarms for an not yet saved item
+            long now = MyDate.currentTimeMillis();
+            boolean normalAlarmUpdatedToFuture = item.getAlarmDate().getTime() > now;
+            boolean waitingAlarmUpdatedToFuture = item.getWaitingAlarmDate().getTime() > now;
 //        AlarmType normalAlarmUpdated = item.getAlarmDate().getTime()>now;
 //        boolean waitingAlarmUpdated = item.getWaitingAlarmDate().getTime()>now;
-        Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
-        while (it.hasNext()) {
-            ExpiredAlarm expiredAlarm = it.next();
-            if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
-                if (((expiredAlarm.type == AlarmType.notification || expiredAlarm.type == AlarmType.snoozedNotif) && normalAlarmUpdatedToFuture)
-                        || ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.snoozedWaiting) && waitingAlarmUpdatedToFuture)) {
-                    it.remove();
+            Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
+            while (it.hasNext()) {
+                ExpiredAlarm expiredAlarm = it.next();
+                if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
+                    if (((expiredAlarm.type == AlarmType.notification || expiredAlarm.type == AlarmType.snoozedNotif) && normalAlarmUpdatedToFuture)
+                            || ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.snoozedWaiting) && waitingAlarmUpdatedToFuture)) {
+                        it.remove();
+                    }
                 }
             }
+            expiredAlarmSave();
         }
-        expiredAlarmSave();
     }
 
     /**
@@ -523,7 +525,7 @@ public class AlarmHandler {
                     inAppTimer.updateInAppTimerOnNextcomingAlarm();
 //        if (notif != null) {
 //        Display.getInstance().callSerially(() -> {
-                    Display.getInstance().callSerially(() ->  playAlarm()); //try to play 
+                    Display.getInstance().callSerially(() -> playAlarm()); //try to play 
 //                    ScreenListOfAlarms.getInstance().show(); //will check if already visible
                     MyForm myForm = MyForm.getCurrentFormAfterClosingDialogOrMenu();
 //                    if ((Config.PRODUCTION_RELEASE && myForm != null) || !Config.PRODUCTION_RELEASE)

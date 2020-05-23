@@ -737,7 +737,7 @@ public class ScreenRepeatRule extends MyForm {
 //        monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.setSelectedIndex(((myRepeatRule.getDayInMonth() > 0 || (myRepeatRule.getWeeksInMonth() == 0 && myRepeatRule.getWeekdaysInMonth() == 0))
 //        monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.setSelectedValue(((repeatRuleEdited.getDayInMonth() > 0 || (repeatRuleEdited.getWeeksInMonth() == 0 && repeatRuleEdited.getWeekdaysInMonth() == 0))
 //                ? MONTHLY_OPTION_DAY : ((repeatRuleEdited.getWeeksInMonth() != 0) ? MONTHLY_OPTION_WEEK_NB : MONTHLY_OPTION_WEEKDAYS)));
-        monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.select(((repeatRuleEdited.getDayInMonth() > 0 || (repeatRuleEdited.getWeeksInMonth() == 0 && repeatRuleEdited.getWeekdaysInMonth() == 0))
+        monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.selectValue(((repeatRuleEdited.getDayInMonth() > 0 || (repeatRuleEdited.getWeeksInMonth() == 0 && repeatRuleEdited.getWeekdaysInMonth() == 0))
                 ? MONTHLY_OPTION_DAY : ((repeatRuleEdited.getWeeksInMonth() != 0) ? MONTHLY_OPTION_WEEK_NB : MONTHLY_OPTION_WEEKDAYS)));
 //        monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.addSelectionListener(refreshSelectionListener);
         monthlyRepeatType_DayWeekdaysWeeks_SelectionBox.addActionListener(refreshActionListener);
@@ -761,7 +761,7 @@ public class ScreenRepeatRule extends MyForm {
         yearlyChoice_DayMonths_Combo = new MyComponentGroup(new Object[]{YEAR_OPTION_DAY_OF_YEAR, YEAR_OPTION_MONTHS}, new String[]{"Day", "Month(s)"});
 //        yearlyChoice_DayMonths_Combo.setSelectedValue(((myRepeatRule.getDayInYear() > 0 || myRepeatRule.getMonthsInYear() == 0) ? YEAR_OPTION_DAY_OF_YEAR : YEAR_OPTION_MONTHS)); //show dayInYear if either field is defined, or if monthInYear is not defined (covers both initial state and once defined)
 //        yearlyChoice_DayMonths_Combo.setSelectedValue(((repeatRuleEdited.getDayInYear() > 0) ? YEAR_OPTION_DAY_OF_YEAR : YEAR_OPTION_MONTHS)); //show dayInYear if either field is defined, or if monthInYear is not defined (covers both initial state and once defined)
-        yearlyChoice_DayMonths_Combo.select(((repeatRuleEdited.getDayInYear() > 0) ? YEAR_OPTION_DAY_OF_YEAR : YEAR_OPTION_MONTHS)); //show dayInYear if either field is defined, or if monthInYear is not defined (covers both initial state and once defined)
+        yearlyChoice_DayMonths_Combo.selectValue(((repeatRuleEdited.getDayInYear() > 0) ? YEAR_OPTION_DAY_OF_YEAR : YEAR_OPTION_MONTHS)); //show dayInYear if either field is defined, or if monthInYear is not defined (covers both initial state and once defined)
 //        yearlyChoice_DayMonths_Combo.addSelectionListener(refreshSelectionListener);
         yearlyChoice_DayMonths_Combo.addActionListener(refreshActionListener);
         yearlyChoice_DayMonths_ComboCont = BoxLayout.encloseY(makeSpacerThin(), layoutN(RepeatRuleParseObject.REPEAT_RULE_YEARLY_TYPE, yearlyChoice_DayMonths_Combo,
@@ -787,7 +787,7 @@ public class ScreenRepeatRule extends MyForm {
                 new String[]{RepeatRuleParseObject.FOREVER, RepeatRuleParseObject.UNTIL, RepeatRuleParseObject.COUNT}, false);
 //        repeatHowLongChoiceCombo.setSelectedValue(myRepeatRule.useCount() ? 2 : (myRepeatRule.getEndDate() != Long.MAX_VALUE ? 1 : 0));
 //        repeatHowLong_ForeverUntilNumber_ChoiceCombo.setSelectedValue(repeatRuleEdited.useCount() ? REPEAT_HOW_LONG_OPTION_NUMBER
-        repeatHowLong_ForeverUntilNumber_ChoiceCombo.select(repeatRuleEdited.useCount() ? REPEAT_HOW_LONG_OPTION_NUMBER
+        repeatHowLong_ForeverUntilNumber_ChoiceCombo.selectValue(repeatRuleEdited.useCount() ? REPEAT_HOW_LONG_OPTION_NUMBER
                 : (repeatRuleEdited.getEndDate() != MyDate.MAX_DATE ? REPEAT_HOW_LONG_OPTION_UNTIL : REPEAT_HOW_LONG_OPTION_FOREVER));
 //        repeatHowLong_ForeverUntilNumber_ChoiceCombo.addSelectionListener(refreshSelectionListener);
 //        repeatHowLong_ForeverUntilNumber_ChoiceCombo.addActionListener(refreshActionListener);
@@ -889,7 +889,7 @@ public class ScreenRepeatRule extends MyForm {
         showHowMany_InstancesDaysAhead_ComboZZZ = new MyComponentGroup(new Object[]{SHOW_HOW_MANY_AHEAD_INSTANCES, SHOW_HOW_MANY_AHEAD_DAYS_AHEAD}, new String[]{"instances", "days ahead"});
 //        showHowMany_InstancesDaysAhead_Combo.setSelectedValue(myRepeatRule.getNumberFutureRepeatsToGenerateAhead() != 0 ? SHOW_HOW_MANY_AHEAD_INSTANCES : SHOW_HOW_MANY_AHEAD_DAYS_AHEAD);
 //        showHowMany_InstancesDaysAhead_ComboZZZ.setSelectedValue(repeatRuleEdited.useNumberFutureRepeatsToGenerateAhead() ? SHOW_HOW_MANY_AHEAD_INSTANCES : SHOW_HOW_MANY_AHEAD_DAYS_AHEAD);
-        showHowMany_InstancesDaysAhead_ComboZZZ.select(repeatRuleEdited.useNumberFutureRepeatsToGenerateAhead() ? SHOW_HOW_MANY_AHEAD_INSTANCES : SHOW_HOW_MANY_AHEAD_DAYS_AHEAD);
+        showHowMany_InstancesDaysAhead_ComboZZZ.selectValue(repeatRuleEdited.useNumberFutureRepeatsToGenerateAhead() ? SHOW_HOW_MANY_AHEAD_INSTANCES : SHOW_HOW_MANY_AHEAD_DAYS_AHEAD);
 //        showHowMany_InstancesDaysAhead_ComboZZZ.addSelectionListener(refreshSelectionListener);
         showHowMany_InstancesDaysAhead_ComboZZZ.addActionListener(refreshActionListener);
 //            showHowManyContainer = createLabelAndFieldContainer("Show how many", showHowManyCombo);

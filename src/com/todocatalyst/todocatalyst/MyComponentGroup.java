@@ -98,32 +98,32 @@ class MyComponentGroup extends ComponentGroup {
 
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout) {
         this(valueArray, names, unselectAllowed, verticalLayout);
-        select(initiallySelected);
+        selectValues(initiallySelected);
     }
 
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed) {
         this(valueArray, names, unselectAllowed, verticalLayout, multipleSelectionAllowed, false);
-        select(initiallySelected);
+        selectValues(initiallySelected);
     }
 
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout,
             ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
         this(valueArray, names, unselectAllowed, verticalLayout, true, false);
-        select(initiallySelected);
+        selectValues(initiallySelected);
         setupLayout(values.length, compGroupRows, nbButtonsInEachRow);
     }
 
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed,
             ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
         this(valueArray, names, unselectAllowed, verticalLayout, multipleSelectionAllowed, false);
-        select(initiallySelected);
+        selectValues(initiallySelected);
         setupLayout(values.length, compGroupRows, nbButtonsInEachRow);
     }
 
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout,
             ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow, boolean sameWidth) {
         this(valueArray, names, unselectAllowed, verticalLayout, true, false);
-        select(initiallySelected);
+        selectValues(initiallySelected);
         setupLayout(values.length, compGroupRows, nbButtonsInEachRow, sameWidth);
     }
 //    MyComponentGroup( Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout,
@@ -458,7 +458,7 @@ class MyComponentGroup extends ComponentGroup {
      *
      * @param selectedString
      */
-    public void select(String selectedString) {
+    public void selectName(String selectedString) {
         if (selectedString == null || selectedString.isEmpty()) {
             return;
         }
@@ -485,7 +485,7 @@ class MyComponentGroup extends ComponentGroup {
      * @param value the value to select, if not matching any defined values, no
      * effect unselected
      */
-    public void select(Object value) {
+    public void selectValue(Object value) {
         if (value == null) {
             return;
         }
@@ -504,13 +504,13 @@ class MyComponentGroup extends ComponentGroup {
         selectIndex(getIndexOfValue(value));
     }
 
-    public void select(Vector initiallySelectedValues) {
-        setSelected(initiallySelectedValues);
+    public void selectValuesXXX(Vector initiallySelectedValues) {
+        selectValues(initiallySelectedValues);
     }
 
-    public void setSelected(Vector initiallySelectedValues) {
+    public void selectValues(Vector initiallySelectedValues) {
         for (Object o : initiallySelectedValues) {
-            select(o);
+            selectValue(o);
         }
     }
 

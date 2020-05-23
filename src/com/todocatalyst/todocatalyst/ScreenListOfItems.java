@@ -4,6 +4,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.ui.SwipeableContainer;
 import com.codename1.components.FloatingActionButton;
 import com.codename1.components.SpanLabel;
 import com.codename1.components.ToastBar;
@@ -514,7 +515,7 @@ public class ScreenListOfItems extends MyForm {
         searchListener = makeSearchFunctionUpperLowerStickyHeaders(itemListOrg);
 //        getToolbar().addSearchCommand(searchListener, MyPrefs.defaultIconSizeInMM.getFloat());
 //        mySearchBar = new MySearchBar(getToolbar(), searchListener);
-        mySearchCommand = new MySearchCommand(getContentPane(),  searchListener);
+        mySearchCommand = new MySearchCommand(getContentPane(), searchListener);
         addCommandsToToolbar(getToolbar());
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                removeShowListener(startAsyncListener);
@@ -733,9 +734,8 @@ public class ScreenListOfItems extends MyForm {
             fab.bindFabToContainer(getContentPane());
         }
         super.addCommandsToToolbar(toolbar);
-        
+
         toolbar.addCommandToRightBar(mySearchCommand);
-        
 
         //BACK
 //        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(),Toolbar.BackCommandPolicy.AS_ARROW,MyPrefs.defaultIconSizeInMM.getFloat());
@@ -1515,44 +1515,45 @@ public class ScreenListOfItems extends MyForm {
                 }
 
                 //SELECTION ON/OFF
-//                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
-                toolbar.addCommandToOverflowMenu(CommandTracked.create("Select", Icons.iconSelected, (e) -> {
-                    if (!isSelectionMode()) {
+                if (false) { //temporarily disabled until next release
+                //                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
+                    toolbar.addCommandToOverflowMenu(CommandTracked.create("Select", Icons.iconSelected, (e) -> {
+                        if (!isSelectionMode()) {
 //                    isSelectionMode() = true;
 //                    selectedObjects = new HashSet(); //TODO keep a previous selection?
-                        setSelectionMode(true, itemListOrg.getList()); //getList() since we only want to select the visible items
+                            setSelectionMode(true, itemListOrg.getList()); //getList() since we only want to select the visible items
 //                            MyReplayCommand.this.setCommandName("Selection mode OFF");
-                        Object source = e.getSource();
-                        if (source instanceof Command) {
-                            ((Command) source).setCommandName("Select");
-                        } else if (source instanceof Button) {
-                            ((Button) source).setText("Exit Select");
-                        }
-                        //TODO!! put the selectionCommands into a separate menu (like overflow menu, with same icon as the selection symbol?)
-                        toolbar.addCommandToOverflowMenu(cmdSetAnything);
-                        toolbar.addCommandToOverflowMenu(cmdMoveSelectedToTopOfList);
-                        toolbar.addCommandToOverflowMenu(cmdSelectAll);
-                        toolbar.addCommandToOverflowMenu(cmdUnselectAll);
-                        toolbar.addCommandToOverflowMenu(cmdInvertSelection);
-                        toolbar.addCommandToOverflowMenu(cmdDeleteSelected);
+                            Object source = e.getSource();
+                            if (source instanceof Command) {
+                                ((Command) source).setCommandName("Select");
+                            } else if (source instanceof Button) {
+                                ((Button) source).setText("Exit Select");
+                            }
+                            //TODO!! put the selectionCommands into a separate menu (like overflow menu, with same icon as the selection symbol?)
+                            toolbar.addCommandToOverflowMenu(cmdSetAnything);
+                            toolbar.addCommandToOverflowMenu(cmdMoveSelectedToTopOfList);
+                            toolbar.addCommandToOverflowMenu(cmdSelectAll);
+                            toolbar.addCommandToOverflowMenu(cmdUnselectAll);
+                            toolbar.addCommandToOverflowMenu(cmdInvertSelection);
+                            toolbar.addCommandToOverflowMenu(cmdDeleteSelected);
 //                            ScreenListOfItems.this.refreshAfterEdit(); //TODO!!!! keep same position, OR: simply make existing containers expand by traversing the list and adding the selectionButton and removing afterwards (faster!)
-                        refreshAfterEdit(); //TODO!!!! keep same position, OR: simply make existing containers expand by traversing the list and adding the selectionButton and removing afterwards (faster!)
+                            refreshAfterEdit(); //TODO!!!! keep same position, OR: simply make existing containers expand by traversing the list and adding the selectionButton and removing afterwards (faster!)
 //                        Component componentForm = getComponentForm();
 //                        Component parent = getParent();
 //                        if (parent != null) {
 //                            Component componentForm2 = getParent().getComponentForm();
 //                        }
-                    } else {
+                        } else {
 //                    isSelectionMode() = false;
 //                    selectedObjects = null;
-                        setSelectionMode(false, null);
-                        Object source = e.getSource();
-                        if (source instanceof Command) {
-                            ((Command) source).setCommandName("Select");
-                        } else if (source instanceof Button) {
-                            ((Button) source).setText("Exit Select");
-                        }
-                        //TODO!!!! use Toolbar.removeOverflowCommand(Command) once added (see http://stackoverflow.com/questions/39200432/how-to-remove-commands-added-to-overflow-menu)
+                            setSelectionMode(false, null);
+                            Object source = e.getSource();
+                            if (source instanceof Command) {
+                                ((Command) source).setCommandName("Select");
+                            } else if (source instanceof Button) {
+                                ((Button) source).setText("Exit Select");
+                            }
+                            //TODO!!!! use Toolbar.removeOverflowCommand(Command) once added (see http://stackoverflow.com/questions/39200432/how-to-remove-commands-added-to-overflow-menu)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    ToolbarSideMenu  menuBar = (ToolbarSideMenu )getToolbar().getMenuBar();
 //                    menuBar.removeOverflowCommand(cmdSetAnything);
@@ -1566,19 +1567,20 @@ public class ScreenListOfItems extends MyForm {
 //                    ScreenListOfItems.this.removeCommand(cmdDeleteSelected);
 //</editor-fold>
 //                            Toolbar toolbar = myForm.getToolbar();
-                        toolbar.removeOverflowCommand(cmdSetAnything);
-                        toolbar.removeOverflowCommand(cmdMoveSelectedToTopOfList);
-                        toolbar.removeOverflowCommand(cmdSelectAll);
-                        toolbar.removeOverflowCommand(cmdUnselectAll);
-                        toolbar.removeOverflowCommand(cmdInvertSelection);
-                        toolbar.removeOverflowCommand(cmdDeleteSelected);
-                        if (false) {
-                            ScreenListOfItems.this.revalidate(); //needed to make the commands actually disappear??
-                        }//                            ScreenListOfItems.this.refreshAfterEdit();
-                        refreshAfterEdit();
-                    }
+                            toolbar.removeOverflowCommand(cmdSetAnything);
+                            toolbar.removeOverflowCommand(cmdMoveSelectedToTopOfList);
+                            toolbar.removeOverflowCommand(cmdSelectAll);
+                            toolbar.removeOverflowCommand(cmdUnselectAll);
+                            toolbar.removeOverflowCommand(cmdInvertSelection);
+                            toolbar.removeOverflowCommand(cmdDeleteSelected);
+                            if (false) {
+                                ScreenListOfItems.this.revalidate(); //needed to make the commands actually disappear??
+                            }//                            ScreenListOfItems.this.refreshAfterEdit();
+                            refreshAfterEdit();
+                        }
 //                }, true));
-                }, "SelectionOnOff"));
+                    }, "SelectionOnOff"));
+                }
             }
 
             if (!optionTemplateEditMode) {
@@ -1619,26 +1621,36 @@ public class ScreenListOfItems extends MyForm {
                 }, "Cancel"));
             }
 
+            }
             if (Config.TEST && itemListOrg instanceof ItemList) {
                 Command showIssuesInList = new CommandTracked("Show list issues", Icons.iconRepair) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, false, true);
+                        if (itemListOrg instanceof Category) {
+                            DAO.getInstance().cleanUpCategory((Category) itemListOrg, false);
+                        } else {
+                            DAO.getInstance().cleanUpItemList((ItemList) itemListOrg, itemListOrg.getOwner().equals(TemplateList.getInstance()), false);
+                        }
                     }
                 };
                 toolbar.addCommandToOverflowMenu(showIssuesInList);
                 Command cleanUpList = new CommandTracked("Repair list issues", Icons.iconRepair) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, true, true);
-//                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg);
-                        DAO.getInstance().saveNew((ParseObject) itemListOrg);
-                        DAO.getInstance().saveNewExecuteUpdate();
+//                        DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, true, true);
+////                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg);
+//                        DAO.getInstance().saveNew((ParseObject) itemListOrg);
+//                        DAO.getInstance().saveNewExecuteUpdate();
+                        if (itemListOrg instanceof Category) {
+                            DAO.getInstance().cleanUpCategory((Category) itemListOrg, true);
+                        } else {
+                            DAO.getInstance().cleanUpItemList((ItemList) itemListOrg, itemListOrg.getOwner().equals(TemplateList.getInstance()), true);
+                        }
                         refreshAfterEdit();
                     }
                 };
                 toolbar.addCommandToOverflowMenu(cleanUpList);
-            }
+        
         }
     }
 
@@ -3060,7 +3072,7 @@ public class ScreenListOfItems extends MyForm {
             if (Config.TEST) {
                 effortEstimateLabel.setName("EffortEstimate");
             }
-            if (showInDetails) {
+            if (!isDone && showInDetails) {
                 southDetailsContainer.addComponent(effortEstimateLabel);
             }
         }
@@ -3133,6 +3145,9 @@ public class ScreenListOfItems extends MyForm {
 //        if (effortCont != null) westCont.add(effortCont);
         if (!isDone && remainingEffortLabel != null) {
             westCont.add(remainingEffortLabel);
+        }
+        if (isDone && effortEstimateLabel != null) {
+            westCont.add(effortEstimateLabel);
         }
         if (isDone && actualEffortLabel != null) {
             westCont.add(actualEffortLabel);

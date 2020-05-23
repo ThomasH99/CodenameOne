@@ -412,7 +412,7 @@ public class ScreenSettingsCommon extends MyForm {
                     }
                 }
             }, unselectAllowed, verticalLayout),
-                    prefEntry.getHelpText()));
+                    prefEntry.getHelpText(), true));
 
         }
     }

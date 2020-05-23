@@ -103,16 +103,22 @@ public class MyForm extends Form {
 //    private InsertNewElementFunc pinchInsertContainer;
     private PinchInsertContainer pinchInsertContainer;
 //    private BooleanFunction testIfEdit;
-    private String uniqueFormId = null; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
-    private TextArea startEditingAsyncTextArea = null;
-    protected ScreenType screenType = null;
+    private String uniqueFormId ; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
+    private TextArea startEditingAsyncTextArea ;
+    protected ScreenType screenType ;
     
-    private String showIfEmptyList = null; //holds Container with actual content, typically MyTree2
+    private String showIfEmptyList; //holds Container with actual content, typically MyTree2
 
     SwipeableContainer openSwipeContainer = null; //stores the currently open SwipeContainer for this screen
     public final static int ANIMATION_TIME_DEFAULT = 300; //in milliseconds
     final static int ANIMATION_TIME_FAST = 150; //in milliseconds
-    private Container smallTimer = null;
+    private Container smallTimer ;
+    
+    private Date editSessionStartTime; 
+    
+    Date getEditSessionStartTime() {
+        return editSessionStartTime;
+    }
     
     protected void expandedObjectsInit(String objIdOrOtherUniqueName) {
         expandedObjects = new ExpandedObjects(getUniqueFormId(), objIdOrOtherUniqueName);
@@ -376,6 +382,7 @@ public class MyForm extends Form {
 //    MyForm(String title, UpdateField updateActionOnDone) { //throws ParseException, IOException {
 //        super(title);
         super();
+        editSessionStartTime=new MyDate(MyDate.currentTimeMillis()); //always track when an editing session was started
         ReplayLog.getInstance().clearCommandsFromPreviousScreen(); //always clear the ReplayCommands from the previous screen!
         setTitle(title); //must do here to use overridden version of setTitle()
         this.previousForm = previousForm;
@@ -1858,9 +1865,9 @@ public class MyForm extends Form {
                 boolean searchOnLowerCaseOnly;
                 Component lastLabel = null;
                 boolean hide;
+                searchOnLowerCaseOnly = text.equals(text.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
                 for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
                     //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                    searchOnLowerCaseOnly = text.equals(text.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
 
                     Component comp = compList.getComponentAt(i);
                     if (firstVisibleComp == null) {
