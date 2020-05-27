@@ -5936,7 +5936,10 @@ public class RepeatRuleParseObject
     }
 
     public String toStringWObjId() {
-        return "RepRu=[" + (getObjectIdP() == null ? "no ObjId" : getObjectIdP()) + "]" + getText()+"; done="+getListOfDoneInstances().size()+", undone="+getListOfUndoneInstances();
+        return "RepRu=[" + (getObjectIdP() == null ? "no ObjId" : getObjectIdP()) + "]" + getText()
+                +"; DONE("+getListOfDoneInstances().size()+")= ["+getListOfDoneInstances()+"]"
+                +"; UNDONE("+getListOfDoneInstances().size()+")= ["+getListOfUndoneInstances()+"]"
+                ;
     }
 
     public void copyMeInto(RepeatRuleParseObject destiny) {

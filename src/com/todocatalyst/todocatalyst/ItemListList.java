@@ -39,7 +39,7 @@ public class ItemListList extends ItemList {
     }
     
     public String toString(){
-        return "ItemListList"+super.toString();
+        return "ItemListList:"+super.toString();
     }
 
     Object findItemListWithName(String itemListName) {

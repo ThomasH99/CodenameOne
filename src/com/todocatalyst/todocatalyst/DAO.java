@@ -701,7 +701,7 @@ public class DAO {
                 parseObject.fetchIfNeeded();
                 if (Config.TEST) {
                     if (parseObject instanceof ItemAndListCommonInterface) {
-                        ASSERT.that(!((ItemAndListCommonInterface) parseObject).isSoftDeleted(), () -> "DAO.fetch of deleted object:" + parseObject);
+                        ASSERT.that(!((ItemAndListCommonInterface) parseObject).isSoftDeleted(), () -> "DAO.fetch from Parse of soft-deleted object:" + parseObject);
                     } else if (parseObject instanceof FilterSortDef) {
                         //                        assert !((FilterSortDef) parseObject).isDeleted();
                         ASSERT.that(!((FilterSortDef) parseObject).isDeleted(), () -> "DAO.fetch of deleted object:" + parseObject);
@@ -1041,7 +1041,7 @@ public class DAO {
         return allTodayElements;
     }
 
-    public ItemList getToday(ItemList existingListToUpdate) {
+    public ItemList getTodayXXX(ItemList existingListToUpdate) {
 //        ParseQuery<Item> query = getDueAndOrWaitingTodayQuery(includeWaiting, includeStartingToday);
 
         List<ParseQuery> queries = new ArrayList<>();
@@ -1184,7 +1184,7 @@ public class DAO {
         return null;//new ItemList();
     }
 
-    public ItemList getOverdue(ItemList existingListToUpdate) {
+    public ItemList getOverdueXXX(ItemList existingListToUpdate) {
         Date startOfToday = MyDate.getStartOfToday();
         Date startOfOverdueInterval = new Date(startOfToday.getTime() - MyPrefs.overdueLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
 
@@ -1270,7 +1270,8 @@ public class DAO {
 //            return todayList.size();
 //        }
 //</editor-fold>
-        return getTodayLeafTaskList(getToday(null)).size();
+//        return getTodayLeafTaskList(getToday(null)).size();
+        return getTodayLeafTaskList(getToday()).size();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1309,7 +1310,7 @@ public class DAO {
         return null;
     }
 
-    public ItemList getCalendar(ItemList existingListToUpdate) {
+    public ItemList getCalendarXXX(ItemList existingListToUpdate) {
 //        Calendar cal = Calendar.getInstance();
 //        cal.set(Calendar.HOUR_OF_DAY, 0);
 //        cal.set(Calendar.MINUTE, 0);
@@ -3059,7 +3060,7 @@ public class DAO {
         return null;
     }
 
-    public ItemList getCompletionLog(ItemList existingListToUpdate) {
+    public ItemList XXX(ItemList existingListToUpdate) {
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         setupItemQueryNotTemplateNotDeletedLimit10000(query, false);
 
@@ -3163,7 +3164,7 @@ public class DAO {
         return null;
     }
 
-    public ItemList getTouchedLog(ItemList existingListToUpdate) {
+    public ItemList getTouchedLogXXX(ItemList existingListToUpdate) {
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
 //        query2.include(Item.PARSE_TEXT);
 //        query2.include(Item.PARSE_SUBTASKS);
@@ -3246,7 +3247,7 @@ public class DAO {
         return null;
     }
 
-    public ItemList getCreationLog(ItemList existingListToUpdate) {
+    public ItemList getCreationLogXXX(ItemList existingListToUpdate) {
         //TODO!!! implement getting in batches of less than 1000
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
 //        query2.include(Item.PARSE_TEXT);
@@ -3862,7 +3863,7 @@ public class DAO {
         if (updateCache) {
             if (batchType != EBatchOpType.DELETE) {
                 for (ParseObject o : listCopyOfParseObjectsToBatchSave) {
-                    cachePut(o);
+                    cachePut(o); //ParseObject p;p.delete();
                 }
             }
         }
@@ -4126,7 +4127,7 @@ public class DAO {
 //    }
     public boolean deleteAll(List<ParseObject> parseObjects, boolean hardDelete, boolean triggerUpdate) {
         for (ParseObject p : parseObjects) {
-            delete( p, hardDelete, false); //do triggerUpdate below
+            delete(p, hardDelete, false); //do triggerUpdate below
         }
         if (triggerUpdate) {
             triggerParseUpdate();
@@ -7699,7 +7700,7 @@ public class DAO {
         }
         return categories;
     }
-    
+
     public List<Item> convItemObjectIdsListToItemList(List<String> itemIdList) {
         List<Item> items = new ArrayList();
         if (itemIdList != null) {
@@ -8440,10 +8441,7 @@ public class DAO {
         Date firstDateXXX = new MyDate(MyDate.MIN_DATE);
         Date lastDateXXX = new MyDate(MyDate.MAX_DATE);
 
-        Log.p("Caching Categories");
-        somethingWasLoaded = cacheAllCategoriesFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
-
-        if (false) {
+        if (true) { //for now MUST load before Categories to ensure that cache points to correct instance in memory of CategoryList
             Log.p("Caching CategoryList");
 //        somethingWasLoaded = cacheCategoryList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Categories
 //        CategoryList.getInstance().reloadFromParse();
@@ -8453,6 +8451,9 @@ public class DAO {
 //            cachePut(CategoryList.getInstance());
         }
 
+        Log.p("Caching Categories");
+        somethingWasLoaded = cacheAllCategoriesFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
+
         Log.p("Caching Filters");
         somethingWasLoaded = cacheAllFilterSortDefsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
 //        getAllCategoriesFromParse();
@@ -8460,13 +8461,7 @@ public class DAO {
 //        getAllItemListsFromParse();
 //        getAllItemListsFromParse(reloadUpdateAfterThis, now);
 
-        Log.p("Caching Items");
-        somethingWasLoaded = cacheAllItemsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
-
-        Log.p("Caching ItemLists");
-        somethingWasLoaded = cacheAllItemListsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
-
-        if (false) {
+        if (true) { //for now MUST load before Categories to ensure that cache points to correct instance in memory of CategoryList
             Log.p("Caching ItemListList");
 //        somethingWasLoaded = cacheItemListList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of ItemLists
 //        somethingWasLoaded = ItemListList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
@@ -8474,19 +8469,25 @@ public class DAO {
 //            cachePut(ItemListList.getInstance());
         }
 
+        Log.p("Caching ItemLists");
+        somethingWasLoaded = cacheAllItemListsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
+
         Log.p("Caching RepeatRules");
         somethingWasLoaded = cacheAllRepeatRulesFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
 //        getCategoryList(); //will cache the list of Categories
 //        getItemListList(); //will cache the list of ItemLists
 //        getTemplateList(); //will cache the list of Templates
 
-        if (false) {
+        if (true) { //for now MUST load before Categories to ensure that cache points to correct instance in memory of CategoryList
             Log.p("Caching TemplateList");
 //        somethingWasLoaded = cacheTemplateList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Templates
 //        somethingWasLoaded = TemplateList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
             TemplateList.getInstance();
 //            cachePut(TemplateList.getInstance());
         }
+
+        Log.p("Caching Items");
+        somethingWasLoaded = cacheAllItemsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
 
         Log.p("Caching WorkSlots");
         somethingWasLoaded = cacheAllWorkSlotsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
@@ -8506,11 +8507,12 @@ public class DAO {
 
     void cleanUpItemList(ItemList itemList, boolean makeTemplate, boolean executeCleanup) {
 //        return new CleanUpDataInconsistencies(this).cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, false);
-         CleanUpDataInconsistencies.getInstance().cleanUpItemList(itemList, makeTemplate, executeCleanup);
+        CleanUpDataInconsistencies.getInstance().cleanUpItemList(itemList, makeTemplate, executeCleanup);
     }
+
     void cleanUpCategory(Category category, boolean executeCleanup) {
 //        return new CleanUpDataInconsistencies(this).cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, false);
-         CleanUpDataInconsistencies.getInstance().cleanUpCategory(category, executeCleanup);
+        CleanUpDataInconsistencies.getInstance().cleanUpCategory(category, executeCleanup);
     }
 
     public void cleanUpTemplateListInParse(boolean executeCleanup) {
@@ -8522,25 +8524,28 @@ public class DAO {
 
     void cleanUpWorkSlots(boolean executeCleanup) {
 //        new CleanUpDataInconsistencies(this).cleanUpWorkSlots(executeCleanup);
-        CleanUpDataInconsistencies.getInstance().cleanUpWorkSlots(executeCleanup);
+        CleanUpDataInconsistencies.getInstance().cleanUpAllWorkSlotsFromParse(executeCleanup);
     }
 
 //    void cleanUpItemsWithNoValidOwner(boolean executeCleanup) {
 ////        new CleanUpDataInconsistencies(this).cleanUpItemsWithNoValidOwner(executeCleanup);
 //        CleanUpDataInconsistencies.getInstance().cleanUpItemsWithNoValidOwner(executeCleanup);
 //    }
-
     void cleanUpItemListOrCategory(ItemList itemListOrCategory, boolean executeCleanup, boolean cleanupItems) {
 //        return new CleanUpDataInconsistencies(this).cleanUpItemListOrCategory(itemListOrCategory, executeCleanup, cleanupItems);
-if(itemListOrCategory instanceof Category)
-         CleanUpDataInconsistencies.getInstance().cleanUpCategory((Category)itemListOrCategory, executeCleanup);
-else  CleanUpDataInconsistencies.getInstance().cleanUpItemList(itemListOrCategory, executeCleanup, cleanupItems);
+        if (itemListOrCategory instanceof Category) {
+            CleanUpDataInconsistencies.getInstance().cleanUpCategory((Category) itemListOrCategory, executeCleanup);
+        } else {
+            CleanUpDataInconsistencies.getInstance().cleanUpItemList(itemListOrCategory, executeCleanup, cleanupItems);
+        }
     }
 
     static void emailLog(ActionEvent evt) {
         p("Exception in " + Display.getInstance().getProperty("AppName", "app") + " version " + Display.getInstance().getProperty("AppVersion", "Unknown"));
         p("OS " + Display.getInstance().getPlatformName());
-        p("Error " + evt.getSource());
+        if (evt != null) {
+            p("Error " + evt.getSource());
+        }
         if (Display.getInstance().getCurrent() != null) {
             p("Current Form " + Display.getInstance().getCurrent().getName());
         } else {

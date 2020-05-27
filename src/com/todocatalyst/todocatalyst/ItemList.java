@@ -1516,7 +1516,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return toString(ToStringFormat.TOSTRING_COMMA_SEPARATED_LIST);
 //        return getText().length() != 0 ? getText() : getObjectIdP();
 //        return getText() + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "") + showSubtasks ? ((getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "")  : "");
-        return getText() + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "")
+        return getText() +(isSystemList()?"[SYS:"+getSystemName()+"]":"")+ " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "")
                 + (showSubtasks ? (getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "") : "");
     }
 

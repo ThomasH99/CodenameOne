@@ -43,11 +43,11 @@ import java.util.Vector;
  * @author Shai Almog
  */
 public class MyCacheMapHash {
-    
+
     private int cacheSize = 10;
     private Hashtable memoryCache = new Hashtable();
     private Hashtable weakCache = new Hashtable();
-    
+
     private int storageCacheSize = 0;
 //    private Vector storageCacheContentVec;
     private Hashtable storageCacheContentVec;
@@ -148,7 +148,10 @@ public class MyCacheMapHash {
 //            Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value); //MUST always save to persist changes on device between app activations
 //</editor-fold>
         if (Config.TEST) {
-            ASSERT.that(key != null, ()->"key==null for value=" + value);
+            ASSERT.that(key != null, () -> "key==null for value=" + value);
+            Object oldVal = memoryCache.get(key);
+            ASSERT.that(oldVal == null || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key 
+                    + ", OLDVAL= \"" + oldVal + "\", NEWVAL= \"" + value + "\"");
         }
         Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
         Object oldVal = memoryCache.put(key, value);
@@ -252,6 +255,10 @@ public class MyCacheMapHash {
 //        }
 //</editor-fold>
 //        synchronized (LOCK) {
+        if (Config.TEST) {
+            Object oldVal = memoryCache.get(key);
+            ASSERT.that(oldVal == null, () -> "Cache: deleting element NOT in cache. Key= \"" + key + "\"");
+        }
         memoryCache.remove(key);
 //            Storage.getInstance().deleteStorageFile(CACHE_ID + cachePrefix + key.toString()); //always remove, even if not in memoryCache
         Storage.getInstance().deleteStorageFile(cacheId + key.toString()); //always remove, even if not in memoryCache
@@ -285,7 +292,7 @@ public class MyCacheMapHash {
         memoryCache.clear();
 //        weakCache.clear();
     }
-    
+
     public void clearStorageCache(List<String> filenames, List<String> prefixes) {
         String[] allFilenames = Storage.getInstance().listEntries();
         StringBuilder deletedFilenames = new StringBuilder();
@@ -303,7 +310,7 @@ public class MyCacheMapHash {
         }
         Log.p("Deleted cache files: " + deletedFilenames.toString());
     }
-    
+
     public void clearStorageCache(List<String> filenames) {
         clearStorageCache(filenames, Arrays.asList(cacheId));
     }
@@ -311,7 +318,7 @@ public class MyCacheMapHash {
     public void clearStorageCache() {
         clearStorageCache(new ArrayList(), Arrays.asList(cacheId));
     }
-    
+
     synchronized public void clearAllCache(String[] reservedNames) {
         clearMemoryCache();
 //        if (reservedNames != null) {
@@ -319,7 +326,7 @@ public class MyCacheMapHash {
 //                delete(name);
 //            }
 //        }
-        clearStorageCache(reservedNames==null?new ArrayList(): Arrays.asList(reservedNames));
+        clearStorageCache(reservedNames == null ? new ArrayList() : Arrays.asList(reservedNames));
 //        clearStorageCache();
     }
 
@@ -327,9 +334,10 @@ public class MyCacheMapHash {
      * Clears the caches for this cache object
      */
     public void clearAllCache() {
+        clearMemoryCache();
         clearAllCache(null);
     }
-    
+
     private void placeInStorageCache(Object key, long lastAccessed, Object value) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (storageCacheSize < 1) {

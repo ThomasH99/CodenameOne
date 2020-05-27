@@ -9364,7 +9364,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public boolean isTemplate() {
         Boolean template = getBoolean(PARSE_TEMPLATE);
 //        return (template == null) ? false : template;
-        return (template == null);
+        return (template != null);
 //        return (getOwnerItem()!=null && getOwnerItem().isTemplate()) || (getOwnerTemplateList()!=null);
     }
 

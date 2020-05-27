@@ -876,9 +876,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     @Override
     public String toString() {
 //        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
-        return (getRepeatRuleN() != null ? "*" : "") + "WS:" + MyDate.formatDateTimeNew(getStartTimeD()) + " D:" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS, true)
+        return (getRepeatRuleN() != null ? "*" : "") 
+                + "WS:" 
+                + (getObjectIdP() == null ? "[NoObjId]" : ("[" + getObjectIdP() + "]"))
+                + MyDate.formatDateTimeNew(getStartTimeD()) + "/" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS, true)
                 //                + " " + getText() + "[" + getObjectIdP() + "]" + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
-                + (getObjectIdP() == null ? " [NoObjId]" : (" [" + getObjectIdP() + "]"))
                 + (" Owner:" + (getOwner() != null ? (getOwner().getText() + "/" + getOwner().getObjectIdP()) : "None")
                 + (getRepeatRuleN() != null ? "RepRul[" + getRepeatRuleN().getObjectIdP() + "]" : ""));
     }
@@ -2265,6 +2267,16 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             }));
         }
 //        return sortedWorkslotList;
+    }
+
+    @Override
+    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner) {
+            throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean addToList(int index, ItemAndListCommonInterface subtask, boolean addAsOwner) {
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
 }

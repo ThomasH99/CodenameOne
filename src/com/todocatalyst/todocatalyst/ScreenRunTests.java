@@ -110,7 +110,8 @@ public class ScreenRunTests extends MyForm {
         content.add(new Button(Command.create("Show all data inconsistencies", null, (e) -> {
             if (Dialog.show("INFO", "This will report all data inconsistencies and send them in a log file", "OK", "Cancel")) {
                 DAO.getInstance().cleanUpAllBadObjectReferences(false);
-                Log.sendLog();
+//                Log.sendLog();
+                DAO.emailLog(null);
             }
         })));
 
@@ -118,7 +119,8 @@ public class ScreenRunTests extends MyForm {
                 new Button(Command.create("Clean up all data inconsistencies", null, (e) -> {
                     if (Dialog.show("WARNING", "This will log AND repair all data inconsistencies", "OK", "Cancel")) {
                         DAO.getInstance().cleanUpAllBadObjectReferences(true);
-                        Log.sendLog();
+//                        Log.sendLog();
+                        DAO.emailLog(null);
                     }
                 })));
         
