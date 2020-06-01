@@ -229,7 +229,21 @@ Label {
     /*border: 1pt solid gray;*/
     padding: 1mm;
     margin: 1mm;
-    text-align: left;
+    /*text-align: left;*/
+
+    /*font-family :  "native:MainLight";*/
+
+    /*text-align: left; /**/
+    /* font-size: 80%;*/
+    color: black;
+    /*background-color: #3399ff;*/
+    /*padding:0mm 3mm 0 0mm; top+bottom right+left*/
+    /*    padding-top: 1mm; 
+        padding-bottom: 1mm; */
+    /*padding-left: 3mm; top+bottom right+left*/
+/*    margin:0mm 0mm 0mm 0mm;
+    padding: 0mm 0mm 0mm 0mm;*/
+
     /*color: black;*/
     /*background-color: transparent; /**/
 }
@@ -253,6 +267,7 @@ ExpandableContainer{ /*used eg to show past/future repeat instances in ScreenRep
 }
 
 Button {
+     cn1-derive: Default;
     /*border: 1pt solid gray;*/
     text-align: center;
     color: #007AFF; /*dodgerblue;*/
@@ -627,7 +642,8 @@ ScreenItemTabsContainer {
 }
 ScreenItemFieldLabel {
     /*cn1-derive: LabelField;*/
-    cn1-derive: Default;
+    /*cn1-derive: Default;*/
+    cn1-derive: Label;
     font-family :  "native:MainLight";
 
     text-align: left; /**/
@@ -759,7 +775,7 @@ ScreenItemCommentDateStamp {
     /*  border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     /*color: black;*/
     /*    font-size: 100%;*/
-    padding: 0.5mm 1mm 0mm 0mm;
+    padding: 0.5mm 0mm 0mm 0.5mm;
     margin: 0 0;
     /*color: blue;*/
     /*background: green;*/
@@ -886,13 +902,17 @@ BigTimerEffortValues {
     margin-bottom: 2mm;
 }
 BigTimerEffort {
-    cn1-derive: BigTimerEffortValues;
+    cn1-derive: Button;
+    margin-bottom: 2mm;
 }
 BigTimerEstimate {
-    cn1-derive: BigTimerEffortValues;
+    cn1-derive: Button;
+    margin-bottom: 2mm;
 }
 BigTimerTotalActual {
-    cn1-derive: BigTimerEffortValues;
+    cn1-derive: Label;
+    text-align: center;
+    margin-bottom: 2mm;
 }
 
 BigTimerTimer {
@@ -902,9 +922,9 @@ BigTimerTimer {
     /*font-family :  "native:MainBold";*/
     /*font-family :  "largeBoldMonospaceFont";*/
     /*https://stackoverflow.com/questions/60801160/how-to-select-a-native-monospace-font-in-theme-css/60931071#60931071*/
-    font-family :  monospace; /*should now be valid*/
+    font-family:  monospace; /*should now be valid*/
     /*font-size: 200%;*/
-    font-size: 200%;/**56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
+    font-size: 15mm; /*34pt; 200%;/**56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
     border: 1mm solid gray;
     background-color: blue;
     text-align: center;
@@ -1191,7 +1211,7 @@ ListOfItemsTextStarredInherited { /*style for Starred task text in lists*/
 ListOfItemsItemContent { /*style for task - CENTER - between status icon and edit task icon */
     cn1-derive: Container;
     margin: 0mm 0mm 1px 0mm;
-    padding: 1mm 0mm 1mm 0mm; /*top+bottom right+left*/
+    padding: 1mm 0mm 1.5mm 0mm; /*top+bottom right+left*/
     /*border-bottom: 2px solid lightgrey; /*4px solid blueviolet; /*lightgrey; */
     border-bottom: 1px solid darkgray; /*darkslategray/black: too dark, 4px solid blueviolet; /*lightgrey; */
 }
@@ -1245,7 +1265,7 @@ ListOfItemsCategories { /*style for task details labels */
     background:darkgray;
     /*color:darkgray;
     margin:0mm;*/
-    padding:0 1mm; /*top+bottom right+left
+    padding:0 1mm; /*top+bottom right+left*/
 }
 
 ItemDetailsLabel { /*style for task details labels */
@@ -1255,15 +1275,17 @@ ItemDetailsLabel { /*style for task details labels */
 ListOfItemsPrio {
     /*cn1-derive: ItemListSmall;/**/
     /*border: 1pt aquamarine cn1-round-border; /*cn1-pill-border;*/
-    border: cn1-round-border; /*cn1-pill-border;*/
+    /*border: cn1-round-border; cn1-pill-border;*/
+    border-radius: 1.5mm;
     /*border-radius: 0.5mm;/**/
     background: lightgray; /*gray;*/
     color: white;
     text-align: center;/**/
     /*padding: 2pt;/**/
     /*margin: 0pt 1pt; 2pt;/**/
-    margin: 0mm; /*2pt;/**/
+    /*margin: 0.1mm; 2pt;/**/
     margin-right: 1.25mm;
+    padding: 0 0.6mm 0 0.6mm;
     /*margin-right: 0mm;/**/
 }
 
@@ -1598,7 +1620,8 @@ StickyHeaderIconXXX {
 TreeContainer {
     /*wraps item in ScreenListOfItems*/
     cn1-derive: Container;
-    /*padding:0mm 0;*/
+    padding:0mm;
+    margin:0mm;
     /*margin-left: 1mm;/*/
     /*margin: 0mm 0;*/
     /*border-left: 1mm solid blueviolet; /* expanded line for subtasks!! */
@@ -1615,8 +1638,8 @@ TreeContainer {
 MyDragAndDropSwipeableContainer {
     /*cn1-derive: Label;*/
     cn1-derive: Container;
-    /*    padding:0;
-        margin: 0;*/
+    padding:0mm;
+    margin: 0mm;
     /*background: yellow; /*background for swipeable icons */
     /*border-left: 1mm solid blueviolet; 
     /*background-color: transparent;
@@ -1626,10 +1649,12 @@ MyDragAndDropSwipeableContainer {
 
 ExpandedList { /* the ScrollY container, CENTER, with all expanded subtasks - indents and add line on the left*/
     cn1-derive: Container;
-    padding-left:1mm;
+    /*padding-left:1mm;*/
+    padding:0mm 0mm 0mm 1mm;
     /*margin: 0 0 0 4mm;
     padding: 0 0 0 4mm; */
-    margin-left: 1mm; /*this indents the first indent-line*/
+    /*margin-left: 1mm; this indents the first indent-line*/
+    margin: 0 0 0 1mm; /*this indents the first indent-line*/
     /*background: lightgrey; /*space btw indent-line and itemContainer */
     /*padding-left: 0.5mm; /*this is space between the indent-line and the ItemContainer*/
     border-left: 1mm solid lightgrey; /*greenyellow; /* expanded line for subtasks!! */
@@ -1646,7 +1671,8 @@ ItemContainer { /*inside swipeable*/
     cn1-derive: Container;
     /*wraps item in ScreenListOfItems*/
     /*cn1-derive: Label;*/
-    padding:0;
+    /*padding:0;*/
+    padding: 0mm 0 0mm 0;
     background-color: white; /**/
     /*background-color: transparent;
     /*border: 1px solid gray; /*cn1-pill-border */
@@ -1969,10 +1995,10 @@ ItemStatusPopupIcon {
 ToggleButton {
     cn1-derive: LabelValue; /*Button; RadioButton;*/
 
-    border-color: #007AFF; /*royalblue;*/
-    border-style: solid;
-    border-width: 0.2mm;/*0.3mm;*/
-
+    /*border-color: #007AFF; royalblue;*/
+    /*border-style: solid;*/
+    /*border-width: 1px; /*0.2mm;/*0.3mm;*/
+    border: 1px solid #007AFF;
     /* font-size: 100%;*/
     color: #007AFF; /*royalblue;*/
     /* background: white;
@@ -1988,12 +2014,14 @@ ToggleButton {
 }
 
 ToggleButton.pressed {
+    /*cn1-derive: ToggleButton;*/
     background-color: #007AFF; /*blue;*/
     color: white;
     /*color: green; /**dodgerblue;*/
 }
 
 ToggleButton.selected {
+    /*cn1-derive: ToggleButton;*/
     background-color: #007AFF; /*royalblue;*/
     color: white;
     /*color: brown; /**dodgerblue;*/
@@ -2021,7 +2049,7 @@ ToggleButtonFirst {
 
 ToggleButtonOnly {
     /*https://stackoverflow.com/questions/52163839/codename-one-componentgroupbool-on-android-by-css*/
-    cn1-derive: ToggleButton;
+    /*cn1-derive: ToggleButton;*/
     /*border-width: 0.3mm;
     border-color: gray;
     color: green;

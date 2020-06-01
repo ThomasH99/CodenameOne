@@ -132,6 +132,8 @@ public class Icons {
     final static char iconModifiedDate = FontImage.MATERIAL_EDIT; //TODO: custom icon
     
     final static char iconPriority = FontImage.MATERIAL_PRIORITY_HIGH; //TODO: custom icon
+    final static char[] iconPriorities = new char[]{FontImage.MATERIAL_PRIORITY_HIGH}; //TODO: custom icon
+    
     final static char iconImportance =FontImage.MATERIAL_GRID_ON; // FontImage.MATERIAL_ISO; //TODO: custom icon
     final static char iconUrgency = FontImage.MATERIAL_APPS; //TODO: custom icon
 
@@ -276,6 +278,7 @@ public class Icons {
 //    final static char iconCheckboxWaitingChar = FontImage.MATERIAL_PAUSE_CIRCLE_OUTLINE;
 //</editor-fold>
     final static char iconItemStatusCreated = FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED;
+    final static char iconItemStatusIcon = FontImage.MATERIAL_ADJUST;
 //    final static char iconCheckboxCancelledChar = FontImage.MATERIAL_REMOVE_CIRCLE; //dark circle to illustrate 'done with'
     final static char iconItemStatusCancelled = FontImage.MATERIAL_HIGHLIGHT_OFF; //dark circle to illustrate 'done with' //MATERIAL_REMOVE_CIRCLE_OUTLINE, MATERIAL_BLOCK, MATERIAL_NOT_INTERESTED
     final static char iconItemStatusOngoing = FontImage.MATERIAL_TIMELAPSE;

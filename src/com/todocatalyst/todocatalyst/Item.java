@@ -935,8 +935,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String DEPENDS_ON_HELP = "Indicates that this task depends on another task. Dependent tasks can automatically be hidden until the task they depend on is completed.";
     final static String SOURCE = "Copy of"; //Template or Task that this one is a copy of, "Task copy of"
     final static String SOURCE_HELP = "Shows the task was copied from. E.g. for tasks created using templates, automatically repeating tasks or copy/paste. Can be useful for example to find all instances of a given template. "; //Template or Task that this one is a copy of, "Task copy of"
-    final static String OBJECT_ID = "Id"; //"Unique id"
-    final static String OBJECT_ID_HELP = "An internal unique identifier. This may be useful if requesting support"; //"Unique id"
+    final static String OBJECT_ID = "Reference"; //"Id"; //"Unique id"
+    final static String OBJECT_ID_HELP = "An internal unique identifier. This may be useful if contacting support"; //"Unique id"
     final static String STARRED = "Starred"; //"Unique id"
     final static String STARRED_HELP = "Tasks can be marked with a Star to emphasize them**"; //"Unique id"
     final static String TEMPLATE = "Template";
@@ -6201,7 +6201,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public Date getUpdatedAt() {
         Date date = super.getUpdatedAt();
-        return date != null ? date : new MyDate(0);
+//        return date != null ? date : new MyDate(0);
+        return date != null ? date : getCreatedAt(); //a just created object does not yet have an updated date (and it is needed eg for Log view
 //        if(date != null){
 ////        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC")); //THJ
 //        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC")); //THJ
@@ -7827,7 +7828,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param categoryIdList
      * @return
      */
-    static public List<String> addCatObjectIdsListToCategoryList(List<String> categoryIdList, List<Category> newCategoryList) {
+    static public List<String> addCatObjectIdsListToCategoryListXXX(List<String> categoryIdList, List<Category> newCategoryList) {
         if (categoryIdList == null) {
             categoryIdList = new ArrayList<>();
         }
@@ -7900,14 +7901,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (locallyEditedCategories == null || locallyEditedCategories.isEmpty()) {
             return new ArrayList();
         }
-        Item item = this;
+//        Item item = this;
 
 //        Set<Category> addedCats = new HashSet(locallyEditedCategories);//make a copy of the edited set of categories
         List<Category> addedCats = new ArrayList(locallyEditedCategories);//make a copy of the edited set of categories
-        addedCats.removeAll(item.getCategories()); //remove all that were already set of the item to get only the newly added categories
+        addedCats.removeAll(getCategories()); //remove all that were already set of the item to get only the newly added categories
         for (Category cat : addedCats) {
 //            cat.addItemAtIndex(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : cat.getSize());
-            cat.addItemToCategory(item, false);
+            cat.addItemToCategory(this, false);
 //            DAO.getInstance().saveInBackground((ParseObject) cat);
         }
 
@@ -7915,24 +7916,24 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (!onlyAddNewCatsDontRemoveAny) {
 //            Set<Category> unSelectedCats = new HashSet(item.getCategories());
 //            unSelectedCats = new ArrayList(Arrays.asList(item.getCategories()));
-            unSelectedCats.addAll(item.getCategories());
+            unSelectedCats.addAll(getCategories());
             unSelectedCats.removeAll(locallyEditedCategories); //remove the categories that are still selected after editing. Those remaining in unSelectedCats have been unselected by user and should be removed
             for (Category cat : unSelectedCats) {
 //                cat.remove(item);
-                cat.removeItemFromCategory(item, false);
+                cat.removeItemFromCategory(this, false);
 //                DAO.getInstance().saveInBackground((ParseObject) cat);
             }
-            item.setCategories(new ArrayList(locallyEditedCategories)); //set the item's categories as the locally edited ones
+            setCategories(new ArrayList(locallyEditedCategories)); //set the item's categories as the locally edited ones
         } else {
             //only set the item's categories to the old ones + the newly added
-            ArrayList<Category> existingCatsPlusAdded = new ArrayList(item.getCategories());
+            ArrayList<Category> existingCatsPlusAdded = new ArrayList(getCategories());
 //            existingCatsPlusAdded.addAll(addedCats);
             for (Category cat : addedCats) {
                 if (!existingCatsPlusAdded.contains(cat)) {
                     existingCatsPlusAdded.add(cat);
                 }
             }
-            item.setCategories(existingCatsPlusAdded); //set the item's categories as the old ones + newly added ones
+            setCategories(existingCatsPlusAdded); //set the item's categories as the old ones + newly added ones
         }
         addedCats.addAll(unSelectedCats);
         return addedCats;

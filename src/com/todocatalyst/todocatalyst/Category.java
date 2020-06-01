@@ -23,7 +23,7 @@ import java.util.Set;
  *
  * @author Thomas
  */
-public class Category extends ItemList implements ItemAndListCommonInterface { //Flatten { //implements ExpandableInterface { //Sublist {
+public class Category<E extends ItemAndListCommonInterface>  extends ItemList implements ItemAndListCommonInterface { //Flatten { //implements ExpandableInterface { //Sublist {
 
     final static String CLASS_NAME = "Category";
 
@@ -1022,6 +1022,46 @@ public class Category extends ItemList implements ItemAndListCommonInterface { /
 
     public boolean isOwnerOfItemInCategoryBeforeItem(int itemIndex) {
         return isOwnerOfItemInListBeforeItem(getListFull(), itemIndex);
+    }
+    
+        /**
+     * By default an ItemList does not delete the items in its list since they
+     * are only references.Only the when an ItemList is used to store 'owned'
+ items, like the sub-tasks of a task, should the sub-items be deleted.
+     *
+     * @param deleteDate
+     */
+    @Override
+    public boolean deletePrepare(Date deleteDate) {
+
+        //if a timer was active for this itemList, then remove that (and update any timed item even though it may get soft-deleted below)
+        TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
+
+        //remove itemList from meta-itemLists (all itemLists to which it is a sub-itemList)
+        //remove this ItemList from all lists (ItemLists or Categories) which include it as a sourceList
+        List<ItemList<E>> metaList = (List<ItemList<E>>) getMetaList();
+        if (metaList != null && metaList.size() > 0) {
+            List<ParseObject> updatedMetaLists = new ArrayList<>();
+            updatedMetaLists.clear();
+            for (ItemList itemList : metaList) {
+                if (itemList.removeSubList(this)) {
+                    updatedMetaLists.add(itemList);
+                }
+            }
+            DAO.getInstance().saveNew(updatedMetaLists);
+        }
+
+        CategoryList.getInstance().removeFromList(this,false); //false: keep ref to CategoryList
+        DAO.getInstance().saveNew((ParseObject) CategoryList.getInstance(), false);
+
+        FilterSortDef filter = getFilterSortDefN();
+        if (filter != null) {
+            filter.setDeletedDate(deleteDate);
+            DAO.getInstance().delete(filter, false, false);
+        }
+
+        setSoftDeletedDate(deleteDate);
+        return true;
     }
 
 } // end Category

@@ -82,6 +82,7 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
         }
         addSettingTitle(content, "Settings shared for all task lists:");
 
+        addSettingBoolean(content, parseIdMap2, MyPrefs.showDetailsForAllTasks);
 //        cont.setScrollableY(true);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone);
         if (Config.TEST) {

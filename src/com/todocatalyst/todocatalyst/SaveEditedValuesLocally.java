@@ -460,10 +460,6 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //    }
 //</editor-fold>
 
-    public void putItems(List<ItemAndListCommonInterface> subtasks) {
-        putListOfElements(Item.PARSE_SUBTASKS, subtasks);
-    }
-
     /**
      * returns null if no list was previously defined, otherwise an empty list
      * if previous owner was removed, or a list containing the previously
@@ -474,7 +470,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
      *
      * @return
      */
-    public List<ItemAndListCommonInterface> getListOfElementsN(String key) {
+    public List<ItemAndListCommonInterface> getListOfElementsNXXX(String key) {
         Object eltList = get(key);
         if (eltList != null) {
             List<String> ids = (List) eltList;
@@ -504,19 +500,39 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //        return getListOfElementsN(Item.PARSE_OWNER_ITEM);
     }
 
-    public List<Item> getItemsN() {
-        List<String> ids = (List) get(Item.PARSE_SUBTASKS);
-        if (ids != null) {
-            List<Item> items = new ArrayList();
-            for (String id : ids) {
-                Item item = DAO.getInstance().fetchItem(id);
-                items.add(item);
-            }
-            return items;
-        } else {
-            return null;
-        }
+    /**
+     * shortcut to convert a list of subtasks/Items to a list of their ObjectIds and put that
+     * @param subtasksObjIds 
+     */
+    public void putSubtasksList(List<Item> subtasks) {
+//        putListOfElements(Item.PARSE_SUBTASKS, subtasks);
+        put(Item.PARSE_SUBTASKS,ItemAndListCommonInterface.convListToObjectIdList((List)subtasks));
+    }
+    public void putSubtaskObjdIdList(List<String> subtasksObjIds) {
+        put(Item.PARSE_SUBTASKS, subtasksObjIds);
+    }
+
+    public List<Item> getSubtasks() {
+        List<String> subtasksObjIds = (List) get(Item.PARSE_SUBTASKS);
+        return DAO.getInstance().convItemObjectIdsListToItemList((List)subtasksObjIds);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (ids != null) {
+//            List<Item> items = new ArrayList();
+//            for (String id : ids) {
+//                Item item = DAO.getInstance().fetchItem(id);
+//                items.add(item);
+//            }
+//            return items;
+//        } else {
+//            return null;
+//        }
 //        return getListOfElementsN(Item.PARSE_SUBTASKS);
+//</editor-fold>
+    }
+
+    public List<String> getSubtaskObjIdsList() {
+        List<String> ids = (List) get(Item.PARSE_SUBTASKS);
+        return ids!=null?ids:new ArrayList();
     }
 
     public void removeOwnerXXX() {

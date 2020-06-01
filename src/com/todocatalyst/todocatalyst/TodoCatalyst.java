@@ -53,6 +53,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
     final static String APP_NAME = "TodoCatalyst";
     public static Resources theme = null;
     private Form current = null;
+    private String storedNotificationId;
 
     //TODO add startup picture (also shown as automatically generated CN1 image)
     public TodoCatalyst() {
@@ -1017,6 +1018,12 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             }
             current.show();
         }
+        //handle reminders received while starting up the app:
+        if (storedNotificationId != null) {
+            String temp = new String(storedNotificationId);
+            storedNotificationId = null; //reset
+            AlarmHandler.getInstance().localNotificationReceived(temp);
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 
 //        if (false) {
@@ -1372,7 +1379,8 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
     @Override
     public void localNotificationReceived(String notificationId) {
         //https://www.codenameone.com/blog/local-notifications.html
-        AlarmHandler.getInstance().localNotificationReceived(notificationId);
+//        AlarmHandler.getInstance().localNotificationReceived(notificationId);
+        storedNotificationId = notificationId; //processed in start()
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        PushContent res = PushContent.get(); //won't work: see discussion here: https://www.codenameone.com/blog/rich-push-notification-improved.html
 //        if (!Dialog.show(notificationId, notificationId, "Cancel", "Continue")) {

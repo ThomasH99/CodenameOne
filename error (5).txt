@@ -1,0 +1,43 @@
+Executing: /usr/local/bin/pod --version Process return code is 0
+Pods version: 1.7.0.beta.3
+
+User-level: 1000
+Request Args: 
+-----------------
+ios.includePush=true
+java.version=8
+ios.buildType=debug
+ios.newStorageLocation=true
+-------------------
+OS Version: 10.15.3
+Executing: /Applications/Xcode11.3.app/Contents/Developer/usr/bin/xcodebuild -version Process return code is 0
+Result is Xcode 11.3.1
+Build version 11C505
+
+Xcode version line matching pattern: Xcode 11.3.1
+Executing: /Library/Java/JavaVirtualMachines/jdk1.8.0_172.jdk/Contents/Home/bin/java -Dretrolambda.inputDir=/var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/classes -Dretrolambda.classpath=/var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/classes:/var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/temp1654656240821136718.jar -Dretrolambda.outputDir=/var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/classes_retrolamda -Dretrolambda.bytecodeVersion=49 -Dretrolambda.defaultMethods=true -jar /var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/temp4215168188143653679.jar Retrolambda 2.5.1
+00:00  INFO: Bytecode version: 49 (Java 5)
+00:00  INFO: Default methods:  true
+00:00  INFO: Input directory:  /var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/classes
+00:00  INFO: Output directory: /var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/classes_retrolamda
+00:00  INFO: Classpath:        [/var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/classes, /var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/temp1654656240821136718.jar]
+00:00  INFO: Included files:   all
+00:00  INFO: Agent enabled:    false
+00:00  INFO: Saving lambda class: com/todocatalyst/iostestapp/Iostestapp$$Lambda$2
+00:00  INFO: Saving lambda class: com/todocatalyst/iostestapp/Iostestapp$$Lambda$4
+00:00  INFO: Saving lambda class: com/todocatalyst/iostestapp/Iostestapp$$Lambda$5
+Process return code is 0
+Executing: javac -classpath /var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/classes -d /var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/classes /var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/stub/MyAppStub.java /var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/stub/MyAppStub.java:14: error: cannot find symbol
+    private MyApp i = new MyApp();
+            ^
+  symbol:   class MyApp
+  location: class MyAppStub
+/var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/stub/MyAppStub.java:14: error: cannot find symbol
+    private MyApp i = new MyApp();
+                          ^
+  symbol:   class MyApp
+  location: class MyAppStub
+Note: /var/folders/zh/kb_4hqhn4kg1h0r5dp_6htcm0000gn/T/build5078617410903724087xxx/stub/MyAppStub.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+2 errors
+Process return code is 1

@@ -195,7 +195,7 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
 //        getToolbar().addSearchCommand(makeSearchFunctionSimple(this.itemListList),MyPrefs.defaultIconSizeInMM.getFloat());
 //        MySearchBar mySearchBar = new MySearchBar(getToolbar(), makeSearchFunctionSimple(this.itemListList));
-        getToolbar().addCommandToRightBar( new MySearchCommand(getContentPane(),  makeSearchFunctionSimple(itemListList)));
+        getToolbar().addCommandToRightBar( new MySearchCommand(getContentPane(),  makeSearchFunctionUpperLowerStickyHeaders(itemListList)));
 
 
         //NEW TASK to Inbox
@@ -683,7 +683,7 @@ public class ScreenListOfItemLists extends MyForm {
             }, "InterruptInScreenListOfItemLists" //only push this command if we start with BigTimer (do NOT always start with smallTimer)
             )));
         }
-        if (!statisticsMode) {
+        if (!statisticsMode&&itemList.getList().size()>0) {
             rightSwipeContainer.add(makeTimerSwipeButton(swipCont, itemList, "InterruptInScreenListOfItemLists"));
         }
         return swipCont;

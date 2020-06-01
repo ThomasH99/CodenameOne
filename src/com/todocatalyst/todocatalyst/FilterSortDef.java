@@ -436,42 +436,54 @@ public class FilterSortDef extends ParseObject {
         Item.PRIORITY,
         Item.DUE_DATE,
         Item.EFFORT_REMAINING,
+        
         Item.EFFORT_ESTIMATE,
         Item.EFFORT_ACTUAL,
         Item.CHALLENGE,
+        
         Item.FUN_DREAD,
         Item.EARNED_VALUE,
         Item.START_BY_TIME,
+        
         Item.STARTED_ON_DATE,
         Item.UPDATED_DATE,
         Item.CREATED_DATE,
+        
         Item.COMPLETED_DATE,
         Item.WAIT_UNTIL_DATE,
         Item.DESCRIPTION,
+        
         Item.IMPORTANCE_URGENCY,
         Item.IMPORTANCE,
         Item.URGENCY,
+        
         Item.STATUS};
 
     private static String[] sortFields = new String[]{
         Item.PARSE_PRIORITY,
         Item.PARSE_DUE_DATE,
         Item.PARSE_REMAINING_EFFORT,
+        
         Item.PARSE_EFFORT_ESTIMATE,
         Item.PARSE_ACTUAL_EFFORT,
         Item.PARSE_CHALLENGE,
+        
         Item.PARSE_DREAD_FUN_VALUE,
         Item.PARSE_EARNED_VALUE,
         Item.PARSE_START_BY_DATE,
+        
         Item.PARSE_STARTED_ON_DATE,
         Item.PARSE_UPDATED_AT,
         Item.PARSE_CREATED_AT,
+        
         Item.PARSE_COMPLETED_DATE,
         Item.PARSE_WAITING_TILL_DATE,
         Item.PARSE_TEXT,
+        
         Item.PARSE_IMPORTANCE_URGENCY,
         Item.PARSE_IMPORTANCE,
         Item.PARSE_URGENCY,
+        
         Item.PARSE_STATUS};
 
 //<editor-fold defaultstate="collapsed" desc="comment">

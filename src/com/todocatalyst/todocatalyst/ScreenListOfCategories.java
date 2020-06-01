@@ -115,7 +115,7 @@ public class ScreenListOfCategories extends MyForm {
 //</editor-fold>
 //        getToolbar().addSearchCommand(makeSearchFunctionSimple(categoryList), MyPrefs.defaultIconSizeInMM.getFloat());
 //        MySearchBar mySearchBar = new MySearchBar(getToolbar(), makeSearchFunctionSimple(categoryList));
-        getToolbar().addCommandToRightBar( new MySearchCommand(getContentPane(), makeSearchFunctionSimple(categoryList)));
+        getToolbar().addCommandToRightBar( new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(categoryList)));
 
 //        getContentPane().add(BorderLayout.CENTER, buildContentPaneForListOfItems(this.categoryList));
         refreshAfterEdit();
@@ -683,7 +683,7 @@ public class ScreenListOfCategories extends MyForm {
 ////                            category, keepPos, expandedObjects, ()->animateMyForm(), false); //hack: get access to the latest category (the one above the items in the Tree list)
 //                            category, keepPos, expandedObjects, ()->animateMyForm(), false, false); //hack: get access to the latest category (the one above the items in the Tree list)
 //</editor-fold>
-                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfCategories.this, (Item) node, null, cat); //hack: get access to the latest category (the one above the items in the Tree list)
+                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfCategories.this, (Item) node, null, cat,expandedObjects); //hack: get access to the latest category (the one above the items in the Tree list)
                     } else if (node instanceof Category) {
 //                        cmp = buildCategoryContainer((Category) node, categoryList, keepPos, () -> refreshAfterEdit(), expandedObjects); //, (ItemList) treeParent);
                         cmp = buildCategoryContainer((Category) node, categoryList, keepPos, null, expandedObjects); //, (ItemList) treeParent);

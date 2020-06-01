@@ -399,16 +399,16 @@ public class ScreenListOfAlarms extends MyForm {
 
         Label alarmHeader;
         if ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.waitingRepeat)) {
-            alarmHeader = new Label("Waiting " + MyDate.formatDateSmart(expiredAlarm.alarmTime), "ScreenAlarmsWaitingTitle");
+            alarmHeader = new Label("Waiting " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true), "ScreenAlarmsWaitingTitle");
             alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
         } else if ((expiredAlarm.type == AlarmType.snoozedWaiting)) {
-            alarmHeader = new Label("Waiting snoozed " + MyDate.formatDateSmart(expiredAlarm.alarmTime), "ScreenAlarmsWaitingTitle");
+            alarmHeader = new Label("Waiting snoozed " + MyDate.formatDateSmart(expiredAlarm.alarmTime,true), "ScreenAlarmsWaitingTitle");
             alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
         } else if ((expiredAlarm.type == AlarmType.snoozedNotif)) {
-            alarmHeader = new Label("Reminder snoozed " + MyDate.formatDateSmart(expiredAlarm.alarmTime), "ScreenAlarmsWaitingTitle");
+            alarmHeader = new Label("Reminder snoozed " + MyDate.formatDateSmart(expiredAlarm.alarmTime,true), "ScreenAlarmsWaitingTitle");
             alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
         } else {//     if ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.waitingRepeat)) {
-            alarmHeader = new Label("Reminder " + MyDate.formatDateSmart(expiredAlarm.alarmTime), "ScreenAlarmsWaitingTitle");
+            alarmHeader = new Label("Reminder " + MyDate.formatDateSmart(expiredAlarm.alarmTime,true), "ScreenAlarmsWaitingTitle");
             alarmHeader.setMaterialIcon(Icons.iconAlarmTriggered);
         }
 //        else         if ((expiredAlarm.type == AlarmType.snooze )) {

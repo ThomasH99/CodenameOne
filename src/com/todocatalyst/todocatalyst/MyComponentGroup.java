@@ -557,7 +557,7 @@ class MyComponentGroup extends ComponentGroup {
      *
      * @return
      */
-    public String getSelectedString() {
+    public String getSelectedName() {
         int selected = getSelectedIndex();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        int size = this.getComponentCount();
@@ -578,7 +578,7 @@ class MyComponentGroup extends ComponentGroup {
      *
      * @return
      */
-    public Object getSelected() {
+    public Object getSelectedValue() {
         int selected = getSelectedIndex();
         if (selected >= 0 && selected < values.length) {
             return values[selected];
@@ -587,13 +587,18 @@ class MyComponentGroup extends ComponentGroup {
         }
     }
 
-    public int getSelectedValue() {
-        int selected = getSelectedIndex();
-        if (selected >= 0 && selected < values.length) {
-            return (int) values[selected];
-        } else {
-            return -1;
-        }
+    public int getSelectedAsInt() {
+//        int selected = getSelectedIndex();
+//        if (selected >= 0 && selected < values.length) {
+//            return (int) values[selected];
+//        } else {
+//            return -1;
+//        }
+        return (int)getSelectedValue();
+    }
+
+    public String getSelectedAsString() {
+        return (String)getSelectedValue();
     }
 
     /**
@@ -601,9 +606,9 @@ class MyComponentGroup extends ComponentGroup {
      *
      * @return
      */
-    public int getSelectedInt() {
-        return (int) getSelectedValue();
-    }
+//    public int getSelectedInt() {
+//        return (int) getSelectedAsInt();
+//    }
 
     private EventDispatcher dispatcher = null; //new EventDispatcher();
 

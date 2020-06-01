@@ -235,7 +235,7 @@ public class ScreenItemListProperties extends MyForm {
         }
 
 //        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), (ItemList) itemList.getOwner()));
-        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), itemList) != null);
+        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), itemList) == null);
 
         return content;
     }

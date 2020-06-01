@@ -171,8 +171,6 @@ public class ScreenListOfItems extends MyForm {
     final static int OPTION_NO_INLINEINSERT_EMPTYLIST = OPTION_NO_TASK_DETAILS * 2;
     private boolean optionNoInlineInsertContInEmptyList;
 
-    private static int LABEL_GAP = 0; //in pixels!
-
     final static int OPTION_LAST_TO_CHECK_IF_ALL_BITS_ARE_USED = OPTION_NO_INLINEINSERT_EMPTYLIST * 2;
 //    boolean optionSingleSelectMode;
 //    final static int OPTION_MULTIPLE_SELECT_MODE = OPTION_SINGLE_SELECT_MODE * 2;
@@ -190,12 +188,13 @@ public class ScreenListOfItems extends MyForm {
         this.optionNoMultipleSelectionMode = (options & OPTION_NO_SELECTION_MODE) != 0;
         this.optionDisableDragAndDrop = (options & OPTION_DISABLE_DRAG_AND_DROP) != 0;
         this.optionSingleSelectMode = (options & OPTION_SINGLE_SELECT_MODE) != 0;
-        this.optionNoNewFromTemplate = (options & OPTION_SINGLE_SELECT_MODE) != 0;
-        this.optionNoTaskDetails = (options & OPTION_SINGLE_SELECT_MODE) != 0;
+        this.optionNoNewFromTemplate = (options & OPTION_NO_NEW_FROM_TEMPLATE) != 0;
+        this.optionNoTaskDetails = (options & OPTION_NO_TASK_DETAILS) != 0;
         this.optionNoInlineInsertContInEmptyList = (options & OPTION_NO_INLINEINSERT_EMPTYLIST) != 0;
 //        this.optionMultipleSelectMode = (options & OPTION_MULTIPLE_SELECT_MODE) != 0;
-
     }
+    
+    private static int LABEL_GAP = 0; //in pixels!
 
     /**
      * stores the overall tree for this list
@@ -941,9 +940,9 @@ public class ScreenListOfItems extends MyForm {
         if (!optionTemplateEditMode) {
 //            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "Add from template", Icons.iconAddFromTemplate, (e) -> {
 
-            if (true) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
+            if (!optionNoNewFromTemplate) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
                 //INSERT TEMPLATE(S!) UNDER A PROJECT OR IN A LIST
-                toolbar.addCommandToOverflowMenu(CommandTracked.create("Insert templates", Icons.iconAddFromTemplate, (e) -> {
+                toolbar.addCommandToOverflowMenu(CommandTracked.create("Insert template", Icons.iconAddFromTemplate, (e) -> {
                     //TODO!! Add "don't show again + setting to all these info popups
                     if (!MyPrefs.askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem.getBoolean()
                             || Dialog.show("INFO", "Inserting a template into a task will add the values and subtasks from the template to the task. It will not overwrite any fields already defined manually in the task", "OK", "Cancel")) {
@@ -1097,7 +1096,7 @@ public class ScreenListOfItems extends MyForm {
                 MyPrefs.flipBoolean(MyPrefs.showDetailsForAllTasks);
 //                setupList(); //TODO optimize the application of a filter?
                 //TODO!!!! scroll to 'same' place in list after expansion, e.g. keep top-most visible item before expand visible in same place, use Container.getClosestComponentTo(x, y) with upper-left-most position of contentPane?! c.getVisibleBounds(), c.getComponentAt(x,y)?
-                if (false) {
+                if (true) {
                     refreshAfterEdit(); //TODO optimize the application of a filter?
                 }                //TODO!!! animate each detail container (e.g. make visible for each task and animate)
             }
@@ -1629,7 +1628,8 @@ public class ScreenListOfItems extends MyForm {
                         if (itemListOrg instanceof Category) {
                             DAO.getInstance().cleanUpCategory((Category) itemListOrg, false);
                         } else {
-                            DAO.getInstance().cleanUpItemList((ItemList) itemListOrg, itemListOrg.getOwner().equals(TemplateList.getInstance()), false);
+                            DAO.getInstance().cleanUpItemList((ItemList) itemListOrg, 
+                                    itemListOrg.getOwner()!=null&&itemListOrg.getOwner().equals(TemplateList.getInstance()), false);
                         }
                     }
                 };
@@ -2309,7 +2309,7 @@ public class ScreenListOfItems extends MyForm {
 //            topContainer.putClientProperty("subTasksButton", subTasksButton);
             if (numberUndoneSubtasks > 0) { //only activate/unfiltered expansion if active subtasks to show
                 swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandSubTasksButton);
-            } else if (expandedObjects != null && expandedObjects.contains(item)) { //if nothing to expand, but already expanded
+            } else if (expandedObjects != null) { //&& expandedObjects.contains(item)) { //if nothing to expand, but already expanded
                 expandedObjects.remove(item);
             }
 //            east.addComponent(subTasksButton);

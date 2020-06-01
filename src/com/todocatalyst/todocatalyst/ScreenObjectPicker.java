@@ -239,19 +239,29 @@ public class ScreenObjectPicker<E> extends MyForm {
         getContentPane().add(BorderLayout.CENTER, listCont);
         addCommandsToToolbar(getToolbar());
 
-        getToolbar().addSearchCommand((e) -> {
+//        getToolbar().addSearchCommand((e) -> {
+//            String text = (String) e.getSource();
+//            boolean showAll = (text == null || text.length() == 0);
+////            for (int i = 0, size = this.listOfAllLists.size(); i < size; i++) {
+//            for (int i = 0, size = this.checkBoxes.length; i < size; i++) {
+////                    checkBoxes[i].setHidden(!(showAll || labelMaker.get(listOfAllCategories.get(i)).equals(text))); //TODO!!! compare same case (upper/lower)
+////                checkBoxes[i].setHidden(!(showAll || labelMaker.get(this.listOfAllObjects.get(i)).toLowerCase().indexOf(text) > -1)); //https://www.codenameone.com/blog/toolbar-search-mode.html
+//                checkBoxes[i].setHidden(!(showAll || allLabels.get(i).indexOf(text) > -1)); //https://www.codenameone.com/blog/toolbar-search-mode.html
+////                    checkBoxes[i].setVisible((showAll || labelMaker.get(listOfAllCategories.get(i)).toLowerCase().indexOf(text)>-1)); //https://www.codenameone.com/blog/toolbar-search-mode.html
+//            }
+////            getContentPane().animateLayout(150);
+//            animateMyForm();
+//        }, MyPrefs.defaultIconSizeInMM.getFloat());
+         getToolbar().addCommandToRightBar(new MySearchCommand(getContentPane(), (e) -> {
             String text = (String) e.getSource();
             boolean showAll = (text == null || text.length() == 0);
-//            for (int i = 0, size = this.listOfAllLists.size(); i < size; i++) {
             for (int i = 0, size = this.checkBoxes.length; i < size; i++) {
-//                    checkBoxes[i].setHidden(!(showAll || labelMaker.get(listOfAllCategories.get(i)).equals(text))); //TODO!!! compare same case (upper/lower)
-//                checkBoxes[i].setHidden(!(showAll || labelMaker.get(this.listOfAllObjects.get(i)).toLowerCase().indexOf(text) > -1)); //https://www.codenameone.com/blog/toolbar-search-mode.html
                 checkBoxes[i].setHidden(!(showAll || allLabels.get(i).indexOf(text) > -1)); //https://www.codenameone.com/blog/toolbar-search-mode.html
-//                    checkBoxes[i].setVisible((showAll || labelMaker.get(listOfAllCategories.get(i)).toLowerCase().indexOf(text)>-1)); //https://www.codenameone.com/blog/toolbar-search-mode.html
             }
-//            getContentPane().animateLayout(150);
             animateMyForm();
-        }, MyPrefs.defaultIconSizeInMM.getFloat());
+        }));
+
+        
         refreshAfterEdit();
     }
 

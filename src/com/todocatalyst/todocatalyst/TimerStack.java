@@ -3637,18 +3637,21 @@ class TimerStack {
 
 //            Button showEffortDetailsButton = new Button(Icons.iconShowMoreLabelStyle);
             Button showEffortDetailsButton = new Button();
-            showEffortDetailsButton.setMaterialIcon(Icons.iconShowMore);
+            showEffortDetailsButton.setMaterialIcon(MyPrefs.timerShowEffortEstimateDetails.getBoolean()?Icons.iconShowLess:Icons.iconShowMore);
 
             showEffortDetailsButton.addActionListener((e) -> {
-                showEffortDetailsButton.setMaterialIcon(showEffortDetailsButton
+                MyPrefs.flipBoolean(MyPrefs.timerShowEffortEstimateDetails);
+//                showEffortDetailsButton.setMaterialIcon(showEffortDetailsButton.getMaterialIcon() == Icons.iconShowMore
+                showEffortDetailsButton.setMaterialIcon(
                         //                        .getIcon() == Icons.iconShowMoreLabelStyle
                         //                                ? Icons.iconShowLessLabelStyle
                         //                                : Icons.iconShowMoreLabelStyle);
-                        .getMaterialIcon() == Icons.iconShowMore
+//                        .getMaterialIcon() == Icons.iconShowMore
+                        MyPrefs.timerShowEffortEstimateDetails.getBoolean()
                                 ? Icons.iconShowLess
                                 : Icons.iconShowMore);
-                estimateTable.setHidden(!estimateTable.isHidden());
-                MyPrefs.flipBoolean(MyPrefs.timerShowEffortEstimateDetails);
+//                estimateTable.setHidden(!estimateTable.isHidden());
+                estimateTable.setHidden(!MyPrefs.timerShowEffortEstimateDetails.getBoolean());
 //                            contentPane.getComponentForm().animateLayout(300);
 //                form.animateLayout(300);
                 estimateTable.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);

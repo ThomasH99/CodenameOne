@@ -15,6 +15,7 @@ import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.plaf.Style;
 import com.codename1.ui.plaf.UIManager;
@@ -83,7 +84,8 @@ public class ScreenCategoryPicker extends MyForm {
 //        this.updateOnDone = updateOnDone;
 //        this.item = item;
         setPinchInsertEnabled(true);
-        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+//        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+        setLayout(new BorderLayout());
 //        setScrollable(false); //disable scrolling of form, necessary to let lists handle their own 
         setScrollableY(true); //disable scrolling of form, necessary to let lists handle their own scrolling 
 //        addSearchToTitle();
@@ -197,6 +199,26 @@ public class ScreenCategoryPicker extends MyForm {
 //        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true)); //false: don't refresh ScreenItem when returning from Category selector
         addStandardBackCommand();
 
+//        toolbar.addSearchCommand(makeSearchFunctionSimple(listOfAllCategories, () -> getContentPane()), MyPrefs.defaultIconSizeInMM.getFloat());
+        getToolbar().addCommandToRightBar(new MySearchCommand(getContentPane(), makeSearchFunctionSimple(listOfAllCategories)));
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
+////        tool.addCommandToLeftBar("Done", icon, (e) -> Log.p("Clicked"));
+//        toolbar.addCommandToRightBar("", icon, (e) -> {
+//            new ScreenCategory(new Category(), this).show();
+//        });
+//</editor-fold>
+//        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllCategories, ScreenCategoryPicker.this, () -> refreshAfterEdit()));
+//        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd("",listOfAllCategories, ScreenCategoryPicker.this, ()->{})); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
+        toolbar.addCommandToOverflowMenu(ScreenListOfCategories.makeNewCategoryCmd("Add Category", listOfAllCategories, ScreenCategoryPicker.this, () -> {
+        })); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
+
+//        addSearchToTitle();
+//        ADDITIONAL COMMANDS
+//        DONE: Add new category
+//        Sort categories by Name (default), by creation date (most recent first), by most used (#tasks), by used most recently?, by ??
+//        Search w autocomplete
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
             toolbar.addCommandToOverflowMenu(
                     "Cancel", null, (e) -> {
@@ -217,29 +239,12 @@ public class ScreenCategoryPicker extends MyForm {
             );
         }
 
-        toolbar.addSearchCommand(makeSearchFunctionSimple(listOfAllCategories, () -> getContentPane()), MyPrefs.defaultIconSizeInMM.getFloat());
 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
-////        tool.addCommandToLeftBar("Done", icon, (e) -> Log.p("Clicked"));
-//        toolbar.addCommandToRightBar("", icon, (e) -> {
-//            new ScreenCategory(new Category(), this).show();
-//        });
-//</editor-fold>
-//        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllCategories, ScreenCategoryPicker.this, () -> refreshAfterEdit()));
-//        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd("",listOfAllCategories, ScreenCategoryPicker.this, ()->{})); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
-        toolbar.addCommandToOverflowMenu(ScreenListOfCategories.makeNewCategoryCmd("", listOfAllCategories, ScreenCategoryPicker.this, () -> {
-        })); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
-
-//        addSearchToTitle();
-//        ADDITIONAL COMMANDS
-//        DONE: Add new category
-//        Sort categories by Name (default), by creation date (most recent first), by most used (#tasks), by used most recently?, by ??
-//        Search w autocomplete
     }
 
     private Container buildContentPane(Container cont, List categories) {//, Set<Category> selectedCategories) {
 
+        Container list = new Container(BoxLayout.y());
         for (int i = 0, size = categories.size(); i < size; i++) {
             Category cat = (Category) categories.get(i);
             CheckBox cmps = CheckBox.createToggle(cat.getText());
@@ -252,8 +257,9 @@ public class ScreenCategoryPicker extends MyForm {
                     selectedCategories.remove(cat);
                 }
             });
-            cont.add(cmps);
+            list.add(cmps);
         }
+        cont.add(BorderLayout.CENTER, list);
         return cont;
     }
 

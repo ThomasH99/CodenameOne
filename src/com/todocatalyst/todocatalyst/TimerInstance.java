@@ -580,7 +580,7 @@ public class TimerInstance extends ParseObject {
     private void setSources(Item itemOrProject, ItemList itemList) {
         ASSERT.that(itemOrProject != null || itemList != null);
         setItemList(itemList);
-        if (itemOrProject.isProject()) {
+        if (itemOrProject != null && itemOrProject.isProject()) {
             setTimedProject(itemOrProject);
         } else {
             setTimedItem(itemOrProject);

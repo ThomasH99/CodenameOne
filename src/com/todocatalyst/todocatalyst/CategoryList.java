@@ -94,12 +94,15 @@ public class CategoryList extends ItemList {
      * @param categoryName
      * @return
      */
-    Category findCategoryWithName(String categoryName) {
+    Category findCategoryWithName(String categoryName, boolean ignoreCase) {
         if (categoryName == null || categoryName.length() == 0) {
             return null;
         }
+        String search=categoryName;
+        if (ignoreCase)
+            search=search.toLowerCase();
         for (Category cat : getListFull()) {
-            if (cat.getText().equals(categoryName)) {
+            if (cat.getText().toLowerCase().equals(categoryName.toLowerCase())) {
                 return cat;
             }
         }

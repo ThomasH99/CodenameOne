@@ -595,7 +595,27 @@ public class MyPrefs {
     static PrefEntry touchedLogInterval = new PrefEntry("eee", "touchedLogInterval", 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED);
     static PrefEntry nextInterval = new PrefEntry("eee", "nextInterval", 30, "How many days ahead in time are included in " + ScreenMain.SCREEN_NEXT_TITLE);
 
+    //SMART DATES
     static PrefEntry useSmartdatesForThisManyDaysOverdueDueOrFinishDates = new PrefEntry("Use Smart format for past " + Item.DUE_DATE + " or " + Item.FINISH_WORK_TIME + " when overdue by less than this many days",
+            "useSmartdatesForThisManyDaysOverdueDueOrFinishDates", 30, "**Show overdue dates in Smart format, e.g. Wed17h30. This is useful for overdue dates in the near past, but can get confusing for");
+    static PrefEntry smartDatesShowOnlyTimeOfDayToday = new PrefEntry(
+            Format.f("Use Smart format for past {0} or {1} when overdue by less than this many days", Item.DUE_DATE,Item.FINISH_WORK_TIME ),
+            "smartDatesShowOnlyTimeOfDayToday", true, "**");
+    static PrefEntry smartDatesShowYesterdayAsYesterday = new PrefEntry(
+            Format.f("Show dates yesterday as \"Yesterday\"", Item.DUE_DATE,Item.FINISH_WORK_TIME ),
+            "smartDatesShowYesterdayAsYesterday", true, "**");
+    static PrefEntry smartDatesShowTimeOfDayForPastDates = new PrefEntry(
+            "Show time of day for past dates", 
+            "smartDatesShowTimeOfDayForPastDates", false, "**");
+    static PrefEntry smartDatesShowOnlyWeekdayAndTimeForNextcomingWeek = new PrefEntry(
+            "Show only day of week and time of day for dates in the next 7 days", 
+            "smartDatesShowOnlyWeekdayAndTimeForNextcomingWeek", true, "**");
+    static PrefEntry smartDatesShowOnlyMonDayForNext365Days = new PrefEntry(
+            "Show only month and day of month for dates in the next 365 days", 
+            "smartDatesShowOnlyMonDayForNext365Days", true, "**");
+    static PrefEntry smartDatesHideYearForThisManyDaysOverdueDueOrFinishDates = new PrefEntry(
+//            "Use Smart format for past " + Item.DUE_DATE + " or " + Item.FINISH_WORK_TIME + " when overdue by less than this many days",
+            Format.f("Use Smart format for past {0} or {1} when overdue by less than this many days", Item.DUE_DATE,Item.FINISH_WORK_TIME ),
             "useSmartdatesForThisManyDaysOverdueDueOrFinishDates", 30, "**Show overdue dates in Smart format, e.g. Wed17h30. This is useful for overdue dates in the near past, but can get confusing for");
 
     //STATISTICS SCREEN
@@ -636,7 +656,7 @@ public class MyPrefs {
     static PrefEntry listOfItemListsShowTotalNumberOfLeafTasks = new PrefEntry("Show number of leaf tasks instead of number of projects",
             "listOfItemListsShowTotalNumberOfLeafTasks", true, "**");
     static PrefEntry hideStickyHeadersForSortedLists = new PrefEntry("Do not show group headers for sorted lists",
-            "showStickyHeadersForSortedLists", true, "**"); //show as 'flat' lists
+            "showStickyHeadersForSortedLists", false, "**"); //show as 'flat' lists
 
     //GLOBAL
     //localization
@@ -700,6 +720,11 @@ public class MyPrefs {
         String settingId;
         Object defaultValue;
         String helpText;
+        
+        @Override
+        public String toString() {
+            return settingId+"="+((String) Preferences.get(settingId, (String) defaultValue));
+        }
 
         public String getFieldScription() {
             return fieldDescription == null ? "" : fieldDescription;

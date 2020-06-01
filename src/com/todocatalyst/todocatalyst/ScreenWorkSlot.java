@@ -171,7 +171,7 @@ public class ScreenWorkSlot extends MyForm {
 //            toolbar.addCommandToLeftBar(cmd);
 //        }
 //</editor-fold>
-        toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand(true)); //, () -> {
+        toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand()); //, () -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            List<WorkSlot> overlapping;
 ////            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true

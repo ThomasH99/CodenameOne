@@ -1026,11 +1026,11 @@ public class MyDate extends Date {
         int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK);
         return dayOfWeek;
     }
-    
-        /** OLD VERSION - NEVER USED
-     * Field number for get and set indicating the day of the week. This field
-     * takes values SUNDAY, MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, and
-     * SATURDAY.
+
+    /**
+     * OLD VERSION - NEVER USED Field number for get and set indicating the day
+     * of the week. This field takes values SUNDAY, MONDAY, TUESDAY, WEDNESDAY,
+     * THURSDAY, FRIDAY, and SATURDAY.
      *
      * @param date
      * @return
@@ -1043,30 +1043,30 @@ public class MyDate extends Date {
         return v;
     }
 
-
-
     /**
      * eg first Monday of month will return 1, 3rd Sunday 2ill return 3
+     *
      * @param weekday SUNDAY=1
-     * @return 
+     * @return
      */
     public static int getWeekdayInMonth(Date date) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        int weekdayOfMonth = cal.get(Calendar.DAY_OF_WEEK_IN_MONTH); 
+        int weekdayOfMonth = cal.get(Calendar.DAY_OF_WEEK_IN_MONTH);
         return weekdayOfMonth;
     }
 
     /**
      * eg first Monday of month will return 1, 3rd Sunday 2ill return 3
+     *
      * @param weekday SUNDAY=1
-     * @return 
+     * @return
      */
     public static int getWeekNbInMonth(Date date) {
 //https://stackoverflow.com/questions/6538791/what-is-the-difference-between-calendar-week-of-month-and-calendar-day-of-week-i
         Calendar cal = Calendar.getInstance();
         cal.setTime(date);
-        int weekOfMonth = cal.get(Calendar.WEEK_OF_MONTH); 
+        int weekOfMonth = cal.get(Calendar.WEEK_OF_MONTH);
         return weekOfMonth;
     }
 
@@ -1679,14 +1679,24 @@ public class MyDate extends Date {
      * @return
      */
     static public String formatDateSmart(Date date) {
-        return formatDateSmart(date, true, true);
+        return formatDateSmart(date, false, false);
     }
 
     static public String formatDateSmart(Date date, boolean alwaysShowTimeOfDay) {
-        return formatDateSmart(date, alwaysShowTimeOfDay, true);
+        return formatDateSmart(date, alwaysShowTimeOfDay, false);
     }
 
-    static public String formatDateSmart(Date date, boolean showTimeOfDay, boolean showPastDatesAsSmart) {
+    /**
+     * show: yesterday as "Yesterday" w/o time of day; today: only show time;
+     * next/previous week: show weekday+time of day; within this year: hide
+     * year; more than one week away: hide time of day.
+     *
+     * @param date
+     * @param forceShowTimeOfDay
+     * @param forceShowPastDatesAsSmart
+     * @return
+     */
+    static public String formatDateSmart(Date date, boolean forceShowTimeOfDay, boolean forceShowPastDatesAsSmart) {
 //        long now = MyDate.currentTimeMillis();
 //        long diff = date.getTime() - now;
 //        Date startOfToday = MyDate.getStartOfDay(new Date());
@@ -1706,33 +1716,41 @@ public class MyDate extends Date {
 //</editor-fold>
 //        if (date.getTime() < startOfToday.getTime() && date.getTime() >= startOfYesterday.getTime())
         //within today(before midnight/*next 24h*?/till 5 in the morning for night owls?!): "13h14" / "1h14am"
-        if (isToday(date)) //            return new SimpleDateFormat("HH'h'mm").format(date);
-        {
-            return new SimpleDateFormat("H'h'mm").format(date);
+        String timeOfDateFormat = "H'h'mm";
+        String timeOfDateFormatPrecSpace = " H'h'mm";
+
+        if (MyPrefs.smartDatesShowOnlyTimeOfDayToday.getBoolean() && isToday(date)) { //            return new SimpleDateFormat("HH'h'mm").format(date);
+            return new SimpleDateFormat(timeOfDateFormat).format(date);
         }
-        if (isYesterday(date)) {
-            return "Yesterday" + (showTimeOfDay ? new SimpleDateFormat(" H'h'mm").format(date) : "");
+
+        if (MyPrefs.smartDatesShowYesterdayAsYesterday.getBoolean() && isYesterday(date)) {
+            return "Yesterday"
+                    + ((MyPrefs.smartDatesShowTimeOfDayForPastDates.getBoolean() || forceShowTimeOfDay)
+                    ? new SimpleDateFormat(timeOfDateFormatPrecSpace).format(date) : "");
         }
 
 //        if (dateTime<=MyDate.getEndOfDay(new Date(dateTime+MyDate.DAY_IN_MILLISECONDS)).getTime())
 //        if (diff <= MyDate.DAY_IN_MILLISECONDS) {
 //        if ((date.getTime() >= startOfToday.getTime() && date.getTime() < startOfTomorrow.getTime()) //nextcoming week
         //within next 7 days: "Mon13h"
-        if (isNextcomingWeek(date) || (showPastDatesAsSmart && isPreviousWeek(date))) { //previous week
+        if ((MyPrefs.smartDatesShowOnlyWeekdayAndTimeForNextcomingWeek.getBoolean() && isNextcomingWeek(date))){//  || (forceShowPastDatesAsSmart && isPreviousWeek(date))) { //previous week
 //            return new SimpleDateFormat("EEE HH'h'mm").format(date);
-            return new SimpleDateFormat("EEE H'h'mm").format(date);
+//            return new SimpleDateFormat("EEE H'h'mm").format(date);
+            return new SimpleDateFormat("EEE" + timeOfDateFormatPrecSpace+(forceShowTimeOfDay?timeOfDateFormatPrecSpace:"")).format(date);
         }
 
         //within next 365 days: "Jun11"
 //        if (diff <= MyDate.DAY_IN_MILLISECONDS * 365) {
 //            if (date.getTime() < startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * 365) {
-        if (isNextcomingYear(date) || (showPastDatesAsSmart && isPreviousYear(date))) {
-            return new SimpleDateFormat("MMM dd" + (showTimeOfDay ? " H'h'mm" : "")).format(date);
+        if (MyPrefs.smartDatesShowOnlyMonDayForNext365Days.getBoolean() && isNextcomingYear(date)){// || (forceShowPastDatesAsSmart && isPreviousYear(date))) {
+//            return new SimpleDateFormat("MMM dd" + (forceShowTimeOfDay ? " H'h'mm" : "")).format(date);
+            return new SimpleDateFormat("MMM dd" + (forceShowTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date);
         }
 
         //beyond 365 days: "Jun'18"???
 //        return new SimpleDateFormat("MMM''yy").format(date); //"Jun'18"
-        return new SimpleDateFormat("dd'/'MM'/'yy" + (showTimeOfDay ? " H'h'mm" : "")).format(date); //"Jun'18"
+//        return new SimpleDateFormat("dd'/'MM'/'yy" + (forceShowTimeOfDay ? " H'h'mm" : "")).format(date); //"Jun'18"
+        return new SimpleDateFormat("dd'/'MM'/'yy" + (forceShowTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date); //"Jun'18"
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
     //    private static String formatDateNewXX(MyDate date, MyDate referenceDate) { //, boolean useYesterdayTodayTomorrow) {

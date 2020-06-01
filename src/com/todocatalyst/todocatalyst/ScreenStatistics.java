@@ -71,7 +71,7 @@ public class ScreenStatistics extends MyForm {
         if (mySearchCmd != null) {
             getToolbar().removeCommand(mySearchCmd);
         }
-        mySearchCmd = new MySearchCommand(getContentPane(), makeSearchFunctionSimple(itemListStats));
+        mySearchCmd = new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(itemListStats));
         getToolbar().addCommandToRightBar(mySearchCmd);
 
         revalidate();
@@ -119,19 +119,19 @@ public class ScreenStatistics extends MyForm {
 
         super.addCommandsToToolbar(toolbar);
 
-        if (false) {
-            getToolbar().addSearchCommand((e) -> {
-                String text = (String) e.getSource();
-                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
-                boolean showAll = text == null || text.length() == 0;
-                for (int i = 0, size = this.doneItemsFromParseSortedOnDate.size(); i < size; i++) {
-                    //TODO!!! compare same case (upper/lower)
-                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                    compList.getComponentAt(i).setHidden(((Item) doneItemsFromParseSortedOnDate.get(i)).getText().toLowerCase().indexOf(text) < 0);
-                }
-                compList.animateLayout(ANIMATION_TIME_FAST);
-            }, MyPrefs.defaultIconSizeInMM.getFloat());
-        }
+//        if (false) {
+//            getToolbar().addSearchCommand((e) -> {
+//                String text = (String) e.getSource();
+//                Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+//                boolean showAll = text == null || text.length() == 0;
+//                for (int i = 0, size = this.doneItemsFromParseSortedOnDate.size(); i < size; i++) {
+//                    //TODO!!! compare same case (upper/lower)
+//                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
+//                    compList.getComponentAt(i).setHidden(((Item) doneItemsFromParseSortedOnDate.get(i)).getText().toLowerCase().indexOf(text) < 0);
+//                }
+//                compList.animateLayout(ANIMATION_TIME_FAST);
+//            }, MyPrefs.defaultIconSizeInMM.getFloat());
+//        }
         //SEARCH
         if (true) { //TODO!!!: seardh algo crashes on statistics and won't let you exit/remove the search field
 //            getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats), MyPrefs.defaultIconSizeInMM.getFloat());

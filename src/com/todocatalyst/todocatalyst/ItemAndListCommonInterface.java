@@ -400,7 +400,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList);
 
-        public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner);
+    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner);
 
     /**
      * add subItemOrList to the list (for an ItemList or Category) or the list
@@ -417,8 +417,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * unfiltered list!
      */
 //    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList);
-        
-       public  boolean addToList(int index, ItemAndListCommonInterface subtask, boolean addAsOwner) ;
+    public boolean addToList(int index, ItemAndListCommonInterface subtask, boolean addAsOwner);
+
     /**
      *
      * @param newElement new item
@@ -428,10 +428,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return
      */
     public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefEltOrEndOfList);
-    
+
 //    public boolean addToList(ItemAndListCommonInterface newElement, int index, boolean addAfterRefEltOrEndOfList);
-
-
     /**
      *
      * @param item
@@ -1396,6 +1394,23 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
             }
         }
         return eltIds;
+    }
+/**
+ * add the objectId of elements in eltsToAddList to the list objIdStringList of ObjectIds (Strings) if they are not already there 
+ * @param objIdStringList
+ * @param eltsToAddList
+ * @return 
+ */
+    static public List<String> addListToObjectIdList(List<String> objIdStringList, List<ItemAndListCommonInterface> eltsToAddList) {
+//        List<String> objIdStringList = new ArrayList();
+        if (eltsToAddList != null) {
+            for (ItemAndListCommonInterface e : eltsToAddList) {
+                if (!objIdStringList.contains(e.getObjectIdP())) {
+                    objIdStringList.add(e.getObjectIdP());
+                }
+            }
+        }
+        return objIdStringList;
     }
 
     default public List<ItemAndListCommonInterface> getAdded(List newList, List oldList) {

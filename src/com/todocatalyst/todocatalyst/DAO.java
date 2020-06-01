@@ -4176,14 +4176,24 @@ public class DAO {
         //then execute the update
         //run update in background (all updated values are already available locally so no need to wait)
 //        executeBatchUpdate();
-        Display.getInstance().callSerially(() -> {
+//SEE problem in Todo list with batchUpdate (line 2798) - 
+        boolean forceSequentialSave = true;
+        if (forceSequentialSave) {
             batchUpdateObjects(update, true);
-        });
+        } else {
+            Display.getInstance().callSerially(() -> {
+                batchUpdateObjects(update, true);
+            });
+        }
 
 //        executeBatchDelete();
-        Display.getInstance().callSerially(() -> {
+        if (forceSequentialSave) {
             batchDeleteObjects(delete, true);
-        });
+        } else {
+            Display.getInstance().callSerially(() -> {
+                batchDeleteObjects(delete, true);
+            });
+        }
     }
 
     public void triggerParseUpdateOLD() {

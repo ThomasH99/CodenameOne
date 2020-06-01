@@ -1756,14 +1756,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * items, like the sub-tasks of a task, should the sub-items be deleted.
      *
      */
+    @Override
     public boolean deletePrepare(Date deleteDate) {
 
         //if a timer was active for this itemList, then remove that (and update any timed item even though it may get soft-deleted below)
         TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
 
         //since we're deleting the list, and thus soft-deleting all its tasks (and their subtasks, recursively), we don't need to remove the list as the tasks' owner!
-        List<? extends ItemAndListCommonInterface> tasks = getListFull();
-        for (Item item : (List<Item>) getListFull()) {
+        List<Item> tasks = (List)getListFull(); //w/o copy get a java.util.ConcurrentModificationException
+        for (Item item : tasks) {
             item.deletePrepare(deleteDate);
         }
 
@@ -1781,7 +1782,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             DAO.getInstance().saveNew(updatedMetaLists);
         }
 
-        ItemListList.getInstance().remove(this);
+        ItemListList.getInstance().removeFromList(this);
         DAO.getInstance().saveNew((ParseObject) ItemListList.getInstance(), false);
 
         FilterSortDef filter = getFilterSortDefN();

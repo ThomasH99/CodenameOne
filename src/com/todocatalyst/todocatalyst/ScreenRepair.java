@@ -1025,8 +1025,8 @@ public class ScreenRepair extends MyForm {
 //                Dialog.show("INFO", "Today Badge Count = " + DAO.getInstance().getBadgeCount(true, true), "OK", null);
                 Dialog.show("INFO", "Today Badge Count = " + todayLeafList.size() + "; millis=" + (end - start)
                         + "\nLEAF TASKS(" + todayLeafList.size() + ")= [" + todayLeafList + "]"
-                        + "\nTOPLEVEL(" + todayList.size() + ")=[" + todayList + "]"
-                        ,                         "OK", null);
+                        + "\nTOPLEVEL(" + todayList.size() + ")=[" + todayList + "]",
+                        "OK", null);
             }
         }));
 
@@ -1094,7 +1094,26 @@ public class ScreenRepair extends MyForm {
                 };
                 logForm.setLayout(BoxLayout.y());
                 logForm.setScrollableY(true);
-                logForm.getToolbar().addSearchCommand((e) -> {
+//                logForm.getToolbar().addSearchCommand((e) -> {
+//                    String txt = (String) e.getSource();
+//                    boolean searchOnLowerCaseOnly;
+////                    if (!txt.equals(txt.toLowerCase()))
+//                    searchOnLowerCaseOnly = txt.equals(txt.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
+////                    Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+//                    Container compList = logForm.getContentPane();
+//                    boolean showAll = txt == null || txt.length() == 0;
+//                    for (int i = 0, size = list.size(); i < size; i++) {
+//                        //https://www.codenameone.com/blog/toolbar-search-mode.html:
+//                        if (searchOnLowerCaseOnly) {
+//                            compList.getComponentAt(i).setHidden(((String) list.get(i)).toLowerCase().indexOf(txt) < 0);
+//                        } else {
+//                            compList.getComponentAt(i).setHidden(((String) list.get(i)).indexOf(txt) < 0);
+//                        }
+//                    }
+//                    compList.animateLayout(ANIMATION_TIME_FAST);
+//                }, MyPrefs.defaultIconSizeInMM.getFloat());
+
+                logForm.getToolbar().addSearchCommand(new MySearchCommand(logForm.getContentPane(), (e) -> {
                     String txt = (String) e.getSource();
                     boolean searchOnLowerCaseOnly;
 //                    if (!txt.equals(txt.toLowerCase()))
@@ -1111,14 +1130,15 @@ public class ScreenRepair extends MyForm {
                         }
                     }
                     compList.animateLayout(ANIMATION_TIME_FAST);
-                }, MyPrefs.defaultIconSizeInMM.getFloat());
+                }));
+
                 Container c = null;
                 for (String s : list) {
                     c = new SpanLabel(s);
                     logForm.addComponent(c);
                 }
 //                logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneCommandWithNoUpdate());
-                logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneUpdateWithParseIdMapCommand(true));
+                logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneUpdateWithParseIdMapCommand());
                 logForm.show();
                 logForm.scrollComponentToVisible(c); //scroll down to show last line in list
             }

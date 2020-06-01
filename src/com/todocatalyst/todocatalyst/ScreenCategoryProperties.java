@@ -78,9 +78,9 @@ public class ScreenCategoryProperties extends MyForm {
     /**
      * return true if (possibly modified) category can be saved
      */
-    public static String checkCategoryIsValidForSaving(String categoryName, Category category) {
-        return checkCategoryIsValidForSaving(categoryName, category, true);
-    }
+//    public static String checkCategoryIsValidForSaving(String categoryName, Category category) {
+//        return checkCategoryIsValidForSaving(categoryName, category, true);
+//    }
 
     public static String checkCategoryIsValidForSaving(String categoryName, Category category, boolean showErrorDialog) {
         //TODO extend to check valid subcategories, auto-words, ...
@@ -88,12 +88,11 @@ public class ScreenCategoryProperties extends MyForm {
 //        String type = listOrCategory instanceof Category?Category.CATEGORY:ItemList.ITEM_LIST;
         categoryName = MyUtil.removeTrailingPrecedingSpacesNewLinesEtc(categoryName);
         if (categoryName.isEmpty() && category.getObjectIdP() != null) {
-            errorMsg = Format.f("{0 category_or_list} name cannot be empty", Category.CATEGORY);
-        } else if (CategoryList.getInstance().findCategoryWithName(categoryName) != null
-                && CategoryList.getInstance().findCategoryWithName(categoryName) != category) //                return "Category \"" + description.getText() + "\" already exists";
+            errorMsg = Format.f("{0 category_or_list} name cannot be empty", Category.CATEGORY); //cannot delete text
+        } else if (CategoryList.getInstance().findCategoryWithName(categoryName,true) != null
+                && CategoryList.getInstance().findCategoryWithName(categoryName,true) != category) { //                return "Category \"" + description.getText() + "\" already exists";
         //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
-        {
-            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists, and more than one {0} with same name is not allowed. Please set a different name.", Category.CATEGORY, categoryName);
+            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists.\n\n Only one {0} with same name is allowed. Please set a different name.", Category.CATEGORY, categoryName);
         }
 
         if (errorMsg != null) {
@@ -161,7 +160,27 @@ public class ScreenCategoryProperties extends MyForm {
 //        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
         addStandardBackCommand();
 
-        if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
+        //DELETE
+        if (category.getObjectIdP() != null) { //only Delete categories already on Parse, not one you're just creating (use Cancel instead)
+            toolbar.addCommandToOverflowMenu(CommandTracked.create("Delete", null, (e) -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            Log.p("Clicked");
+//            item.revert(); //forgetChanges***/refresh
+//            previousForm.showBack(); //drop any changes
+//            DAO.getInstance().delete(category);
+//            category.softDelete();
+//            previousForm.refreshAfterEdit();
+////            previousForm.revalidate();
+//            previousForm.showBack(); //drop any changes
+//            showPreviousScreenOrDefault(previousForm, true);
+//</editor-fold>
+                DAO.getInstance().delete(category, false, true);
+                showPreviousScreen(true);
+            }));
+        }
+
+        //CANCEL
+        if (true||MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
             toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Log.p("Clicked");
@@ -176,23 +195,6 @@ public class ScreenCategoryProperties extends MyForm {
             });
         }
 
-        //DELETE
-        toolbar.addCommandToOverflowMenu(CommandTracked.create("Delete", null, (e) -> {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            Log.p("Clicked");
-//            item.revert(); //forgetChanges***/refresh
-//            previousForm.showBack(); //drop any changes
-//            DAO.getInstance().delete(category);
-//            category.softDelete();
-//            previousForm.refreshAfterEdit();
-////            previousForm.revalidate();
-//            previousForm.showBack(); //drop any changes
-//            showPreviousScreenOrDefault(previousForm, true);
-//</editor-fold>
-            DAO.getInstance().delete(category, false, true);
-            showPreviousScreen(true);
-        }));
-        
         if (Config.TEST) {
             if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
                 toolbar.addCommandToOverflowMenu("Show data issues", null, (e) -> {
@@ -317,7 +319,8 @@ public class ScreenCategoryProperties extends MyForm {
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
         }
 
-        setCheckIfSaveOnExit(() -> checkCategoryIsValidForSaving(categoryName.getText(), category) != null);
+        setCheckIfSaveOnExit(() -> 
+                checkCategoryIsValidForSaving(categoryName.getText(), category, true) == null);
 
         return content;
     }

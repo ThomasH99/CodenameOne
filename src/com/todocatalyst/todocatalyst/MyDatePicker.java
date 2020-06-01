@@ -18,6 +18,10 @@ import java.util.Map;
 class MyDatePicker extends Picker implements SwipeClear {
 
     String zeroValuePattern = "";
+//    boolean setEndOfSelectedDay;
+    private int timeOfSelectedDay;
+    public final static int START_OF_SELECTED_DAY = 0;
+    public final static int END_OF_SELECTED_DAY = 1;
 
 //    MyDatePicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
 //        this(null, parseIdMap, get, set);
@@ -43,18 +47,28 @@ class MyDatePicker extends Picker implements SwipeClear {
 
     MyDatePicker(Date date) {
         this();
-         if (date != null && date.getTime() != 0) {
+        if (date != null && date.getTime() != 0) {
             setDate(date);
         } else {
             setDate(new MyDate(0)); //UI: default date is undefined
         }
     }
-    MyDatePicker(Date date, String zeroValuePattern, boolean setEndOfSelectedDay) {
+
+    MyDatePicker(Date date, String zeroValuePattern, int timeOfSelectedDay) {
         this(date);
-        if (zeroValuePattern != null) this.zeroValuePattern = zeroValuePattern;
-       
+        if (zeroValuePattern != null) {
+            this.zeroValuePattern = zeroValuePattern;
+        }
+        ASSERT.that(timeOfSelectedDay == START_OF_SELECTED_DAY || this.timeOfSelectedDay == END_OF_SELECTED_DAY);
+        this.timeOfSelectedDay = timeOfSelectedDay;
     }
 
+    MyDatePicker(Date date, String zeroValuePattern) {
+        this(date);
+        if (zeroValuePattern != null) {
+            this.zeroValuePattern = zeroValuePattern;
+        }
+    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    MyDatePicker(String zeroValuePattern, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set, boolean setEndOfSelectedDay) {
@@ -96,14 +110,19 @@ class MyDatePicker extends Picker implements SwipeClear {
         //set date to Now if empty when button is clicked
         if (getDate().getTime() == 0) {
 //                setDate(new Date());
-            getDate().setTime(new MyDate().getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+            if (timeOfSelectedDay == END_OF_SELECTED_DAY) {
+                getDate().setTime(MyDate.getEndOfDay(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+            } else if (timeOfSelectedDay == START_OF_SELECTED_DAY) {
+                getDate().setTime(MyDate.getStartOfDay(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+            }
         }
         super.pressed();
     }
 
     /**
-    set date and notify listeners like if the picker had been used manually
-    @param date 
+     * set date and notify listeners like if the picker had been used manually
+     *
+     * @param date
      */
     public void setDateAndNotify(Date date) {
         setDate(date);
@@ -173,6 +192,7 @@ class MyDatePicker extends Picker implements SwipeClear {
 //            return title;
 //        }
 //</editor-fold>
+
     @Override
     public void clearFieldValue() {
         swipeClear();

@@ -232,6 +232,15 @@ public class CleanUpDataInconsistencies {
         return checkListForNotInParseSoftDeletedReferenceOwner(correctOwner, list, executeCleanup, true);
     }
 
+    /**
+     *
+     * @param correctOwner
+     * @param list
+     * @param executeCleanup
+     * @param checkOwnership
+     * @return true if list was modified (elements not on Parse removed,
+     * soft-deleted elements removed from list, or owner incorrect
+     */
     private boolean checkListForNotInParseSoftDeletedReferenceOwner(ItemAndListCommonInterface correctOwner, List<ItemAndListCommonInterface> list, boolean executeCleanup, boolean checkOwnership) {
         if (list == null) {
             return false;
@@ -339,7 +348,16 @@ public class CleanUpDataInconsistencies {
         return listModified;
     }
 
-    private boolean cleanUpDuplicatesInList(String description, List inputList, boolean executeCleanup) {
+    /**
+     * check if there are duplicates in the list, if executeCleanup then update
+     * inputList to remove all duplicates
+     *
+     * @param description
+     * @param inputList
+     * @param executeCleanup
+     * @return true if any duplicates were found
+     */
+    private boolean cleanUpDuplicatesInListOLD(String description, List inputList, boolean executeCleanup) {
         //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
         //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
         if (inputList == null) {
@@ -365,6 +383,43 @@ public class CleanUpDataInconsistencies {
             inputList.addAll(cleanList);
         }
         return someElementWereDeleted;
+    }
+
+    private boolean cleanUpDuplicatesInList(String description, List inputList, boolean executeCleanup) {
+        //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
+        //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
+        if (inputList == null) {
+            return false;
+        }
+        boolean duplicatesEncountered = false;
+        //other lists than ItemList
+        ASSERT.that(!(inputList instanceof ItemList));
+        Set seenElements = new HashSet(inputList.size());
+        int i = 0;
+//        int size = inputList.size();
+//        for (int i = 0; i < size; i++) {
+        while (i < inputList.size()) {
+            Object elt = inputList.get(i);
+            if (seenElements.contains(elt)) {
+//                log(description + " contains duplicate of \"" + elt + "\" at position " + i + " (list= " + inputList + ")");
+                log("List with duplicate. Element= \"" + elt + "\" at index=" + i + ", list=[" + inputList + "]");
+                logAction("Remove duplicate element");
+                duplicatesEncountered = true;
+                if (executeCleanup) {
+                    inputList.remove(i);
+                    i--;
+                }
+            } else {
+                seenElements.add(elt);
+            }
+            i++;
+        }
+//        boolean someElementWereDeleted = inputList.size() != seenElements.size();
+//        if (executeCleanup) {
+//            inputList.clear();
+//            inputList.addAll(seenElements);
+//        }
+        return duplicatesEncountered;
     }
 
     private boolean cleanUpReferencedFilterSortDef(ItemAndListCommonInterface filterOwner, FilterSortDef filterSortDef, boolean executeCleanup) {
@@ -1343,6 +1398,7 @@ public class CleanUpDataInconsistencies {
                     }
                 }
             }
+
             //check there are no dupliates in done 
             if (cleanUpDuplicatesInList("RepeatRule Done list", dones, executeCleanup)) {
                 if (executeCleanup) {
@@ -1369,9 +1425,9 @@ public class CleanUpDataInconsistencies {
             }
 
             //check there are no dupliates in undone 
-            if (cleanUpDuplicatesInList("RepeatRule Done list", dones, executeCleanup)) {
+            if (cleanUpDuplicatesInList("RepeatRule Undone list", undones, executeCleanup)) {
                 if (executeCleanup) {
-                    repeatRule.setListOfDoneInstances(dones);
+                    repeatRule.setListOfUndoneInstances(undones);
                 }
             };
             //check that all elements in Undone list refers back to RepeatRule
@@ -1443,51 +1499,53 @@ public class CleanUpDataInconsistencies {
 //                    }
 //                }
 //</editor-fold>
-            if (false) { //TODO: find and delete any RRs NOT referenced from any Item(WorkSlot
-                //delete repeat rules not referenced by any Item or WorkSlot
-                //construct hashmpas to effectively search for elements that point to a filter
-                Map<RepeatRuleParseObject, Item> itemsWithRepeatRule = new HashMap<>();
-
-                for (Item item : dao.getAllItems()) {
-                    if (item.getRepeatRuleN() != null) {
-                        itemsWithRepeatRule.put(item.getRepeatRuleN(), item);
-                    }
-                }
-
-                Map<RepeatRuleParseObject, WorkSlot> workSlotsWithRepeatRule = new HashMap<>();
-
-//        for (WorkSlot workSlot : dao.getAllWorkSlotsFromParse().getWorkSlotListFull()) {
-                List<WorkSlot> workSlots = dao.getAllWorkSlotsFromParse();
-                for (WorkSlot workSlot : workSlots) {
-                    if (workSlot.getRepeatRuleN() != null) {
-                        workSlotsWithRepeatRule.put(workSlot.getRepeatRuleN(), workSlot);
-                    }
-                }
-//        for (int i = 0, size = allRepeatRules.size(); i < size; i++) {
-//            RepeatRuleParseObject repeatRule = allRepeatRules.get(i);
-                for (RepeatRuleParseObject repeatRule2 : allRepeatRules) {
-
-                    //for every repeatRule, check if it is referenced and if not delete it
-                    if (itemsWithRepeatRule.get(repeatRule2) == null && workSlotsWithRepeatRule.get(repeatRule2) == null) { //no refs to repeatRule
-                        log("RepeatRule (ObjId=" + repeatRule2.getObjectIdP() + ") is not referenced by any Item or WorkSlot", logLevel);
-                        if (executeCleanup) {
-                            dao.delete(repeatRule2, true, false); //delete filters without ref to both objectId and Screen
-//                    allRepeatRules.remove(repeatRule); //NOT necessary since we have a for loop
-                        }
-                    } else { //if RR is referenced
-                        //clean up wrong references in list of repeat instances
-//            List<ItemAndListCommonInterface> repeatInstanceList = repeatRule.getListOfUndoneRepeatInstances();
-                        List<RepeatRuleObjectInterface> undoneInstances = repeatRule2.getListOfUndoneInstances();
-                        cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(repeatRule2, undoneInstances, executeCleanup);
-                        //clean up duplicates in list of repeat instances
-                        cleanUpDuplicatesInList("RepeatRule instances " + repeatRule2, undoneInstances, executeCleanup);
-                        if (executeCleanup) {
-                            repeatRule2.setListOfUndoneInstances(undoneInstances);
-                            dao.saveNew(repeatRule2, false);
-                        }
-                    }
-                }
-            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (false) { //TODO: find and delete any RRs NOT referenced from any Item(WorkSlot
+//                //delete repeat rules not referenced by any Item or WorkSlot
+//                //construct hashmpas to effectively search for elements that point to a filter
+//                Map<RepeatRuleParseObject, Item> itemsWithRepeatRule = new HashMap<>();
+//
+//                for (Item item : dao.getAllItems()) {
+//                    if (item.getRepeatRuleN() != null) {
+//                        itemsWithRepeatRule.put(item.getRepeatRuleN(), item);
+//                    }
+//                }
+//
+//                Map<RepeatRuleParseObject, WorkSlot> workSlotsWithRepeatRule = new HashMap<>();
+//
+////        for (WorkSlot workSlot : dao.getAllWorkSlotsFromParse().getWorkSlotListFull()) {
+//                List<WorkSlot> workSlots = dao.getAllWorkSlotsFromParse();
+//                for (WorkSlot workSlot : workSlots) {
+//                    if (workSlot.getRepeatRuleN() != null) {
+//                        workSlotsWithRepeatRule.put(workSlot.getRepeatRuleN(), workSlot);
+//                    }
+//                }
+////        for (int i = 0, size = allRepeatRules.size(); i < size; i++) {
+////            RepeatRuleParseObject repeatRule = allRepeatRules.get(i);
+//                for (RepeatRuleParseObject repeatRule2 : allRepeatRules) {
+//
+//                    //for every repeatRule, check if it is referenced and if not delete it
+//                    if (itemsWithRepeatRule.get(repeatRule2) == null && workSlotsWithRepeatRule.get(repeatRule2) == null) { //no refs to repeatRule
+//                        log("RepeatRule (ObjId=" + repeatRule2.getObjectIdP() + ") is not referenced by any Item or WorkSlot", logLevel);
+//                        if (executeCleanup) {
+//                            dao.delete(repeatRule2, true, false); //delete filters without ref to both objectId and Screen
+////                    allRepeatRules.remove(repeatRule); //NOT necessary since we have a for loop
+//                        }
+//                    } else { //if RR is referenced
+//                        //clean up wrong references in list of repeat instances
+////            List<ItemAndListCommonInterface> repeatInstanceList = repeatRule.getListOfUndoneRepeatInstances();
+//                        List<RepeatRuleObjectInterface> undoneInstances = repeatRule2.getListOfUndoneInstances();
+//                        cleanUpBadObjectReferencesInListInRepeatRuleInstanceList(repeatRule2, undoneInstances, executeCleanup);
+//                        //clean up duplicates in list of repeat instances
+//                        cleanUpDuplicatesInList("RepeatRule instances " + repeatRule2, undoneInstances, executeCleanup);
+//                        if (executeCleanup) {
+//                            repeatRule2.setListOfUndoneInstances(undoneInstances);
+//                            dao.saveNew(repeatRule2, false);
+//                        }
+//                    }
+//                }
+//            }
+//</editor-fold>
         }
 
         setLogPrefix("");
@@ -2379,32 +2437,34 @@ public class CleanUpDataInconsistencies {
 //        int oldParseLogLevel = Logger.getInstance().getLogLevel();
         Dialog ip = new InfiniteProgress().showInfiniteBlocking();
 
+        long startAnalysisTime = System.currentTimeMillis();
+
         Logger.getInstance().setLogLevel(Log.ERROR);
         setLog(executeCleanup);
 
-        log("-----------------------------------------------------", logLevel);
-        log("STARTING (execute=" + executeCleanup + ") ----------------------------", logLevel);
+        log("-----------------------------------------------------");
+        log("STARTING (execute=" + executeCleanup + ") ----------------------------");
 
-        log("-----------------------------------------------------", logLevel);
-        log("ITEMLISTS", logLevel);
-        log("-----------------------------------------------------", logLevel);
+        log("-----------------------------------------------------");
+        log("ITEMLISTS");
+        log("-----------------------------------------------------");
         cleanUpAllItemLists(executeCleanup);
 
-        log("-----------------------------------------------------", logLevel);
-        log("TEMPLATES", logLevel);
+        log("-----------------------------------------------------");
+        log("TEMPLATES");
         //TODO!!!: check that tasks in AllTemplates list are all marked as templates!!
-        log("-----------------------------------------------------", logLevel);
+        log("-----------------------------------------------------");
         cleanUpTemplates(executeCleanup);
 //        cleanUpWorkSlots(getAllWorkSlotsFromParse()); //Clean up links to removed ItemLists
 //        TemplateList templateList = getTemplateList();
 //        cleanUpAllItemListsFromParse(getAllTemplatesByQuery(), templateList); //repair raw list of Categories first (will attach any non-empty categories to CategoryList before cleaning up those categories
 //        cleanUpBadObjectReferencesInListOfCategoriesOrItemLists(templateList); //Clean up links to removed Categories
-//        Log.p("CLEANUP: NOT DONE YET", logLevel);
-//        Log.p("CLEANUP: -----------------------------------------------------", logLevel);
+//        Log.p("CLEANUP: NOT DONE YET");
+//        Log.p("CLEANUP: -----------------------------------------------------");
 
-        log("-----------------------------------------------------", logLevel);
-        log("CATEGORIES", logLevel);
-        log("-----------------------------------------------------", logLevel);
+        log("-----------------------------------------------------");
+        log("CATEGORIES");
+        log("-----------------------------------------------------");
 //        CategoryList categoryList = getCategoryList();
 //        cleanUpAllCategoriesFromParse(getAllCategoriesFromParse(), categoryList); 
         cleanUpAllCategories(executeCleanup);
@@ -2412,41 +2472,49 @@ public class CleanUpDataInconsistencies {
 //        cleanUpBadObjectReferencesInListOfCategoriesOrItemLists(categoryList); //Clean up links to removed Categories
 
         //clean up items *after* itemlists, templatelist and categories have clean up
-        log("-----------------------------------------------------", logLevel);
-        log("ITEMS", logLevel);
-        log("-----------------------------------------------------", logLevel);
+        log("-----------------------------------------------------");
+        log("ITEMS");
+        log("-----------------------------------------------------");
         cleanUpItemsFromParse(executeCleanup); //Clean up all Items and their pointers first, true=includeTemplates
 
         //Clean up filters *after* cleaning up lists etc since we check if any list/project/category reference the filters
-        log("-----------------------------------------------------", logLevel);
-        log("FILTERS", logLevel);
-        log("-----------------------------------------------------", logLevel);
+        log("-----------------------------------------------------");
+        log("FILTERS");
+        log("-----------------------------------------------------");
         cleanUpFilterSortDefs(); //Clean up links to removed ItemLists
 //        cleanUpFilterSortDefs(getAllFilterSortDefsFromParse()); //Clean up links to removed ItemLists
 
-        log("-----------------------------------------------------", logLevel);
-        log("WORKSLOTS", logLevel);
-        log("-----------------------------------------------------", logLevel);
+        log("-----------------------------------------------------");
+        log("WORKSLOTS");
+        log("-----------------------------------------------------");
         cleanUpAllWorkSlotsFromParse(executeCleanup); //NB! Execute cleanup of WorkSlots *after* clean up of all workslot owners (Item, WorkSlot, RepeatRule) to ensure that have added themselves as owners to WorkSlot (otherwise the workslots might get deleted here)
 //        cleanUpWorkSlots(getAllWorkSlotsFromParse()); //Clean up links to removed ItemLists
 
-        log("-----------------------------------------------------", logLevel);
-        log("REPEATRULES", logLevel);
-        log("-----------------------------------------------------", logLevel);
+        log("-----------------------------------------------------");
+        log("REPEATRULES");
+        log("-----------------------------------------------------");
         cleanUpAllRepeatRulesFromParse(executeCleanup);
 
+        Logger.getInstance().setLogLevel(Log.DEBUG);  //re-enable logging of Parse traffic
+        long analysisEndTime = System.currentTimeMillis();
+        log("********Duration go through data= " + MyDate.formatDurationStd(analysisEndTime - startAnalysisTime));
+        
         if (executeCleanup) {
-            log("-----------------------------------------------------", logLevel);
-            log("SAVING CLEANED ELEMENTS -----------------------------", logLevel);
-            log("-----------------------------------------------------", logLevel);
+            log("-----------------------------------------------------");
+            log("SAVING CLEANED ELEMENTS -----------------------------");
+            log("-----------------------------------------------------");
 
-            Logger.getInstance().setLogLevel(Log.DEBUG);  //re-enable logging of Parse traffic
+            long startSaveTime = System.currentTimeMillis();
 
             DAO.getInstance().triggerParseUpdate(); //do all saves!
+            long saveEndTime = System.currentTimeMillis();
+
+            log("Duration go through data=" + MyDate.formatDurationStd(saveEndTime - startSaveTime));
+
         }
-        log("-----------------------------------------------------", logLevel);
-        log("ALL CLEANUP FINISHED --------------------------------", logLevel);
-        log("-----------------------------------------------------", logLevel);
+        log("-----------------------------------------------------");
+        log("FINISHED --------------------------------------------");
+        log("-----------------------------------------------------");
 
         ip.dispose();
         Dialog.show("", executeCleanup ? "Cleanup finished" : "Finding issues finished", "OK", null);

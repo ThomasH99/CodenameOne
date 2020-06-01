@@ -183,9 +183,11 @@ public class MyTree2 extends ContainerScrollY {
         this.stickyHeaderGen = stickyHeaderGen;
 
         FilterSortDef itemListFilteredSorted;
-        if (MyPrefs.hideStickyHeadersForSortedLists.getBoolean() && this.stickyHeaderGen == null) {
+        if (MyPrefs.hideStickyHeadersForSortedLists.getBoolean()) {
+            this.stickyHeaderGen = (item) -> null; //will also override any alerady given value for stickyHeaderGen
+        } else if (this.stickyHeaderGen == null) {
             if (this.model instanceof ItemList
-//                    && (itemListFilteredSorted = ((ItemList) this.model).getFilterSortDefN()) != null
+                    //                    && (itemListFilteredSorted = ((ItemList) this.model).getFilterSortDefN()) != null
                     && (itemListFilteredSorted = ((ItemList) this.model).getFilterSortDef(true)) != null
                     && itemListFilteredSorted.isSortOn()) {
 //            FilterSortDef itemListFilteredSorted = ((ItemList) model).getFilterSortDef();

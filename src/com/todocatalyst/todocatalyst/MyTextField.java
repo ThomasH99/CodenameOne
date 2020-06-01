@@ -46,6 +46,8 @@ class MyTextField extends TextField {
         }
 //        setIgnorePointerEvents(true);xxx;
         setBlockLead(false);//xxx;
+//        setPreferredTabIndex(1);
+        setTraversable(false); //ensures Done button on virtual keyboard?
         if(false)putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
 
         setAlignment(alignment);
@@ -73,7 +75,8 @@ class MyTextField extends TextField {
     }
     
         MyTextField(String hint, int columns,  int constraint) {
-        super("", hint, columns, constraint);
+//        super("", hint, columns, constraint);
+        this(hint, columns, 1, 1, 2000, ANY, null, null, null, LEFT);
         setBlockLead(false);//xxx;
         putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
 
