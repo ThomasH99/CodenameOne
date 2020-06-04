@@ -420,7 +420,7 @@ public class MyTree2 extends ContainerScrollY {
      * @param parent
      * @return
      */
-    static ContainerScrollY insertSubtaskContainer(Container parent) {
+    static ContainerScrollY getInsertSubtaskCont(Container parent) {
         //if there is already a subtask container, return it
         if (parent.getLayout() instanceof BorderLayout) {
             BorderLayout borderLayout = (BorderLayout) parent.getLayout();
@@ -429,7 +429,7 @@ public class MyTree2 extends ContainerScrollY {
             }
         }
         //else create new container:
-        ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS));
+        ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS)); dest.setName("ExpandedSubtasks");
         dest.setUIID("ExpandedList");
         parent.addComponent(BorderLayout.CENTER, dest);
         return dest;
@@ -443,7 +443,7 @@ public class MyTree2 extends ContainerScrollY {
      * @param subtaskComp
      */
     static void insertAtPositionOfFirstSubtask(Container parent, Component subtaskComp) {
-        ContainerScrollY dest = insertSubtaskContainer(parent);
+        ContainerScrollY dest = getInsertSubtaskCont(parent);
         dest.addComponent(0, subtaskComp); //always insert at first position
     }
 
@@ -460,7 +460,7 @@ public class MyTree2 extends ContainerScrollY {
 //        ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS));
 //        dest.setUIID("ExpandedList");
 //        parent.addComponent(BorderLayout.CENTER, dest);
-        ContainerScrollY dest = insertSubtaskContainer(parent);
+        ContainerScrollY dest = getInsertSubtaskCont(parent);
         buildBranch(o, depth, dest, expandAllLevels);
 //        if (isInitialized() && animate) {
 //            // prevent a race condition on node expansion contraction

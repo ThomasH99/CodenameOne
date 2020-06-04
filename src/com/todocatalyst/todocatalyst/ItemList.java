@@ -82,6 +82,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    private WorkSlotList workSlotListBuffer;
 //    private WorkTimeDefinition workTimeDefinitionBuffer;
     private WorkTimeAllocator workTimeAllocator; //calculated when needed
+    private Character itemListIcon;
+
+    public void setItemListIcon(char itemListIcon) {
+        this.itemListIcon = itemListIcon;
+    }
+
+    public Character getItemListIcon() {
+        return itemListIcon;
+    }
 
     /**
      * used to save the underlying list when ItemList is not a ParseObject
@@ -138,6 +147,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public ItemList(String listName, boolean temporaryNoSaveList) {
 //        this(listName, null, null, temporaryNoSaveList, false);
         this(listName, null, null, temporaryNoSaveList);
+    }
+
+    public ItemList(String listName, boolean temporaryNoSaveList, char itemListIcon, boolean useDefaultFilter) {
+        this(listName, temporaryNoSaveList);
+        setItemListIcon(itemListIcon);
+        setUseDefaultFilter(useDefaultFilter);
     }
 
 //    public ItemList(boolean saveImmediatelyToParse, String listName) {
@@ -1074,7 +1089,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        List<? extends ItemAndListCommonInterface> list = getListFull();
 //        FilterSortDef filterSortDef = getFilterSortDef();
 //        FilterSortDef filterSortDef = getFilterSortDefN();
-        FilterSortDef filterSortDef = getFilterSortDef(true);
+//        FilterSortDef filterSortDef = getFilterSortDef(true);
+        FilterSortDef filterSortDef = getFilterSortDef();
         if (false && Config.TEST) {
             Log.p("Calling getList() for list=" + this.getText() + (filterSortDef != null ? (" Filter defined, options=" + filterSortDef.getFilterOptions()) : "Filter NOT defined"));// + "; filter=" + getFilterSortDef());
         }
@@ -1516,7 +1532,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return toString(ToStringFormat.TOSTRING_COMMA_SEPARATED_LIST);
 //        return getText().length() != 0 ? getText() : getObjectIdP();
 //        return getText() + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "") + showSubtasks ? ((getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "")  : "");
-        return getText() +(isSystemList()?"[SYS:"+getSystemName()+"]":"")+ " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "")
+        return getText() + (isSystemList() ? "[SYS:" + getSystemName() + "]" : "") + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "")
                 + (showSubtasks ? (getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "") : "");
     }
 
@@ -1670,6 +1686,16 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        filteredSortedList = null;
     }
 
+    private boolean useDefaultFilter;
+
+    boolean isUseDefaultFilter() {
+        return useDefaultFilter;
+    }
+
+    void setUseDefaultFilter(boolean useDefaultFilter) {
+        this.useDefaultFilter = useDefaultFilter;
+    }
+
     @Override
     public void setFilterSortDef(FilterSortDef filterSortDef) {
         setFilterSortDef(filterSortDef, false);
@@ -1680,6 +1706,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
         filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
         return filterSortDef;
+    }
+
+    public FilterSortDef getFilterSortDef() {
+        return getFilterSortDef(isUseDefaultFilter());
     }
 
     //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1763,7 +1793,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
 
         //since we're deleting the list, and thus soft-deleting all its tasks (and their subtasks, recursively), we don't need to remove the list as the tasks' owner!
-        List<Item> tasks = (List)getListFull(); //w/o copy get a java.util.ConcurrentModificationException
+        List<Item> tasks = (List) getListFull(); //w/o copy get a java.util.ConcurrentModificationException
         for (Item item : tasks) {
             item.deletePrepare(deleteDate);
         }

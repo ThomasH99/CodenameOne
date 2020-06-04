@@ -556,13 +556,14 @@ public class DAO {
         for (int i = 0, size = list.size(); i < size; i++) {
             Object val = list.get(i);
             if (val == null) {//&& Config.TEST) {
-                ASSERT.that(val != null, "NULL ELEMENT IN LIST - REMOVING IT!!!! List=" + list);
+                ASSERT.that(val != null, "NULL ELEMENT IN LIST - REMOVING IT!!!! index="+i+", size="+size+", List=" + list);
                 list.remove(i);
                 size--;
-            }
-            list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) val));
-            if (Config.TEST) {
-                ASSERT.that(list.get(i) != null, () -> "null returned from cache for object=" + val + "; for list=" + list);
+            } else {
+                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) val));
+                if (Config.TEST) {
+                    ASSERT.that(list.get(i) != null, () -> "null returned from cache for object=" + val + "; for list=" + list);
+                }
             }
         }
         return list;

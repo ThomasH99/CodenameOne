@@ -26,17 +26,21 @@ import com.codename1.io.ConnectionRequest;
 import com.codename1.io.Log;
 import com.codename1.io.NetworkManager;
 import com.codename1.ui.Display;
+import com.codename1.ui.Form;
 
 /**
- * <p>The analytics service allows an application to report its usage, it is seamlessly
- * invoked by GUI builder applications if analytics is enabled for your application but can
- * work just as well for handcoded apps!</p>
- * <p>To enable analytics just use the {@link #init(java.lang.String, java.lang.String)} 
- * method of the analytics service. For most typical usage you should also invoke the
- * {@link #setAppsMode(boolean)} method with {@code true}. If you are 
- * not using the GUI builder invoke the visit method whenever you would like to log a 
- * page view event.</p>
- * 
+ * <p>
+ * The analytics service allows an application to report its usage, it is
+ * seamlessly invoked by GUI builder applications if analytics is enabled for
+ * your application but can work just as well for handcoded apps!</p>
+ * <p>
+ * To enable analytics just use the
+ * {@link #init(java.lang.String, java.lang.String)} method of the analytics
+ * service. For most typical usage you should also invoke the
+ * {@link #setAppsMode(boolean)} method with {@code true}. If you are not using
+ * the GUI builder invoke the visit method whenever you would like to log a page
+ * view event.</p>
+ *
  *
  * @author Shai Almog
  */
@@ -55,7 +59,9 @@ public class MyAnalyticsService {
     https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#exception
      */
     /**
-     * Indicates whether analytics server failures should brodcast an error event
+     * Indicates whether analytics server failures should brodcast an error
+     * event
+     *
      * @return the failSilently
      */
     public static boolean isFailSilently() {
@@ -63,7 +69,9 @@ public class MyAnalyticsService {
     }
 
     /**
-     * Indicates whether analytics server failures should brodcast an error event
+     * Indicates whether analytics server failures should brodcast an error
+     * event
+     *
      * @param aFailSilently the failSilently to set
      */
     public static void setFailSilently(boolean aFailSilently) {
@@ -71,7 +79,9 @@ public class MyAnalyticsService {
     }
 
     /**
-     * Apps mode allows improved analytics using the newer google analytics API designed for apps
+     * Apps mode allows improved analytics using the newer google analytics API
+     * designed for apps
+     *
      * @return the appsMode
      */
     public static boolean isAppsMode() {
@@ -79,8 +89,10 @@ public class MyAnalyticsService {
     }
 
     /**
-     * Apps mode allows improved analytics using the newer google analytics API designed for apps.
-     * Most developers should invoke this method with {@code true}.
+     * Apps mode allows improved analytics using the newer google analytics API
+     * designed for apps. Most developers should invoke this method with
+     * {@code true}.
+     *
      * @param aAppsMode the appsMode to set
      */
     public static void setAppsMode(boolean aAppsMode) {
@@ -93,7 +105,7 @@ public class MyAnalyticsService {
 
     /**
      * Indicates whether analytics is enabled for this application
-     * 
+     *
      * @return true if analytics is enabled
      */
     public static boolean isEnabled() {
@@ -101,7 +113,9 @@ public class MyAnalyticsService {
     }
 
     /**
-     * Indicates if the analytics is enabled, subclasses must override this method to process their information
+     * Indicates if the analytics is enabled, subclasses must override this
+     * method to process their information
+     *
      * @return true if analytics is enabled
      */
     protected boolean isAnalyticsEnabled() {
@@ -110,10 +124,11 @@ public class MyAnalyticsService {
 
     /**
      * Initializes google analytics for this application
-     * 
+     *
      * @param agent the google analytics tracking agent
-     * @param domain a domain to represent your application, commonly you should use your package name as a URL (e.g. 
-     * com.mycompany.myapp should become: myapp.mycompany.com)
+     * @param domain a domain to represent your application, commonly you should
+     * use your package name as a URL (e.g. com.mycompany.myapp should become:
+     * myapp.mycompany.com)
      */
     public static void init(String agent, String domain) {
         if (instance == null) {
@@ -125,6 +140,7 @@ public class MyAnalyticsService {
 
     /**
      * Allows installing an analytics service other than the default
+     *
      * @param i the analytics service implementation.
      */
     public static void init(MyAnalyticsService i) {
@@ -136,9 +152,10 @@ public class MyAnalyticsService {
     }
 
     /**
-     * Sends an asynchronous notice to the server regarding a page in the application being viewed, notice that
-     * you don't need to append the URL prefix to the page string.
-     * 
+     * Sends an asynchronous notice to the server regarding a page in the
+     * application being viewed, notice that you don't need to append the URL
+     * prefix to the page string.
+     *
      * @param page the page viewed
      * @param referer the source page
      */
@@ -148,11 +165,14 @@ public class MyAnalyticsService {
 
     /**
      * Subclasses should override this method to track page visits
+     *
      * @param page the page visited
      * @param referer the page from which the user came
      */
     private void visitPage(String page, String referer) {
-        if (MyPrefs.disableGoogleAnalytics.getBoolean()) return;
+        if (MyPrefs.disableGoogleAnalytics.getBoolean()) {
+            return;
+        }
         if (appsMode) {
             // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#apptracking
             ConnectionRequest req = GetGARequest();
@@ -171,7 +191,7 @@ public class MyAnalyticsService {
 //            Log.p("Analytics VISIT: " + req.getRequestBody());
             Log.p("Analytics VISIT: " + "Page=" + cleanedPageId);// + " Ref=" + cleanReferer);
 //            if (!Config.FULLY_LOCAL_STORAGE)
-                NetworkManager.getInstance().addToQueue(req);
+            NetworkManager.getInstance().addToQueue(req);
         } else {
             String url = Display.getInstance().getProperty("cloudServerURL", "https://codename-one.appspot.com/") + "anal";
             ConnectionRequest r = new ConnectionRequest();
@@ -192,19 +212,21 @@ public class MyAnalyticsService {
             r.addArgument("d", instance.domain);
             r.setPriority(ConnectionRequest.PRIORITY_LOW);
 //            if (!Config.FULLY_LOCAL_STORAGE)
-                NetworkManager.getInstance().addToQueue(r);
+            NetworkManager.getInstance().addToQueue(r);
         }
     }
 
     /**
-    
-    @param eventCategory can be null
-    @param eventAction can be null
-    @param eventLabel can be null
-    @param eventValue only send if >=0
+     *
+     * @param eventCategory can be null
+     * @param eventAction can be null
+     * @param eventLabel can be null
+     * @param eventValue only send if >=0
      */
     private void eventHit(String eventCategory, String eventAction, String eventLabel, int eventValue) {
-        if (MyPrefs.disableGoogleAnalytics.getBoolean()) return;
+        if (MyPrefs.disableGoogleAnalytics.getBoolean()) {
+            return;
+        }
 //        if(appsMode) {
         // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#apptracking
         ConnectionRequest req = GetGARequest();
@@ -238,7 +260,7 @@ public class MyAnalyticsService {
 //        Log.p("Analytics EVENT: " + req.getRequestBody()); //return null
         Log.p("Analytics EVENT: " + "Cat=" + ecCleaned + " Act=" + eaCleaned + " Lab=" + elCleaned + " Val=" + eventValue);
 //        if (!Config.FULLY_LOCAL_STORAGE)
-            NetworkManager.getInstance().addToQueue(req);
+        NetworkManager.getInstance().addToQueue(req);
     }
 
     static void event(String eventCategory, String eventAction, String eventLabel, int eventValue) {
@@ -256,17 +278,23 @@ public class MyAnalyticsService {
 
     static void event(String eventAction) {
 //        event((MyForm) Display.getInstance().getCurrent(), eventAction == null || eventAction.length() == 0 ? "<none?!>" : eventAction, null, -1);
-        event((MyForm) MyForm.getCurrentFormAfterClosingDialogOrMenu(), eventAction == null || eventAction.length() == 0 ? "<none?!>" : eventAction, null, -1);
+//        event((MyForm) MyForm.getCurrentFormAfter ClosingDialogOrMenu(), eventAction == null || eventAction.length() == 0 ? "<none?!>" : eventAction, null, -1);
+        Form f = Display.getInstance().getCurrent();
+        event(f instanceof MyForm ? (MyForm) f : null, eventAction == null || eventAction.length() == 0 ? "<none?!>" : eventAction, null, -1);
     }
 
     /**
-     * In apps mode we can send information about an exception to the analytics server
+     * In apps mode we can send information about an exception to the analytics
+     * server
+     *
      * @param t the exception
-     * @param message up to 150 character message, 
+     * @param message up to 150 character message,
      * @param fatal is the exception fatal
      */
     public static void sendCrashReport(Throwable t, String message, boolean fatal) {
-        if (MyPrefs.disableGoogleAnalytics.getBoolean() || !appsMode) return;
+        if (MyPrefs.disableGoogleAnalytics.getBoolean() || !appsMode) {
+            return;
+        }
 
         // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#exception
         ConnectionRequest req = GetGARequest();
@@ -290,7 +318,7 @@ public class MyAnalyticsService {
 //        Log.p("Analytics CRASH: " + req.getRequestBody());
         Log.p("Analytics CRASH: " + "Throwable=\"" + t + "\", Msg (len=" + messageCleaned.length() + ")=\"" + messageCleaned + "\", Fatal=\"" + (fatal ? "YES\"" : "no\""));
 //        if (!Config.FULLY_LOCAL_STORAGE)
-            NetworkManager.getInstance().addToQueue(req);
+        NetworkManager.getInstance().addToQueue(req);
     }
 
     private static ConnectionRequest GetGARequest() {

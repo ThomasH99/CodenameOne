@@ -1565,7 +1565,7 @@ public class MyDate extends Date {
         long lastMidnight = cal.getTime().getTime();
         long lengthOfDay = HOUR_IN_MILISECONDS * 24;
         long time = date.getTime();
-        String str = "";
+        String str = null; //"";
 //        if (date.getTime() == 0) {
 //            str = "No date"; //"NONE"
 //        } else 
@@ -1585,6 +1585,7 @@ public class MyDate extends Date {
             return "No date"; //"NONE"
         }
         java.util.Calendar cal = java.util.Calendar.getInstance();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        java.util.Calendar cal = java.util.Calendar.getInstance(TimeZone.getDefault());
 //        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
 //        calendar.setTime(source);
@@ -1592,14 +1593,15 @@ public class MyDate extends Date {
 //        cal.setTime(new Date(System.currentTimeMillis() - tz.getRawOffset()));
 //        cal.setTime(new Date(date.getTime() - tz.getRawOffset()));
 //        cal.setTime(new Date(date.getTime() ));
+//</editor-fold>
         cal.setTime(date);
         com.codename1.l10n.DateFormat dtfmt;
 //        com.codename1.l10n.DateFormat timeFmt;
         String str;
         //SimpleDateFormat("EEE, yyyy-MM-dd KK:mm a"); //http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
         if (useUSformat) {
-            if (useYesterdayTodayTomorrow) {
-                str = formatAsYesterdayTodayTomorrow(date);
+            if (useYesterdayTodayTomorrow && (str = formatAsYesterdayTodayTomorrow(date)) != null) {
+//                str = formatAsYesterdayTodayTomorrow(date);
                 if (includeTimeOfDay) {
 //                    dtfmt = new SimpleDateFormat(" KK:mm a");
                     dtfmt = new SimpleDateFormat("KK:mm a");
@@ -1613,8 +1615,8 @@ public class MyDate extends Date {
                 str = dtfmt.format(cal.getTime());
             }
         } else {
-            if (useYesterdayTodayTomorrow) {
-                str = formatAsYesterdayTodayTomorrow(date);
+            if (useYesterdayTodayTomorrow && (str = formatAsYesterdayTodayTomorrow(date)) != null) {
+//                str = formatAsYesterdayTodayTomorrow(date);
                 if (includeTimeOfDay) {
                     dtfmt = new SimpleDateFormat("HH:mm");
                     str = str + (str.length() != 0 ? " " : "") + dtfmt.format(cal.getTime()); //add space before time if not first string
@@ -1682,8 +1684,8 @@ public class MyDate extends Date {
         return formatDateSmart(date, false, false);
     }
 
-    static public String formatDateSmart(Date date, boolean alwaysShowTimeOfDay) {
-        return formatDateSmart(date, alwaysShowTimeOfDay, false);
+    static public String formatDateSmart(Date date, boolean forceShowTimeOfDay) {
+        return formatDateSmart(date, forceShowTimeOfDay, false);
     }
 
     /**
@@ -1720,12 +1722,12 @@ public class MyDate extends Date {
         String timeOfDateFormatPrecSpace = " H'h'mm";
 
         if (MyPrefs.smartDatesShowOnlyTimeOfDayToday.getBoolean() && isToday(date)) { //            return new SimpleDateFormat("HH'h'mm").format(date);
-            return new SimpleDateFormat(timeOfDateFormat).format(date);
+            return "Today "+(new SimpleDateFormat(timeOfDateFormat).format(date));
         }
 
         if (MyPrefs.smartDatesShowYesterdayAsYesterday.getBoolean() && isYesterday(date)) {
             return "Yesterday"
-                    + ((MyPrefs.smartDatesShowTimeOfDayForPastDates.getBoolean() || forceShowTimeOfDay)
+                    + ((true ||MyPrefs.smartDatesShowTimeOfDayForPastDates.getBoolean() || forceShowTimeOfDay)
                     ? new SimpleDateFormat(timeOfDateFormatPrecSpace).format(date) : "");
         }
 
@@ -1733,16 +1735,16 @@ public class MyDate extends Date {
 //        if (diff <= MyDate.DAY_IN_MILLISECONDS) {
 //        if ((date.getTime() >= startOfToday.getTime() && date.getTime() < startOfTomorrow.getTime()) //nextcoming week
         //within next 7 days: "Mon13h"
-        if ((MyPrefs.smartDatesShowOnlyWeekdayAndTimeForNextcomingWeek.getBoolean() && isNextcomingWeek(date))){//  || (forceShowPastDatesAsSmart && isPreviousWeek(date))) { //previous week
+        if ((MyPrefs.smartDatesShowOnlyWeekdayAndTimeForNextcomingWeek.getBoolean() && isNextcomingWeek(date))) {//  || (forceShowPastDatesAsSmart && isPreviousWeek(date))) { //previous week
 //            return new SimpleDateFormat("EEE HH'h'mm").format(date);
 //            return new SimpleDateFormat("EEE H'h'mm").format(date);
-            return new SimpleDateFormat("EEE" + timeOfDateFormatPrecSpace+(forceShowTimeOfDay?timeOfDateFormatPrecSpace:"")).format(date);
+            return new SimpleDateFormat("EEE" + timeOfDateFormatPrecSpace + (forceShowTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date);
         }
 
         //within next 365 days: "Jun11"
 //        if (diff <= MyDate.DAY_IN_MILLISECONDS * 365) {
 //            if (date.getTime() < startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * 365) {
-        if (MyPrefs.smartDatesShowOnlyMonDayForNext365Days.getBoolean() && isNextcomingYear(date)){// || (forceShowPastDatesAsSmart && isPreviousYear(date))) {
+        if (MyPrefs.smartDatesShowOnlyMonDayForNext365Days.getBoolean() && isNextcomingYear(date)) {// || (forceShowPastDatesAsSmart && isPreviousYear(date))) {
 //            return new SimpleDateFormat("MMM dd" + (forceShowTimeOfDay ? " H'h'mm" : "")).format(date);
             return new SimpleDateFormat("MMM dd" + (forceShowTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date);
         }
@@ -2303,7 +2305,7 @@ public class MyDate extends Date {
 //        Calendar cal = Calendar.getInstance();
 //        cal.setTime(date1);
 //        return "Week " + cal.get(Calendar.WEEK_OF_YEAR) + " " + cal.get(Calendar.YEAR);
-        SimpleDateFormat dtfmt = new SimpleDateFormat("w yyyy"); //should give "Week 51 2017"
+        SimpleDateFormat dtfmt = new SimpleDateFormat("w, yyyy"); //should give "Week 51 2017"
         return "Week " + dtfmt.format(date1);
 
     }

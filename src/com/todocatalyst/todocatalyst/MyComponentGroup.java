@@ -34,12 +34,12 @@ import java.util.Vector;
  * @author Thomas
  */
 class MyComponentGroup extends ComponentGroup {
-
+    
     Object[] values;
     String[] names;
 //    ButtonGroup buttonGroup;
     private Button[] buttonsArray;
-
+    
     private static int getIndexOfValue(Object[] values, Object value) {
         for (int i = 0, size = values.length; i < size; i++) {
             if (values[i].equals(value)) {
@@ -48,11 +48,11 @@ class MyComponentGroup extends ComponentGroup {
         }
         return -1;
     }
-
+    
     private int getIndexOfValue(Object value) {
         return getIndexOfValue(values, value);
     }
-
+    
     private static int getIndexOfName(String[] fieldNames, String name) {
         for (int i = 0, size = fieldNames.length; i < size; i++) {
             if (fieldNames[i].equals(name)) {
@@ -61,11 +61,11 @@ class MyComponentGroup extends ComponentGroup {
         }
         return -1;
     }
-
+    
     private int getIndexOfName(String name) {
         return getIndexOfName(names, name);
     }
-
+    
     @Override
     public String toString() {
         String s = "";
@@ -83,56 +83,55 @@ class MyComponentGroup extends ComponentGroup {
      * @param selectedString
      * @param unselectAllowed
      */
-    MyComponentGroup(Object[] valueArray, String[] names, boolean unselectAllowed, boolean verticalLayout) {
-        this(valueArray, names, unselectAllowed, verticalLayout, false);
-    }
-
-    MyComponentGroup(Object[] valueArray, String[] names, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed) {
-        this(valueArray, names, unselectAllowed, verticalLayout, multipleSelectionAllowed, false);
-    }
-
+//    MyComponentGroup(Object[] valueArray, String[] names, boolean unselectAllowed, boolean verticalLayout) {
+//        this(valueArray, names, unselectAllowed, verticalLayout, false);
+//    }
+//
+//    MyComponentGroup(Object[] valueArray, String[] names, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed) {
+//        this(valueArray, names, unselectAllowed, verticalLayout, multipleSelectionAllowed, false);
+//    }
     MyComponentGroup(Object[] valueArray, String[] names, int selectedIndex, boolean unselectAllowed, boolean verticalLayout) {
-        this(valueArray, names, unselectAllowed, verticalLayout);
+//        this(valueArray, names, unselectAllowed, verticalLayout);
+        this(valueArray, names, null, unselectAllowed, verticalLayout, false, false);
         selectIndex(selectedIndex);
     }
 
-    MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout) {
-        this(valueArray, names, unselectAllowed, verticalLayout);
-        selectValues(initiallySelected);
-    }
-
+//    MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout) {
+//        this(valueArray, names, unselectAllowed, verticalLayout);
+//        selectValues(initiallySelected);
+//    }
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed) {
         this(valueArray, names, unselectAllowed, verticalLayout, multipleSelectionAllowed, false);
         selectValues(initiallySelected);
     }
-
+    
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout,
             ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
         this(valueArray, names, unselectAllowed, verticalLayout, true, false);
         selectValues(initiallySelected);
         setupLayout(values.length, compGroupRows, nbButtonsInEachRow);
     }
-
+    
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed,
             ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
         this(valueArray, names, unselectAllowed, verticalLayout, multipleSelectionAllowed, false);
         selectValues(initiallySelected);
         setupLayout(values.length, compGroupRows, nbButtonsInEachRow);
     }
-
+    
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout,
             ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow, boolean sameWidth) {
         this(valueArray, names, unselectAllowed, verticalLayout, true, false);
         selectValues(initiallySelected);
         setupLayout(values.length, compGroupRows, nbButtonsInEachRow, sameWidth);
     }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    MyComponentGroup( Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout,
 //            ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
 //        this(valueArray, names, initiallySelected, unselectAllowed, verticalLayout);
 //        setupLayout(values.length, compGroupRows, nbButtonsInEachRow);
 //    }
-
-//<editor-fold defaultstate="collapsed" desc="comment">
 //    MyComponentGroup(Object[] valueArray, String[] names, String selectedString, boolean unselectAllowed, boolean verticalLayout, boolean xxx) {
 //        super();
 //        this.values = valueArray;
@@ -196,75 +195,85 @@ class MyComponentGroup extends ComponentGroup {
 //            select(selectedString);
 //        }
 //    }
-//</editor-fold>
 //    MyComponentGroup(Object[] valueArray, String[] names, int selectedIdx, boolean unselectAllowed, boolean verticalLayout) {
 ////        this(valueArray, names, names[selectedIdx], unselectAllowed, verticalLayout);
 //        this(valueArray, names, selectedIdx, unselectAllowed, verticalLayout);
 //    }
+//</editor-fold>
     MyComponentGroup(Object[] valueArray, String[] names, Object selectedValue) {
 //        this(valueArray, names, names[selectedIdx], true, false);
         this(valueArray, names, getIndexOfValue(valueArray, selectedValue), false, false);
     }
-
+    
     MyComponentGroup(Object[] valueArray, String[] names) {
 //        this(valueArray, names, names[selectedIdx], true, false);
         this(valueArray, names, -1, true, false);
     }
-
+    
     MyComponentGroup(Object[] values, String[] names, Object selectedValue, boolean unselectAllowed) {
         this(values, names, getIndexOfValue(values, selectedValue), unselectAllowed, false);
     }
-
+    
     MyComponentGroup(Object[] values, String[] names, boolean unselectAllowed) {
         this(values, names, -1, unselectAllowed, false);
     }
 
-    MyComponentGroup(Object[] values, String[] names, Object selectedValue, boolean unselectAllowed, boolean multipleSelectionAllowed) {
-        this(values, names, unselectAllowed, false, multipleSelectionAllowed);
-        selectIndex(getIndexOfValue(values, selectedValue));
-    }
-
-    MyComponentGroup(Object[] values, String selectedString, boolean unselectAllowed, boolean verticalLayout) {
-        this(values, null, getIndexOfValue(values, selectedString), unselectAllowed, verticalLayout);
-    }
-
-    MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed, boolean verticalLayout) {
-//        this(values, get.get(), unselectAllowed);
-        this(values, get.get(), unselectAllowed, verticalLayout);
-        parseIdMap.put(this, () -> {
-            int size = this.getComponentCount();
-            for (int i = 0; i < size; i++) {
-                if (((Button) this.getComponentAt(i)).isSelected()) {
-                    set.accept(((Button) this.getComponentAt(i)).getText()); //store the index of the selected string
-                    return;
-                }
-            }
-            set.accept("");
-        });
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    MyComponentGroup(Object[] values, String[] names, Object selectedValue, boolean unselectAllowed, boolean multipleSelectionAllowed) {
+//        this(values, names, unselectAllowed, false, multipleSelectionAllowed);
+//        selectIndex(getIndexOfValue(values, selectedValue));
+//    }
+//    MyComponentGroup(Object[] values, String selectedString, boolean unselectAllowed, boolean verticalLayout) {
+//        this(values, null, getIndexOfValue(values, selectedString), unselectAllowed, verticalLayout);
+//    }
+//    MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed, boolean verticalLayout) {
+//        this(values, null, get.get(), unselectAllowed, verticalLayout);
+//    }
+//</editor-fold>
     MyComponentGroup(Object[] values, String selectedString, boolean unselectAllowed) {
-        this(values, selectedString, unselectAllowed, false);
+//        this(values, selectedString, unselectAllowed, false);
+        this(values, null, getIndexOfValue(values, selectedString), unselectAllowed, false, false, false);
     }
-
+    
     MyComponentGroup(Object[] values, boolean unselectAllowed) {
         this(values, "", unselectAllowed);
     }
 
-    MyComponentGroup(String[] values, int selectedStringIndex, boolean unselectAllowed) {
-        this(values, values[selectedStringIndex], unselectAllowed);
-    }
-
+//    MyComponentGroup(String[] values, int selectedStringIndex, boolean unselectAllowed) {
+//        this(values, values[selectedStringIndex], unselectAllowed);
+//    }
     MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed) {
-        this(values, parseIdMap, get, set, unselectAllowed, false);
+//        this(values, parseIdMap, get, set, unselectAllowed, false);
+        this(values, null, parseIdMap, get, set, unselectAllowed, false);
     }
 
-    MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set) {
-        this(values, parseIdMap, get, set, true);
+//    MyComponentGroup(Object[] values, ParseIdMap2 parseIdMap, MyForm.GetString get, MyForm.PutString set) {
+//        this(values, parseIdMap, get, set, true);
+//    }
+    MyComponentGroup(Object[] values, String[] names, ParseIdMap2 parseIdMap, MyForm.GetString getSelectedValue, MyForm.PutString set,
+            boolean unselectAllowed, boolean verticalLayout) {
+//        this(values, get.get(), unselectAllowed);
+        this(values, names, getSelectedValue.get(), unselectAllowed, verticalLayout, false, false);
+        parseIdMap.put(this, () -> {
+//            int size = this.getComponentCount();
+//            for (int i = 0; i < size; i++) {
+//                if (((Button) this.getComponentAt(i)).isSelected()) {
+//                    set.accept(((Button) this.getComponentAt(i)).getText()); //store the index of the selected string
+//                    return;
+//                }
+//            }
+//            set.accept("");
+            String selectedStr = (String)this.getSelectedValue();
+            set.accept(selectedStr);
+        });
     }
 
 //    boolean ignoreNextActionEvent = false;
     MyComponentGroup(Object[] valueArray, String[] names, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed, boolean noSelectionAllowed) {
+        this(valueArray, names, null, unselectAllowed, verticalLayout, multipleSelectionAllowed, noSelectionAllowed);
+    }
+    
+    MyComponentGroup(Object[] valueArray, String[] names, Object selectedValue, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed, boolean noSelectionAllowed) {
         super();
         this.values = valueArray;
         if (names != null) {
@@ -276,7 +285,7 @@ class MyComponentGroup extends ComponentGroup {
                 this.names[i] = values[i].toString();
             }
         }
-
+        
         this.setHorizontal(!verticalLayout);
 
 //        buttonGroup = new ButtonGroup();
@@ -293,7 +302,7 @@ class MyComponentGroup extends ComponentGroup {
 //                ignoreNextActionEvent = true;
                 ((CheckBox) source).setSelected(true);
             }
-
+            
             if (dispatcher != null) {
                 dispatcher.fireActionEvent(e);
             }
@@ -323,7 +332,7 @@ class MyComponentGroup extends ComponentGroup {
                 }
             }
         };
-
+        
         buttonsArray = new Button[values.length];
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -369,8 +378,9 @@ class MyComponentGroup extends ComponentGroup {
                 buttonGroup.add(radioButton);
                 buttonsArray[i] = radioButton;
             }
-            if (Config.TEST)
-            buttonsArray[i].setName(this.names[i]);
+            if (Config.TEST) {
+                buttonsArray[i].setName(this.names[i]);
+            }
             this.add(buttonsArray[i]);
             buttonsArray[i].setToggle(true); //allow to de-select a selected button
             buttonsArray[i].addActionListener(buttonListener); //allow to de-select a selected button
@@ -386,6 +396,8 @@ class MyComponentGroup extends ComponentGroup {
 //            select(selectedIndex);
 //</editor-fold>
         }
+        
+        selectValue(selectedValue);
     }
 
     /**
@@ -421,7 +433,7 @@ class MyComponentGroup extends ComponentGroup {
             }
         }
     }
-
+    
     public void selectIndex(int selectedIndex) {
 //        int size = this.getComponentCount();
         int size = buttonsArray.length;
@@ -503,17 +515,17 @@ class MyComponentGroup extends ComponentGroup {
 //</editor-fold>
         selectIndex(getIndexOfValue(value));
     }
-
+    
     public void selectValuesXXX(Vector initiallySelectedValues) {
         selectValues(initiallySelectedValues);
     }
-
+    
     public void selectValues(Vector initiallySelectedValues) {
         for (Object o : initiallySelectedValues) {
             selectValue(o);
         }
     }
-
+    
     int getSelectedCount() {
         int count = 0;
         for (int i = 0, size = buttonsArray.length; i < size; i++) {
@@ -522,7 +534,7 @@ class MyComponentGroup extends ComponentGroup {
             }
         }
         return count;
-
+        
     }
 
     /**
@@ -586,7 +598,7 @@ class MyComponentGroup extends ComponentGroup {
             return null;
         }
     }
-
+    
     public int getSelectedAsInt() {
 //        int selected = getSelectedIndex();
 //        if (selected >= 0 && selected < values.length) {
@@ -594,11 +606,11 @@ class MyComponentGroup extends ComponentGroup {
 //        } else {
 //            return -1;
 //        }
-        return (int)getSelectedValue();
+        return (int) getSelectedValue();
     }
-
+    
     public String getSelectedAsString() {
-        return (String)getSelectedValue();
+        return (String) getSelectedValue();
     }
 
     /**
@@ -609,7 +621,6 @@ class MyComponentGroup extends ComponentGroup {
 //    public int getSelectedInt() {
 //        return (int) getSelectedAsInt();
 //    }
-
     private EventDispatcher dispatcher = null; //new EventDispatcher();
 
     /**
@@ -637,7 +648,7 @@ class MyComponentGroup extends ComponentGroup {
             dispatcher.removeListener(l);
         }
     }
-
+    
     private EventDispatcher selectionListener = null; //new EventDispatcher();
 
     /**
@@ -658,7 +669,7 @@ class MyComponentGroup extends ComponentGroup {
             selectionListener.removeListener(l);
         }
     }
-
+    
     private Container buttonsContainer;
 
     /**
@@ -696,7 +707,7 @@ class MyComponentGroup extends ComponentGroup {
     public void setupLayout(int numberButtons, ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
         setupLayout(numberButtons, compGroupRows, nbButtonsInEachRow, false);
     }
-
+    
     public void setupLayout(int numberButtons, ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow, boolean allButtonsSameWidth) {
 //        if (compGroupRows != null) {
         if (nbButtonsInEachRow != null) {

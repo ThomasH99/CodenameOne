@@ -166,28 +166,45 @@ public class ScreenStatistics extends MyForm {
      */
     enum SortStatsOn {
 //        dateAndTime("Dates"), //dateAndTime
-        dateAndTime("Dat", "Date and time"), //dateAndTime
+//        dateAndTime("Dat", "Date and time"), //dateAndTime
+//        //        dateThenLists("Lists"), //dateThenLists Lists
+//        dateThenLists("Lis", "Date, then lists"), //dateThenLists Lists
+//        //        dateThenCategories("Categories"), //dateThenCategories Categories
+//        dateThenCategories("Cat", "Date, then category"), //dateThenCategories Categories
+//        //        listsThenDates("Lists-Dates"), //listsThenDates Lists_Date
+//        listsThenDates("LisD", "List, then date"), //listsThenDates Lists_Date
+//        //        categoriesThenDate("Categories-Dates"); //categoriesThenDate Cat_Date
+//        categoriesThenDate("CatD", "Category, then date"); //categoriesThenDate Cat_Date
+        dateAndTime("Date and time"), //dateAndTime
         //        dateThenLists("Lists"), //dateThenLists Lists
-        dateThenLists("Lis", "Date, then lists"), //dateThenLists Lists
+        dateThenLists("Date, then lists"), //dateThenLists Lists
         //        dateThenCategories("Categories"), //dateThenCategories Categories
-        dateThenCategories("Cat", "Date, then category"), //dateThenCategories Categories
+        dateThenCategories("Date, then category"), //dateThenCategories Categories
         //        listsThenDates("Lists-Dates"), //listsThenDates Lists_Date
-        listsThenDates("LisD", "List, then date"), //listsThenDates Lists_Date
+        listsThenDates("List, then date"), //listsThenDates Lists_Date
         //        categoriesThenDate("Categories-Dates"); //categoriesThenDate Cat_Date
-        categoriesThenDate("CatD", "Category, then date"); //categoriesThenDate Cat_Date
+        categoriesThenDate("Category, then date"); //categoriesThenDate Cat_Date
         String str;
-        String longStr;
+        String displayName;
 
-        SortStatsOn(String stri, String longStr) {
-            this.str = stri;
-            this.longStr = longStr;
+        SortStatsOn(String longStr) {
+//            this.str = stri;
+            this.displayName = longStr;
         }
 //        SortStatsOn(String stri) {
 //            this(stri,stri);
 //        }
 
         public String toString() {
-            return longStr;
+            return displayName;
+        }
+
+        public static String[] getNames() {
+            return new String[]{dateAndTime.name(), dateThenLists.name(), dateThenCategories.name(), listsThenDates.name(), categoriesThenDate.name()};
+        }
+
+        public static String[] getDisplayNames() {
+            return new String[]{dateAndTime.displayName, dateThenLists.displayName, dateThenCategories.displayName, listsThenDates.displayName, categoriesThenDate.displayName};
         }
 
         public static SortStatsOn valueOfDefault(String s) {
@@ -207,10 +224,24 @@ public class ScreenStatistics extends MyForm {
      * how coarsely are the grouped in the list?
      */
     public enum ShowGroupedBy {
-        none,
-        day,
-        week,
-        month
+        none("None"),
+        day("Day"),
+        week("Week"),
+        month("Month");
+
+        String displayName;
+
+        ShowGroupedBy(String name) {
+            this.displayName = name;
+        }
+
+        public static String[] getNames() {
+            return new String[]{none.name(), day.name(), week.name(), month.name()};
+        }
+
+        public static String[] getDisplayNames() {
+            return new String[]{none.displayName, day.displayName, week.displayName, month.displayName};
+        }
     }
 
     private static boolean newDateGroup(ShowGroupedBy groupBy, Date day, Date prevDate) {
@@ -252,7 +283,8 @@ public class ScreenStatistics extends MyForm {
     private static String getDateString(ShowGroupedBy groupBy, Date day) {
         switch (groupBy) {
             case day:
-                return MyDate.formatDateNew(day);
+//                return MyDate.formatDateNew(day);
+                return MyDate.formatDateNew(day, true, true, false, true, false);
             case week:
                 return MyDate.getWeekAndYear(day);
             case month:
@@ -327,7 +359,7 @@ public class ScreenStatistics extends MyForm {
                 Date completedDate = item.getCompletedDateD();
                 if (prevCompletedDate == null || newDateGroup(groupBy, completedDate, prevCompletedDate)) {
                     //get and add WorkSlots
-                    dayList = new ItemList(getDateString(groupBy, completedDate), true);
+                    dayList = new ItemList(getDateString(groupBy, completedDate), true, Icons.iconDateRange, false);
 //                    dayList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
                     addWorkSlotsToItemList(dayList, workSlots, getDateForGroup(groupBy, completedDate, false), getDateForGroup(groupBy, completedDate, true));
                     mainList.add(dayList);
@@ -341,10 +373,11 @@ public class ScreenStatistics extends MyForm {
             if (groupByList) {
                 ItemAndListCommonInterface owner = item.getOwner();
                 if (owner == null || !(owner instanceof ItemList)) {
-                    ownerList = new ItemList("Inbox", true);
+                    ownerList = new ItemList("Inbox", true, Icons.iconMainInbox, false);
 //                    ownerList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
                 } else if (!owner.equals(prevOwnerList)) {
-                    ownerList = new ItemList("List: " + owner.getText(), true);
+//                    ownerList = new ItemList("List: " + owner.getText(), true, Icons.iconList);
+                    ownerList = new ItemList( owner.getText(), true, Icons.iconList, false);
 //                    ownerList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
                 } else {
                     //same list as before
@@ -367,10 +400,12 @@ public class ScreenStatistics extends MyForm {
             if (groupByCategory) { //prevItem==null => first time round
                 Category category = item.getFirstCategory();
                 if (category == null) {
-                    categoryList = new ItemList("No category", true);
+                    if (prevCategory!=null)
+                    categoryList = new ItemList("No category", true, Icons.iconCategory, false);
 //                    categoryList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
                 } else if (!category.equals(prevCategory)) {
-                    categoryList = new ItemList("Category: " + category.getText(), true);
+//                    categoryList = new ItemList("Category: " + category.getText(), true, Icons.iconCategory);
+                    categoryList = new ItemList(category.getText(), true, Icons.iconCategory, false);
 //                    categoryList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
                 } else {
                     assert category.equals(prevCategory);
@@ -396,7 +431,7 @@ public class ScreenStatistics extends MyForm {
                 if (topLevelProject == null) {
                     projectList = null; //reset list to null if no project (to store tasks directly in the list)
                 } else if (!topLevelProject.equals(prevTopLevelProject)) { //prevTopLevelProject may be null or another project
-                    projectList = new ItemList("Project: " + topLevelProject.getText(), true);
+                    projectList = new ItemList("Project: " + topLevelProject.getText(), true, Icons.iconMainProjects, false);
 //                    projectList.setFilterSortDef(FilterSortDef.getNeutralFilter());  //neutral is now default
                     //add new list
                     if (categoryList != null) {

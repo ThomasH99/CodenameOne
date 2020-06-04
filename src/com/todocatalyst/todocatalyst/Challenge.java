@@ -82,15 +82,15 @@ public enum Challenge {
     String getChalTxtDebug() { //only for debug
         switch (this) {
             case VERY_EASY:
-                return "ChVEasy";
+                return "VEasy";
             case EASY:
-                return "ChEasy";
+                return "Easy";
             case AVERAGE:
-                return "ChAvg";
+                return "Avg";
             case HARD:
-                return "ChHard";
+                return "Hard";
             case VERY_HARD:
-                return "ChVHard";
+                return "VHard";
         }
         return "Ch??";
     }

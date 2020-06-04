@@ -927,8 +927,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String IMPORTANCE_URGENCY = "Importance/Urgency"; // "Importance/Urgency"
     final static String FUN_DREAD = "Fun";
     final static String FUN_DREAD_HELP = "Is this a task you'd love to work on or not? Helps pick tasks on a low-energy day";
-    final static String CHALLENGE = "Challenge";
-    final static String CHALLENGE_HELP = "Challenge";
+    final static String CHALLENGE = "Difficulty"; //"Challenge";
+    final static String CHALLENGE_HELP = "Indicates how difficult or challenging the task is and what level of mental energu it requires"; //"Challenge";
     final static String BELONGS_TO = "List/Project"; //"Owner List/Project" "Belongs to";
     final static String BELONGS_TO_HELP = "Indicates the List or Project this task belongs to. Change to move the task to another List or Project or delete to move to Inbox";
     final static String DEPENDS_ON = "Depends on";
@@ -11026,6 +11026,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public FilterSortDef getFilterSortDefN() {
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
         filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
+        return filterSortDef;
+    }
+
+    @Override
+    public FilterSortDef getFilterSortDef(boolean returnDefaultFilterIfNoneDefined) {
+        FilterSortDef filterSortDef = getFilterSortDefN();
+        if (false && filterSortDef == null && returnDefaultFilterIfNoneDefined) {//UI: don't use default filter for subtasks, too confusing if eg done subtasks disappear
+            return FilterSortDef.getDefaultFilter();
+        }
         return filterSortDef;
     }
 

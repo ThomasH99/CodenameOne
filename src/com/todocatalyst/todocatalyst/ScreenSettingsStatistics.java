@@ -40,9 +40,13 @@ public class ScreenSettingsStatistics extends ScreenSettingsCommon {
 //                false);
         
 //        addSettingStringValues(cont, parseIdMap2, MyPrefs.statisticsSortBy, ScreenStatistics.SortStatsOn.values(), false);
-        addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsSortBy, ScreenStatistics.SortStatsOn.values(), false, true);
+        addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsSortBy, 
+//                ScreenStatistics.SortStatsOn.values(),ScreenStatistics.SortStatsOn.getDisplayNames(), false, true);
+                ScreenStatistics.SortStatsOn.getNames(),ScreenStatistics.SortStatsOn.getDisplayNames(), false, true);
 //        addSettingStringValues(cont, parseIdMap2, MyPrefs.statisticsGroupBy, ScreenStatistics.ShowGroupedBy.values(), false);
-        addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsGroupBy, ScreenStatistics.ShowGroupedBy.values(), false, true);
+        addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsGroupBy, 
+//                ScreenStatistics.ShowGroupedBy.values(),ScreenStatistics.ShowGroupedBy.getDisplayNames(), false, true);
+                ScreenStatistics.ShowGroupedBy.getNames(),ScreenStatistics.ShowGroupedBy.getDisplayNames(), false, true);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsGroupTasksUnderTheirProject);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsShowDetailsForAllLists);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsShowMostRecentFirst);

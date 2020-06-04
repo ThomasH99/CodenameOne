@@ -869,7 +869,7 @@ public class ScreenRepeatRule extends MyForm {
 //        MyDatePicker hideUntil = new MyDatePicker("<hide task until>", parseIdMap2, () -> item.getHideUntilDateD(), (d) -> item.setHideUntilDateD(d));
 //</editor-fold>
 //        repeatEndDateEditButton = new MyDatePicker("<last date>", parseIdMap2, () -> endDate, (d) -> {myRepeatRule.setEndDate(d.getTime() == 0 ? RepeatRuleParseObject.MAX_DATE : d.getTime());
-        repeatEndDateEditButton = new MyDatePicker(endDate, "<last date>", true);
+        repeatEndDateEditButton = new MyDatePicker(endDate, "<last date>", MyDatePicker.END_OF_SELECTED_DAY); //UI: always set end of day to ensure a repeat can happen on the day itself
         repeatEndDateEditButtonCont = layoutN(RepeatRuleParseObject.REPEAT_RULE_UNTIL_DATE, repeatEndDateEditButton,
                 RepeatRuleParseObject.REPEAT_RULE_UNTIL_DATE_HELP);
 //        repeatEndDateEditButton = new MyDatePicker(makeStartDate);

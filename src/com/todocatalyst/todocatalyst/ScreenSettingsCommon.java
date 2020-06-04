@@ -393,21 +393,29 @@ public class ScreenSettingsCommon extends MyForm {
 //                    prefEntry.getHelpText()));
 //
 //    }
-    protected void addSettingEnumAsCompGroup(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] enumValues, boolean unselectAllowed, boolean verticalLayout) {
+    protected void addSettingEnumAsCompGroup(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, 
+            String[] enumValues, String[] enumNames, boolean unselectAllowed, boolean verticalLayout) {
 
         if (tableLayout) {
         } else {
-            cont.add(layoutN(prefEntry.getFieldScription(), new MyComponentGroup(enumValues, parseIdMap2, () -> {
-                for (Object e : enumValues) {
-                    if (((Enum) e).name().equals(prefEntry.getString())) {
-                        return e.toString();
+            cont.add(layoutN(prefEntry.getFieldScription(), new MyComponentGroup(enumValues, enumNames, parseIdMap2, () -> {
+                for (String e : enumValues) {
+//                    if (((Enum) e).name().equals(prefEntry.getString())) {
+//                        return ((Enum) e).name(); //e.toString();
+                    if (e.equals(prefEntry.getString())) {
+//                        return ((Enum) e).name(); //e.toString();
+                        return e; //e.toString();
+//                        return e; //e.toString();
                     }
                 }
                 return null;
             }, (s) -> {
-                for (Object e : enumValues) {
-                    if (e.toString().equals(s)) {
-                        MyPrefs.setString(prefEntry, ((Enum) e).name());
+//                for (Object e : enumValues) {
+                for (String e : enumValues) {
+//                    if (e.toString().equals(s)) {
+                    if (e.equals(s)) {
+//                        MyPrefs.setString(prefEntry, ((Enum) e).name());
+                        MyPrefs.setString(prefEntry, e);
                         return;
                     }
                 }

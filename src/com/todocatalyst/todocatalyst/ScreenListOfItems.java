@@ -171,7 +171,10 @@ public class ScreenListOfItems extends MyForm {
     final static int OPTION_NO_INLINEINSERT_EMPTYLIST = OPTION_NO_TASK_DETAILS * 2;
     private boolean optionNoInlineInsertContInEmptyList;
 
-    final static int OPTION_LAST_TO_CHECK_IF_ALL_BITS_ARE_USED = OPTION_NO_INLINEINSERT_EMPTYLIST * 2;
+    final static int OPTION_NO_PINCHINSERT = OPTION_NO_INLINEINSERT_EMPTYLIST * 2;
+    private boolean optionNoPinchInsert;
+
+    final static int OPTION_LAST_TO_CHECK_IF_ALL_BITS_ARE_USED = OPTION_NO_PINCHINSERT * 2;
 //    boolean optionSingleSelectMode;
 //    final static int OPTION_MULTIPLE_SELECT_MODE = OPTION_SINGLE_SELECT_MODE * 2;
 //    private boolean optionMultipleSelectMode;
@@ -193,7 +196,7 @@ public class ScreenListOfItems extends MyForm {
         this.optionNoInlineInsertContInEmptyList = (options & OPTION_NO_INLINEINSERT_EMPTYLIST) != 0;
 //        this.optionMultipleSelectMode = (options & OPTION_MULTIPLE_SELECT_MODE) != 0;
     }
-    
+
     private static int LABEL_GAP = 0; //in pixels!
 
     /**
@@ -511,10 +514,6 @@ public class ScreenListOfItems extends MyForm {
 //        getContentPane().add(CENTER, dragAndDropContainer);
 //        setupList();
 //</editor-fold>
-        searchListener = makeSearchFunctionUpperLowerStickyHeaders(itemListOrg);
-//        getToolbar().addSearchCommand(searchListener, MyPrefs.defaultIconSizeInMM.getFloat());
-//        mySearchBar = new MySearchBar(getToolbar(), searchListener);
-        mySearchCommand = new MySearchCommand(getContentPane(), searchListener);
         addCommandsToToolbar(getToolbar());
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                removeShowListener(startAsyncListener);
@@ -530,13 +529,14 @@ public class ScreenListOfItems extends MyForm {
 
     @Override
     public boolean isPinchInsertEnabled(ItemAndListCommonInterface refElt, boolean insertBeforeRefElt) {
-        boolean ok = refElt instanceof Item;
-        return ok;
+        boolean isPinchEnabled = refElt instanceof Item && isPinchInsertEnabled();
+        return isPinchEnabled;
     }
 
     @Override
     public boolean isPinchInsertEnabled() {
-        return !itemListOrg.isNoSave() && !isSortOn() && super.isPinchInsertEnabled(); //not saved lists like Today etc should not allow pinch insert, sorted lists should not allow (//TODO!!!! find the clever way to insert and keep place in sorted list, e.g. workslots where new starts after previous ends)
+        boolean isPinchEnabled = !itemListOrg.isNoSave() && !isSortOn() && super.isPinchInsertEnabled() && !optionNoPinchInsert; //not saved lists like Today etc should not allow pinch insert, sorted lists should not allow (//TODO!!!! find the clever way to insert and keep place in sorted list, e.g. workslots where new starts after previous ends)
+        return isPinchEnabled;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -620,7 +620,7 @@ public class ScreenListOfItems extends MyForm {
         setTitleAnimation(newContentContainer); //MUST do this here since we create a new container on each refresh
 
 //        if (searchListener != null && getToolbar().getTitleComponent() instanceof TextField) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
-        if (mySearchCommand != null && mySearchCommand.cont != null && !mySearchCommand.cont.isHidden()) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
+        if (mySearchCommand != null && mySearchCommand.searchCont != null && !mySearchCommand.searchCont.isHidden()) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
             searchListener.actionPerformed(null); //refresh search, eg when returning to screen
         }
 
@@ -733,7 +733,11 @@ public class ScreenListOfItems extends MyForm {
             fab.bindFabToContainer(getContentPane());
         }
         super.addCommandsToToolbar(toolbar);
-
+        
+        searchListener = makeSearchFunctionUpperLowerStickyHeaders(itemListOrg);
+//        getToolbar().addSearchCommand(searchListener, MyPrefs.defaultIconSizeInMM.getFloat());
+//        mySearchBar = new MySearchBar(getToolbar(), searchListener);
+        mySearchCommand = new MySearchCommand(getContentPane(), searchListener);
         toolbar.addCommandToRightBar(mySearchCommand);
 
         //BACK
@@ -1515,7 +1519,7 @@ public class ScreenListOfItems extends MyForm {
 
                 //SELECTION ON/OFF
                 if (false) { //temporarily disabled until next release
-                //                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
+                    //                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
                     toolbar.addCommandToOverflowMenu(CommandTracked.create("Select", Icons.iconSelected, (e) -> {
                         if (!isSelectionMode()) {
 //                    isSelectionMode() = true;
@@ -1620,37 +1624,37 @@ public class ScreenListOfItems extends MyForm {
                 }, "Cancel"));
             }
 
-            }
-            if (Config.TEST && itemListOrg instanceof ItemList) {
-                Command showIssuesInList = new CommandTracked("Show list issues", Icons.iconRepair) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
-                        if (itemListOrg instanceof Category) {
-                            DAO.getInstance().cleanUpCategory((Category) itemListOrg, false);
-                        } else {
-                            DAO.getInstance().cleanUpItemList((ItemList) itemListOrg, 
-                                    itemListOrg.getOwner()!=null&&itemListOrg.getOwner().equals(TemplateList.getInstance()), false);
-                        }
+        }
+        if (Config.TEST && itemListOrg instanceof ItemList) {
+            Command showIssuesInList = new CommandTracked("Show list issues", Icons.iconRepair) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    if (itemListOrg instanceof Category) {
+                        DAO.getInstance().cleanUpCategory((Category) itemListOrg, false);
+                    } else {
+                        DAO.getInstance().cleanUpItemList((ItemList) itemListOrg,
+                                itemListOrg.getOwner() != null && itemListOrg.getOwner().equals(TemplateList.getInstance()), false);
                     }
-                };
-                toolbar.addCommandToOverflowMenu(showIssuesInList);
-                Command cleanUpList = new CommandTracked("Repair list issues", Icons.iconRepair) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
+                }
+            };
+            toolbar.addCommandToOverflowMenu(showIssuesInList);
+            Command cleanUpList = new CommandTracked("Repair list issues", Icons.iconRepair) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
 //                        DAO.getInstance().cleanUpItemListOrCategory((ItemList) itemListOrg, true, true);
 ////                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg);
 //                        DAO.getInstance().saveNew((ParseObject) itemListOrg);
 //                        DAO.getInstance().saveNewExecuteUpdate();
-                        if (itemListOrg instanceof Category) {
-                            DAO.getInstance().cleanUpCategory((Category) itemListOrg, true);
-                        } else {
-                            DAO.getInstance().cleanUpItemList((ItemList) itemListOrg, itemListOrg.getOwner().equals(TemplateList.getInstance()), true);
-                        }
-                        refreshAfterEdit();
+                    if (itemListOrg instanceof Category) {
+                        DAO.getInstance().cleanUpCategory((Category) itemListOrg, true);
+                    } else {
+                        DAO.getInstance().cleanUpItemList((ItemList) itemListOrg, itemListOrg.getOwner().equals(TemplateList.getInstance()), true);
                     }
-                };
-                toolbar.addCommandToOverflowMenu(cleanUpList);
-        
+                    refreshAfterEdit();
+                }
+            };
+            toolbar.addCommandToOverflowMenu(cleanUpList);
+
         }
     }
 

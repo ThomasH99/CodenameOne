@@ -217,6 +217,7 @@ public class Icons {
     final static char iconInvertSelection = FontImage.MATERIAL_FLIP; //TODO: find better symbol (with unchecked boxes)
 
     final static char iconCompletedDate = FontImage.MATERIAL_DONE; //TODO: find better symbol (with unchecked boxes)
+    final static char iconDateRange = FontImage.MATERIAL_DATE_RANGE; //TODO: find better symbol (with unchecked boxes)
     
     final static char iconRepeatOverview = FontImage.MATERIAL_FILTER; //or: DYNAMIC_FEED
 

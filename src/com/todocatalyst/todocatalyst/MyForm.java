@@ -115,6 +115,15 @@ public class MyForm extends Form {
     private Container smallTimer;
 
     private Date editSessionStartTime;
+    private Command searchCmd;
+
+    protected Command getSearchCmd() {
+        return searchCmd;
+    }
+
+    protected void setSearchCmd(Command searchCommand) {
+        searchCmd = searchCommand;
+    }
 
     Date getEditSessionStartTime() {
         return editSessionStartTime;
@@ -492,6 +501,9 @@ public class MyForm extends Form {
             //this only works if contentPane is scrollableY (and not BorderLayout as now)
             getToolbar().setScrollOffUponContentPane(MyPrefs.addNewCategoriesToBeginningOfCategoryList.getBoolean()); //see https://github.com/codenameone/CodenameOne/issues/2295
         }
+//        if (previousValues!=null&&previousValues.get(MySearchCommand.SEARCH_KEY) != null && getSearchCmd() != null) {
+//            getSearchCmd().actionPerformed(null); //re-activate Search, null=>reuse locally stored text
+//        }
     }
 
     @Override
@@ -965,7 +977,7 @@ public class MyForm extends Form {
 //            item.setWaitingTillDate(d);
 //        });
 //</editor-fold>
-        MyDatePicker waitingDatePicker = new MyDatePicker(item.getWaitingTillDate(),"<set date>");
+        MyDatePicker waitingDatePicker = new MyDatePicker(item.getWaitingTillDate(), "<set date>");
         waitingDatePicker.addActionListener((e) -> item.setWaitingTillDate(waitingDatePicker.getDate()));
 //        cont.add(new Label("Wait until")).add(waitingDatePicker).add("When you set a date, waiting tasks can automatically be hidden until that date.");
         cont.add(new Label(Item.WAIT_UNTIL_DATE)).add(waitingDatePicker).add(new SpanLabel("Waiting tasks are automatically hidden until the set date."));
@@ -978,7 +990,7 @@ public class MyForm extends Form {
 //            item.setWaitingAlarmDate(d); //NB. only called if date is edited to sth different than 0
 //        });
 //</editor-fold>
-        MyDateAndTimePicker waitingAlarmPicker = new MyDateAndTimePicker(item.getWaitingAlarmDate(),"<set date>");
+        MyDateAndTimePicker waitingAlarmPicker = new MyDateAndTimePicker(item.getWaitingAlarmDate(), "<set date>");
         waitingAlarmPicker.addActionListener((e) -> item.setWaitingAlarmDate(waitingAlarmPicker.getDate()));
 //        cont.add(new Label("Waiting alarm")).add(waitingAlarmPicker).add("Set a special alarm for waiting tasks.");
         cont.add(new Label(Item.WAITING_ALARM_DATE)).add(waitingAlarmPicker).add(new SpanLabel("Set a reminder to follow up on a waiting task."));
@@ -1583,6 +1595,11 @@ public class MyForm extends Form {
                 previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
             }
         }
+
+        if (previousValues != null && previousValues.get(MySearchCommand.SEARCH_KEY) != null && getSearchCmd() != null) {
+            getSearchCmd().actionPerformed(null); //re-activate Search, null=>reuse locally stored text
+        }
+
     }
 
 //    abstract void refreshAfterEdit(KeepInSameScreenPosition keepPos);
@@ -1835,24 +1852,27 @@ public class MyForm extends Form {
 
 //    protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemList itemListOrg, ComponentListForSearch getCompList) {
     protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemAndListCommonInterface itemListOrg, ComponentListForSearch getCompList) {
-        return (e) -> {
+        return (e) -> { //NB. if e==null=> reuse previous locally stored search string
             String text;
             Component firstVisibleComp = null;
+            MyForm myForm = (MyForm) getComponentForm();
+
             if (e != null) {
                 text = (String) e.getSource();
             } else {
                 //get TextField with search string
-                Component titleComp = getToolbar().getTitleComponent();
-                if (titleComp instanceof TextField) {
-                    text = ((TextField) titleComp).getText();
-                } else {
-                    text = ""; //if ever the implementation with TextField is changed, simply reset the search when coming back to a Form
-                }
+//                Component titleComp = getToolbar().getTitleComponent();
+//                if (titleComp instanceof TextField) {
+//                    text = ((TextField) titleComp).getText();
+//                } else {
+//                    text = ""; //if ever the implementation with TextField is changed, simply reset the search when coming back to a Form
+//                }
+                text = (String) myForm.previousValues.get(MySearchCommand.SEARCH_TEXT_KEY); //reuse 
             }
 //            Container compList = null;
 //            compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
             Container compList = getCompList.get();
-            MyForm myForm = (MyForm) getComponentForm();
+
             //UI: search will automatically remove an insert container (since it breaks the below algorithm)
             if (myForm != null && myForm.getPinchInsertContainer() != null) {
                 Component topLevelComp = (Component) myForm.getPinchInsertContainer();
@@ -1865,6 +1885,12 @@ public class MyForm extends Form {
                     topLevelComp.remove();
                 }
                 myForm.setPinchInsertContainer(null);
+            }
+
+            if (text != null && text.length() > 0) {
+                myForm.previousValues.put(MySearchCommand.SEARCH_TEXT_KEY, text);
+            } else {
+                myForm.previousValues.remove(MySearchCommand.SEARCH_TEXT_KEY);
             }
             if (compList != null) {
                 int labelCount = 0;
@@ -2064,7 +2090,7 @@ public class MyForm extends Form {
 //    }
     public Command makeDoneUpdateWithParseIdMapCommand() {
 //        return makeDoneUpdateWithParseIdMapCommand("", true, getCheckIfSaveOnExit(), false); //false); //default false since otherwise edited values will be lost
-        return makeDoneUpdateWithParseIdMapCommand("", true,  false); //false); //default false since otherwise edited values will be lost
+        return makeDoneUpdateWithParseIdMapCommand("", true, false); //false); //default false since otherwise edited values will be lost
     }
 
     public Command addStandardBackCommand() {
@@ -3796,7 +3822,8 @@ public class MyForm extends Form {
 
         //set actionListener on edited field, to store edited values (only if different from the original one)
         if (getField != null && getOrg != null) {
-            MyActionListener storeEditedValueLocallyAL = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
+//            MyActionListener storeEditedValueLocallyAL = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
+            ActionListener storeEditedValueLocallyAL = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (actionListener != null) {
 //                    actionListener.actionPerformed(e);

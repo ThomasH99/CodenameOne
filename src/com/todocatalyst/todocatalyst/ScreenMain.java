@@ -300,7 +300,8 @@ public class ScreenMain extends MyForm {
             Command allTasks = MyReplayCommand.create(SCREEN_ALL_TASKS_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainAllTasks, (e) -> {
                         FilterSortDef allTasksSystemFilter = DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString());
                         new ScreenListOfItems(ALL_TASKS,
-                                () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(false, false, true, false, false), allTasksSystemFilter, true), ScreenMain.this, (i) -> {
+                                () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(false, false, true, false, false), allTasksSystemFilter, true), 
+                                ScreenMain.this, (i) -> {
                                 }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
                     }
             );
@@ -308,8 +309,12 @@ public class ScreenMain extends MyForm {
         }
 
         Command projects = MyReplayCommand.create(SCREEN_PROJECTS_TITLE, Icons.iconMainProjects, (e) -> {
-            MyForm myForm = new ScreenListOfItems(SCREEN_PROJECTS_TITLE, "No projects", () -> new ItemList(DAO.getInstance().getAllProjects()), ScreenMain.this, (i) -> {
-            }, 0);
+            MyForm myForm = new ScreenListOfItems(SCREEN_PROJECTS_TITLE, "No projects", () -> new ItemList(DAO.getInstance().getAllProjects()), 
+                    ScreenMain.this, (i) -> {
+            }, 
+            ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES //| ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER //ScreenListOfItems.OPTION_NO_TIMER | 
+                    | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME|ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
+            );
 //            myForm.setShowIfEmptyList("You don't have any projects");
             myForm.show();
         }

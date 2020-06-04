@@ -26,11 +26,14 @@ public enum DreadFunValue {
     char getIcon() {
         switch (this) {
             case FUN:
-                return Icons.iconFun;
+//                return Icons.iconFun;
+                return Icons.iconChallengeEasy;
             case NEUTRAL:
-                return Icons.iconDreadFunNeutral;
+//                return Icons.iconDreadFunNeutral;
+                return Icons.iconChallengeAverage;
             case DREAD:
-                return Icons.iconDread;
+//                return Icons.iconDread;
+                return Icons.iconChallengeVeryHard;                
         }
         return '?';
     }

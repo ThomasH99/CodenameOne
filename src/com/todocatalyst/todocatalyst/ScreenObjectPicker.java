@@ -252,16 +252,6 @@ public class ScreenObjectPicker<E> extends MyForm {
 ////            getContentPane().animateLayout(150);
 //            animateMyForm();
 //        }, MyPrefs.defaultIconSizeInMM.getFloat());
-         getToolbar().addCommandToRightBar(new MySearchCommand(getContentPane(), (e) -> {
-            String text = (String) e.getSource();
-            boolean showAll = (text == null || text.length() == 0);
-            for (int i = 0, size = this.checkBoxes.length; i < size; i++) {
-                checkBoxes[i].setHidden(!(showAll || allLabels.get(i).indexOf(text) > -1)); //https://www.codenameone.com/blog/toolbar-search-mode.html
-            }
-            animateMyForm();
-        }));
-
-        
         refreshAfterEdit();
     }
 
@@ -294,6 +284,16 @@ public class ScreenObjectPicker<E> extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar) {
 
         super.addCommandsToToolbar(toolbar);
+
+        getToolbar().addCommandToRightBar(new MySearchCommand(getContentPane(), (e) -> {
+            String text = (String) e.getSource();
+            boolean showAll = (text == null || text.length() == 0);
+            for (int i = 0, size = this.checkBoxes.length; i < size; i++) {
+                checkBoxes[i].setHidden(!(showAll || allLabels.get(i).indexOf(text) > -1)); //https://www.codenameone.com/blog/toolbar-search-mode.html
+            }
+            animateMyForm();
+        }));
+
         //if (objectCreator!=null)
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllObjects, ScreenObjectPicker.this)); //TODO!!!! enable adding new elements to picker screen
         setCheckIfSaveOnExit(() -> checkObjectChoiceIsValid(selectedObjects1.size()));
