@@ -1190,6 +1190,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         }
     }
 
+    
+    default boolean isUseDefaultFilter() {
+        return true;
+    }
+
+    default void setUseDefaultFilter(boolean useDefaultFilter) {
+        
+    }
     /**
      *
      * @return
@@ -1213,8 +1221,12 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
     public FilterSortDef getFilterSortDefN();
 
+    /**
+     * returns a default filter if active and one is defined
+     * @return 
+     */
     default public FilterSortDef getFilterSortDef() {
-        return getFilterSortDef(true);
+        return getFilterSortDef(isUseDefaultFilter());
     }
 
     default public FilterSortDef getFilterSortDef(boolean returnDefaultFilterIfNoneDefined) {
@@ -1224,7 +1236,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         }
         return filterSortDef;
     }
-
+    
     default public Iterator iterator() {
         return new Iterator() {
 //            public class MyIterator <T> implements Iterator<T> {

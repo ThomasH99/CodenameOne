@@ -719,11 +719,20 @@ public class MyDate extends Date {
 //        }
 //    }
 //</editor-fold>
+    /**
+     * returns the first millisecond of the week to which date belongs
+     * @param date
+     * @return 
+     */
     static Date getStartOfWeek(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        calendar.set(Calendar.DAY_OF_WEEK, 1);
-        return calendar.getTime();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+        cal.set(Calendar.HOUR_OF_DAY, 0); // ! clear would not reset the hour of day !
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+        return cal.getTime();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

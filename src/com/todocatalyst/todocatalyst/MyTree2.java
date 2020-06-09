@@ -1226,7 +1226,7 @@ public class MyTree2 extends ContainerScrollY {
                         break;
                     case Item.PARSE_COMPLETED_DATE:
 //                        newStr = getDiffStr(previousStickyStr, Item.COMPLETED_DATE + " " + MyDate.formatDateNew(item.getCompletedDateD()));
-                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.COMPLETED_DATE, MyDate.formatDateNew(item.getCompletedDateD()), item.getCompletedDateD(), new MyDate(0)));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.COMPLETED_DATE, MyDate.formatDateNew(item.getCompletedDate()), item.getCompletedDate(), new MyDate(0)));
                         break;
                     case Item.PARSE_CREATED_AT:
 //                        newStr = getDiffStr(previousStickyStr, Item.CREATED_DATE + " " + MyDate.formatDateNew(item.getCreatedAt()));

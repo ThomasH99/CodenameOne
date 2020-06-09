@@ -111,7 +111,9 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
         } else if (element instanceof ExpiredAlarm) {
             s = ((ExpiredAlarm) element).objectId; //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
         } else if (Config.TEST) { //NB. the top-level list is by default expanded and if the format is not recognized, we arrive here, which is not a problem
-            if (false) ASSERT.that(false, "expanding unsupported element=" + element);
+            if (false) {
+                ASSERT.that(false, "expanding unsupported element=" + element);
+            }
         }
         return s;
     }
@@ -124,9 +126,9 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
      */
     public boolean add(Object element) {
         boolean result = false;
-        String uniqueStr = getUniqueStr(element);
 
         if (element instanceof ItemAndListCommonInterface) {
+            String uniqueStr = getUniqueStr(element);
             if (((ItemAndListCommonInterface) element).isNoSave()) {
 //            result = expandedObjects.add(((ItemAndListCommonInterface) element).getText()); //TODO!!!!: a hack to keep expanded state of e.g. temporary statistics -> need to clean up
                 result = expandedObjects.add(uniqueStr); //TODO!!!!: a hack to keep expanded state of e.g. temporary statistics -> need to clean up
@@ -134,17 +136,19 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
                 //if element doesn't have an ObjId yet, then 
 //            DAO.getInstance().saveInBackground(() -> add(element)); //call recursively, may iterate until element is finally saved in background
                 result = expandedObjects.add(uniqueStr);
-                DAO.getInstance().saveNew((ParseObject) element, () -> {
-                    //after element has been successfully saved, replace the temporaryId by the objId:
-                    if (Config.TEST) {
-                        ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null, "Something went wrong: no ObjId set for element=" + element);
-                    }
-                    expandedObjects.remove(uniqueStr);
+                if (false) {
+                    DAO.getInstance().saveNew((ParseObject) element, () -> {
+                        //after element has been successfully saved, replace the temporaryId by the objId:
+                        if (Config.TEST) {
+                            ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null, "Something went wrong: no ObjId set for element=" + element);
+                        }
+                        expandedObjects.remove(uniqueStr);
 //                expandedObjects.add(((ItemAndListCommonInterface) element).getObjectIdP());
-                    expandedObjects.add(getUniqueStr(element));
-                    save();
+                        expandedObjects.add(getUniqueStr(element));
+                        save();
 //                },true);
-                },false);
+                    }, false);
+                }
                 //objId will be effectively added, and expandedObjects saved, to expanded once the element has been saved
             } else {
                 result = expandedObjects.add(uniqueStr); //a hashset so no need to check if already added
@@ -203,7 +207,6 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
 //        return result;
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public boolean addAll(Collection<String> elements) {
 ////            boolean result = super.add(((ItemAndListCommonInterface) element).getObjectIdP());

@@ -241,8 +241,8 @@ Label {
     /*    padding-top: 1mm; 
         padding-bottom: 1mm; */
     /*padding-left: 3mm; top+bottom right+left*/
-/*    margin:0mm 0mm 0mm 0mm;
-    padding: 0mm 0mm 0mm 0mm;*/
+    /*    margin:0mm 0mm 0mm 0mm;
+        padding: 0mm 0mm 0mm 0mm;*/
 
     /*color: black;*/
     /*background-color: transparent; /**/
@@ -267,7 +267,7 @@ ExpandableContainer{ /*used eg to show past/future repeat instances in ScreenRep
 }
 
 Button {
-     cn1-derive: Default;
+    cn1-derive: Default;
     /*border: 1pt solid gray;*/
     text-align: center;
     color: #007AFF; /*dodgerblue;*/
@@ -1414,11 +1414,18 @@ ListOfItemsAlarmDate {
     cn1-derive: ItemListSmall;
     color:grey;
 }
-ListOfItemsOwner{
+ListOfItemsOwnerList{ /*showing the owner list of an item */
     cn1-derive: ItemListSmall;
     padding: 0 4pt;
     border: 1pt solid grey;
     color:grey;
+}
+ListOfItemsOwnerItem{ /*showing the owner task/project of an item */
+    cn1-derive: ItemListSmall;
+    padding: 0 4pt;
+    border: 1pt solid grey;
+    color:red;
+    background:lightblue;
 }
 
 /************* list of itemlists ScreenListOfItemLists ************/
@@ -2000,7 +2007,7 @@ ToggleButton {
     /*border-width: 1px; /*0.2mm;/*0.3mm;*/
     border: 1px solid #007AFF;
     border-radius: 0mm 0mm 0mm 0mm; /*TEMP DISABLED*/
-  
+
     /* font-size: 100%;*/
     color: #007AFF; /*royalblue;*/
     /* background: white;

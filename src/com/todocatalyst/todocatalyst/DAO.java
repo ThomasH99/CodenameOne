@@ -308,7 +308,7 @@ public class DAO {
         return item;
     }
 
-    public List<Item> fetchAllItemsOwnedByItemList(ItemList itemList) {
+    public List<Item> fetchAllItemsOwnedByItemListXXX(ItemList itemList) {
         ParseQuery<ParseObject> query = ParseQuery.getQuery(Item.CLASS_NAME);
         query.whereDoesNotExist(Item.PARSE_TEMPLATE);
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
@@ -3098,7 +3098,7 @@ public class DAO {
      *
      * @return
      */
-    public List<Item> getCompletedItems(Date startDate, Date endDate) {
+    public List<Item> getCompletedItems(Date startDate, Date endDate, boolean onlyLeafTasks) {
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         setupItemQueryNotTemplateNotDeletedLimit10000(query, false);
 
@@ -3106,9 +3106,11 @@ public class DAO {
         query.whereEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //include if has subtaskss
 
 //        query.orderByDescending(Item.PARSE_COMPLETED_DATE);
-        query.orderByAscending(Item.PARSE_COMPLETED_DATE);
+//        query.orderByAscending(Item.PARSE_COMPLETED_DATE); //don't request sorted, do that when showing
         query.whereGreaterThanOrEqualTo(Item.PARSE_COMPLETED_DATE, startDate);
         query.whereLessThanOrEqualTo(Item.PARSE_COMPLETED_DATE, endDate);
+        if(onlyLeafTasks)
+        query.whereDoesNotExist(Item.PARSE_SUBTASKS);
 //        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
 //        query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
 

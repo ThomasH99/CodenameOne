@@ -7,6 +7,7 @@ import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
 import com.codename1.ui.Toolbar;
+import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.table.TableLayout;
 
@@ -33,7 +34,8 @@ public class ScreenSettingsCommon extends MyForm {
     }
 
     ScreenSettingsCommon(String title, MyForm previousScreen, Runnable doneAction) { // throws ParseException, IOException {
-        super("Settings " +title, previousScreen, doneAction); // ScreenTimer.SCREEN_TITLE + " settings"
+//        super("Settings " +title, previousScreen, doneAction); // ScreenTimer.SCREEN_TITLE + " settings"
+        super(title, previousScreen, doneAction); // ScreenTimer.SCREEN_TITLE + " settings"
         setUniqueFormId("ScreenSettingsCommon");
 //        this.previousForm = previousScreen;
 //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
@@ -259,8 +261,9 @@ public class ScreenSettingsCommon extends MyForm {
 
     /**
      * add a title to a section of settings
+     *
      * @param cont
-     * @param title 
+     * @param title
      */
     static void addSettingTitle(Container cont, String title) {
         cont.add(new SpanLabel(title, "SettingSectionLabel"));
@@ -268,8 +271,9 @@ public class ScreenSettingsCommon extends MyForm {
 
     /**
      * add an explantion to a specific setting
+     *
      * @param cont
-     * @param explanation 
+     * @param explanation
      */
     static void addSettingExplanation(Container cont, String explanation) {
         cont.add(new SpanLabel(explanation, "SettingIndividualLabel"));
@@ -360,6 +364,7 @@ public class ScreenSettingsCommon extends MyForm {
         }
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 ////    protected void addSettingEnum(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] displayValues, GetString getEnumStrFromName, PutString putNameAs, boolean unselectAllowed) {
 //    protected void addSettingEnumXXX(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, Enum enumValue, String enumClassName, boolean unselectAllowed) {
 //        //http://stackoverflow.com/questions/14846853/passing-a-class-as-an-argument-to-a-method-in-java
@@ -373,7 +378,7 @@ public class ScreenSettingsCommon extends MyForm {
 //            } catch (ClassNotFoundException ex) {
 //                Log.e(ex);
 //            }
-//        //    if (myClass.isInstance(obj)) 
+//        //    if (myClass.isInstance(obj))
 ////           Object[] enumValues= myClass.values();
 //           Object[] enumValues= null;
 //            cont.add(layout(prefEntry.getFieldScription(), new MyComponentGroup(enumValues, parseIdMap2, () -> {
@@ -393,12 +398,19 @@ public class ScreenSettingsCommon extends MyForm {
 //                    prefEntry.getHelpText()));
 //
 //    }
-    protected void addSettingEnumAsCompGroup(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, 
+//</editor-fold>
+    protected MyComponentGroup addSettingEnumAsCompGroup(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry,
             String[] enumValues, String[] enumNames, boolean unselectAllowed, boolean verticalLayout) {
+        return addSettingEnumAsCompGroup(cont, parseIdMap2, prefEntry, enumValues, enumNames, unselectAllowed, verticalLayout, null);
+    }
+
+    protected MyComponentGroup addSettingEnumAsCompGroup(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry,
+            String[] enumValues, String[] enumNames, boolean unselectAllowed, boolean verticalLayout, ActionListener onAction) {
 
         if (tableLayout) {
+            return null;
         } else {
-            cont.add(layoutN(prefEntry.getFieldScription(), new MyComponentGroup(enumValues, enumNames, parseIdMap2, () -> {
+            MyComponentGroup compGroup = new MyComponentGroup(enumValues, enumNames, parseIdMap2, () -> {
                 for (String e : enumValues) {
 //                    if (((Enum) e).name().equals(prefEntry.getString())) {
 //                        return ((Enum) e).name(); //e.toString();
@@ -419,9 +431,11 @@ public class ScreenSettingsCommon extends MyForm {
                         return;
                     }
                 }
-            }, unselectAllowed, verticalLayout),
+            }, unselectAllowed, verticalLayout);
+            compGroup.addActionListener(onAction);
+            cont.add(layoutN(prefEntry.getFieldScription(), compGroup,
                     prefEntry.getHelpText(), true));
-
+            return compGroup;
         }
     }
 

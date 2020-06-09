@@ -733,7 +733,7 @@ public class ScreenListOfItems extends MyForm {
             fab.bindFabToContainer(getContentPane());
         }
         super.addCommandsToToolbar(toolbar);
-        
+
         searchListener = makeSearchFunctionUpperLowerStickyHeaders(itemListOrg);
 //        getToolbar().addSearchCommand(searchListener, MyPrefs.defaultIconSizeInMM.getFloat());
 //        mySearchBar = new MySearchBar(getToolbar(), searchListener);
@@ -1924,7 +1924,7 @@ public class ScreenListOfItems extends MyForm {
 //        return itemListFilteredSorted != itemListOrg; //NO - since list may be filtered and it's still possible to drag & drop
 //        return filterSortDef != null && filterSortDef.isSortOn(); //
 //        return itemListOrg.getFilterSortDefN() != null && itemListOrg.getFilterSortDefN().isSortOn(); //
-        return itemListOrg.getFilterSortDef().isSortOn(); //
+        return itemListOrg.getFilterSortDef()!=null&&itemListOrg.getFilterSortDef().isSortOn(); //
     }
 
     @Override
@@ -2114,6 +2114,10 @@ public class ScreenListOfItems extends MyForm {
 
     public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category,
             ExpandedObjects expandedObjects, ActionListener onExitAction) { //<editor-fold defaultstate="collapsed" desc="comment">
+        return buildItemContainer(myForm, item, ownerItemOrItemList, category, expandedObjects, onExitAction, null);
+    }
+    public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category,
+            ExpandedObjects expandedObjects, ActionListener onExitAction, ItemAndListCommonInterface displayList) { //<editor-fold defaultstate="collapsed" desc="comment">
         //            MyForm.GetBoolean isDragAndDropEnabled, MyForm.Action refreshOnItemEdits,
         //            boolean selectionModeAllowed, ArrayList<Item> selectedObjects,
         //            KeepInSameScreenPosition keepPos, HashSet expandedObjects, MyForm.Action animator, boolean projectEditMode, boolean singleSelectionMode
@@ -2218,8 +2222,8 @@ public class ScreenListOfItems extends MyForm {
             mainCont.addComponent(BorderLayout.WEST, west);
         }
 
-        Container southDetailsContainer = new Container(new FlowLayout());
-        southDetailsContainer.setUIID("ListOfItemsItemDetails");
+        Container southDetailsContainer = new Container(new FlowLayout(),"ListOfItemsItemDetails");
+//        southDetailsContainer.setUIID("ListOfItemsItemDetails");
         if (Config.TEST) {
             southDetailsContainer.setName("ListOfItemsItemDetails");
         }
@@ -2359,7 +2363,8 @@ public class ScreenListOfItems extends MyForm {
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && TimerStack.getInstance().getCurrentlyTimedItemN() == item ? " [Timed]" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isTemplate() ? "%" : "")
-                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getSource() != null && item.getSource().isTemplate() ? "/T" : "")
+                //                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getSource() != null && item.getSource().isTemplate() ? "/T" : "")
+                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getSource() != null && item.getSource().isTemplate() ? "[fr Templ]" : "")
                 //if showing Item
                 //                + (item.getOwner() != null && !(item.getOwner().equals(orgList)) ? " /[" + item.getOwner().getText() + "]" : ""
                 + (Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean() && item.getOwner() != null && item.getOwner() instanceof Item ? "^" : "" //show subtask with '^'
@@ -2639,8 +2644,8 @@ public class ScreenListOfItems extends MyForm {
         if (isDone) {
 //            completedDateLabel = new Label("C:" + MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
 //            completedDateLabel = new Label(MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
-            if (item.getCompletedDateD().getTime() != 0) {
-                completedDateLabel = new Label(MyDate.formatDateSmart(item.getCompletedDateD(), true), "ListOfItemsCompletedDate"); //true: always show time of day when task was completed
+            if (item.getCompletedDate().getTime() != 0) {
+                completedDateLabel = new Label(MyDate.formatDateSmart(item.getCompletedDate(), true), "ListOfItemsCompletedDate"); //true: always show time of day when task was completed
                 completedDateLabel.setMaterialIcon(Icons.iconCompletedDate);
                 completedDateLabel.setGap(LABEL_GAP);
 //            completedDateLabel.setMaterialIcon(0);
@@ -3136,7 +3141,8 @@ public class ScreenListOfItems extends MyForm {
         //                                                .add(WEST, BorderLayout.centerEastWest(null, null, BoxLayout.encloseX(prioCont, dateCont,effortCont) ))
 
 //        Container westCont = new Container(new FlowLayout());
-        Container westCont = new Container(new BoxLayout(BoxLayout.X_AXIS));
+//        Container westCont = new Container(new BoxLayout(BoxLayout.X_AXIS));
+        Container westCont = new Container(new FlowLayout(Component.LEFT)); //flow to ensure that e.g. long labels like date+time wrap to a new line instead of being cut of at the right edge
         westCont.setUIID("ListOfItemsItemDetailsWest");
 //        bottomContent.add(BorderLayout.WEST, BoxLayout.encloseX(prioCont, effortCont, dateCont));
 //        if (prioCont!=null) westCont.add(prioCont);
@@ -3192,8 +3198,18 @@ public class ScreenListOfItems extends MyForm {
 //            myForm.showDetails.add(new Label(item.getOwner() != null ? ("=:" + item.getOwner().getText()) : "<owner>"));
 //            southDetailsContainer.addComponent(new Label(item.getOwner() != null ? ("O:" + item.getOwner().getText()) : "<null>", "ListOfItemsOwner"));
 //            if ((category instanceof Category)&&item.getOwner() != null && item.getOwner() != ownerItemOrItemList) {
-            if (!item.isTemplate() && category instanceof Category && item.getOwner() != null) {
-                southDetailsContainer.addComponent(new Label(item.getOwner().getText(), "ListOfItemsOwner"));
+            ItemAndListCommonInterface owner = item.getOwner();
+            //show owner if not a template and either displaying a category or displaying a list other than a normal List (system or a temporary noSave)
+            if (!item.isTemplate() && owner != null
+                    && (category instanceof Category
+                    //                    || (owner instanceof ItemList && (((ItemList) owner).isSystemList())))) {
+                    || (ownerItemOrItemList instanceof ItemList 
+                    && ((((ItemList) ownerItemOrItemList).isSystemList()) || ((ItemList) ownerItemOrItemList).isNoSave())))) {
+                if (owner instanceof Item) {
+                    southDetailsContainer.addComponent(new Label(owner.getText(), "ListOfItemsOwnerItem"));
+                } else {
+                    southDetailsContainer.addComponent(new Label(owner.getText(), "ListOfItemsOwnerList"));
+                }
             }
         }
         bottomContent.add(BorderLayout.WEST, westCont);
@@ -4744,7 +4760,8 @@ refreshAfterEdit();
 //                    cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItems.this, (Item) node, itemListOrg, category);
 //                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItems.this, (Item) node, itemOrItemList, category);
 //                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItems.this, (Item) node, itemOrItemList, category);
-                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItems.this, (Item) node, itemOrItemList, category, expandedObjects);
+//                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItems.this, (Item) node, itemOrItemList, category, expandedObjects);
+                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItems.this, (Item) node, listOfItems, category, expandedObjects);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    cmp = ScreenListOfItems.buildItemContainerOLD((Item) node, itemListOrg, () -> isDragAndDropEnabled(), () -> refreshAfterEdit(),
 //                            false, //selectionMode not allowed for list of itemlists //TODO would some actions make sense on multiple lists at once??

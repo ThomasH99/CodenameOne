@@ -545,7 +545,7 @@ public class ScreenListOfItemLists extends MyForm {
 //         workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0;
             if (true || !statisticsMode) {
                 numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(false);
-                assert !statisticsMode || numberItems > 0; // the list should only exist in statistics mode if it is not empty
+                ASSERT.that(!statisticsMode || numberItems > 0, "the list should only exist in statistics mode if it is not empty");
                 if (true || numberItems > 0) { //UI: show '0' number of subtasks for empty lists
 //                Button subTasksButton = new Button();
 //                Command expandSubTasks = new CommandTracked("[" + numberItems + "]", "ExpandSubtasks");// {
@@ -643,11 +643,11 @@ public class ScreenListOfItemLists extends MyForm {
                     Label estimateLabel = new Label("Estimate" + MyDate.formatDurationStd(estimatedEffort));
                     estimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
                     estimateLabel.setName("estimateLabel");
-                    
+
                     Label durationLabel = new Label("Work time: " + MyDate.formatDurationStd(workTimeSumMillis));
                     durationLabel.setMaterialIcon(Icons.iconWorkSlot);
                     durationLabel.setName("durationLabel");
-                    
+
                     southDetailsContainer.addAll(estimateLabel, durationLabel);
 //                        southDetailsContainer.setHidden(!showDetails); //hide details by default
                     mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);

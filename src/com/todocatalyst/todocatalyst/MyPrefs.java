@@ -619,18 +619,27 @@ public class MyPrefs {
             "useSmartdatesForThisManyDaysOverdueDueOrFinishDates", 30, "**Show overdue dates in Smart format, e.g. Wed17h30. This is useful for overdue dates in the near past, but can get confusing for");
 
     //STATISTICS SCREEN
-    static PrefEntry statisticsScreenNumberPastDaysToShow = new PrefEntry("Past days to include", "statisticsScreenNumberPastDaysToShow", 30, "How many past days to include");
 //    static PrefEntry numberPastWeeksToShowInStatisticsScreen = new PrefEntry("eee", "numberPastDaysToShowInStatisticsScreen", 30, "How many past days to show Show completed tasks grouped by");
 //    static PrefEntry numberPastMonthsToShowInStatisticsScreen = new PrefEntry("eee", "numberPastDaysToShowInStatisticsScreen", 30, "How many past days to show Show completed tasks grouped by");
-    static PrefEntry statisticsGroupBy = new PrefEntry("Group done tasks by", "statisticsGroupBy", ScreenStatistics.ShowGroupedBy.day.toString(), "Show completed tasks grouped by");
+//    static PrefEntry statisticsGroupBy = new PrefEntry("Order tasks by", "statisticsGroupBy", ScreenStatistics2.ShowGroupedBy.week.toString(), "Show completed tasks grouped by");
+    static PrefEntry statisticsGroupBy = new PrefEntry("Show tasks ordered tasks by", "statisticsGroupBy", ScreenStatistics2.ShowGroupedByXXX.week.toString(), "Show completed tasks grouped by");
 //    static PrefEntry statisticsGroupByDateInterval = new PrefEntry("eee", "statisticsGroupByDateInterval", ScreenStatistics.ShowGroupedBy.day, "Show completed tasks grouped by");
-    static PrefEntry statisticsSortBy = new PrefEntry("Sort by", "statisticsSortBy", ScreenStatistics.SortStatsOn.dateAndTime.name(), "Sort task by");
+//    static PrefEntry statisticsSortBy = new PrefEntry("Sort by", "statisticsSortBy", ScreenStatistics.SortStatsOn.dateAndTime.name(), "Sort task by");
+    //Group tasks by; For tasks in same group, create for each; group tasks For dates tasks, Create separate group per; "Group tasks by"
+//    static PrefEntry statisticsSortBy = new PrefEntry("Group tasks by", "statisticsSortBy", ScreenStatistics2.SortStatsOn.dateThenLists.name(), "**");
+//    static PrefEntry statisticsSortBy = new PrefEntry("Show tasks per", "statisticsSortBy", ScreenStatistics2.SortStatsOn.dateThenLists.name(), "**");
+    static PrefEntry statisticsSortBy = new PrefEntry("Group tasks for each", "statisticsSortBy", ScreenStatistics2.SortStatsOnXXX.dateThenLists.name(), "**");
+    static PrefEntry statisticsFirstGroupBy = new PrefEntry("Group tasks by", "statisticsFirstGroupBy", ScreenStatistics2.GroupOn2.day.name(), "**");
+    static PrefEntry statisticsSecondGroupBy = new PrefEntry("Then group by", "statisticsSecondGroupBy", ScreenStatistics2.GroupOn2.lists.name(), "**");
 //    static PrefEntry statisticsSortByXX = new PrefEntry("Sort by", "statisticsSortBy", ScreenStatistics.SortStatsOn.dateAndTime.name(), "Sort task by");
 
 //    static PrefEntry statisticsGroupByCategoryInsteadOfList = new PrefEntry("eee", "statisticsGroupByCategoryInsteadOfList", false, "Show completed tasks grouped by Category instead of Lists (NB. If a task has multiple categories, only the first is used)");
-    static PrefEntry statisticsGroupTasksUnderTheirProject = new PrefEntry("Show subtasks grouped under their project", "statisticsGroupTasksUnderTheirProject", true, "Show completed subtasks grouped under their top-level project");
-    static PrefEntry statisticsShowDetailsForAllLists = new PrefEntry("Always show details for statistics", "statisticsShowDetailsForAllLists", false, "**");
+//    static PrefEntry statisticsGroupTasksUnderTheirProject = new PrefEntry("Show subtasks grouped under their project", "statisticsGroupTasksUnderTheirProject", true, "Show completed subtasks grouped under their top-level project");
+//    static PrefEntry statisticsGroupTasksUnderTheirProject = new PrefEntry("Show subtasks under their project", "statisticsGroupTasksUnderTheirProject", false, "Show completed subtasks grouped under their top-level project");
+    static PrefEntry statisticsGroupTasksUnderTheirProject = new PrefEntry("Group subtasks in same group under their top-level project", "statisticsGroupTasksUnderTheirProject", false, "Show completed subtasks grouped under their top-level project");
+    static PrefEntry statisticsShowDetailsForAllLists = new PrefEntry("Show details for tasks", "statisticsShowDetailsForAllLists", false, "**");
     static PrefEntry statisticsShowMostRecentFirst = new PrefEntry("Show most recent first", "statisticsShowMostRecentFirst", true, "**");
+    static PrefEntry statisticsScreenNumberPastDaysToShow = new PrefEntry("Past days to include in view", "statisticsScreenNumberPastDaysToShow", 30, "How many past days to include");
 
     //LIST OF CATEGORIES
     static PrefEntry listOfCategoriesShowNumberUndoneTasks = new PrefEntry("Show number of tasks", "listOfCategoriesShowNumberUndoneTasks", true, "**");

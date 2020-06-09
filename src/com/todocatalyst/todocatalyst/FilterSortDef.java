@@ -436,54 +436,42 @@ public class FilterSortDef extends ParseObject {
         Item.PRIORITY,
         Item.DUE_DATE,
         Item.EFFORT_REMAINING,
-        
         Item.EFFORT_ESTIMATE,
         Item.EFFORT_ACTUAL,
         Item.CHALLENGE,
-        
         Item.FUN_DREAD,
         Item.EARNED_VALUE,
         Item.START_BY_TIME,
-        
         Item.STARTED_ON_DATE,
         Item.UPDATED_DATE,
         Item.CREATED_DATE,
-        
         Item.COMPLETED_DATE,
         Item.WAIT_UNTIL_DATE,
         Item.DESCRIPTION,
-        
         Item.IMPORTANCE_URGENCY,
         Item.IMPORTANCE,
         Item.URGENCY,
-        
         Item.STATUS};
 
     private static String[] sortFields = new String[]{
         Item.PARSE_PRIORITY,
         Item.PARSE_DUE_DATE,
         Item.PARSE_REMAINING_EFFORT,
-        
         Item.PARSE_EFFORT_ESTIMATE,
         Item.PARSE_ACTUAL_EFFORT,
         Item.PARSE_CHALLENGE,
-        
         Item.PARSE_DREAD_FUN_VALUE,
         Item.PARSE_EARNED_VALUE,
         Item.PARSE_START_BY_DATE,
-        
         Item.PARSE_STARTED_ON_DATE,
         Item.PARSE_UPDATED_AT,
         Item.PARSE_CREATED_AT,
-        
         Item.PARSE_COMPLETED_DATE,
         Item.PARSE_WAITING_TILL_DATE,
         Item.PARSE_TEXT,
-        
         Item.PARSE_IMPORTANCE_URGENCY,
         Item.PARSE_IMPORTANCE,
         Item.PARSE_URGENCY,
-        
         Item.PARSE_STATUS};
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -951,7 +939,7 @@ public class FilterSortDef extends ParseObject {
                 && (status != ItemStatus.WAITING || showWaitingTasks)
                 && (status != ItemStatus.DONE || showDoneTasks
                 //                || (MyPrefs.keepDoneTasksVisibleTheDayTheyreCompleted.getBoolean() && MyDate.isToday(item.getCompletedDateD())))
-                || (showDoneTillMidnight && MyDate.isToday(item.getCompletedDateD())))
+                || (showDoneTillMidnight && MyDate.isToday(item.getCompletedDate())))
                 && (status != ItemStatus.CANCELLED || showCancelledTasks)
                 //all the following conditions must ALL be met to show the item (or vice-versa if either is false, don't show)
                 //TODO!!!! hideUntilDate should only compare on calendar date, not absolute time (unless the date stored 
@@ -1192,16 +1180,16 @@ public class FilterSortDef extends ParseObject {
      * @param c2
      * @return
      */
-    private static int compareCategories(List<Category> c1, List<Category> c2) {
-        if (c1.isEmpty()) {
-            if (c2.isEmpty()) {
-                return 0;
+    static int compareCategories(List<Category> c1, List<Category> c2, boolean sortNoCategoryFirst) {
+        if (c1 == null || c1.isEmpty()) {
+            if (c2 == null || c2.isEmpty()) {
+                return 0; //if both empty, no sorting
             } else {
-                return -1;
+                return sortNoCategoryFirst ? -1 : 1;
             }
-        } else {
-            if (c2.isEmpty()) {
-                return 1;
+        } else { //c1 has categories
+            if (c2 == null || c2.isEmpty()) {
+                return sortNoCategoryFirst ? 1 : -1;
             } else {
                 Category cat1 = c1.get(0);
                 Category cat2 = c2.get(0);
@@ -1210,6 +1198,14 @@ public class FilterSortDef extends ParseObject {
                 return (compareInt(CategoryList.getInstance().indexOf(cat1), CategoryList.getInstance().indexOf(cat2)));
             }
         }
+    }
+
+    static int compareCategoriesNoCatLast(List<Category> c1, List<Category> c2) {
+        return compareCategories(c1, c2, false);
+    }
+
+    static int compareCategoriesNoCatFirst(List<Category> c1, List<Category> c2) {
+        return compareCategories(c1, c2, true);
     }
 
     /**
@@ -1221,7 +1217,7 @@ public class FilterSortDef extends ParseObject {
      * @param ownerList2
      * @return
      */
-    private static int compareOwnerList(ItemAndListCommonInterface ownerList1, ItemAndListCommonInterface ownerList2) {
+    static int compareOwnerList(ItemAndListCommonInterface ownerList1, ItemAndListCommonInterface ownerList2) {
         if (!(ownerList1 instanceof ItemList)) {
             if (!(ownerList2 instanceof ItemList)) {
                 return 0;
@@ -1349,9 +1345,9 @@ public class FilterSortDef extends ParseObject {
             case Item.PARSE_COMPLETED_DATE:
                 return sortDescending
                         //                        ? (i1, i2) -> compareLong(i1.getCompletedDate(), i2.getCompletedDate()) //oldest first
-                        ? (i1, i2) -> compareDate(i1.getCompletedDateD(), i2.getCompletedDateD()) //oldest first
+                        ? (i1, i2) -> compareDate(i1.getCompletedDate(), i2.getCompletedDate()) //oldest first
                         //                        : (i1, i2) -> compareLong(i2.getCompletedDate(), i1.getCompletedDate());
-                        : (i1, i2) -> compareDate(i2.getCompletedDateD(), i1.getCompletedDateD());
+                        : (i1, i2) -> compareDate(i2.getCompletedDate(), i1.getCompletedDate());
             case Item.PARSE_TEXT:
                 return sortDescending
                         ? (i1, i2) -> i2.getText().compareTo(i1.getText()) //show alphabetically, lowest value at top
@@ -1373,12 +1369,14 @@ public class FilterSortDef extends ParseObject {
                 return (i1, i2) -> i1.getTodaySortOrder().compareTo(i2.getTodaySortOrder());
             case Item.PARSE_CATEGORIES:
                 return sortDescending
-                        ? (i1, i2) -> compareCategories(i1.getCategories(), i2.getCategories()) //show highest values at top
-                        : (i1, i2) -> compareCategories(i2.getCategories(), i1.getCategories());
+                        ? (i1, i2) -> compareCategoriesNoCatLast(i1.getCategories(), i2.getCategories()) //show highest values at top
+                        : (i1, i2) -> compareCategoriesNoCatLast(i2.getCategories(), i1.getCategories());
             case Item.PARSE_OWNER_LIST:
                 return sortDescending
-                        ? (i1, i2) -> compareOwnerList(i1.getOwner(), i2.getOwner()) //show highest values at top
-                        : (i1, i2) -> compareOwnerList(i2.getOwner(), i1.getOwner());
+                        //                        ? (i1, i2) -> compareOwnerList(i1.getOwner(), i2.getOwner()) //show highest values at top
+                        //                        : (i1, i2) -> compareOwnerList(i2.getOwner(), i1.getOwner());
+                        ? (i1, i2) -> compareOwnerList(i1.getOwnerTopLevelList(), i2.getOwnerTopLevelList()) //show highest values at top
+                        : (i1, i2) -> compareOwnerList(i2.getOwnerTopLevelList(), i1.getOwnerTopLevelList());
             case Item.PARSE_OWNER_ITEM:
                 return sortDescending
                         ? (i1, i2) -> compareTopLevelProjectAlphabetically(i1.getOwnerTopLevelProject(), i2.getOwnerTopLevelProject()) //show highest values at top

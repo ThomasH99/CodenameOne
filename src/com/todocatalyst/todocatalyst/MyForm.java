@@ -273,10 +273,10 @@ public class MyForm extends Form {
     static final String SCREEN_LISTS_TITLE = "Lists";
     static final String SCREEN_LISTS_HELP = "Lists";
     static final String SCREEN_ALL_TASKS_TITLE = "All tasks";
-    static final String SCREEN_ALL_TASKS_HELP = "All tasks";
+    static final String SCREEN_ALL_TASKS_HELP = "Show all tasks and projects. Project subtasks are only shown under their project";
     static final String SCREEN_INBOX_TITLE = "Inbox"; // "Inbox (no owner)" "Inbox"
     static final String SCREEN_INBOX_HELP = "Inbox"; // "Inbox (no owner)" "Inbox"
-    static final String SCREEN_PROJECTS_TITLE = "Projects";
+    static final String SCREEN_PROJECTS_TITLE = "All projects";
     static final String SCREEN_PROJECTS_HELP = "Projects";
     static final String SCREEN_TEMPLATES_TITLE = "Templates";
     static final String SCREEN_TEMPLATES_HELP = "Templates";

@@ -1532,7 +1532,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return toString(ToStringFormat.TOSTRING_COMMA_SEPARATED_LIST);
 //        return getText().length() != 0 ? getText() : getObjectIdP();
 //        return getText() + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "") + showSubtasks ? ((getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "")  : "");
-        return getText() + (isSystemList() ? "[SYS:" + getSystemName() + "]" : "") + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "")
+        return "\""+getText() + "\""+(isSystemList() ? "[SYS:" + getSystemName() + "]" : "") + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "")
                 + (showSubtasks ? (getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "") : "");
     }
 
@@ -1688,11 +1688,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     private boolean useDefaultFilter;
 
-    boolean isUseDefaultFilter() {
+    public boolean isUseDefaultFilter() {
         return useDefaultFilter;
     }
 
-    void setUseDefaultFilter(boolean useDefaultFilter) {
+    @Override
+    public void setUseDefaultFilter(boolean useDefaultFilter) {
         this.useDefaultFilter = useDefaultFilter;
     }
 
@@ -1706,10 +1707,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
         filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
         return filterSortDef;
-    }
-
-    public FilterSortDef getFilterSortDef() {
-        return getFilterSortDef(isUseDefaultFilter());
     }
 
     //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1934,7 +1931,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        boolean status = false;
         Bag updatedBag = getItemBag(); //TODO: 
 //        if (hasSubLists() && updatedBag != null && updatedBag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
-        if (hasSubListsZZZ() && updatedBag != null && index != -1) { //if there are sublists and item has already been added at least once (so appears in list)
+        if (updatedBag != null && hasSubListsZZZ() && index != -1) { //if there are sublists and item has already been added at least once (so appears in list)
 //            itemBag.add(item); //then don't add to list, but just add to bag to keep track of how many times added
             updatedBag.add(item); //item already in list, so add to bag to keep count
             setItemBag(updatedBag); //then don't add to list, but just add to bag to keep track of how many times added

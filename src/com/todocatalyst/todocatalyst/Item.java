@@ -1263,24 +1263,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     /**
-     * returns the top-level project for this task or null if none. Iterates up
-     * the ownerItem hierarchy to find the highest level task that isn't owned
-     * by another task.
-     *
-     * @return
-     */
-    public Item getTopLevelProject() {
-//        Item ownerItem = (Item) getParseObject(PARSE_OWNER_ITEM);
-        Item topLevelProject = (Item) getOwnerItem();
-//        topLevelProject = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(topLevelProject); //NO, done in getOwnerItem
-        while (topLevelProject != null && topLevelProject.getOwnerItem() != null) {
-            topLevelProject = topLevelProject.getOwnerItem();
-//            topLevelProject = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(topLevelProject);
-        }
-        return topLevelProject;
-    }
-
-    /**
      * returns the hierarchy of ownerItems for a subtask or leaftask. ProjectX
      * -> SubprojectY -> SubprojectZ -> leafTaskT will return a list {Z, Y, X}
      * when called on leafTaskT. So list.get(0) is the immediate owner of the
@@ -1353,13 +1335,33 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if ((owner = getOwnerItem()) != null) {
             Item ownersOwner = owner.getOwnerTopLevelProject(); //recurse
             return ownersOwner == null ? owner : ownersOwner;
+        } else if (isProject()) { //called on top-level itself!
+            return this;
         } else {
             return null;
         }
     }
 
     /**
-     * returns the top-level project for a subtask (or null if none)
+     * returns the top-level project for this task or null if none. Iterates up
+     * the ownerItem hierarchy to find the highest level task that isn't owned
+     * by another task.
+     *
+     * @return
+     */
+    public Item getTopLevelProjectXXX() {
+//        Item ownerItem = (Item) getParseObject(PARSE_OWNER_ITEM);
+        Item topLevelProject = (Item) getOwnerItem();
+//        topLevelProject = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(topLevelProject); //NO, done in getOwnerItem
+        while (topLevelProject != null && topLevelProject.getOwnerItem() != null) {
+            topLevelProject = topLevelProject.getOwnerItem();
+//            topLevelProject = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(topLevelProject);
+        }
+        return topLevelProject;
+    }
+
+    /**
+     * returns the top-level ItemList for a subtask (or null if none)
      */
     public ItemList getOwnerTopLevelList() {
         ItemAndListCommonInterface owner = getOwner();
@@ -1962,7 +1964,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             //None of these fields are normally copied
             destination.setStatus(getStatus(), false, false, false, new MyDate(0));
             destination.setStartedOnDate(getStartedOnDateD());
-            destination.setCompletedDate(getCompletedDateD(), true, false); //force the same (possibly set manually) completedDate
+            destination.setCompletedDate(getCompletedDate(), true, false); //force the same (possibly set manually) completedDate
 //            destination.setCreatedDate(getCreatedDate());
 
             destination.setWaitingTillDate(getWaitingTillDate());
@@ -2155,10 +2157,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (fromCompletedDate) {
             //UI: if the completed date is *earlier* the due date (e.g. a repeatInstance is completed before its due date, 
             //meaning it would repeat again on *same* date if next date was calculated based on completedDate)
-            if (MyPrefs.repeatOnCompletionFromDueDateIfLaterThanCompletedDate.getBoolean() && getDueDateD().getTime() > getCompletedDateD().getTime()) {
+            if (MyPrefs.repeatOnCompletionFromDueDateIfLaterThanCompletedDate.getBoolean() && getDueDateD().getTime() > getCompletedDate().getTime()) {
                 return getDueDateD();
             } else {
-                return getCompletedDateD();
+                return getCompletedDate();
             }
         } else {
             return getDueDateD();
@@ -2209,9 +2211,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     return isDone() ? (c.isDone() ? 0 : 1) : (c.isDone() ? -1 : 0); // done < not done
                 case Item.COMPARE_COMPLETED_DATE:
 //                    return compareLong(getCompletedDate(), c.getCompletedDate());
-                    return compareDate(getCompletedDateD(), c.getCompletedDateD());
+                    return compareDate(getCompletedDate(), c.getCompletedDate());
                 case Item.COMPARE_CREATED_DATE:
-                    return compareLong(getCreatedDate(), c.getCreatedDate());
+                    return compareLong(getCreatedDate().getTime(), c.getCreatedDate().getTime());
                 case Item.COMPARE_DUE_DATE:
                     return compareLong(getDueDate(), c.getDueDate());
                 case Item.COMPARE_HIDE_UNTIL_DATE:
@@ -5022,7 +5024,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
             //CompletedDate: SET set to Now if changing to Done/Cancelled from other state
             //UI: also use Completed date to store date when task was cancelled (for historical data)
-            if (item.getCompletedDateD().getTime() == 0 && (previousStatus != ItemStatus.DONE && previousStatus != ItemStatus.CANCELLED)
+            if (item.getCompletedDate().getTime() == 0 && (previousStatus != ItemStatus.DONE && previousStatus != ItemStatus.CANCELLED)
                     && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED)) {
                 //TODO!!!! should actual effort be reduced to zero?? No, any effort spend should be kept even for Cancelled tasks
                 item.setCompletedDate(now, false, false); //UI: also use Completed date to store date when task was cancelled (for historical data)
@@ -5032,7 +5034,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
             //CompletedDate: RESET if changing from Done/Cancelled to other state
             //CompletedDate: set if changing to Done/Cancelled from other state, set to Now if changing to Done/Cancelled
-            if (item.getCompletedDateD().getTime() != 0 && (previousStatus == ItemStatus.DONE || previousStatus == ItemStatus.CANCELLED)
+            if (item.getCompletedDate().getTime() != 0 && (previousStatus == ItemStatus.DONE || previousStatus == ItemStatus.CANCELLED)
                     && (newStatus != ItemStatus.DONE && newStatus != ItemStatus.CANCELLED)) {
                 //if item changes from Done/Cancelled to some other value, then reset CompletedDate
                 item.setCompletedDate(new MyDate(0), false, false); //false=set date back to last completed subtask date, false=don't change status
@@ -8104,7 +8106,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //    }
 //</editor-fold>
-    public Date getCompletedDateD() {
+    public Date getCompletedDate() {
         return getCompletedDateInParse();
     }
 
@@ -8116,7 +8118,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private Date getLatestSubtaskCompleteDateXXX() {
         Date lastCompletedDate = new MyDate(0);
         for (Item subtask : (List<Item>) getListFull()) { //full set even for hidden subtasks
-            Date subtaskDate = subtask.getCompletedDateD();
+            Date subtaskDate = subtask.getCompletedDate();
             if (subtaskDate.getTime() > lastCompletedDate.getTime()) {
                 lastCompletedDate = subtaskDate;
             }
@@ -8142,7 +8144,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            Date startedOn = new Date(MyDate.MIN_DATE);
         List<Item> subtasks = (List<Item>) getListFull();
         if (subtasks.isEmpty()) {
-            return getCompletedDateD();
+            return getCompletedDate();
         } else {
             Date completedOn = null;
 //            for (Item subtask : (List<Item>) getListFull()) { //Full list since startedOn for Completed tasks should also be counted (except for Cancelled tasks!)
@@ -8326,13 +8328,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public void setCompletedDateD(Date completedDate) {
 //        setCompletedDate(completedDate.getTime());
 //    }
-    public long getCreatedDate() {
-//        return createdDate;
-//        return getCreatedAt() == null ? 0 : getCreatedAt().getTime(); //createdAt returns null for just created object
-        return getCreatedDateD().getTime();
-    }
-
-    public Date getCreatedDateD() {
+//    public long getCreatedDate() {
+////        return createdDate;
+////        return getCreatedAt() == null ? 0 : getCreatedAt().getTime(); //createdAt returns null for just created object
+//        return getCreatedDateD().getTime();
+//    }
+    public Date getCreatedDate() {
 //        return getCreatedAt();
         return getCreatedAt() == null ? new MyDate(0) : getCreatedAt(); //createdAt returns null for just created object
     }
@@ -8468,8 +8469,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     long getTimeSpan() {
-        if (getCompletedDateD().getTime() != 0) {
-            return getCompletedDateD().getTime() - getStartedOnDate();
+        if (getCompletedDate().getTime() != 0) {
+            return getCompletedDate().getTime() - getStartedOnDate();
         } else {
             return 0;
         }
@@ -9904,7 +9905,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case PARSE_COMPLETED_DATE:
                 if (toCSV) {
-                    list.add(MyDate.formatDateNew(getCompletedDateD()));
+                    list.add(MyDate.formatDateNew(getCompletedDate()));
                 } else {
                     setCompletedDate((Date) val, true, true);
                 }
@@ -9952,7 +9953,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case PARSE_CREATED_AT:
                 if (toCSV) {
-                    list.add(MyDate.formatDateNew(getCreatedDateD()));
+                    list.add(MyDate.formatDateNew(getCreatedDate()));
                 } else {
                     Log.p("Cannot import " + Item.CREATED_DATE);
                 }
@@ -11029,13 +11030,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return filterSortDef;
     }
 
-    @Override
-    public FilterSortDef getFilterSortDef(boolean returnDefaultFilterIfNoneDefined) {
-        FilterSortDef filterSortDef = getFilterSortDefN();
-        if (false && filterSortDef == null && returnDefaultFilterIfNoneDefined) {//UI: don't use default filter for subtasks, too confusing if eg done subtasks disappear
-            return FilterSortDef.getDefaultFilter();
-        }
-        return filterSortDef;
+    public boolean isUseDefaultFilter() {
+        return false; //UI: don't use default filter for subtasks, too confusing if eg done subtasks disappear
     }
 
     public Object get(int index) {

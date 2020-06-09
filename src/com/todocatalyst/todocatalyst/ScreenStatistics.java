@@ -62,8 +62,8 @@ public class ScreenStatistics extends MyForm {
     @Override
     public void refreshAfterEdit() {
         getContentPane().removeAll();
-        SortStatsOn sortOn = SortStatsOn.valueOfDefault(MyPrefs.statisticsSortBy.getString());
-        sortItems(doneItemsFromParseSortedOnDate, sortOn);
+        SortStatsOnXXX sortOn = SortStatsOnXXX.valueOfDefault(MyPrefs.statisticsSortBy.getString());
+        sortItemsXXX(doneItemsFromParseSortedOnDate, sortOn);
         itemListStats = buildStatisticsSortedByTime(doneItemsFromParseSortedOnDate, workSlots);
         getContentPane().add(BorderLayout.CENTER, buildContentPane(itemListStats));
 
@@ -79,11 +79,11 @@ public class ScreenStatistics extends MyForm {
         super.refreshAfterEdit();
     }
 
-    private void sortItems() {
-        sortItems(doneItemsFromParseSortedOnDate, SortStatsOn.dateAndTime);
+    private void sortItemsXXX() {
+        sortItemsXXX(doneItemsFromParseSortedOnDate, SortStatsOnXXX.dateAndTime);
     }
 
-    private static void sortItems(List<Item> itemList, SortStatsOn sortOn) {
+    private static void sortItemsXXX(List<Item> itemList, SortStatsOnXXX sortOn) {
 //        Comparator comparator;
         switch (sortOn) {
             case dateAndTime:
@@ -111,14 +111,14 @@ public class ScreenStatistics extends MyForm {
 //        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
 //        workSlots = new WorkSlotList(null, DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted
         workSlots = DAO.getInstance().getWorkSlots(startDate); //true=already sorted
-        doneItemsFromParseSortedOnDate = DAO.getInstance().getCompletedItems(startDate, endDate);
+        doneItemsFromParseSortedOnDate = DAO.getInstance().getCompletedItems(startDate, endDate, true);
 //        sortItems(itemsSortedOnDate, SortStatsOn.valueOf(MyPrefs.statisticsSortBy.getString()) );
     }
 
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         super.addCommandsToToolbar(toolbar);
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
 //            getToolbar().addSearchCommand((e) -> {
 //                String text = (String) e.getSource();
@@ -132,13 +132,13 @@ public class ScreenStatistics extends MyForm {
 //                compList.animateLayout(ANIMATION_TIME_FAST);
 //            }, MyPrefs.defaultIconSizeInMM.getFloat());
 //        }
+//</editor-fold>
         //SEARCH
         if (true) { //TODO!!!: seardh algo crashes on statistics and won't let you exit/remove the search field
 //            getToolbar().addSearchCommand(makeSearchFunctionSimple(itemListStats), MyPrefs.defaultIconSizeInMM.getFloat());
 //            MySearchBar mySearchBar = new MySearchBar(getToolbar(), makeSearchFunctionSimple(itemListStats));
 //            mySearchCmd =   new MySearchCommand(getContentPane(), makeSearchFunctionSimple(itemListStats));
 //            getToolbar().addCommandToRightBar(  new MySearchCommand(getContentPane(), makeSearchFunctionSimple(itemListStats)));
-
         }
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", "Settings", Icons.iconSettings, (e) -> {
@@ -164,7 +164,7 @@ public class ScreenStatistics extends MyForm {
     /**
      * what are items sorted on?
      */
-    enum SortStatsOn {
+    enum SortStatsOnXXX {
 //        dateAndTime("Dates"), //dateAndTime
 //        dateAndTime("Dat", "Date and time"), //dateAndTime
 //        //        dateThenLists("Lists"), //dateThenLists Lists
@@ -175,9 +175,10 @@ public class ScreenStatistics extends MyForm {
 //        listsThenDates("LisD", "List, then date"), //listsThenDates Lists_Date
 //        //        categoriesThenDate("Categories-Dates"); //categoriesThenDate Cat_Date
 //        categoriesThenDate("CatD", "Category, then date"); //categoriesThenDate Cat_Date
-        dateAndTime("Date and time"), //dateAndTime
+//        dateAndTime("Date and time"), //dateAndTime
+        dateAndTime("Date"), //dateAndTime
         //        dateThenLists("Lists"), //dateThenLists Lists
-        dateThenLists("Date, then lists"), //dateThenLists Lists
+        dateThenLists("Date, then list"), //dateThenLists Lists
         //        dateThenCategories("Categories"), //dateThenCategories Categories
         dateThenCategories("Date, then category"), //dateThenCategories Categories
         //        listsThenDates("Lists-Dates"), //listsThenDates Lists_Date
@@ -187,7 +188,7 @@ public class ScreenStatistics extends MyForm {
         String str;
         String displayName;
 
-        SortStatsOn(String longStr) {
+        SortStatsOnXXX(String longStr) {
 //            this.str = stri;
             this.displayName = longStr;
         }
@@ -207,8 +208,8 @@ public class ScreenStatistics extends MyForm {
             return new String[]{dateAndTime.displayName, dateThenLists.displayName, dateThenCategories.displayName, listsThenDates.displayName, categoriesThenDate.displayName};
         }
 
-        public static SortStatsOn valueOfDefault(String s) {
-            SortStatsOn v = null;
+        public static SortStatsOnXXX valueOfDefault(String s) {
+            SortStatsOnXXX v = null;
             try {
                 v = valueOf(s);
             } catch (Exception e) {
@@ -320,7 +321,7 @@ public class ScreenStatistics extends MyForm {
      */
     private static ItemList buildStatisticsSortedByTime(List<Item> itemsSortedOnDate, List<WorkSlot> workSlotsSortedByStartDate) {
         return buildStatisticsSortedByTime(itemsSortedOnDate, workSlotsSortedByStartDate,
-                SortStatsOn.valueOfDefault(MyPrefs.statisticsSortBy.getString()),
+                SortStatsOnXXX.valueOfDefault(MyPrefs.statisticsSortBy.getString()),
                 ShowGroupedBy.valueOf(MyPrefs.statisticsGroupBy.getString()));
     }
 
@@ -329,16 +330,19 @@ public class ScreenStatistics extends MyForm {
         itemList.setWorkSlotsInParse(WorkSlotList.getWorkSlotsInInterval(workSlotsSortedByStartDate, startDate, endDate, true, true));
     }
 
-    private static ItemList buildStatisticsSortedByTime(List<Item> itemsSortedOnDate, List<WorkSlot> workSlots, SortStatsOn sortOn, ShowGroupedBy groupBy) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+    private static ItemList buildStatisticsSortedByTime(List<Item> itemsSortedOnDate, List<WorkSlot> workSlots, SortStatsOnXXX sortOn, ShowGroupedBy groupBy) {
 //        boolean groupByDate = true || groupBy == ShowGroupedBy.day;
 //        boolean groupByDate = true || groupBy == ShowGroupedBy.day;
-        boolean groupByDate = groupBy != ShowGroupedBy.none && (sortOn == SortStatsOn.dateAndTime || sortOn == SortStatsOn.dateThenLists || sortOn == SortStatsOn.dateThenCategories);
-        boolean groupByList = sortOn == SortStatsOn.dateThenLists || sortOn == SortStatsOn.listsThenDates;
-        boolean groupByCategory = sortOn == SortStatsOn.dateThenCategories || sortOn == SortStatsOn.categoriesThenDate;
-        boolean groupByProject = MyPrefs.statisticsGroupTasksUnderTheirProject.getBoolean();
+        boolean groupTopLevelByDate = (groupBy != ShowGroupedBy.none
+                && (sortOn == SortStatsOnXXX.dateAndTime || sortOn == SortStatsOnXXX.dateThenLists || sortOn == SortStatsOnXXX.dateThenCategories));
+        boolean groupTopLevelByList = (sortOn == SortStatsOnXXX.dateThenLists || sortOn == SortStatsOnXXX.listsThenDates);
+        boolean groupTopLevelByCategory = (sortOn == SortStatsOnXXX.dateThenCategories || sortOn == SortStatsOnXXX.categoriesThenDate);
 
-        ItemList<ItemList> mainList = new ItemList(true);
-        ItemList dayList = null; //list of days
+        boolean groupSubtasksByProject = MyPrefs.statisticsGroupTasksUnderTheirProject.getBoolean();
+
+        ItemList<ItemList> topLevelList = new ItemList(true);
+        ItemList dateGroupList = null; //list of days
         ItemList ownerList = null; //list of lists (to group tasks by their ItemList)
         ItemList categoryList = null; //list of lists (to group tasks by their ItemList)
         ItemList projectList = null; //list of lists (to group tasks by their ItemList)
@@ -350,58 +354,241 @@ public class ScreenStatistics extends MyForm {
         Category prevCategory = null;
         Item prevTopLevelProject = null;
 
-        assert !groupByList || !groupByCategory; //cannot group by both Owner and Category, either (or both) must be false
+        assert !groupTopLevelByList || !groupTopLevelByCategory; //cannot group by both Owner and Category, either (or both) must be false
+
+        for (Item item : itemsSortedOnDate) {
+
+            switch (sortOn) {
+                case dateAndTime:
+                    //if new item has a different date
+//            if (groupTopLevelByDate) {
+                    Date completedDate = item.getCompletedDate();
+                    if (prevCompletedDate == null || newDateGroup(groupBy, completedDate, prevCompletedDate)) {
+                        //get and add WorkSlots
+                        dateGroupList = new ItemList(getDateString(groupBy, completedDate), true, Icons.iconDateRange, false);
+//                    dayList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
+                        addWorkSlotsToItemList(dateGroupList, workSlots, getDateForGroup(groupBy, completedDate, false), getDateForGroup(groupBy, completedDate, true));
+                        topLevelList.add(dateGroupList);
+                        prevOwnerList = null; //will ensure that we recalc Owner
+                        prevCategory = null; //will ensure that we recalc Category
+                        prevTopLevelProject = null; //will ensure that we recalc topLevelProject
+                        prevCompletedDate = completedDate; //update prevCompletedDate
+
+                        if (groupSubtasksByProject) {
+                            Item topLevelProject = item.getOwnerTopLevelProject(); //UI: do not show intermediate subprojects, only leaf tasks
+                            if (topLevelProject == null) {
+                                projectList = null; //reset list to null if no project (to store tasks directly in the list)
+                            } else if (!topLevelProject.equals(prevTopLevelProject)) { //prevTopLevelProject may be null or another project
+                                projectList = new ItemList("Project: " + topLevelProject.getText(), true, Icons.iconMainProjects, false);
+                                dateGroupList.add(projectList);
+                                prevTopLevelProject = topLevelProject;
+                            }
+                            if (projectList != null) {
+                                projectList.add(item);
+                            } else {
+                                dateGroupList.add(item);
+                            }
+                        } else {
+                            dateGroupList.add(item);
+                        }
+//            } e
+                        break;
+                    }
+
+                case listsThenDates:
+                    if (groupTopLevelByList) {
+//                ItemAndListCommonInterface owner = item.getOwner();
+                        ItemList owner = item.getOwnerTopLevelList();
+//                if (owner == null || !(owner instanceof ItemList)) {
+//                    ownerList = new ItemList("Inbox", true, Icons.iconMainInbox, false);
+////                    ownerList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
+//                } else
+                        if (owner instanceof ItemList) {
+                            if (!owner.equals(prevOwnerList)) //                    ownerList = new ItemList("List: " + owner.getText(), true, Icons.iconList);
+                            {
+                                ownerList = new ItemList(owner.getText(), true, Icons.iconList, false);
+                            }
+                            topLevelList.add(ownerList);
+                            dateGroupList = null;
+//                    ownerList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
+                        } else { //task doesn't belong directly to an ItemList
+
+                        }
+//                    else {
+//                    //same list as before
+//                    assert owner.equals(prevOwnerList);
+//                }
+                        //add new list
+                        if (dateGroupList != null) {
+                            dateGroupList.add(ownerList);
+                        } else {
+                            topLevelList.add(ownerList);
+                        }
+                        //update prevOwner
+                        prevOwnerList = owner instanceof ItemList ? (ItemList) owner : null;
+                        //reset other lists
+                        prevCategory = null; //will ensure that we recalc Category
+                        prevTopLevelProject = null; //will ensure that we recalc topLevelProject
+                    }
+                    break;
+                case dateThenCategories:
+
+                    if (groupTopLevelByCategory) { //prevItem==null => first time round
+                        Category category = item.getFirstCategory(); //UI: if an item has several categories, only the first one (in the categoryList order?!) is used
+                        if (category == null) {
+                            if (prevCategory != null) {
+                                categoryList = new ItemList("No category", true, Icons.iconCategory, false);
+                            }
+//                    categoryList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
+                        } else if (!category.equals(prevCategory)) {
+//                    categoryList = new ItemList("Category: " + category.getText(), true, Icons.iconCategory);
+                            categoryList = new ItemList(category.getText(), true, Icons.iconCategory, false);
+//                    categoryList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
+                        } else {
+                            assert category.equals(prevCategory);
+                        }
+//                        if (false) { prevOwner = null; }//will ensure that we recalc Owner
+                        //add new list
+                        if (dateGroupList != null) {
+                            dateGroupList.add(categoryList);
+                        } else if (ownerList != null) {
+                            ownerList.add(categoryList);
+                        } else {
+                            topLevelList.add(categoryList);
+                        }
+                        //update prevCategory
+                        prevCategory = category;
+                        //reset other lists
+                        prevTopLevelProject = null; //will ensure that we recalc topLevelProject
+                    }
+                    break;
+                case categoriesThenDate:
+
+//            if (groupByProject && (prevItem == null || projectList == null || (topLevelProject = item.getOwnerTopLevelProject()) != null && !topLevelProject.equals(prevTopLevelProject))) {
+                    if (groupSubtasksByProject) {
+                        Item topLevelProject = item.getOwnerTopLevelProject(); //UI: do not show intermediate subprojects, only leaf tasks
+                        if (topLevelProject == null) {
+                            projectList = null; //reset list to null if no project (to store tasks directly in the list)
+                        } else if (!topLevelProject.equals(prevTopLevelProject)) { //prevTopLevelProject may be null or another project
+                            projectList = new ItemList("Project: " + topLevelProject.getText(), true, Icons.iconMainProjects, false);
+//                    projectList.setFilterSortDef(FilterSortDef.getNeutralFilter());  //neutral is now default
+                            //add new list
+                            if (categoryList != null) {
+                                categoryList.add(projectList);
+                            } else if (ownerList != null) {
+                                ownerList.add(projectList);
+                            } else if (dateGroupList != null) {
+                                dateGroupList.add(projectList);
+                            } else {
+                                topLevelList.add(projectList);
+                            }
+                        } else {
+                            // do nothing: keep existing projectList
+                            assert projectList != null;
+                        }
+                        //update prevTopLevelProject
+                        prevTopLevelProject = topLevelProject;
+                    }
+
+                    //add item to appropriate list
+                    if (projectList != null) {
+                        projectList.add(item);
+                    } else if (categoryList != null) {
+                        categoryList.add(item);
+                    } else if (ownerList != null) {
+                        ownerList.add(item);
+                    } else if (dateGroupList != null) {
+                        dateGroupList.add(item);
+                    } else if (topLevelList != null) {
+                        topLevelList.add(item);
+                    }
+//                prevItem = item;
+            }
+        }
+        return topLevelList;
+    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+
+    private static ItemList buildStatisticsSortedByTimeOLD(List<Item> itemsSortedOnDate, List<WorkSlot> workSlots, SortStatsOnXXX sortOn, ShowGroupedBy groupBy) {
+//        boolean groupByDate = true || groupBy == ShowGroupedBy.day;
+//        boolean groupByDate = true || groupBy == ShowGroupedBy.day;
+        boolean groupTopLevelByDate = groupBy != ShowGroupedBy.none && (sortOn == SortStatsOnXXX.dateAndTime || sortOn == SortStatsOnXXX.dateThenLists || sortOn == SortStatsOnXXX.dateThenCategories);
+        boolean groupTopLevelByList = (sortOn == SortStatsOnXXX.dateThenLists || sortOn == SortStatsOnXXX.listsThenDates);
+        boolean groupTopLevelByCategory = (sortOn == SortStatsOnXXX.dateThenCategories || sortOn == SortStatsOnXXX.categoriesThenDate);
+
+        boolean groupSubtasksByProject = MyPrefs.statisticsGroupTasksUnderTheirProject.getBoolean();
+
+        ItemList<ItemList> topLevelList = new ItemList(true);
+        ItemList dateGroupList = null; //list of days
+        ItemList ownerList = null; //list of lists (to group tasks by their ItemList)
+        ItemList categoryList = null; //list of lists (to group tasks by their ItemList)
+        ItemList projectList = null; //list of lists (to group tasks by their ItemList)
+
+//        Date firstDate = new Date(Long.MIN_VALUE); //first Date in the dayList
+        Date prevCompletedDate = null;
+//        Item prevItem = null;
+        ItemList prevOwnerList = null;
+        Category prevCategory = null;
+        Item prevTopLevelProject = null;
+
+        assert !groupTopLevelByList || !groupTopLevelByCategory; //cannot group by both Owner and Category, either (or both) must be false
 
         for (Item item : itemsSortedOnDate) {
 
             //if new item has a different date
-            if (groupByDate) {
-                Date completedDate = item.getCompletedDateD();
+            if (groupTopLevelByDate) {
+                Date completedDate = item.getCompletedDate();
                 if (prevCompletedDate == null || newDateGroup(groupBy, completedDate, prevCompletedDate)) {
                     //get and add WorkSlots
-                    dayList = new ItemList(getDateString(groupBy, completedDate), true, Icons.iconDateRange, false);
+                    dateGroupList = new ItemList(getDateString(groupBy, completedDate), true, Icons.iconDateRange, false);
 //                    dayList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
-                    addWorkSlotsToItemList(dayList, workSlots, getDateForGroup(groupBy, completedDate, false), getDateForGroup(groupBy, completedDate, true));
-                    mainList.add(dayList);
+                    addWorkSlotsToItemList(dateGroupList, workSlots, getDateForGroup(groupBy, completedDate, false), getDateForGroup(groupBy, completedDate, true));
+                    topLevelList.add(dateGroupList);
                     prevOwnerList = null; //will ensure that we recalc Owner
                     prevCategory = null; //will ensure that we recalc Category
                     prevTopLevelProject = null; //will ensure that we recalc topLevelProject
                     prevCompletedDate = completedDate; //update prevCompletedDate
                 }
-            }
+            } else if (groupTopLevelByList) {
+//                ItemAndListCommonInterface owner = item.getOwner();
+                ItemList owner = item.getOwnerTopLevelList();
+//                if (owner == null || !(owner instanceof ItemList)) {
+//                    ownerList = new ItemList("Inbox", true, Icons.iconMainInbox, false);
+////                    ownerList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
+//                } else
+                if (owner instanceof ItemList) {
+                    if (!owner.equals(prevOwnerList)) //                    ownerList = new ItemList("List: " + owner.getText(), true, Icons.iconList);
+                    {
+                        ownerList = new ItemList(owner.getText(), true, Icons.iconList, false);
+                    }
+                    topLevelList.add(ownerList);
+                    dateGroupList = null;
+//                    ownerList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
+                } else { //task doesn't belong directly to an ItemList
 
-            if (groupByList) {
-                ItemAndListCommonInterface owner = item.getOwner();
-                if (owner == null || !(owner instanceof ItemList)) {
-                    ownerList = new ItemList("Inbox", true, Icons.iconMainInbox, false);
-//                    ownerList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
-                } else if (!owner.equals(prevOwnerList)) {
-//                    ownerList = new ItemList("List: " + owner.getText(), true, Icons.iconList);
-                    ownerList = new ItemList( owner.getText(), true, Icons.iconList, false);
-//                    ownerList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
-                } else {
-                    //same list as before
-                    assert owner.equals(prevOwnerList);
                 }
+//                    else {
+//                    //same list as before
+//                    assert owner.equals(prevOwnerList);
+//                }
                 //add new list
-                if (dayList != null) {
-                    dayList.add(ownerList);
+                if (dateGroupList != null) {
+                    dateGroupList.add(ownerList);
                 } else {
-                    mainList.add(ownerList);
+                    topLevelList.add(ownerList);
                 }
                 //update prevOwner
                 prevOwnerList = owner instanceof ItemList ? (ItemList) owner : null;
                 //reset other lists
                 prevCategory = null; //will ensure that we recalc Category
                 prevTopLevelProject = null; //will ensure that we recalc topLevelProject
-
-            }
-
-            if (groupByCategory) { //prevItem==null => first time round
-                Category category = item.getFirstCategory();
+            } else if (groupTopLevelByCategory) { //prevItem==null => first time round
+                Category category = item.getFirstCategory(); //UI: if an item has several categories, only the first one (in the categoryList order?!) is used
                 if (category == null) {
-                    if (prevCategory!=null)
-                    categoryList = new ItemList("No category", true, Icons.iconCategory, false);
+                    if (prevCategory != null) {
+                        categoryList = new ItemList("No category", true, Icons.iconCategory, false);
+                    }
 //                    categoryList.setFilterSortDef(FilterSortDef.getNeutralFilter()); //neutral is now default
                 } else if (!category.equals(prevCategory)) {
 //                    categoryList = new ItemList("Category: " + category.getText(), true, Icons.iconCategory);
@@ -410,14 +597,14 @@ public class ScreenStatistics extends MyForm {
                 } else {
                     assert category.equals(prevCategory);
                 }
-//                        if (false) { prevOwner = null; }//will ensure that we recalc Owner                        
+//                        if (false) { prevOwner = null; }//will ensure that we recalc Owner
                 //add new list
-                if (dayList != null) {
-                    dayList.add(categoryList);
+                if (dateGroupList != null) {
+                    dateGroupList.add(categoryList);
                 } else if (ownerList != null) {
                     ownerList.add(categoryList);
                 } else {
-                    mainList.add(categoryList);
+                    topLevelList.add(categoryList);
                 }
                 //update prevCategory
                 prevCategory = category;
@@ -426,7 +613,7 @@ public class ScreenStatistics extends MyForm {
             }
 
 //            if (groupByProject && (prevItem == null || projectList == null || (topLevelProject = item.getOwnerTopLevelProject()) != null && !topLevelProject.equals(prevTopLevelProject))) {
-            if (groupByProject) {
+            if (groupSubtasksByProject) {
                 Item topLevelProject = item.getOwnerTopLevelProject(); //UI: do not show intermediate subprojects, only leaf tasks
                 if (topLevelProject == null) {
                     projectList = null; //reset list to null if no project (to store tasks directly in the list)
@@ -438,10 +625,10 @@ public class ScreenStatistics extends MyForm {
                         categoryList.add(projectList);
                     } else if (ownerList != null) {
                         ownerList.add(projectList);
-                    } else if (dayList != null) {
-                        dayList.add(projectList);
+                    } else if (dateGroupList != null) {
+                        dateGroupList.add(projectList);
                     } else {
-                        mainList.add(projectList);
+                        topLevelList.add(projectList);
                     }
                 } else {
                     // do nothing: keep existing projectList
@@ -458,16 +645,16 @@ public class ScreenStatistics extends MyForm {
                 categoryList.add(item);
             } else if (ownerList != null) {
                 ownerList.add(item);
-            } else if (dayList != null) {
-                dayList.add(item);
-            } else if (mainList != null) {
-                mainList.add(item);
+            } else if (dateGroupList != null) {
+                dateGroupList.add(item);
+            } else if (topLevelList != null) {
+                topLevelList.add(item);
             }
 //                prevItem = item;
         }
-        return mainList;
+        return topLevelList;
     }
-
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private Component layoutStatistics(List<Item> itemsOnSameDate, SortStatsOn sortOn, long totalWorkTime) {
 //        Container cont = new Container();
@@ -810,6 +997,7 @@ public class ScreenStatistics extends MyForm {
 //        return swipCont;
 //    }
 //</editor-fold>
+
     protected Container buildContentPane(ItemList itemListStats) {
         parseIdMap2.parseIdMapReset();
         if ((itemListStats != null && itemListStats.size() > 0)) {

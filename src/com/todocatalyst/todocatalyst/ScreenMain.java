@@ -362,7 +362,7 @@ public class ScreenMain extends MyForm {
         //TODO!!! add support for help text on these commands
         Command statistics = MyReplayCommand.create(SCREEN_STATISTICS/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainStatistics, (e) -> {
 //                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, false);
-                    MyForm myForm = new ScreenStatistics(SCREEN_STATISTICS, ScreenMain.this, () -> {
+                    MyForm myForm = new ScreenStatistics2(SCREEN_STATISTICS, ScreenMain.this, () -> {
                     });
                     myForm.setTextToShowIfEmptyList("No completed tasks to show statistics for yet");
                     myForm.show();
