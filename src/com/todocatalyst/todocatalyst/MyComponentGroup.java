@@ -252,9 +252,13 @@ class MyComponentGroup extends ComponentGroup {
 //    }
     MyComponentGroup(Object[] values, String[] names, ParseIdMap2 parseIdMap, MyForm.GetString getSelectedValue, MyForm.PutString set,
             boolean unselectAllowed, boolean verticalLayout) {
+        this(values, names, parseIdMap, null, getSelectedValue, set, unselectAllowed, verticalLayout);
+    }
+    MyComponentGroup(Object[] values, String[] names, ParseIdMap2 parseIdMap, Object mapId, MyForm.GetString getSelectedValue, MyForm.PutString set,
+            boolean unselectAllowed, boolean verticalLayout) {
 //        this(values, get.get(), unselectAllowed);
         this(values, names, getSelectedValue.get(), unselectAllowed, verticalLayout, false, false);
-        parseIdMap.put(this, () -> {
+        parseIdMap.put(mapId!=null?mapId:this, () -> {
 //            int size = this.getComponentCount();
 //            for (int i = 0; i < size; i++) {
 //                if (((Button) this.getComponentAt(i)).isSelected()) {
@@ -433,7 +437,10 @@ class MyComponentGroup extends ComponentGroup {
             }
         }
     }
-    
+    /**
+     * select the tiven index, if selectedIndex does not match any (-1 or larger than array), all are unselected
+     * @param selectedIndex 
+     */
     public void selectIndex(int selectedIndex) {
 //        int size = this.getComponentCount();
         int size = buttonsArray.length;
@@ -495,7 +502,7 @@ class MyComponentGroup extends ComponentGroup {
     /**
      *
      * @param value the value to select, if not matching any defined values, no
-     * effect unselected
+     * effect unselected, if value null no effect
      */
     public void selectValue(Object value) {
         if (value == null) {

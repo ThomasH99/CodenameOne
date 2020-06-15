@@ -5,7 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.todocatalyst.todocatalyst.ScreenStatistics2.ShowGroupedByXXX;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -33,6 +33,11 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
         String get(Item elt);
     }
 
+    interface getDate {
+
+        Date get(Date startDate);
+    }
+
     interface getHash {
 
         Object get(Item elt);
@@ -43,17 +48,29 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
         Character get();
     }
 
+    interface getWorkSlots {
+
+        List<WorkSlot> get(Item item);
+    }
+
     protected Object hashValue; //the hash value stored for this bucket, used to sort them
     protected Comparator comparator; //used to sort the buckets based on the hash value
     protected getName name; //returns the name of a bucket
+    protected getDate endDateFct; //returns the name of a bucket
     protected getHash hash; //return the hash value to determine which bucket to place the Item in
+//    protected getWorkSlots workSlots; //return the hash value to determine which bucket to place the Item in
     protected char icon; //icon used when creating a bucket (displayed)
     protected boolean initialized; //true once the functions have been initialized
+    int level;
+    ScreenStatistics2.GroupOn2 groupOn;
+
+    Date startTime;
+    Date endTime;
 
     boolean groupByProject; //group subtasks into (top-level) projects
     boolean mostRecentFirst; //show oldest completed Items first
 
-    ItemBucket withoutCategoryGroup; //'global' bucket variable, A HACK, but should work since each bucket will
+//    ItemBucket withoutCategoryGroup; //'global' bucket variable, A HACK, but should work since each bucket will
     final static ItemBucket dummyForSearch = new ItemBucket(); //used for binary search to avoid creating a new bucket each time (efficiency)
 
     /**
@@ -69,27 +86,42 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
 ////         this.bucketName=bucketName;
 //        setText(bucketName);
 //    }
+    public ItemBucket(String listName, Character itemListIcon, Object hashValue, ItemBucket ownerBucket, List<Item> items) {
+        super(listName, true, itemListIcon, false);
+        setUseDefaultFilter(false);
+        setNoSave(true);
+        this.hashValue = hashValue;
+        setOwner(ownerBucket);
+        initBucket(this, 0); //get the bucket functions for this (level of) bucket
+        if (items != null) {
+            for (Item i : items) {
+                addToBucket(i);
+            }
+        }
+    }
+
+    public ItemBucket(String listName, Character itemListIcon, Object hashValue, ItemBucket ownerBucket) {
+        this(listName, itemListIcon, hashValue, ownerBucket, null);
+    }
+
     /**
      * create an ItemBucket with the list of items and the given name
      *
      * @param items
      * @param name
      */
-    ItemBucket(String name, List<Item> items, List<WorkSlot> workSlotsSortedByStartDate) {
-        super();
-        setNoSave(true);
-        setText(name);
-        for (Item i : items) {
-            addToBucket(i);
-        }
+//    ItemBucket(String name, List<Item> items, List<WorkSlot> workSlotsSortedByStartDate) {
+    ItemBucket(String name, List<Item> items) {
+//        super();
+//        setUseDefaultFilter(false);
+//        initBucket(this, 0); //get the bucket functions for this (level of) bucket
+//        setNoSave(true);
+//        setText(name);
+//        for (Item i : items) {
+//            addToBucket(i);
+//        }
+        this(name, null, null, null, items);
         //TODO handle workslots
-    }
-
-    public ItemBucket(String listName, char itemListIcon, Object hashValue, ItemBucket ownerBucket) {
-        super(listName, true, itemListIcon, false);
-        setNoSave(true);
-        this.hashValue = hashValue;
-        setOwner(ownerBucket);
     }
 
     public boolean equals(Object o) {
@@ -114,6 +146,22 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
 
     private ItemBucket getOwnerBucket() {
         return (ItemBucket) getOwner();
+    }
+
+    Date getStartTime() {
+        if (startTime != null) {
+            return startTime;
+        } else { //
+            return getOwnerBucket().getStartTime(); //getOwnerBucket() should never be null
+        }
+    }
+
+    Date getEndTime() {
+        if (endTime != null) {
+            return endTime;
+        } else { //if eg this bucket is category or list
+            return getOwnerBucket().getEndTime();
+        }
     }
 
     /**
@@ -223,75 +271,89 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
 //    @Override
     public boolean addToBucket(ItemAndListCommonInterface elt) {
 //        initializeIfNeeded(); //get the bucket functions for this (level of) bucket
-        initBucket(this, 0); //get the bucket functions for this (level of) bucket
+//        initBucket(this, 0); //get the bucket functions for this (level of) bucket
         Item item = (Item) elt;
         boolean status = false;
-        if (initialized && hash == null) { //if no Bucket grouping at this level, simple add elt as a normal task
-
-            //manually insert
-            ItemAndListCommonInterface ownerTopPrj = item.getOwnerTopLevelProject();
-            Date complDateNew = item.getCompletedDate();
-            List fullList = getListFull();
-            int insertIdx = -1;
-            int size = fullList.size();
-            for (int i = 0; i < size; i++) {
-                Object o = fullList.get(i);
-                if (groupByProject) {
-                    if (ownerTopPrj != null) {
-                        //the hashvalue for a project bucket is the *first* subtask encountered, so the bucket will be placed based on first subtask in sort order
+        if (initialized) {
+            if (hash == null) { //if no Bucket grouping at this level, simple add elt as a normal task
+                //manually insert
+                ItemAndListCommonInterface ownerTopPrj = item.getOwnerTopLevelProject();
+                Date complDateNew = item.getCompletedDate();
+                List fullList = getListFull();
+                int insertIdx = -1;
+                int size = fullList.size();
+                for (int i = 0; i < size; i++) {
+                    Object o = fullList.get(i);
+                    if (groupByProject) {
+                        if (ownerTopPrj != null) {
+                            //the hashvalue for a project bucket is the *first* subtask encountered, so the bucket will be placed based on first subtask in sort order
 //                        if (o instanceof ItemBucket && (((ItemBucket) o).hashValue.equals(item.getOwner()))) {
-                        if (o instanceof ItemBucket && (((Item) ((ItemBucket) o).hashValue).getOwnerTopLevelProject().equals(item.getOwnerTopLevelProject()))) {
-                            return ((ItemBucket) o).addToList(item, true, false); //add Item to Project bucket's list
-                        } else if (o instanceof Item) {
-                            if (ownerTopPrj.equals(((Item) o).getOwnerTopLevelProject())) {
+                            if (o instanceof ItemBucket && (((Item) ((ItemBucket) o).hashValue).getOwnerTopLevelProject().equals(item.getOwnerTopLevelProject()))) {
+                                return ((ItemBucket) o).addToList(item, true, false); //add Item to Project bucket's list
+                            } else if (o instanceof Item) {
+                                if (ownerTopPrj.equals(((Item) o).getOwnerTopLevelProject())) {
 //                                ItemBucket bucket = new ItemBucket("Project: " + ownerPrj.getText(), Icons.iconMainProjects, hash.get(item), this);
-                                ItemBucket bucket = new ItemBucket("Project: " + ownerTopPrj.getText(), Icons.iconMainProjects, o, this); //o=first (already) inserted subtask
-                                addToList(bucket, true, false); //add new Project bucket to its owner bucket, don't set owner, done above when bucket is created
-                                remove(o); //remove already inserted subtask
-                                bucket.addToList((Item) o, true, false); //add existing subtask
-                                return bucket.addToList(item, true, false); //add new subtask Item to buckets list
+                                    ItemBucket bucket = new ItemBucket("Project: " + ownerTopPrj.getText(), Icons.iconMainProjects, o, this); //o=first (already) inserted subtask
+                                    addToList(bucket, true, false); //add new Project bucket to its owner bucket, don't set owner, done above when bucket is created
+                                    remove(o); //remove already inserted subtask
+                                    bucket.addToList((Item) o, true, false); //add existing subtask
+                                    return bucket.addToList(item, true, false); //add new subtask Item to buckets list
+                                }
                             }
                         }
-                    }
-                } //even with groupByProject true, fall through to lines below for the case where groupByProject doesn't create any buckets
+                    } //even with groupByProject true, fall through to lines below for the case where groupByProject doesn't create any buckets
 
 //                if(o instanceof ItemBucket)
 //                Object x = ((Item) ((ItemBucket) o).hashValue).getCompletedDate();
-                //The project buckets hasValue is the first subtask, so the date of that subtask is used for sorting the project bucket
-                Date complDatePrev = (o instanceof ItemBucket) ? ((Item) ((ItemBucket) o).hashValue).getCompletedDate() : ((Item) o).getCompletedDate();
-                if (insertIdx == -1 && ((!mostRecentFirst && complDatePrev.getTime() >= complDateNew.getTime())
-                        || (mostRecentFirst && complDatePrev.getTime() <= complDateNew.getTime()))) {
-                    insertIdx = i; //store index of *first* element in list with date *larger* then the one to insert => idx==insert position
-                    if (!groupByProject) { //if we've found the insert index and are NOT grouping by project, no reason to iterate through rest of list since insertIdx won't change again
-                        break;
+                    //The project buckets hasValue is the first subtask, so the date of that subtask is used for sorting the project bucket
+                    Date complDatePrev = (groupByProject && o instanceof ItemBucket) ? ((Item) ((ItemBucket) o).hashValue).getCompletedDate() : ((Item) o).getCompletedDate();
+                    if (insertIdx == -1 && ((!mostRecentFirst && complDatePrev.getTime() >= complDateNew.getTime())
+                            || (mostRecentFirst && complDatePrev.getTime() <= complDateNew.getTime()))) {
+                        insertIdx = i; //store index of *first* element in list with date *larger* then the one to insert => idx==insert position
+                        if (!groupByProject) { //if we've found the insert index and are NOT grouping by project, no reason to iterate through rest of list since insertIdx won't change again
+                            break;
+                        }
                     }
                 }
-            }
-            if (!mostRecentFirst) {
-                int i = insertIdx == -1 ? 0 : insertIdx;
-                return addToList(i, item, false); //add Item to buckets list, false=DON'T make bucket owner of item!!
+                if (!mostRecentFirst) {
+                    int i = insertIdx == -1 ? 0 : insertIdx;
+                    return addToList(i, item, false); //add Item to buckets list, false=DON'T make bucket owner of item!!
+                } else {
+                    int i = insertIdx == -1 ? size : insertIdx;
+                    return addToList(i, item, false);
+                }
             } else {
-                int i = insertIdx == -1 ? size : insertIdx;
-                return addToList(i, item, false);
-            }
-        } else {
-            Object hashValue = this.hash.get(item);
-            ASSERT.that(dummyForSearch.hashValue == null);
-            dummyForSearch.hashValue = hashValue;
+                Object hashValue = this.hash.get(item);
+                ASSERT.that(dummyForSearch.hashValue == null);
+                dummyForSearch.hashValue = hashValue;
 //            ItemBucket bucket = getBucket(hashValue);
-            ItemBucket bucket;
+                ItemBucket bucket;
+                int idx = 0;
 //            int idx = Collections.binarySearch(this, hashValue, comparator);
-            int idx = Collections.binarySearch(this, dummyForSearch, comparator);
-            dummyForSearch.hashValue = null;
-            if (idx >= 0) {
-                bucket = (ItemBucket) getItemAt(idx);
-            } else {
+                try {
+                    idx = Collections.binarySearch(this, dummyForSearch, comparator);
+                } catch (Exception e) {
+                    ASSERT.that("");
+                }
+                dummyForSearch.hashValue = null;
+                if (idx >= 0) {
+                    bucket = (ItemBucket) getItemAt(idx);
+                } else {
 //                bucket = new ItemBucket(name.get(item), icon, hashValue, this); //create a new bucket with name given by function and this bucket as owner
-                bucket = new ItemBucket(name.get(item), icon, hashValue, this); //create a new bucket with name given by function and this bucket as owner
-                // insert new bucket sorted on hash value
-                int insertIdx = -(idx + 1);
-                addItemAtIndex(bucket, insertIdx, false); //insert new bucket into bucket's owner bucket
-            }
+                    bucket = new ItemBucket(name.get(item), icon, hashValue, this); //create a new bucket with name given by function and this bucket as owner
+//                    if (workSlots != null) {
+//                        bucket.addWorkSlots(workSlots.get());
+//                    }
+//                    if (bucket.endDateFct != null) {
+                    if (endDateFct != null) {
+                        bucket.startTime = (Date) hashValue;
+//                        bucket.endTime = bucket.endDateFct.get((Date) hashValue);
+                        bucket.endTime = endDateFct.get((Date) hashValue);
+                    }
+                    // insert new bucket sorted on hash value
+                    int insertIdx = -(idx + 1);
+                    addItemAtIndex(bucket, insertIdx, false); //insert new bucket into bucket's owner bucket
+                }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            ItemBucket bucket = getBucket(hashValue);
 //            if (bucket == null) {
@@ -304,8 +366,103 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
 //            }
 //            status = bucket.addToList(elt);
 //</editor-fold>
-            return bucket.addToBucket(item); //add item to appropriate bucket (wll recursively create the hierarchy and type of buckets needed
+                return bucket.addToBucket(item); //add item to appropriate bucket (wll recursively create the hierarchy and type of buckets needed
+            }
+        } else {
+            ASSERT.that("call addToBucket on a not initialized bucket should never happen");
+            return false;
         }
     }
 
+    List<WorkSlot> cachedWorkSlots;
+
+    public List getWorkSlotsFromParseNOLD() {
+        if (level == 0) {
+            if (cachedWorkSlots == null) {
+                cachedWorkSlots = DAO.getInstance().getWorkSlots(getStartTime(), getEndTime());
+            }
+            return cachedWorkSlots;
+        } else if (groupOn == ScreenStatistics2.GroupOn2.lists || groupOn == ScreenStatistics2.GroupOn2.categories) {
+            return ((ItemList) hashValue).getWorkSlots(getStartTime(), getEndTime());
+        } else if ((groupOn == ScreenStatistics2.GroupOn2.day || groupOn == ScreenStatistics2.GroupOn2.week || groupOn == ScreenStatistics2.GroupOn2.month)) {
+            if (level == 1) {
+                if (hash != null) { //hash!=null means we have subbuckets
+                    List<WorkSlot> wslots = new ArrayList();
+                    for (ItemBucket bucket : (List<ItemBucket>) getListFull()) {
+                        List<WorkSlot> ws = ((ItemList) bucket.hashValue).getWorkSlotsFromParseN(); //we're only adding the worksltos previously stored in ItemBucket
+                        if (ws != null) {
+                            wslots.addAll(((ItemList) bucket.hashValue).getWorkSlotsFromParseN()); //we're only adding the worksltos previously stored in ItemBucket
+                        }
+                    }
+                    return wslots;
+                } else { //no sucbuckets, get workSlots from level above with this level's start/end time
+                    return ((ItemList) getOwnerBucket().hashValue).getWorkSlots(getStartTime(), getEndTime());
+                }
+            } else if (level == 2) {
+                return ((ItemList) getOwnerBucket().hashValue).getWorkSlots(getStartTime(), getEndTime());
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public List getWorkSlotsFromParseN() {
+        if (level == 0) { //I'm the top-level bucket
+            if (cachedWorkSlots == null) { //cache to avoid fetching workslots from DAO each time a sub-bucket needs this
+                cachedWorkSlots = DAO.getInstance().getWorkSlots(getStartTime(), getEndTime());
+            }
+            return cachedWorkSlots;
+        } else if (hashValue instanceof ItemList) {
+            return ((ItemList) hashValue).getWorkSlots(getStartTime(), getEndTime());
+        } else if (hashValue instanceof Date) {
+            if (hash == null) {// level == 2) { //lowest level
+                //no sucbuckets, get workSlots from level above with this level's start/end time
+//                return ((ItemList) getOwnerBucket().hashValue).getWorkSlots(getStartTime(), getEndTime());
+                return getOwnerBucket().getWorkSlots(getStartTime(), getEndTime());
+            } else {//else if (level == 1) {
+//            if (hash != null) { //hash!=null => there are sub-buckets so sum up their worktime
+                List<WorkSlot> wslots = new ArrayList();
+                for (ItemBucket bucket : (List<ItemBucket>) getListFull()) {
+//                    List<WorkSlot> ws = ((ItemList) bucket.hashValue).getWorkSlotsFromParseN(); //we're only adding the worksltos previously stored in ItemBucket
+                    List<WorkSlot> ws = ((ItemList) bucket.hashValue).getWorkSlots(getStartTime(), getEndTime()); //we're only adding the worksltos previously stored in ItemBucket
+                    if (ws != null) {
+//                        wslots.addAll(((ItemList) bucket.hashValue).getWorkSlotsFromParseN()); //we're only adding the worksltos previously stored in ItemBucket
+                        wslots.addAll(ws); //we're only adding the worksltos previously stored in ItemBucket
+                    }
+                }
+                return wslots;
+            }
+//            }
+        }
+        return null;
+    }
+
+    public long getWorkSlotSum() {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (level == 0) {
+//            if (cachedWorkSlots == null) {
+//                cachedWorkSlots = DAO.getInstance().getWorkSlots(getStartTime(), getEndTime());
+//            }
+//            return cachedWorkSlots;
+//        } else if (groupOn == ScreenStatistics2.GroupOn2.lists || groupOn == ScreenStatistics2.GroupOn2.categories) {
+//            return WorkSlot.getWorkTimeSum(((ItemList) hashValue).getWorkSlots(getStartTime(), getEndTime()));
+//        } else if ((groupOn == ScreenStatistics2.GroupOn2.day || groupOn == ScreenStatistics2.GroupOn2.week || groupOn == ScreenStatistics2.GroupOn2.month)) {
+//            if (level == 1) {
+//                if (hash != null) { //hash!=null means we have subbuckets
+//                    long workSlotDuration = 0;
+//                    for (ItemBucket bucket : (List<ItemBucket>) getListFull()) {
+//                        workSlotDuration += WorkSlot.getWorkTimeSum(((ItemList) bucket.hashValue).getWorkSlotsFromParseN());
+//                    }
+//                    return workSlotDuration;
+//                } else { //no sucbuckets, get workSlots from level above with this level's start/end time
+//                    return WorkSlot.getWorkTimeSum(((ItemList) getOwnerBucket().hashValue).getWorkSlots(getStartTime(), getEndTime()));
+//                }
+//            } else if (level == 2) {
+//                return WorkSlot.getWorkTimeSum(((ItemList) getOwnerBucket().hashValue).getWorkSlots(getStartTime(), getEndTime()));
+//            }
+//        }
+//        return 0;
+//</editor-fold>
+        return WorkSlot.getWorkTimeSum(getWorkSlotsFromParseN());
+    }
 }

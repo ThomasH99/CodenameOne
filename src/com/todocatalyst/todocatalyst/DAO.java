@@ -2178,6 +2178,7 @@ public class DAO {
 //                newInbox.setSystemList(true);
                 newInbox.setSystemName(name);
                 newInbox.setText(visibleName);
+                newInbox.setUseDefaultFilter(true);
                 List itemsWithoutOwners = getAllItemsWithoutOwners();
                 for (Item item : (List<Item>) itemsWithoutOwners) {
                     newInbox.addToList(item);
@@ -6689,7 +6690,7 @@ public class DAO {
      * @param endDate
      * @return
      */
-    private List<WorkSlot> getWorkSlots(Date startDate, Date endDate) {
+    public List<WorkSlot> getWorkSlots(Date startDate, Date endDate) {
 
         ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
 //        query.whereGreaterThanOrEqualTo(WorkSlot.PARSE_START_TIME, startDate); //enough to search for endTime later than Now

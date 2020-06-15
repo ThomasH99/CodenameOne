@@ -40,6 +40,7 @@ public class Inbox extends ItemList {
         if (INSTANCE == null) {
 //            INSTANCE = DAO.getInstance().getSpecialNamedItemListFromParse(INBOX_RESERVED_NAME);
             INSTANCE = DAO.getInstance().getInbox(INBOX_RESERVED_NAME, "Inbox");
+//            INSTANCE.setUseDefaultFilter(true); //done in DAO to save the option when new instance is created
 //            INSTANCE.inboxItemList = DAO.getInstance().getInbox();
         }
         return INSTANCE;

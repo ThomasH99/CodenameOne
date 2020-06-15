@@ -422,6 +422,14 @@ public class CleanUpDataInconsistencies {
         return duplicatesEncountered;
     }
 
+    /**
+     * return true if filter doesNO
+     * T exist in parse
+     * @param filterOwner
+     * @param filterSortDef
+     * @param executeCleanup
+     * @return 
+     */
     private boolean cleanUpReferencedFilterSortDef(ItemAndListCommonInterface filterOwner, FilterSortDef filterSortDef, boolean executeCleanup) {
 //                FilterSortDef filterSortDef = itemList.getFilterSortDef();
         boolean filterDoesNotExist = false;
@@ -616,7 +624,7 @@ public class CleanUpDataInconsistencies {
         }
 
         //FILTERSORTDEF
-        FilterSortDef filterSortDef = itemList.getFilterSortDefN();
+//        FilterSortDef filterSortDef = itemList.getFilterSortDefN();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null) {
 //            if (notOnParseServer((ParseObject) filterSortDef)) {
@@ -630,9 +638,12 @@ public class CleanUpDataInconsistencies {
 //            }
 //        };
 //</editor-fold>
-        if (!cleanUpReferencedFilterSortDef(itemList, filterSortDef, executeCleanup)) {
-            filterSortDefReferenced.add(filterSortDef); //filter exists so add it
-        }
+//        if (!cleanUpReferencedFilterSortDef(itemList, filterSortDef, executeCleanup)) {
+//            filterSortDefReferenced.add(filterSortDef); //filter exists so add it
+//        }
+//FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
+//       cleanUpReferencedFilterSortDef(itemList, itemList.getFilterSortDefN(), executeCleanup);
+       cleanUpReferencedFilterSortDef(itemList, (FilterSortDef) itemList.getParseObject(ItemList.PARSE_FILTER_SORT_DEF), executeCleanup);
 
         //workslots
         cleanUpWorkSlotList(itemList, executeCleanup);
@@ -994,7 +1005,7 @@ public class CleanUpDataInconsistencies {
         }
 
         //FILTERSORTDEF
-        FilterSortDef filterSortDef = category.getFilterSortDefN();
+//        FilterSortDef filterSortDef = category.getFilterSortDefN();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null) {
 //            if (notOnParseServer((ParseObject) filterSortDef)) {
@@ -1008,9 +1019,11 @@ public class CleanUpDataInconsistencies {
 //            }
 //        }
 //</editor-fold>
-        if (!cleanUpReferencedFilterSortDef(category, filterSortDef, executeCleanup)) {
-            filterSortDefReferenced.add(filterSortDef);
-        }
+//        if (!cleanUpReferencedFilterSortDef(category, filterSortDef, executeCleanup)) {
+//            filterSortDefReferenced.add(filterSortDef);
+//        }
+//       cleanUpReferencedFilterSortDef(category, category.getFilterSortDefN(), executeCleanup);
+       cleanUpReferencedFilterSortDef(category, (FilterSortDef) category.getParseObject(ItemList.PARSE_FILTER_SORT_DEF), executeCleanup);
 
         //workslots
         cleanUpWorkSlotList(category, executeCleanup);
@@ -1717,7 +1730,7 @@ public class CleanUpDataInconsistencies {
         }
 
         //FILTERSORTDEF
-        FilterSortDef filterSortDef = item.getFilterSortDefN();
+//        FilterSortDef filterSortDef = item.getFilterSortDefN();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null) {
 //            if (notOnParseServer((ParseObject) filterSortDef)) {
@@ -1730,9 +1743,11 @@ public class CleanUpDataInconsistencies {
 //            }
 //        }
 //</editor-fold>
-        if (!cleanUpReferencedFilterSortDef(item, filterSortDef, executeCleanup)) {
-            filterSortDefReferenced.add(filterSortDef);
-        }
+//        if (!cleanUpReferencedFilterSortDef(item, filterSortDef, executeCleanup)) {
+//            filterSortDefReferenced.add(filterSortDef);
+//        }
+//        cleanUpReferencedFilterSortDef(item, item.getFilterSortDefN(), executeCleanup);
+        cleanUpReferencedFilterSortDef(item, (FilterSortDef) item.getParseObject(ItemList.PARSE_FILTER_SORT_DEF), executeCleanup);
 
         //INterrupted tasks
         if (item.getTaskInterrupted() != null && notOnParseServer((ParseObject) item.getTaskInterrupted())) {
@@ -2477,7 +2492,7 @@ public class CleanUpDataInconsistencies {
         log("-----------------------------------------------------");
         cleanUpItemsFromParse(executeCleanup); //Clean up all Items and their pointers first, true=includeTemplates
 
-        //Clean up filters *after* cleaning up lists etc since we check if any list/project/category reference the filters
+        //NB!! call Clean up filters *after* cleaning up lists etc since we check if any list/project/category reference the filters
         log("-----------------------------------------------------");
         log("FILTERS");
         log("-----------------------------------------------------");

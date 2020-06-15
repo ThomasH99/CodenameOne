@@ -62,8 +62,8 @@ public class ScreenStatistics extends MyForm {
     @Override
     public void refreshAfterEdit() {
         getContentPane().removeAll();
-        SortStatsOnXXX sortOn = SortStatsOnXXX.valueOfDefault(MyPrefs.statisticsSortBy.getString());
-        sortItemsXXX(doneItemsFromParseSortedOnDate, sortOn);
+//        SortStatsOnXXX sortOn = SortStatsOnXXX.valueOfDefault(MyPrefs.statisticsSortBy.getString());
+//        sortItemsXXX(doneItemsFromParseSortedOnDate, sortOn);
         itemListStats = buildStatisticsSortedByTime(doneItemsFromParseSortedOnDate, workSlots);
         getContentPane().add(BorderLayout.CENTER, buildContentPane(itemListStats));
 
@@ -287,7 +287,7 @@ public class ScreenStatistics extends MyForm {
 //                return MyDate.formatDateNew(day);
                 return MyDate.formatDateNew(day, true, true, false, true, false);
             case week:
-                return MyDate.getWeekAndYear(day);
+                return MyDate.getWeekStr(day);
             case month:
             default:
                 return MyDate.getMonthAndYear(day);
@@ -320,9 +320,10 @@ public class ScreenStatistics extends MyForm {
      * @return
      */
     private static ItemList buildStatisticsSortedByTime(List<Item> itemsSortedOnDate, List<WorkSlot> workSlotsSortedByStartDate) {
-        return buildStatisticsSortedByTime(itemsSortedOnDate, workSlotsSortedByStartDate,
-                SortStatsOnXXX.valueOfDefault(MyPrefs.statisticsSortBy.getString()),
-                ShowGroupedBy.valueOf(MyPrefs.statisticsGroupBy.getString()));
+//        return buildStatisticsSortedByTime(itemsSortedOnDate, workSlotsSortedByStartDate,
+//                SortStatsOnXXX.valueOfDefault(MyPrefs.statisticsSortBy.getString()),
+//                ShowGroupedBy.valueOf(MyPrefs.statisticsGroupBy.getString()));
+return null;
     }
 
     private static void addWorkSlotsToItemList(ItemList itemList, List<WorkSlot> workSlotsSortedByStartDate, Date startDate, Date endDate) {

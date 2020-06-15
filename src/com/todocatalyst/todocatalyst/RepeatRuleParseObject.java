@@ -6467,6 +6467,12 @@ public class RepeatRuleParseObject
         if (getNumberOfDaysRepeatsAreGeneratedAhead() != repeatRule.getNumberOfDaysRepeatsAreGeneratedAhead()) {
             return false;
         }
+        if (getListOfDoneInstances().size()!=repeatRule.getListOfDoneInstances().size()) {
+            return false;
+        }
+        if (getListOfUndoneInstances().size()!=repeatRule.getListOfUndoneInstances().size()) {
+            return false;
+        }
         if (!getListOfDoneInstances().equals(repeatRule.getListOfDoneInstances())) {
             return false;
         }

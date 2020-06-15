@@ -40,7 +40,7 @@ public class ScreenItemListProperties extends MyForm {
     ScreenItemListProperties(ItemList itemList, MyForm previousForm) { //throws ParseException, IOException {
         this(itemList, previousForm, null);
     }
-
+    
     ScreenItemListProperties(ItemList itemList, MyForm previousForm, Runnable doneAction) { //throws ParseException, IOException {
         super("", previousForm, doneAction);
         setTitle(itemList instanceof Category ? Category.CATEGORY : ItemList.ITEM_LIST);
@@ -64,7 +64,7 @@ public class ScreenItemListProperties extends MyForm {
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
     }
-
+    
     @Override
     public void refreshAfterEdit() {
         getContentPane().removeAll();
@@ -81,7 +81,7 @@ public class ScreenItemListProperties extends MyForm {
     public static String checkItemListIsValidForSaving(String itemListName, ItemList itemList) {
         return checkItemListIsValidForSaving(itemListName, itemList, true);
     }
-
+    
     public static String checkItemListIsValidForSaving(String itemListName, ItemList itemList, boolean showErrorDialog) {
         //TODO extend to check valid subcategories, auto-words, ...
         String errorMsg = null;
@@ -98,7 +98,7 @@ public class ScreenItemListProperties extends MyForm {
         {
             errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists, and more than one {0} with same name is not allowed. Please set a different name.", ItemList.ITEM_LIST, itemListName);
         }
-
+        
         if (errorMsg != null) {
             if (showErrorDialog) {
                 Dialog.show("Error", errorMsg, "OK", null);
@@ -108,9 +108,9 @@ public class ScreenItemListProperties extends MyForm {
             return errorMsg; //true;
         }
     }
-
+    
     public void addCommandsToToolbar(Toolbar toolbar) {
-
+        
         super.addCommandsToToolbar(toolbar);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle());
@@ -133,17 +133,7 @@ public class ScreenItemListProperties extends MyForm {
 //        toolbar.addCommandToLeftBar(cmd);
 //</editor-fold>
         toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand());
-
-        if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
-            toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
-                Log.p("Clicked");
-//            item.revert(); //forgetChanges***/refresh
-//            previousForm.showBack(); //drop any changes
-//                previousForm.revalidate();
-//                previousForm.show(); //drop any changes
-                showPreviousScreen(true); //false);
-            });
-        }
+        
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemListSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsItemListProperties(ScreenItemListProperties.this, () -> {
                 if (false) {
@@ -152,8 +142,20 @@ public class ScreenItemListProperties extends MyForm {
             }).show();
         }
         ));
-
-        if (false&&Config.TEST) {
+        
+        if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
+//            toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
+//                Log.p("Clicked");
+////            item.revert(); //forgetChanges***/refresh
+////            previousForm.showBack(); //drop any changes
+////                previousForm.revalidate();
+////                previousForm.show(); //drop any changes
+//                showPreviousScreen(true); //false);
+//            });
+            toolbar.addCommandToOverflowMenu(makeCancelCommand());
+        }
+        
+        if (false && Config.TEST) {
             if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
                 toolbar.addCommandToOverflowMenu("Show data issues", null, (e) -> {
                     DAO.getInstance().cleanUpItemList(itemList, itemList.getOwner().equals(TemplateList.getInstance()), false);
@@ -165,7 +167,7 @@ public class ScreenItemListProperties extends MyForm {
                 });
             }
         }
-
+        
     }
 
     /**
@@ -222,7 +224,7 @@ public class ScreenItemListProperties extends MyForm {
         Label lastModifiedDate = new Label(itemList.getUpdatedAt() == null || itemList.getUpdatedAt().getTime() == 0 ? MyDate.formatDateNew(new MyDate()) : MyDate.formatDateNew(itemList.getUpdatedAt()));
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
         content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**", true));
-
+        
         if (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(itemList.getObjectIdP() == null ? "<set on save>" : itemList.getObjectIdP(), "ScreenItemValueUneditable");
             content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
@@ -236,7 +238,7 @@ public class ScreenItemListProperties extends MyForm {
 
 //        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), (ItemList) itemList.getOwner()));
         setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), itemList) == null);
-
+        
         return content;
     }
 }

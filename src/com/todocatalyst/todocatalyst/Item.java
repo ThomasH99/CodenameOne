@@ -1809,7 +1809,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
             //TEXT
 //            if ((copyExclusions & COPY_EXCLUDE_TEXT) == 0) { //UI: DOESN'T make sense to not copy task description (especially with projects)
-            if (destination.getText().equals("") || MyPrefs.addTemplateTaskTextToExistingTaskText.getBoolean()) { //copy from template, iff nothing's already set for item
+            if (destination.getText().equals("") || MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()) { //copy from template, iff nothing's already set for item
                 destination.setText(destination.getText() + getText());
             }
 //            }
@@ -8787,6 +8787,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getText();
 //        return getText().length() != 0 ? getText()+" ("+getObjectId()+")" : getObjectId();
         return getText() + (isTemplate() ? "%" : "") + "[" + getObjectIdP() + "]"
+                + (getCompletedDate().getTime() != 0 ? " Done" + MyDate.formatDateSmart(getCompletedDate()) : "")
                 + (getDueDateD().getTime() != 0 ? " Due" + MyDate.formatDateSmart(getDueDateD()) : "")
                 + (isDone() ? " [DONE]" : (getRemaining() > 0 ? " " + MyDate.formatDurationShort(getRemaining()) : ""))
                 + (showSubtasks ? (getListFull().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getListFull(), true) + "}") : "");

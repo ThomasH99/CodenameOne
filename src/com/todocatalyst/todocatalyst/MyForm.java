@@ -116,6 +116,8 @@ public class MyForm extends Form {
 
     private Date editSessionStartTime;
     private Command searchCmd;
+    
+    static int GAP_LABEL_ICON = 0; //in pixels!
 
     protected Command getSearchCmd() {
         return searchCmd;

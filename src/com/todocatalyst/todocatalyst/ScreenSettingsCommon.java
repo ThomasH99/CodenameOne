@@ -410,7 +410,8 @@ public class ScreenSettingsCommon extends MyForm {
         if (tableLayout) {
             return null;
         } else {
-            MyComponentGroup compGroup = new MyComponentGroup(enumValues, enumNames, parseIdMap2, () -> {
+            //store the group in parseIdMap2 with prefEntry as key, this ensures that another group created for the same setting overwrites the previous (needed in ScreenSettingsStatistics)
+            MyComponentGroup compGroup = new MyComponentGroup(enumValues, enumNames, parseIdMap2, prefEntry, () -> {
                 for (String e : enumValues) {
 //                    if (((Enum) e).name().equals(prefEntry.getString())) {
 //                        return ((Enum) e).name(); //e.toString();
@@ -433,8 +434,10 @@ public class ScreenSettingsCommon extends MyForm {
                 }
             }, unselectAllowed, verticalLayout);
             compGroup.addActionListener(onAction);
-            cont.add(layoutN(prefEntry.getFieldScription(), compGroup,
-                    prefEntry.getHelpText(), true));
+            if (cont != null) {
+                cont.add(layoutN(prefEntry.getFieldScription(), compGroup,
+                        prefEntry.getHelpText(), true));
+            }
             return compGroup;
         }
     }

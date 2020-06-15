@@ -23,10 +23,13 @@ public class ScreenStatistics2 extends MyForm {
     //TODO 
 
     List<Item> doneItemsFromParseUnsorted;
-    ItemList itemListStats;
-    List<WorkSlot> workSlots;
+    ItemBucket itemListStats;
+//    List<WorkSlot> workSlots;
     MySearchCommand mySearchCmd;
     ItemBucket toplevelItemBucket;
+
+    Date startDate;
+    Date endDate;
 
     /**
      * edit a list of statistics over recently done tasks
@@ -36,12 +39,18 @@ public class ScreenStatistics2 extends MyForm {
         super(screenTitle, previousForm, updateActionOnDone);
 //        this.itemListList = itemListList;
         setUniqueFormId("ScreenStatistics");
+        setScreenType(ScreenType.STATISTICS);
         setScrollable(false);
         if (!(getLayout() instanceof BorderLayout)) {
             setLayout(new BorderLayout());
         }
+        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId());
         expandedObjectsInit(""); //,null);
         addCommandsToToolbar(getToolbar()); //since Search refers to itemListStatus which is rebuild everytime, search must also be updated in refreshAfterEdit
+
+        //must update dates both here and in refreshAfterEdit
+        endDate = new MyDate(); //end of interval is now
+        startDate = new MyDate(endDate.getTime() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
 
         reloadData();
         refreshAfterEdit();
@@ -50,9 +59,14 @@ public class ScreenStatistics2 extends MyForm {
     @Override
     public void refreshAfterEdit() {
         getContentPane().removeAll();
-        SortStatsOnXXX sortOn = SortStatsOnXXX.valueOfDefault(MyPrefs.statisticsSortBy.getString());
+        endDate = new MyDate(); //end of interval is now
+        startDate = new MyDate(endDate.getTime() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//        SortStatsOnXXX sortOn = SortStatsOnXXX.valueOfDefault(MyPrefs.statisticsSortBy.getString());
 //        sortItems(doneItemsFromParseUnsorted, sortOn); //now done in buildStatisticsSortedByTime
-        itemListStats = buildStatisticsSortedByTime(doneItemsFromParseUnsorted, workSlots);
+//        itemListStats = buildStatisticsSortedByTime(doneItemsFromParseUnsorted, workSlots);
+        itemListStats = buildStatisticsSortedByTime(doneItemsFromParseUnsorted);
+        itemListStats.startTime = startDate;
+        itemListStats.endTime = endDate;
 
         getContentPane().add(BorderLayout.CENTER, buildContentPane(itemListStats));
 
@@ -68,39 +82,11 @@ public class ScreenStatistics2 extends MyForm {
         super.refreshAfterEdit();
     }
 
-    private static void sortItemsXXX(List<Item> itemList, SortStatsOnXXX sortOn, boolean sortDescending) {
-//        Comparator comparator;
-        switch (sortOn) {
-            case dateAndTime:
-            default:
-//                Collections.sort(itemList, FilterSortDef.getSortingComparator(Item.PARSE_COMPLETED_DATE, MyPrefs.statisticsShowMostRecentFirst.getBoolean()));
-                Collections.sort(itemList, FilterSortDef.getSortingComparator(Item.PARSE_COMPLETED_DATE, sortDescending));
-                break;
-            case dateThenLists:
-//                Collections.sort(itemList, FilterSortDef.getMultipleComparator(new String[]{Item.PARSE_COMPLETED_DATE, Item.PARSE_OWNER_LIST}, new boolean[]{false, false}));
-                Collections.sort(itemList, FilterSortDef.getMultipleComparator(new String[]{Item.PARSE_COMPLETED_DATE, Item.PARSE_OWNER_LIST}, new boolean[]{sortDescending, false}));
-                break;
-            case dateThenCategories:
-//                Collections.sort(itemList, FilterSortDef.getMultipleComparator(new String[]{Item.PARSE_COMPLETED_DATE, Item.PARSE_CATEGORIES}, new boolean[]{false, false}));
-                Collections.sort(itemList, FilterSortDef.getMultipleComparator(new String[]{Item.PARSE_COMPLETED_DATE, Item.PARSE_CATEGORIES}, new boolean[]{sortDescending, false}));
-                break;
-            case listsThenDates:
-//                Collections.sort(itemList, FilterSortDef.getMultipleComparator(new String[]{Item.PARSE_OWNER_LIST, Item.PARSE_COMPLETED_DATE}, new boolean[]{false, false}));
-                Collections.sort(itemList, FilterSortDef.getMultipleComparator(new String[]{Item.PARSE_OWNER_LIST, Item.PARSE_COMPLETED_DATE}, new boolean[]{false, sortDescending}));
-                break;
-            case categoriesThenDate:
-//                Collections.sort(itemList, FilterSortDef.getMultipleComparator(new String[]{Item.PARSE_CATEGORIES, Item.PARSE_COMPLETED_DATE}, new boolean[]{false, false})); //sort on completed date
-                Collections.sort(itemList, FilterSortDef.getMultipleComparator(new String[]{Item.PARSE_CATEGORIES, Item.PARSE_COMPLETED_DATE}, new boolean[]{false, sortDescending})); //sort on completed date
-                break;
-        }
-    }
-
     private void reloadData() {
-        Date startDate = new MyDate(MyDate.currentTimeMillis() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
-        Date endDate = new MyDate();
+
 //        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
 //        workSlots = new WorkSlotList(null, DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted
-        workSlots = DAO.getInstance().getWorkSlots(startDate); //true=already sorted
+//        workSlots = DAO.getInstance().getWorkSlots(startDate); //true=already sorted
         doneItemsFromParseUnsorted = DAO.getInstance().getCompletedItems(startDate, endDate, true);
 //        sortItems(itemsSortedOnDate, SortStatsOn.valueOf(MyPrefs.statisticsSortBy.getString()) );
     }
@@ -157,23 +143,18 @@ public class ScreenStatistics2 extends MyForm {
      * what are items sorted on?
      */
     enum GroupOn2 {
-        none("None"), //not used
+        none("    None    "),
         day("Day"),
         week("Week"),
         month("Month"),
-        lists("List"), //dateThenLists Lists
+        lists("List"),
         categories("Category");
 
-//        String str;
         String displayName;
 
         GroupOn2(String longStr) {
-//            this.str = stri;
             this.displayName = longStr;
         }
-//        SortStatsOn(String stri) {
-//            this(stri,stri);
-//        }
 
         public String toString() {
             return displayName;
@@ -197,14 +178,9 @@ public class ScreenStatistics2 extends MyForm {
          * @return
          */
         public static String[] getSecondLevelGroupingNames(int firstLevelGrouping) {
-//            return new String[][]{
-//                {},
-//                {day.displayName},
-//                {day.displayName, week.displayName, month.displayName, lists.displayName, categories.displayName}}[firstLevelGrouping];
             switch (firstLevelGrouping) {
                 default:
                 case 0:
-//                    return null;
                     return new String[]{none.name(), day.name(), week.name(), month.name(), lists.name(), categories.name()}; //allow any previous setting to be selected if firstGroup is None (to avoid pb when creating setting)
                 //dated grouping
                 case 1: //day
@@ -212,9 +188,11 @@ public class ScreenStatistics2 extends MyForm {
                 case 3: //month
                     return new String[]{none.name(), lists.name(), categories.name()};
                 case 4: //by list
-                    return new String[]{none.name(), day.name(), week.name(), month.name(), categories.name()};
+//                    return new String[]{none.name(), day.name(), week.name(), month.name(), categories.name()};
+                    return new String[]{none.name(), day.name(), week.name(), month.name()};
                 case 5: //by category
-                    return new String[]{none.name(), day.name(), week.name(), month.name(), lists.name()};
+//                    return new String[]{none.name(), day.name(), week.name(), month.name(), lists.name()};
+                    return new String[]{none.name(), day.name(), week.name(), month.name()};
             }
         }
 
@@ -222,7 +200,6 @@ public class ScreenStatistics2 extends MyForm {
             switch (firstLevelGrouping) {
                 default:
                 case 0:
-//                    return null;
                     return new String[]{none.displayName, day.displayName, week.displayName, month.displayName, lists.displayName, categories.displayName};
                 //dated grouping
                 case 1: //day
@@ -230,177 +207,15 @@ public class ScreenStatistics2 extends MyForm {
                 case 3: //month
                     return new String[]{none.displayName, lists.displayName, categories.displayName};
                 case 4: //by list
-                    return new String[]{none.displayName, day.displayName, week.displayName, month.displayName, categories.displayName};
+//                    return new String[]{none.displayName, day.displayName, week.displayName, month.displayName, categories.displayName};
+                    return new String[]{none.displayName, day.displayName, week.displayName, month.displayName};
                 case 5: //by category
-                    return new String[]{none.displayName, day.displayName, week.displayName, month.displayName, lists.displayName};
+//                    return new String[]{none.displayName, day.displayName, week.displayName, month.displayName, lists.displayName};
+                    return new String[]{none.displayName, day.displayName, week.displayName, month.displayName};
             }
         }
-
-        public static GroupOn2 valueOfDefaultXXX(String s) {
-            GroupOn2 v = null;
-            try {
-                v = valueOf(s);
-            } catch (Exception e) {
-                v = day;
-            }
-            return v;
-        }
-//        lists, 
-//        categories
     };
 
-    enum SortStatsOnXXX {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        dateAndTime("Dates"), //dateAndTime
-//        dateAndTime("Dat", "Date and time"), //dateAndTime
-//        //        dateThenLists("Lists"), //dateThenLists Lists
-//        dateThenLists("Lis", "Date, then lists"), //dateThenLists Lists
-//        //        dateThenCategories("Categories"), //dateThenCategories Categories
-//        dateThenCategories("Cat", "Date, then category"), //dateThenCategories Categories
-//        //        listsThenDates("Lists-Dates"), //listsThenDates Lists_Date
-//        listsThenDates("LisD", "List, then date"), //listsThenDates Lists_Date
-//        //        categoriesThenDate("Categories-Dates"); //categoriesThenDate Cat_Date
-//        categoriesThenDate("CatD", "Category, then date"); //categoriesThenDate Cat_Date
-//        dateAndTime("Date and time"), //dateAndTime
-//</editor-fold>
-        dateAndTime("Date"), //dateAndTime
-        //        dateThenLists("Lists"), //dateThenLists Lists
-        dateThenLists("Date, then list"), //dateThenLists Lists
-        //        dateThenCategories("Categories"), //dateThenCategories Categories
-        dateThenCategories("Date, then category"), //dateThenCategories Categories
-        //        listsThenDates("Lists-Dates"), //listsThenDates Lists_Date
-        listsThenDates("List, then date"), //listsThenDates Lists_Date
-        //        categoriesThenDate("Categories-Dates"); //categoriesThenDate Cat_Date
-        categoriesThenDate("Category, then date"); //categoriesThenDate Cat_Date
-        String str;
-        String displayName;
-
-        SortStatsOnXXX(String longStr) {
-//            this.str = stri;
-            this.displayName = longStr;
-        }
-//        SortStatsOn(String stri) {
-//            this(stri,stri);
-//        }
-
-        public String toString() {
-            return displayName;
-        }
-
-        public static String[] getNames() {
-            return new String[]{dateAndTime.name(), dateThenLists.name(), dateThenCategories.name(), listsThenDates.name(), categoriesThenDate.name()};
-        }
-
-        public static String[] getDisplayNames() {
-            return new String[]{dateAndTime.displayName, dateThenLists.displayName, dateThenCategories.displayName, listsThenDates.displayName, categoriesThenDate.displayName};
-        }
-
-        public static SortStatsOnXXX valueOfDefault(String s) {
-            SortStatsOnXXX v = null;
-            try {
-                v = valueOf(s);
-            } catch (Exception e) {
-                v = dateAndTime;
-            }
-            return v;
-        }
-//        lists, 
-//        categories
-    };
-
-    /**
-     * how coarsely are the grouped in the list?
-     */
-    public enum ShowGroupedByXXX {
-        none("None"), //not used
-        day("Day"),
-        week("Week"),
-        month("Month");
-
-        String displayName;
-
-        ShowGroupedByXXX(String name) {
-            this.displayName = name;
-        }
-
-        public static String[] getNames() {
-            return new String[]{none.name(), day.name(), week.name(), month.name()};
-//            return new String[]{ day.name(), week.name(), month.name()};
-        }
-
-        public static String[] getDisplayNames() {
-            return new String[]{none.displayName, day.displayName, week.displayName, month.displayName};
-//            return new String[]{day.displayName, week.displayName, month.displayName};
-        }
-    }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    private static boolean newDateGroup(ShowGroupedBy groupBy, Date day, Date prevDate) {
-//        if (day == null || prevDate == null) {
-//            return true;
-//        }
-//        switch (groupBy) {
-//            case day:
-//                return !MyDate.isSameDate(day, prevDate);
-//            case week:
-//                return !MyDate.isSameWeekAndYear(day, prevDate);
-//            case month:
-//            default:
-//                return !MyDate.isSameMonthAndYear(day, prevDate);
-//        }
-//    }
-
-//    /**
-//     * given a single date within the interval for the group, return either the
-//     * first or the last time within the interval
-//     *
-//     * @param groupBy
-//     * @param day
-//     * @param getEndDate
-//     * @return
-//     */
-//    private static Date getDateForGroupXXX(ShowGroupedBy groupBy, Date day, boolean getEndDate) {
-//        switch (groupBy) {
-//            case day:
-//                return getEndDate ? MyDate.getEndOfDay(day) : MyDate.getStartOfDay(day);
-//            case week:
-//                return getEndDate ? MyDate.getEndOfWeek(day) : MyDate.getStartOfWeek(day);
-//            case month:
-//            default:
-//                return getEndDate ? MyDate.getEndOfMonth(day) : MyDate.getStartOfMonth(day);
-//        }
-//    }
-//
-//    private static String getDateStringXXX(ShowGroupedBy groupBy, Date day) {
-//        switch (groupBy) {
-//            case day:
-////                return MyDate.formatDateNew(day);
-//                return MyDate.formatDateNew(day, true, true, false, true, false);
-//            case week:
-//                return MyDate.getWeekAndYear(day);
-//            case month:
-//            default:
-//                return MyDate.getMonthAndYear(day);
-//        }
-//    }
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    private ItemList createProjectList(Item item, Item prevProject) {
-//         Item project = item.getOwnerTopLevelProject(); //UI: do not show intermediate subprojects, only leaf tasks
-//                if (project != null) {
-//                    if (!project.equals(prevProject)) {
-//                        projectList = new ItemList(project.getText(), false);
-//                        if (listList != null) {
-//                            listList.add(project);
-//                        } else {
-//                            dayList.add(project);
-//                        }
-//                        prevProject = project;
-//                    }
-//                } else {
-//                    projectList = null; //reset list to null if no project (to store tasks directly in the list)
-//                }
-//    }
-//</editor-fold>
     /**
      *
      * @param itemsUnsorted
@@ -408,17 +223,18 @@ public class ScreenStatistics2 extends MyForm {
      * @param makeNewListListLabel
      * @return
      */
-    private static ItemList buildStatisticsSortedByTime(List<Item> itemsUnsorted, List<WorkSlot> workSlotsSortedByStartDate) {
-//        SortStatsOnXXX sortOn = SortStatsOnXXX.valueOfDefault(MyPrefs.statisticsSortBy.getString());
-//        ShowGroupedByXXX groupBy = ShowGroupedByXXX.valueOf(MyPrefs.statisticsGroupBy.getString());
+//    private static ItemBucket buildStatisticsSortedByTime(List<Item> itemsUnsorted, List<WorkSlot> workSlotsSortedByStartDate) {
+    private static ItemBucket buildStatisticsSortedByTime(List<Item> itemsUnsorted) {
         GroupOn2 firstSortOn = GroupOn2.valueOf(MyPrefs.statisticsFirstGroupBy.getString());
         GroupOn2 secondSortOn = GroupOn2.valueOf(MyPrefs.statisticsSecondGroupBy.getString());
         boolean groupByPrj = MyPrefs.statisticsGroupTasksUnderTheirProject.getBoolean();
         boolean mostMostRecentFirst = MyPrefs.statisticsShowMostRecentFirst.getBoolean();
 
-//        Collections.sort(itemsUnsorted, (i1,i2)->Long.compare(i1.getCompletedDate().getTime(),i2.getCompletedDate().getTime()));
-//        sortItems(itemsUnsorted, sortOn,mostMostRecentFirst); //with buckets, NOT necessary to sort on anything?!
-        ItemBucket toplevelItemBucket = new ItemBucket("Top-level bucket", itemsUnsorted, workSlotsSortedByStartDate) {
+//        ItemBucket toplevelItemBucket = new ItemBucket("Top-level bucket", itemsUnsorted, workSlotsSortedByStartDate) {
+//        ItemBucket toplevelItemBucket = new ItemBucket("Top-level bucket", itemsUnsorted) {
+        ItemBucket toplevelItemBucket = new ItemBucket("Top-level bucket", itemsUnsorted) {
+            ItemBucket withoutCategoryGroup; //'global' bucket variable, A HACK, but should work since each bucket will only have one of these
+
             protected void initBucket(ItemBucket bucket, int depth) {
                 ASSERT.that(depth <= 2, "ItemBucket Hierarchy should not currently get deeper than 2");
                 if (!bucket.initialized) {
@@ -426,52 +242,63 @@ public class ScreenStatistics2 extends MyForm {
                     bucket.mostRecentFirst = mostMostRecentFirst; //only relevant for last level?
 
                     GroupOn2 sortOn = null;
-                    if (depth == 0 || firstSortOn == GroupOn2.none) { //never go to second level if first is 'none'
+                    if (depth == 0) { //never go to second level if first is 'none'
                         sortOn = firstSortOn;
-                    } else if (depth == 1) {
+                    } else if (depth == 1 && firstSortOn != GroupOn2.none) {
                         sortOn = secondSortOn;
-                    } else if (depth == 2) {
+                    } else {// if (depth == 2) {
                         sortOn = GroupOn2.none;
-                    } else {
-                        ASSERT.that("wrong value for depth, only 0 or 1 currently supported, depth=" + depth);
                     }
+                    bucket.groupOn = sortOn; //store for easy debugging
+
+                    bucket.level = depth;
 
                     switch (sortOn) {
                         case none: { //no deeper level, or last level
-                            bucket.initialized = true;
+                            bucket.hash = null;
+                            bucket.initialized = true; //allows to distinguish if hash function is null because not initialized or left as null 
                             break;
                         }
                         case day: { //by date
                             bucket.hash = (item) -> MyDate.getStartOfDay(item.getCompletedDate());
+                            bucket.endDateFct = (startDate) -> new MyDate(startDate.getTime() + MyDate.DAY_IN_MILLISECONDS);
                             bucket.name = (item) -> MyDate.formatDateNew(item.getCompletedDate(), true, true, false, true, false);
                             bucket.comparator = (Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d1.hashValue).getTime(), ((Date) d2.hashValue).getTime()); //sort eg by dates, lists/categories
                             bucket.icon = Icons.iconDateRange;
+//                            bucket.workSlots = (item) -> depth==2
+//                                    ?getWorkSlots((Date) hash.get((Item) item), endDateFct.get((Date) hash.get(item)))
+//                                    :;
                             bucket.initialized = true;
                             break;
                         }
                         case week: {
                             bucket.hash = (item) -> MyDate.getStartOfWeek(item.getCompletedDate());
-                            bucket.name = (item) -> MyDate.getWeekAndYear(item.getCompletedDate());
+                            bucket.endDateFct = (startDate) -> new MyDate(startDate.getTime() + MyDate.DAY_IN_MILLISECONDS * 7);
+                            bucket.name = (item) -> MyDate.getWeekStr(MyDate.getStartOfWeek(item.getCompletedDate()));
                             bucket.comparator = (Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d1.hashValue).getTime(), ((Date) d2.hashValue).getTime()); //sort eg by dates, lists/categories
                             bucket.icon = Icons.iconDateRange;
+//                            bucket.workSlots = (item) -> getWorkSlots((Date) hash.get((Item) item), endDateFct.get((Date) hash.get(item)));
                             bucket.initialized = true;
                             break;
                         }
                         case month: {
                             bucket.hash = (item) -> MyDate.getStartOfMonth(item.getCompletedDate());
+                            bucket.endDateFct = (startDate) -> MyDate.getEndOfMonth(startDate);
                             bucket.name = (item) -> MyDate.getMonthAndYear(item.getCompletedDate());
                             bucket.comparator = (Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d1.hashValue).getTime(), ((Date) d2.hashValue).getTime()); //sort eg by dates, lists/categories
                             bucket.icon = Icons.iconDateRange;
+//                            bucket.workSlots = (item) -> getWorkSlots((Date) hash.get((Item) item), endDateFct.get((Date) hash.get(item)));
                             bucket.initialized = true;
                             break;
                         }
                         case lists: { //by List
                             bucket.hash = (item) -> item.getOwnerTopLevelList();
-//                    bucket.comparator = (Comparator<ItemBucket>)(b1, b2) -> Integer.compare(ItemListList.getInstance().indexOf((ItemList) ((ItemBucket) b1).hashValue),
-//                            ItemListList.getInstance().indexOf((ItemList) ((ItemBucket) b2).hashValue));
-                            bucket.comparator = (Comparator<ItemBucket>) (b1, b2) -> Integer.compare(ItemListList.getInstance().indexOf(b1.hashValue), ItemListList.getInstance().indexOf(b2.hashValue));
                             bucket.name = (item) -> item.getOwnerTopLevelList().getText();
+                            bucket.comparator = (Comparator<ItemBucket>) (b1, b2) -> Integer.compare(ItemListList.getInstance().indexOf(b1.hashValue), ItemListList.getInstance().indexOf(b2.hashValue));
                             bucket.icon = Icons.iconList;
+//                            bucket.workSlots = (item) -> depth==1
+//                                    ?item.getOwnerTopLevelList().getWorkSlots(getStartTime(),getEndTime())
+//                                    :;
                             bucket.initialized = true;
                             break;
                         }
@@ -480,32 +307,15 @@ public class ScreenStatistics2 extends MyForm {
                                 Category firstCat = item.getFirstCategory();
                                 if (firstCat == null) {
                                     if (withoutCategoryGroup == null) {
-                                        withoutCategoryGroup = new ItemBucket("No Category", Icons.iconCategory, hashValue, this);
+                                        withoutCategoryGroup = new ItemBucket("No Category", Icons.iconCategory, null, this); //null marks the "No Category" bucket create an arbitrary category
                                     }
-                                    return null;
+                                    return null; //returning null will make the NoCategory go last in list of categories
                                 } else {
                                     return firstCat; //if null, will be sorted first/last in list of ItemBuckets for categories
                                 }
                             };
-//                    bucket.comparator = (i1,i2)->FilterSortDef.compareCategories(((Item)i1).getCategories(), ((Item)i2).getCategories()) ; //sort eg by dates, lists/categories
-                            //we can assume that when orting on categories, we will always have 
-//                    bucket.comparator = (Comparator<ItemBucket>)(b1, b2) -> FilterSortDef.compareCategoriesNoCatLast((Category) ((ItemBucket) b1).hashValue, (Category) ((ItemBucket) b2).hashValue);
-//sort eg by dates, lists/categories
-                            bucket.comparator = (Comparator<ItemBucket>) (b1, b2) -> FilterSortDef.compareCategoriesNoCatLast((Category) b1.hashValue, (Category) b2.hashValue);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                        if (b1 instanceof ItemBucket) {
-//                            if (b2 instanceof ItemBucket) {
-//                                FilterSortDef.compareCategories((Category) ((ItemBucket) b1).hashValue, (Category) ((ItemBucket) b2).hashValue);
-//                            } else {
-//                                FilterSortDef.compareCategories((Category) ((ItemBucket) b1).hashValue, (Category) ((ItemBucket) b2).hashValue);
-//
-//                            }
-//                        } else if(b2 instanceof ItemBucket) {
-//
-//                        }
-//                    };
-//</editor-fold>
                             bucket.name = (item) -> item.getFirstCategory() != null ? item.getFirstCategory().getText() : "No Category";
+                            bucket.comparator = (Comparator<ItemBucket>) (b1, b2) -> FilterSortDef.compareCategoriesNoCatLast((Category) b1.hashValue, (Category) b2.hashValue);
                             bucket.icon = Icons.iconCategory;
                             bucket.initialized = true;
                             break;
@@ -1198,17 +1008,8 @@ public class ScreenStatistics2 extends MyForm {
                 protected Component createNode(Object node, int depth) {
                     Container cmp = null;
                     if (node instanceof Item) {
-//                    cmp = buildItemContainer((Item) node, null, () -> isDragAndDropEnabled(), () -> {                    },
-//                    cmp = buildItemContainer((Item) node, null, () -> isDragAndDropEnabled(), () -> refreshAfterEdit(), false, //selectionMode not allowed for list of itemlists //TODO would some actions make sense on multiple lists at once??
-//                            null, null, keepPos, expandedObjects, () -> animateMyForm(), false, false); //TODO!!! store expanded itemLists
-//                    cmp = buildItemContainer(itemList, work);
                         cmp = ScreenListOfItems.buildItemContainer(ScreenStatistics2.this, (Item) node, itemListStats, null, expandedObjects);
                     } else if (node instanceof ItemList) {
-//                      cmp = buildCategoryContainer((Category) node, categoryList, keepPos, ()->refreshAfterEdit());
-//                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node);
-//                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, keepPos);
-//                    cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, keepPos, true);
-//                        cmp = ScreenListOfItemLists.buildItemListContainerStatistics((ItemList) node, null, true,expandedObjects);
                         cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, null, true, expandedObjects);
                     } else {
                         assert false : "should only be Item or ItemList";
@@ -1219,7 +1020,6 @@ public class ScreenStatistics2 extends MyForm {
             };
             return cl;
         } else {
-//            if (getShowIfEmptyList() != null)
             return BorderLayout.centerCenter(new SpanLabel("No completed tasks the last " + MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() + " days to show statistics for"));
         }
     }

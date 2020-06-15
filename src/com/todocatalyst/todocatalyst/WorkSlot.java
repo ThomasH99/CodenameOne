@@ -876,8 +876,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     @Override
     public String toString() {
 //        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
-        return (getRepeatRuleN() != null ? "*" : "") 
-                + "WS:" 
+        return (getRepeatRuleN() != null ? "*" : "")
+                + "WS:"
                 + (getObjectIdP() == null ? "[NoObjId]" : ("[" + getObjectIdP() + "]"))
                 + MyDate.formatDateTimeNew(getStartTimeD()) + "/" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS, true)
                 //                + " " + getText() + "[" + getObjectIdP() + "]" + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
@@ -2257,7 +2257,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //            Collections.sort(sortedWorkslotList, (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
             Collections.sort(sortedWorkslotList,
                     //                    (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()));
-//                    FilterSortDef.getMultipleComparator(new Comparator[]{ //TODO: update to enable use of FilterSortDef.getMultipleComparator!!
+                    //                    FilterSortDef.getMultipleComparator(new Comparator[]{ //TODO: update to enable use of FilterSortDef.getMultipleComparator!!
                     getMultipleComparator(new Comparator[]{
                 (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
                 (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareLong(i2.getDurationInMillis(), i1.getDurationInMillis()), //longest slots first
@@ -2271,12 +2271,48 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner) {
-            throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public boolean addToList(int index, ItemAndListCommonInterface subtask, boolean addAsOwner) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    public static long getWorkTimeSum(List<WorkSlot> workSlotsN) {
+        long sum = 0;
+        if (workSlotsN != null) {
+            for (WorkSlot workSlot : workSlotsN) {
+                sum += workSlot.getDurationInMillis();
+            }
+        }
+        return sum;
+    }
+
+    public static long getWorkTimeSum(List<WorkSlot> workSlotsN, Date startDate) {
+        long sum = 0;
+        if (workSlotsN != null) {
+            if (startDate != null) {
+                for (WorkSlot workSlot : workSlotsN) {
+                    sum += workSlot.getDurationAdjusted(startDate.getTime());
+                }
+            } else {
+                for (WorkSlot workSlot : workSlotsN) {
+                    sum += workSlot.getDurationInMillis();
+                }
+            }
+        }
+        return sum;
+    }
+
+    static public long getWorkTimeSum(List<WorkSlot> listN, long fromTime, long toTime) {
+        long sum = 0;
+        if (listN != null) {
+            for (WorkSlot workSlot : listN) {
+                sum += workSlot.getDurationAdjusted(fromTime, toTime);
+            }
+        }
+        return sum;
     }
 
 }

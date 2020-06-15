@@ -149,9 +149,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         this(listName, null, null, temporaryNoSaveList);
     }
 
-    public ItemList(String listName, boolean temporaryNoSaveList, char itemListIcon, boolean useDefaultFilter) {
+    public ItemList(String listName, boolean temporaryNoSaveList, Character itemListIcon, boolean useDefaultFilter) {
         this(listName, temporaryNoSaveList);
-        setItemListIcon(itemListIcon);
+        if (itemListIcon != null) {
+            setItemListIcon(itemListIcon);
+        }
         setUseDefaultFilter(useDefaultFilter);
     }
 
@@ -1532,7 +1534,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return toString(ToStringFormat.TOSTRING_COMMA_SEPARATED_LIST);
 //        return getText().length() != 0 ? getText() : getObjectIdP();
 //        return getText() + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "") + showSubtasks ? ((getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "")  : "");
-        return "\""+getText() + "\""+(isSystemList() ? "[SYS:" + getSystemName() + "]" : "") + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "")
+        return "\"" + getText() + "\"" + (isSystemList() ? "[SYS:" + getSystemName() + "]" : "") + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "")
                 + (showSubtasks ? (getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "") : "");
     }
 
@@ -1686,12 +1688,18 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        filteredSortedList = null;
     }
 
-    private boolean useDefaultFilter;
+    private boolean useDefaultFilter = true; //use default filter unless explicitly de-activated
 
     public boolean isUseDefaultFilter() {
         return useDefaultFilter;
     }
 
+    /**
+     * this is a *temporary* property used by eg Statistics to avoid filtering
+     * Done tasks
+     *
+     * @param useDefaultFilter
+     */
     @Override
     public void setUseDefaultFilter(boolean useDefaultFilter) {
         this.useDefaultFilter = useDefaultFilter;

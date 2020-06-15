@@ -113,7 +113,7 @@ public class ScreenItem2 extends MyForm {
     MyDateAndTimePicker startByDate;
     MyDateAndTimePicker startedOnDate;
     MyDatePicker waitingTill;
-    MyDatePicker expireByDate;
+    MyDatePicker expiresOnDate;
     MyDateAndTimePicker waitingAlarm;
     MyDateAndTimePicker dateSetWaitingDate;
     MyDateAndTimePicker completedDate;
@@ -463,7 +463,8 @@ public class ScreenItem2 extends MyForm {
 
         if (true || !templateEditMode) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
             //INSERT A TEMPLATE INTO AN ITEM (merge top-level project and add subtasks)
-            toolbar.addCommandToOverflowMenu(CommandTracked.create("Merge in template", Icons.iconAddFromTemplate, (e) -> { //"Insert template"
+//            toolbar.addCommandToOverflowMenu(CommandTracked.create("Merge in template", Icons.iconAddFromTemplate, (e) -> { //"Insert template"
+            toolbar.addCommandToOverflowMenu(CommandTracked.create("Add template", Icons.iconAddFromTemplate, (e) -> { //"Merge template", "Inject template", "Insert template"
                 //TODO!! Add "don't show again + setting to all these info popups
                 if (!MyPrefs.askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem.getBoolean()
                         || Dialog.show("INFO", "Inserting a template into a task will add the values and subtasks from the template to the task. It will not overwrite any fields already defined manually in the task", "OK", "Cancel")) {
@@ -1056,13 +1057,144 @@ public class ScreenItem2 extends MyForm {
             //CERTAIN DATES are set RELATIVE to the DUE DATE:
             if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as 
                 if (alarmDate.getDate() == null && template.getAlarmDate().getTime() != 0) {
+//                    alarmDate.setDate(new MyDate(template.getAlarmDate().getTime() + templDueDateAdj));
+                    previousValues.put(Item.PARSE_ALARM_DATE, new MyDate(template.getAlarmDate().getTime() + templDueDateAdj));
+                }
+                if (startByDate.getDate() == null && template.getStartByDateD().getTime() != 0) {
+//                    startByDate.setDate(new MyDate(template.getStartByDateD().getTime() + templDueDateAdj));
+                    previousValues.put(Item.PARSE_START_BY_DATE, new MyDate(template.getStartByDateD().getTime() + templDueDateAdj));
+                }
+                if (expiresOnDate.getDate() == null && template.getExpiresOnDate().getTime() != 0) {
+//                    expiresOnDate.setDate(new MyDate(template.getExpiresOnDate().getTime() + templDueDateAdj));
+                    previousValues.put(Item.PARSE_EXPIRES_ON_DATE, new MyDate(template.getExpiresOnDate().getTime() + templDueDateAdj));
+                }
+                if (hideUntil.getDate() == null && template.getHideUntilDateD().getTime() != 0) {
+//                    hideUntil.setDate(new MyDate(template.getHideUntilDateD().getTime() + templDueDateAdj));
+                    previousValues.put(Item.PARSE_HIDE_UNTIL_DATE, new MyDate(template.getHideUntilDateD().getTime() + templDueDateAdj));
+                }
+            }
+        }
+
+        if (!isStarredSelected()) {
+            setStarredSelected(template.isStarred());
+            previousValues.put(Item.PARSE_STARRED, template.isStarred());
+        }
+
+        if (priority.getSelectedIndex() == -1 && template.getPriority() > 0) {
+//            importance.selectIndex(template.getPriority() - 1);
+            previousValues.put(Item.PARSE_PRIORITY, template.getPriority());//NB. We store the actual value of Priority locally and adjust when setting the picker
+        }
+
+        if (importance.getSelectedValue() == null && template.getImportanceN() != null) {
+//            importance.selectValue(template.getImportanceN() != null ? template.getImportanceN().name() : null);
+            previousValues.put(Item.PARSE_IMPORTANCE, template.getImportanceN().name());
+        }
+        if (urgency.getSelectedValue() == null && template.getUrgencyN() != null) {
+//            urgency.selectValue(template.getUrgencyN() != null ? template.getUrgencyN().name() : null);
+            previousValues.put(Item.PARSE_URGENCY, template.getUrgencyN().name());
+        }
+        if (challenge.getSelectedValue() == null && template.getChallengeN() != null) {
+//            challenge.selectValue(template.getChallengeN() != null ? template.getChallengeN().name() : null);
+            previousValues.put(Item.PARSE_CHALLENGE, template.getChallengeN().name());
+        }
+        if (dreadFun.getSelectedValue() == null && template.getDreadFunValueN() != null) {
+//            dreadFun.selectValue(template.getDreadFunValueN().name());
+            previousValues.put(Item.PARSE_DREAD_FUN_VALUE, template.getDreadFunValueN().name());
+        }
+
+        if (getEarnedValueAsDouble(earnedValue.getText()) == 0 && template.getEarnedValue() > 0) {
+//            earnedValue.setText(setEarnedValueAsString(template.getEarnedValue()));
+            previousValues.put(Item.PARSE_EARNED_VALUE, template.getEarnedValue());
+        }
+
+        if (!template.isProject() && ((remainingEffort.getDuration() == 0 || Item.isRemainingDefaultValue(remainingEffort.getDuration()))) && template.getRemaining() > 0) {
+//            remainingEffort.setDuration(template.getRemaining());
+            previousValues.put(Item.PARSE_REMAINING_EFFORT, template.getRemaining());
+        }
+
+        if (!template.isProject() && ((effortEstimate.getDuration() == 0 || Item.isRemainingDefaultValue(effortEstimate.getDuration()))) && template.getEstimate() > 0) {
+//            effortEstimate.setDuration(template.getEstimate());
+            previousValues.put(Item.PARSE_EFFORT_ESTIMATE, template.getEstimate());
+        }
+        //SOME FIELDS DO NOT HAVE A SIMPLE INPUT FIELD EDITOR
+        //RepeatRule
+        if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && template.getRepeatRuleN() != null) {
+//            previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(template.getRepeatRuleN()));
+            previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(template.getRepeatRuleN()));
+        }
+
+        //SPECIAL CASES
+        if ((description.getText().length() == 0 || MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()) && !template.getText().isEmpty()) {
+//            description.setText(description.getText().length() == 0 || MyPrefs.addTemplateTaskTextToExistingTaskText.getBoolean()
+//                    ? description.getText() + template.getText() : template.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
+            previousValues.put(Item.PARSE_TEXT, description.getText().length() == 0 ? template.getText()
+                    : description.getText() + " " + template.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
+        }
+        //Template Comments are ??
+//        comment.setText(comment.getText().length() > 0 ? comment.getText() + "\n" + template.getComment() : template.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
+        previousValues.put(Item.PARSE_COMMENT, comment.getText().length() == 0 ? template.getComment()
+                : comment.getText() + "\n" + template.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
+
+        //Templates Categories are merged (only new categories in template are added - no cuplicates!)
+//        Item.addCatObjectIdsListToCategoryList(((List<String>) previousValues.get(Item.PARSE_CATEGORIES)), template.getCategories()); //*add* any additional categories in the template
+        List templateCategories = new ArrayList(template.getCategories());
+        templateCategories.removeAll(previousValues.getCategories());
+        templateCategories.addAll(previousValues.getCategories());
+        previousValues.putCategories(templateCategories);
+//                         
+        //Template Subtasks are merged
+        List<Item> subtasks = previousValues.getSubtasks();
+        List<Item> newSubtasks = new ArrayList();
+        List<Item> templSubtasks = template.getListFull();
+//        for (Item tempSubtask : (List<Item>) template.getListFull()) { //full list, filter has no meaning for a template
+        for (Item tempSubtask : templSubtasks) { //full list, filter has no meaning for a template
+            Item newSubtask = new Item(false);
+            tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
+//            itemOrg.addToList(subtaskCopy); //UI: template subtasks are permanently (no Cancel possible) added to item
+            subtasks.add(newSubtask); //UI: template subtasks are permanently (no Cancel possible) added to item
+            newSubtask.setOwner(item);
+            newSubtasks.add(newSubtask);//save each new templateCopy in a list and save them
+        }
+        DAO.getInstance().saveNew((List) newSubtasks); //save new subtasks (will be deleted again if Cancel
+        DAO.getInstance().triggerParseUpdate(); //save new subtasks (will be deleted again if Cancel
+        previousValues.putSubtasksList(subtasks);
+
+        //SOME fields are NOT AFFECTED by a template:
+        //Actual effort
+        //Owner
+        //CreatedOn
+        //Wait until
+        //Waiting reminder
+        //Waiting since date
+    }
+
+    private void addTemplateToPickersOLD(Item item, Item template) {
+        //if the user has not yet set a due date and the template has fields depending on due date, ask for a due date
+        if (template.getDueDateD().getTime() != 0) {
+
+            boolean templFieldsDependOnDue = template.getAlarmDate().getTime() != 0 || template.getStartByDateD().getTime() != 0
+                    || template.getExpiresOnDate().getTime() != 0 || template.getHideUntilDateD().getTime() != 0;
+            if (dueDate.getDate().getTime() == 0 && templFieldsDependOnDue) {
+//                Dialog.show(SUBTASK_KEY, this, cmds);
+                assert false;
+            }
+            String popup = "The template has fields that are set relative to due date but no due date is set for. If you set a due date now, the dependent fields will be updated, otherwise they will be ignored. Next time you use this template you can set a due date before inserting the template";
+            //MOST FIELDS are only set if not defined (or if user deleted the value in the input field (Pickers etc)
+            if (false && dueDate.getDate().getTime() == 0) { //NB. Due date NEVER set based on due date in template
+                //TODO: make a setting for how far ahead a default due date should be set
+                dueDate.setDate(template.getDueDateD());
+            }
+            long templDueDateAdj = dueDate.getDate().getTime() - template.getDueDateD().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
+            //CERTAIN DATES are set RELATIVE to the DUE DATE:
+            if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as 
+                if (alarmDate.getDate() == null && template.getAlarmDate().getTime() != 0) {
                     alarmDate.setDate(new MyDate(template.getAlarmDate().getTime() + templDueDateAdj));
                 }
                 if (startByDate.getDate() == null && template.getStartByDateD().getTime() != 0) {
                     startByDate.setDate(new MyDate(template.getStartByDateD().getTime() + templDueDateAdj));
                 }
-                if (expireByDate.getDate() == null && template.getExpiresOnDate().getTime() != 0) {
-                    expireByDate.setDate(new MyDate(template.getExpiresOnDate().getTime() + templDueDateAdj));
+                if (expiresOnDate.getDate() == null && template.getExpiresOnDate().getTime() != 0) {
+                    expiresOnDate.setDate(new MyDate(template.getExpiresOnDate().getTime() + templDueDateAdj));
                 }
                 if (hideUntil.getDate() == null && template.getHideUntilDateD().getTime() != 0) {
                     hideUntil.setDate(new MyDate(template.getHideUntilDateD().getTime() + templDueDateAdj));
@@ -1082,7 +1214,7 @@ public class ScreenItem2 extends MyForm {
             importance.selectValue(template.getImportanceN() != null ? template.getImportanceN().name() : null);
         }
         if (urgency.getSelectedValue() == null) {
-            urgency.selectValue(template.getUrgencyN().name() != null ? template.getUrgencyN().name() : null);
+            urgency.selectValue(template.getUrgencyN() != null ? template.getUrgencyN().name() : null);
         }
         if (challenge.getSelectedValue() == null) {
             challenge.selectValue(template.getChallengeN() != null ? template.getChallengeN().name() : null);
@@ -1108,7 +1240,7 @@ public class ScreenItem2 extends MyForm {
         }
 
         //SPECIAL CASES
-        description.setText(description.getText().length() == 0 || MyPrefs.addTemplateTaskTextToExistingTaskText.getBoolean()
+        description.setText(description.getText().length() == 0 || MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()
                 ? description.getText() + template.getText() : template.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
         //Template Comments are ??
         comment.setText(comment.getText().length() > 0 ? comment.getText() + "\n" + template.getComment() : template.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
@@ -1122,8 +1254,10 @@ public class ScreenItem2 extends MyForm {
 //                         
         //Template Subtasks are merged
         List<Item> subtasks = previousValues.getSubtasks();
-        List<ParseObject> newSubtasks = new ArrayList();
-        for (Item tempSubtask : (List<Item>) template.getListFull()) { //full list, filter has no meaning for a template
+        List<Item> newSubtasks = new ArrayList();
+        List<Item> templSubtasks = template.getListFull();
+//        for (Item tempSubtask : (List<Item>) template.getListFull()) { //full list, filter has no meaning for a template
+        for (Item tempSubtask : templSubtasks) { //full list, filter has no meaning for a template
             Item newSubtask = new Item(false);
             tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
 //            itemOrg.addToList(subtaskCopy); //UI: template subtasks are permanently (no Cancel possible) added to item
@@ -1131,7 +1265,7 @@ public class ScreenItem2 extends MyForm {
             newSubtask.setOwner(item);
             newSubtasks.add(newSubtask);//save each new templateCopy in a list and save them
         }
-        DAO.getInstance().saveNew(newSubtasks); //save new subtasks (will be deleted again if Cancel
+        DAO.getInstance().saveNew((List) newSubtasks); //save new subtasks (will be deleted again if Cancel
         DAO.getInstance().triggerParseUpdate(); //save new subtasks (will be deleted again if Cancel
         previousValues.putSubtasksList(subtasks);
 
@@ -2354,14 +2488,14 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
         if (true) {
 //            MyDatePicker expireByDate = new MyDatePicker(parseIdMap2, () -> itemLS.getExpiresOnDateD(), (d) -> item.setExpiresOnDateD(d)); // "<auto-cancel on date>", 
-            expireByDate = new MyDatePicker(); // "<auto-cancel on date>", 
-            initField(Item.PARSE_EXPIRES_ON_DATE, expireByDate, () -> itemCopy.getExpiresOnDate(), (t) -> itemOrg.setExpiresOnDate((Date) t),
-                    () -> expireByDate.getDate(), (d) -> expireByDate.setDate((Date) d));
+            expiresOnDate = new MyDatePicker(); // "<auto-cancel on date>", 
+            initField(Item.PARSE_EXPIRES_ON_DATE, expiresOnDate, () -> itemCopy.getExpiresOnDate(), (t) -> itemOrg.setExpiresOnDate((Date) t),
+                    () -> expiresOnDate.getDate(), (d) -> expiresOnDate.setDate((Date) d));
 
 //            timeCont.add(new Label(Item.AUTOCANCEL_BY)).add(addDatePickerWithClearButton(expireByDate));
 //            timeCont.add(new Label(Item.AUTOCANCEL_BY)).add(expireByDate.makeContainerWithClearButton());
 //            timeCont.add(layout(Item.AUTOCANCEL_BY, expireByDate.makeContainerWithClearButton(), "**"));
-            timeCont.add(layoutN(Item.AUTOCANCEL_BY, expireByDate, Item.AUTOCANCEL_BY_HELP, hide ? null : Icons.iconAutoCancelByDate));
+            timeCont.add(layoutN(Item.AUTOCANCEL_BY, expiresOnDate, Item.AUTOCANCEL_BY_HELP, hide ? null : Icons.iconAutoCancelByDate));
         }
 
         //TAB PRIO

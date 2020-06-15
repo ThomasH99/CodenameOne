@@ -84,8 +84,12 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        now = System.currentTimeMillis(); //MyDate.MIN_DATE; //System.currentTimeMillis(); //for now, use a 'local' (object specific) value for now (should be global and coming from Screen/UI
 //        updateRepeatingWorkSlots();
         setNow(MyDate.currentTimeMillis()); //MyDate.MIN_DATE; //System.currentTimeMillis(); //for now, use a 'local' (object specific) value for now (should be global and coming from Screen/UI
-
     }
+    
+        public WorkSlotList( List<WorkSlot> list, boolean alreadySorted) {
+            this(null, list, alreadySorted);
+        }
+
 
 //    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
 //        this(null, list, alreadySorted);
@@ -294,24 +298,13 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        return sum;
 //    }
 //</editor-fold>
-    static public long getWorkTimeSum(List<WorkSlot> list, long fromTime, long toTime) {
-//        long fromTime = fromDate.getTime();
-//        long toTime = toDate.getTime();
-
-        long sum = 0;
-        for (WorkSlot workSlot : list) {
-            sum += workSlot.getDurationAdjusted(fromTime, toTime);
-        }
-        return sum;
-    }
-
     static public long getWorkTimeSum(List<WorkSlot> list, Date fromDate, Date toDate) {
-        return getWorkTimeSum(list, fromDate.getTime(), toDate.getTime());
+        return WorkSlot.getWorkTimeSum(list, fromDate.getTime(), toDate.getTime());
     }
 
     public long getWorkTimeSum(Date fromDate, Date toDate) {
 //        return getWorkTimeSum(this, fromDate, toDate);
-        return getWorkTimeSum(sortedOnStartTimeWorkslotList, fromDate.getTime(), toDate.getTime());
+        return WorkSlot.getWorkTimeSum(sortedOnStartTimeWorkslotList, fromDate.getTime(), toDate.getTime());
     }
 
     /**
@@ -320,16 +313,19 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
      * @return
      */
     public long getWorkTimeSum() {
-//        return getWorkTimeSum(this, new Date(), new Date(Long.MAX_VALUE));
-//        return getWorkTimeSum(workslotList, new Date(), new Date(Long.MAX_VALUE));
-//        return getWorkTimeSum(getWorkSlots(), new Date(), new Date(Long.MAX_VALUE));
-        long sum = 0;
-        for (WorkSlot workSlot : getWorkSlots()) { //getWorkSlots() <=> only sum up workslots with future worktime
-//            sum += workSlot.getDurationAdjusted(getNow(), MyDate.MAX_DATE);
-//            sum += workSlot.getDurationAdjusted(getNow()); //, MyDate.MAX_DATE);
-            sum += workSlot.getDurationAdjusted(now); //, MyDate.MAX_DATE);
-        }
-        return sum;
+//<editor-fold defaultstate="collapsed" desc="comment">
+////        return getWorkTimeSum(this, new Date(), new Date(Long.MAX_VALUE));
+////        return getWorkTimeSum(workslotList, new Date(), new Date(Long.MAX_VALUE));
+////        return getWorkTimeSum(getWorkSlots(), new Date(), new Date(Long.MAX_VALUE));
+//        long sum = 0;
+//        for (WorkSlot workSlot : getWorkSlots()) { //getWorkSlots() <=> only sum up workslots with future worktime
+////            sum += workSlot.getDurationAdjusted(getNow(), MyDate.MAX_DATE);
+////            sum += workSlot.getDurationAdjusted(getNow()); //, MyDate.MAX_DATE);
+//            sum += workSlot.getDurationAdjusted(now); //, MyDate.MAX_DATE);
+//        }
+//        return sum;
+//</editor-fold>
+        return WorkSlot.getWorkTimeSum(getWorkSlots(), new Date(now));
     }
 
     private void sortWorkSlotList() {

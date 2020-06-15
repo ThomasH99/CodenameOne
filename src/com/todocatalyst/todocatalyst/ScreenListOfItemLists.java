@@ -279,7 +279,11 @@ public class ScreenListOfItemLists extends MyForm {
             Character materialIcon) {
         Container mainCont = new Container(new BorderLayout());
         mainCont.setName("MainItemListContainer");
-        mainCont.setUIID("ItemListContainer");
+        if (itemList instanceof ItemBucket) {
+            mainCont.setUIID("StatisticsItemListContainer" + ((ItemBucket) itemList).level);
+        } else {
+            mainCont.setUIID("ItemListContainer");
+        }
 //        mainCont.setUIID("ItemListContainer");
         Container leftSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
         leftSwipeContainer.setName("ItemListLeftSwipeCont");
@@ -519,7 +523,8 @@ public class ScreenListOfItemLists extends MyForm {
         }
 
 //        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
-        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW)); //NB. NO_GROW to avoid that eg expand sublist [3/5] grows in height
+//        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW)); //NB. NO_GROW to avoid that eg expand sublist [3/5] grows in height
+        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS)); //NB. NO_GROW to avoid that eg expand sublist [3/5] grows in height
 //        Button subTasksButton = new Button();
 
         if (false && !itemList.getComment().equals("")) {
@@ -538,7 +543,7 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
         //EXPAND list
         WorkSlotList workSlots = itemList.getWorkSlotListN();
-        long workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
+        long workTimeSumMillis = workSlots != null ? workSlots.getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
         if (MyPrefs.listOfItemListsShowNumberUndoneTasks.getBoolean()) {
             int numberItems;
 //            WorkSlotList workSlots = itemList.getWorkSlotListN();
@@ -634,24 +639,45 @@ public class ScreenListOfItemLists extends MyForm {
             ActionListener detailActionListener = (evt) -> {
                 Container southCont = (Container) ((BorderLayout) mainCont.getLayout()).getSouth();
                 if (southCont == null) {
-                    //lazy create of details container
-                    Container southDetailsContainer = new Container(new FlowLayout());
-                    southDetailsContainer.setUIID("ItemDetails");
-                    southDetailsContainer.setName("southDetailsContainer");
+                    if (itemList instanceof ItemBucket) {
+                        ItemBucket itemBucket = (ItemBucket) itemList;
+                        //lazy create of details container
+                        Container southDetailsContainer = new Container(new FlowLayout(Container.RIGHT));
+                        southDetailsContainer.setUIID("StatisticsGroupDetails");
+                        southDetailsContainer.setName("southDetailsContainer");
 //                        long remainingEffort = itemList.getRemainingEffort();
-                    long estimatedEffort = itemList.getEstimate();
-                    Label estimateLabel = new Label("Estimate" + MyDate.formatDurationStd(estimatedEffort));
-                    estimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
-                    estimateLabel.setName("estimateLabel");
+                        long estimatedEffort = itemList.getEstimate(true);
+//                        Label estimateLabel = new Label("Estimate " + MyDate.formatDurationStd(estimatedEffort), "StatisticsDetail");
+                        Label estimateLabel = new Label(MyDate.formatDurationStd(estimatedEffort), "StatisticsDetail");
+                        estimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+                        estimateLabel.setName("estimateLabel");
+                            estimateLabel.setGap(GAP_LABEL_ICON);
+                        southDetailsContainer.addAll(estimateLabel);
 
-                    Label durationLabel = new Label("Work time: " + MyDate.formatDurationStd(workTimeSumMillis));
-                    durationLabel.setMaterialIcon(Icons.iconWorkSlot);
-                    durationLabel.setName("durationLabel");
-
-                    southDetailsContainer.addAll(estimateLabel, durationLabel);
+//                        if (itemBucket.hashValue != null) {
+                        if (false&&itemBucket.hashValue instanceof ItemAndListCommonInterface) {
+                            List<WorkSlot> workslots = ((ItemAndListCommonInterface) itemBucket.hashValue).getWorkSlots(itemBucket.getStartTime(), itemBucket.getEndTime());
+                            long workTimeMillis = 0;
+                            for (WorkSlot w : workslots) {
+                                workTimeMillis += w.getDurationAdjusted(itemBucket.getStartTime().getTime(), itemBucket.getEndTime().getTime());
+                            }
+//                            Label durationLabel = new Label("Work time " + MyDate.formatDurationStd(workTimeMillis), "StatisticsDetail");
+                            Label durationLabel = new Label(MyDate.formatDurationStd(workTimeMillis), "StatisticsDetail");
+                            durationLabel.setMaterialIcon(Icons.iconWorkSlot);
+                            durationLabel.setName("durationLabel");
+                            durationLabel.setGap(GAP_LABEL_ICON);
+                            southDetailsContainer.addAll(durationLabel);
+                        }
+                        Label durationLabel = new Label(MyDate.formatDurationStd(WorkSlot.getWorkTimeSum(itemList.getWorkSlotsFromParseN())), "StatisticsDetail");
+                        durationLabel.setMaterialIcon(Icons.iconWorkSlot);
+                        durationLabel.setName("durationLabel");
+                        durationLabel.setGap(GAP_LABEL_ICON);
+                        southDetailsContainer.addAll(durationLabel);
+//                        southDetailsContainer.addAll(estimateLabel, durationLabel);
 //                        southDetailsContainer.setHidden(!showDetails); //hide details by default
-                    mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);
-                    southCont = southDetailsContainer; //update for use below
+                        mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);
+                        southCont = southDetailsContainer; //update for use below
+                    }
                 } else {
 //                southDetailsContainer.setHidden(!southDetailsContainer.isHidden()); //toggle hidden details
 //                        southCont.setHidden(!southDetailsContainer.isHidden()); //toggle hidden details
@@ -686,7 +712,7 @@ public class ScreenListOfItemLists extends MyForm {
 
         mainCont.addComponent(BorderLayout.CENTER, itemListLabel);
 
-        mainCont.addComponent(BorderLayout.EAST, east);
+        mainCont.addComponent(BorderLayout.EAST, BorderLayout.center(east));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont.setDraggable(true);
 //        cont.setDropTarget(true);

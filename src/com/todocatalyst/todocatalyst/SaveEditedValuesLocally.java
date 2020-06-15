@@ -194,12 +194,23 @@ public class SaveEditedValuesLocally {//extends HashMap {
         }
     }
 
+    /**
+     * add a locally stored value (or remove it if value is null - useful for storing eg template values which may be null)
+     * @param key
+     * @param value value to be stored (or null to remove)
+     * @return 
+     */
     public Object put(Object key, Object value) {
         if (false && Config.TEST) {
             ASSERT.that(value != null, "SaveEditedValuesLocally: put key=\"" + key + "\" with null value - missing objectIdP??");
         }
         if (previousValues != null) {
-            Object previousValue = previousValues.put(key, value); // value.toString());
+            Object previousValue;
+            if (value == null) {
+                previousValue = previousValues.remove(key); // value.toString());
+            } else {
+                previousValue = previousValues.put(key, value); // value.toString());
+            }
             saveFile();
             return previousValue;
         } else {
@@ -501,20 +512,23 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
 
     /**
-     * shortcut to convert a list of subtasks/Items to a list of their ObjectIds and put that
-     * @param subtasksObjIds 
+     * shortcut to convert a list of subtasks/Items to a list of their ObjectIds
+     * and put that
+     *
+     * @param subtasksObjIds
      */
     public void putSubtasksList(List<Item> subtasks) {
 //        putListOfElements(Item.PARSE_SUBTASKS, subtasks);
-        put(Item.PARSE_SUBTASKS,ItemAndListCommonInterface.convListToObjectIdList((List)subtasks));
+        put(Item.PARSE_SUBTASKS, ItemAndListCommonInterface.convListToObjectIdList((List) subtasks));
     }
+
     public void putSubtaskObjdIdList(List<String> subtasksObjIds) {
         put(Item.PARSE_SUBTASKS, subtasksObjIds);
     }
 
     public List<Item> getSubtasks() {
         List<String> subtasksObjIds = (List) get(Item.PARSE_SUBTASKS);
-        return DAO.getInstance().convItemObjectIdsListToItemList((List)subtasksObjIds);
+        return DAO.getInstance().convItemObjectIdsListToItemList((List) subtasksObjIds);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (ids != null) {
 //            List<Item> items = new ArrayList();
@@ -532,7 +546,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
 
     public List<String> getSubtaskObjIdsList() {
         List<String> ids = (List) get(Item.PARSE_SUBTASKS);
-        return ids!=null?ids:new ArrayList();
+        return ids != null ? ids : new ArrayList();
     }
 
     public void removeOwnerXXX() {

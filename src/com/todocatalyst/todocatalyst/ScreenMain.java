@@ -268,7 +268,7 @@ public class ScreenMain extends MyForm {
 //                    new ScreenListOfItems(SCREEN_INBOX_TITLE, () -> new ItemList(SCREEN_INBOX_TITLE, Inbox.getInstance(), true), ScreenMain.this, (i) -> {
                     MyForm myForm = new ScreenListOfItems(INBOX, "No tasks in your inbox", () -> Inbox.getInstance(), ScreenMain.this, (i) -> {
 //                    }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
-                    }, 0);
+                    }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES);
 //                    myForm.setShowIfEmptyList("Your Inbox is empty. Add tasks using (+)"); //NO, show inline cont in Inbox
                     myForm.show();
                 }

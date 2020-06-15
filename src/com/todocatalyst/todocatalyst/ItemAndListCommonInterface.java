@@ -206,6 +206,31 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
+     * return all workslots whith a *start*date or *end*date within the given
+     * interval (they have relevant workTime for that date range)
+     *
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    default public List<WorkSlot> getWorkSlots(Date startDate, Date endDate) {
+        List<WorkSlot> allWorkSlots = getWorkSlotsFromParseN();
+        List<WorkSlot> found = new ArrayList();
+        if (allWorkSlots != null) {
+            for (WorkSlot workSlot : allWorkSlots) {
+//                if (MyDate.isBetweenDates(workSlot.getStartTimeD(), startDate, endDate) && MyDate.isBetweenDates(workSlot.getEndTimeD(), startDate, endDate)) {
+                //optimization: do sth like abinary search to quickly find the first relevant workslot to check from
+                if (MyDate.isOverlapping(workSlot.getStartTimeD(), workSlot.getEndTimeD(), startDate, endDate)) {
+                    found.add(workSlot);
+                } else if (workSlot.getStartTimeD().getTime() > endDate.getTime()) { //since workslots are sorted on startDate, when we reach a workslot starting *after* endDate, we don't need to look at the rest
+                    break;
+                }
+            }
+        }
+        return found;
+    }
+
+    /**
      *
      * @param countLeafTasks
      * @return
@@ -1190,14 +1215,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         }
     }
 
-    
     default boolean isUseDefaultFilter() {
         return true;
     }
 
     default void setUseDefaultFilter(boolean useDefaultFilter) {
-        
+
     }
+
     /**
      *
      * @return
@@ -1223,7 +1248,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     /**
      * returns a default filter if active and one is defined
-     * @return 
+     *
+     * @return
      */
     default public FilterSortDef getFilterSortDef() {
         return getFilterSortDef(isUseDefaultFilter());
@@ -1236,7 +1262,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         }
         return filterSortDef;
     }
-    
+
     default public Iterator iterator() {
         return new Iterator() {
 //            public class MyIterator <T> implements Iterator<T> {
@@ -1407,12 +1433,15 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         }
         return eltIds;
     }
-/**
- * add the objectId of elements in eltsToAddList to the list objIdStringList of ObjectIds (Strings) if they are not already there 
- * @param objIdStringList
- * @param eltsToAddList
- * @return 
- */
+
+    /**
+     * add the objectId of elements in eltsToAddList to the list objIdStringList
+     * of ObjectIds (Strings) if they are not already there
+     *
+     * @param objIdStringList
+     * @param eltsToAddList
+     * @return
+     */
     static public List<String> addListToObjectIdList(List<String> objIdStringList, List<ItemAndListCommonInterface> eltsToAddList) {
 //        List<String> objIdStringList = new ArrayList();
         if (eltsToAddList != null) {

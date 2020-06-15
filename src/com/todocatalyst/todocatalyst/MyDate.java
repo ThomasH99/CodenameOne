@@ -721,8 +721,9 @@ public class MyDate extends Date {
 //</editor-fold>
     /**
      * returns the first millisecond of the week to which date belongs
+     *
      * @param date
-     * @return 
+     * @return
      */
     static Date getStartOfWeek(Date date) {
         Calendar cal = Calendar.getInstance();
@@ -1708,6 +1709,15 @@ public class MyDate extends Date {
      * @return
      */
     static public String formatDateSmart(Date date, boolean forceShowTimeOfDay, boolean forceShowPastDatesAsSmart) {
+        return formatDateSmart(date, forceShowTimeOfDay, forceShowPastDatesAsSmart, false);
+    }
+
+    final static String timeOfDateFormat = "H'h'mm";
+    final static String timeOfDateFormatPrecSpace = " H'h'mm";
+
+    static public String formatDateSmart(Date date, boolean forceShowTimeOfDay, boolean forceShowPastDatesAsSmart, boolean showDayOfWeek) {
+        //SimpleDateFormat("EEE, yyyy-MM-dd KK:mm a"); //http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
+
 //        long now = MyDate.currentTimeMillis();
 //        long diff = date.getTime() - now;
 //        Date startOfToday = MyDate.getStartOfDay(new Date());
@@ -1727,16 +1737,13 @@ public class MyDate extends Date {
 //</editor-fold>
 //        if (date.getTime() < startOfToday.getTime() && date.getTime() >= startOfYesterday.getTime())
         //within today(before midnight/*next 24h*?/till 5 in the morning for night owls?!): "13h14" / "1h14am"
-        String timeOfDateFormat = "H'h'mm";
-        String timeOfDateFormatPrecSpace = " H'h'mm";
-
         if (MyPrefs.smartDatesShowOnlyTimeOfDayToday.getBoolean() && isToday(date)) { //            return new SimpleDateFormat("HH'h'mm").format(date);
-            return "Today "+(new SimpleDateFormat(timeOfDateFormat).format(date));
+            return "Today " + (new SimpleDateFormat(timeOfDateFormat).format(date));
         }
 
         if (MyPrefs.smartDatesShowYesterdayAsYesterday.getBoolean() && isYesterday(date)) {
             return "Yesterday"
-                    + ((true ||MyPrefs.smartDatesShowTimeOfDayForPastDates.getBoolean() || forceShowTimeOfDay)
+                    + ((true || MyPrefs.smartDatesShowTimeOfDayForPastDates.getBoolean() || forceShowTimeOfDay)
                     ? new SimpleDateFormat(timeOfDateFormatPrecSpace).format(date) : "");
         }
 
@@ -1755,13 +1762,13 @@ public class MyDate extends Date {
 //            if (date.getTime() < startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * 365) {
         if (MyPrefs.smartDatesShowOnlyMonDayForNext365Days.getBoolean() && isNextcomingYear(date)) {// || (forceShowPastDatesAsSmart && isPreviousYear(date))) {
 //            return new SimpleDateFormat("MMM dd" + (forceShowTimeOfDay ? " H'h'mm" : "")).format(date);
-            return new SimpleDateFormat("MMM dd" + (forceShowTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date);
+            return new SimpleDateFormat((showDayOfWeek ? "EEE " : "") + "MMM dd" + (forceShowTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date);
         }
 
         //beyond 365 days: "Jun'18"???
 //        return new SimpleDateFormat("MMM''yy").format(date); //"Jun'18"
 //        return new SimpleDateFormat("dd'/'MM'/'yy" + (forceShowTimeOfDay ? " H'h'mm" : "")).format(date); //"Jun'18"
-        return new SimpleDateFormat("dd'/'MM'/'yy" + (forceShowTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date); //"Jun'18"
+        return new SimpleDateFormat((showDayOfWeek ? "EEE " : "") + "dd'/'MM'/'yy" + (forceShowTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date); //"Jun'18"
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
     //    private static String formatDateNewXX(MyDate date, MyDate referenceDate) { //, boolean useYesterdayTodayTomorrow) {
@@ -2297,6 +2304,34 @@ public class MyDate extends Date {
         return date1.getTime() >= startOfDay && date1.getTime() < startOfDay + MyDate.DAY_IN_MILLISECONDS;
     }
 
+    /**
+     * Optimized to test for dates *before* the given internal since that is
+     * most likely case when testing eg if workSlots fall within the internval
+     *
+     * @param date
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    static boolean isBetweenDates(Date date, Date startDate, Date endDate) {
+        if (false) {
+            if (date == null || startDate == null || endDate == null) {
+                return false;
+            }
+        }
+        long dateTime = date.getTime();
+        return dateTime <= endDate.getTime() && dateTime >= startDate.getTime();
+    }
+
+    static boolean isOverlapping(Date startDate1, Date endDate1, Date startDate2, Date endDate2) {
+        if (false) {
+            if (startDate1 == null || endDate1 == null || startDate2 == null || endDate2 == null) {
+                return false;
+            }
+        }
+        return isBetweenDates(startDate1, startDate2, endDate2) || isBetweenDates(startDate2, startDate1, endDate1);
+    }
+
     static boolean isSameWeekAndYear(Date date1, Date date2) {
         if (date1 == null || date2 == null) {
             return false;
@@ -2306,16 +2341,21 @@ public class MyDate extends Date {
 //        Calendar cal2 = Calendar.getInstance();
 //        cal2.setTime(date2);
 //        return cal.get(Calendar.WEEK_OF_YEAR) == cal2.get(Calendar.WEEK_OF_YEAR) && cal.get(Calendar.YEAR) == cal2.get(Calendar.YEAR); //NB!! Calendar.WEEK_OF_YEAR not implemented in CN1
+//        SimpleDateFormat dtfmt = new SimpleDateFormat("w yyyy");
         SimpleDateFormat dtfmt = new SimpleDateFormat("w yyyy");
         return dtfmt.format(date1).equals(dtfmt.format(date2));
     }
 
-    static String getWeekAndYear(Date date1) {
+    static SimpleDateFormat weekFormat = new SimpleDateFormat("'w'w "); //should give "Week 51 2017"
+    static SimpleDateFormat dayMonthFormat = new SimpleDateFormat("dd/MM"); //should give "Week 51 2017"
+
+    static String getWeekStr(Date firstDayOfWeek) {
 //        Calendar cal = Calendar.getInstance();
 //        cal.setTime(date1);
 //        return "Week " + cal.get(Calendar.WEEK_OF_YEAR) + " " + cal.get(Calendar.YEAR);
-        SimpleDateFormat dtfmt = new SimpleDateFormat("w, yyyy"); //should give "Week 51 2017"
-        return "Week " + dtfmt.format(date1);
+//        return "Week " + dtfmt.format(firstDayOfWeek);
+        return weekFormat.format(firstDayOfWeek) + dayMonthFormat.format(firstDayOfWeek)
+                + "-" + dayMonthFormat.format(new Date(firstDayOfWeek.getTime() + MyDate.DAY_IN_MILLISECONDS * 7));
 
     }
 

@@ -197,7 +197,7 @@ public class ScreenListOfItems extends MyForm {
 //        this.optionMultipleSelectMode = (options & OPTION_MULTIPLE_SELECT_MODE) != 0;
     }
 
-    private static int LABEL_GAP = 0; //in pixels!
+    private static int GAP_LABEL_ICON = 0; //in pixels!
 
     /**
      * stores the overall tree for this list
@@ -1924,7 +1924,7 @@ public class ScreenListOfItems extends MyForm {
 //        return itemListFilteredSorted != itemListOrg; //NO - since list may be filtered and it's still possible to drag & drop
 //        return filterSortDef != null && filterSortDef.isSortOn(); //
 //        return itemListOrg.getFilterSortDefN() != null && itemListOrg.getFilterSortDefN().isSortOn(); //
-        return itemListOrg.getFilterSortDef()!=null&&itemListOrg.getFilterSortDef().isSortOn(); //
+        return itemListOrg.getFilterSortDef() != null && itemListOrg.getFilterSortDef().isSortOn(); //
     }
 
     @Override
@@ -2116,6 +2116,7 @@ public class ScreenListOfItems extends MyForm {
             ExpandedObjects expandedObjects, ActionListener onExitAction) { //<editor-fold defaultstate="collapsed" desc="comment">
         return buildItemContainer(myForm, item, ownerItemOrItemList, category, expandedObjects, onExitAction, null);
     }
+
     public static Container buildItemContainer(final MyForm myForm, Item item, ItemAndListCommonInterface ownerItemOrItemList, Category category,
             ExpandedObjects expandedObjects, ActionListener onExitAction, ItemAndListCommonInterface displayList) { //<editor-fold defaultstate="collapsed" desc="comment">
         //            MyForm.GetBoolean isDragAndDropEnabled, MyForm.Action refreshOnItemEdits,
@@ -2222,13 +2223,17 @@ public class ScreenListOfItems extends MyForm {
             mainCont.addComponent(BorderLayout.WEST, west);
         }
 
-        Container southDetailsContainer = new Container(new FlowLayout(),"ListOfItemsItemDetails");
+        Container southDetailsContainer = new Container(new FlowLayout(), "ListOfItemsItemDetails");
 //        southDetailsContainer.setUIID("ListOfItemsItemDetails");
         if (Config.TEST) {
             southDetailsContainer.setName("ListOfItemsItemDetails");
         }
 //        boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) || (myForm.expandedObjects != null && myForm.expandedObjects.contains(item)); //hide details by default
-        boolean showDetails = MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) || (myForm.showDetails != null && myForm.showDetails.contains(item)); //hide details by default
+        boolean showDetails
+                = (myForm.getScreenType() != ScreenType.STATISTICS && MyPrefs.showDetailsForAllTasks.getBoolean())
+                || (myForm.showDetails != null && myForm.showDetails.contains(item))
+                || (myForm.getScreenType() == ScreenType.STATISTICS && MyPrefs.statisticsShowDetailsForAllTasks.getBoolean()); //hide details by default
+
 //        south.setHidden(!showDetailsForAllTasks || (tasksWithDetailsShown!=null && !tasksWithDetailsShown.contains(item))); //hide details by default
         southDetailsContainer.setHidden(!showDetails); //hide details by default
         if (oldFormat) {
@@ -2621,7 +2626,7 @@ public class ScreenListOfItems extends MyForm {
                 actualEffortLabel = new Label(MyDate.formatDurationShort(actualEffort, true).toString());
                 actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
                 actualEffortLabel.setUIID("ListOfItemsActualEffort");
-                actualEffortLabel.setGap(LABEL_GAP);
+                actualEffortLabel.setGap(GAP_LABEL_ICON);
 
                 if (Config.TEST) {
                     status.setName("ActualEffort");
@@ -2635,7 +2640,7 @@ public class ScreenListOfItems extends MyForm {
                 actualEffortLabel = new Label(MyDate.formatDurationShort(actualEffort, true).toString());
                 actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
                 actualEffortLabel.setUIID("ListOfItemsActualEffort");
-                actualEffortLabel.setGap(LABEL_GAP);
+                actualEffortLabel.setGap(GAP_LABEL_ICON);
                 southDetailsContainer.add(actualEffortLabel);
             }
 
@@ -2645,9 +2650,9 @@ public class ScreenListOfItems extends MyForm {
 //            completedDateLabel = new Label("C:" + MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
 //            completedDateLabel = new Label(MyDate.formatDateNew(item.getCompletedDate()), "ListOfItemsCompletedDate");
             if (item.getCompletedDate().getTime() != 0) {
-                completedDateLabel = new Label(MyDate.formatDateSmart(item.getCompletedDate(), true), "ListOfItemsCompletedDate"); //true: always show time of day when task was completed
+                completedDateLabel = new Label(MyDate.formatDateSmart(item.getCompletedDate(), true, false, true), "ListOfItemsCompletedDate"); //true: always show time of day when task was completed
                 completedDateLabel.setMaterialIcon(Icons.iconCompletedDate);
-                completedDateLabel.setGap(LABEL_GAP);
+                completedDateLabel.setGap(GAP_LABEL_ICON);
 //            completedDateLabel.setMaterialIcon(0);
                 if (oldFormat) {
                     east.addComponent(completedDateLabel);
@@ -2665,7 +2670,7 @@ public class ScreenListOfItems extends MyForm {
                 finishTimeLabel = new Label(MyDate.formatDateSmart(finishTimeD),
                         due != 0 && finishTime > due ? "ListOfItemsFinishTimeOverdue" : "ListOfItemsFinishTime");
                 finishTimeLabel.setMaterialIcon(Icons.iconFinishDateMaterial);
-                finishTimeLabel.setGap(LABEL_GAP);
+                finishTimeLabel.setGap(GAP_LABEL_ICON);
 //                if (Config.TEST) {
 //                } else
 //                    finishTimeLabel = new Label("F:" + MyDate.formatDateSmart(new Date(finishTime)),
@@ -2679,7 +2684,7 @@ public class ScreenListOfItems extends MyForm {
 //                dueDateLabel = new Label(MyDate.formatDateSmart(new Date(due)), Icons.iconSetDueDateToToday(),
                 dueDateLabel = new Label(MyDate.formatDateSmart(new MyDate(due)), due < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
                 dueDateLabel.setMaterialIcon(Icons.iconSetDueDateToTodayFontImageMaterial);
-                dueDateLabel.setGap(LABEL_GAP);
+                dueDateLabel.setGap(GAP_LABEL_ICON);
                 if (item.isDueDateInherited()) {
                     dueDateLabel.setUIID("ListOfItemsDueDateInherited");
                 }
@@ -2697,7 +2702,7 @@ public class ScreenListOfItems extends MyForm {
 //                    east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
                 remainingEffortLabel = new Label(MyDate.formatDurationShort(remainingEffort, true), "ListOfItemsRemaining");
                 remainingEffortLabel.setMaterialIcon(Icons.iconRemainingEffort);
-                remainingEffortLabel.setGap(LABEL_GAP - 3);
+                remainingEffortLabel.setGap(GAP_LABEL_ICON - 3);
                 if (Config.TEST) {
                     remainingEffortLabel.setName("Remaining");
                 }
@@ -2710,7 +2715,7 @@ public class ScreenListOfItems extends MyForm {
             if (due != 0) {
                 dueDateLabel = new Label(MyDate.formatDateSmart(new MyDate(due)), due < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
                 dueDateLabel.setMaterialIcon(Icons.iconSetDueDateToTodayFontImageMaterial);
-                dueDateLabel.setGap(LABEL_GAP);
+                dueDateLabel.setGap(GAP_LABEL_ICON);
                 if (item.isDueDateInherited()) {
                     dueDateLabel.setUIID("ListOfItemsDueDateInherited");
                 }
@@ -2855,7 +2860,7 @@ public class ScreenListOfItems extends MyForm {
                 southDetailsContainer.add(priorityLabel);
             }
             priorityLabel.setUIID("ListOfItemsPrio");
-            priorityLabel.setGap(LABEL_GAP);
+            priorityLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 priorityLabel.setName("Priority");
             }
@@ -2869,7 +2874,7 @@ public class ScreenListOfItems extends MyForm {
             if (Config.TEST) {
                 impUrgLabel.setName("ImpUrg");
             }
-            impUrgLabel.setGap(LABEL_GAP);
+            impUrgLabel.setGap(GAP_LABEL_ICON);
 //        impUrgLabel.setUIID("ListOfItemsImpUrg");
             if (false && showInDetails) {
                 southDetailsContainer.add(impUrgLabel);
@@ -2887,7 +2892,7 @@ public class ScreenListOfItems extends MyForm {
                 funDreadLabel = new Label("", "ListOfItemsItemDetailsLabel");
                 funDreadLabel.setMaterialIcon(item.getDreadFunValueN().getIcon());
             }
-            funDreadLabel.setGap(LABEL_GAP);
+            funDreadLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 funDreadLabel.setName("FunDread");
             }
@@ -2911,7 +2916,7 @@ public class ScreenListOfItems extends MyForm {
                     challengeLabel.setFontIcon(Icons.iconFont, Icons.iconEditMyFont);
                 }
             }
-            challengeLabel.setGap(LABEL_GAP);
+            challengeLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 challengeLabel.setName("Challenge");
             }
@@ -2927,7 +2932,7 @@ public class ScreenListOfItems extends MyForm {
 //            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
             earnedValueLabel = new Label(L10NManager.getInstance().format(item.getEarnedValue(), MyPrefs.earnedValueDecimals.getInt()), "ListOfItemsItemDetailsLabel");
             earnedValueLabel.setMaterialIcon(Icons.iconEarnedValue);
-            earnedValueLabel.setGap(LABEL_GAP);
+            earnedValueLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 earnedValueLabel.setName("EarnedValue");
             }
@@ -2943,7 +2948,7 @@ public class ScreenListOfItems extends MyForm {
 //            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
             earnedValuePerHourLabel = new Label(L10NManager.getInstance().format(item.getEarnedValuePerHour(), MyPrefs.earnedValueDecimals.getInt()), "ListOfItemsItemDetailsLabel");
             earnedValuePerHourLabel.setMaterialIcon(Icons.iconEarnedValuePerHour);
-            earnedValuePerHourLabel.setGap(LABEL_GAP);
+            earnedValuePerHourLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 earnedValuePerHourLabel.setName("EarnedValuePerHour");
             }
@@ -2961,7 +2966,7 @@ public class ScreenListOfItems extends MyForm {
                 Label dueLabel = new Label("D:" + MyDate.formatDateNew(item.getDueDate()),
                         item.getDueDate() < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
                 dueLabel.setName("DueDate");
-                dueLabel.setGap(LABEL_GAP);
+                dueLabel.setGap(GAP_LABEL_ICON);
                 southDetailsContainer.addComponent(dueLabel);
             }
         }
@@ -2981,7 +2986,7 @@ public class ScreenListOfItems extends MyForm {
 //            alarmLabel = new Label(MyDate.formatDateSmart(item.getAlarmDateD()), "ItemDetailsLabel");
             alarmLabel = new Label(MyDate.formatDateSmart(item.getAlarmDate()), "ListOfItemsAlarmDate");
             alarmLabel.setMaterialIcon(Icons.iconAlarmDate);
-            alarmLabel.setGap(LABEL_GAP);
+            alarmLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 alarmLabel.setName("Alarm");
             }
@@ -2995,7 +3000,7 @@ public class ScreenListOfItems extends MyForm {
         if (item.getWaitingAlarmDate().getTime() != 0) {
             waitingAlarmLabel = new Label(MyDate.formatDateSmart(item.getWaitingAlarmDate()), "ListOfItemsAlarmDate");
             waitingAlarmLabel.setMaterialIcon(Icons.iconWaitingAlarm);
-            waitingAlarmLabel.setGap(LABEL_GAP);
+            waitingAlarmLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 waitingAlarmLabel.setName("WaitingAlarm");
             }
@@ -3009,7 +3014,7 @@ public class ScreenListOfItems extends MyForm {
 //            hideUntilLabel = new Label("H:" + MyDate.formatDateNew(item.getHideUntilDateD()), "ItemDetailsLabel");
             hideUntilLabel = new Label(MyDate.formatDateSmart(item.getHideUntilDateD()), "ItemDetailsLabel");
             hideUntilLabel.setMaterialIcon(Icons.iconHideUntilDate);
-            hideUntilLabel.setGap(LABEL_GAP);
+            hideUntilLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 hideUntilLabel.setName("HideUntil");
             }
@@ -3024,7 +3029,7 @@ public class ScreenListOfItems extends MyForm {
 //            startByLabel = new\ Label("S:" + MyDate.formatDateNew(item.getStartByDateD()), "ItemDetailsLabel");
             startByLabel = new Label(MyDate.formatDateSmart(item.getStartByDateD()), "ItemDetailsLabel");
             startByLabel.setMaterialIcon(Icons.iconStartByDate);
-            startByLabel.setGap(LABEL_GAP);
+            startByLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 startByLabel.setName("StartBy");
             }
@@ -3040,7 +3045,7 @@ public class ScreenListOfItems extends MyForm {
 //            expireByLabel = new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD()), "ItemDetailsLabel");
             expireByLabel = new Label(MyDate.formatDateSmart(item.getExpiresOnDate()), "ItemDetailsLabel");
             expireByLabel.setMaterialIcon(Icons.iconExpireByDate);
-            expireByLabel.setGap(LABEL_GAP);
+            expireByLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 expireByLabel.setName("ExpireBy");
             }
@@ -3058,7 +3063,7 @@ public class ScreenListOfItems extends MyForm {
 //            waitingTillLabel = new Label(MyDate.formatDateNew(item.getWaitingTillDateD()), "ItemDetailsLabel");
             waitingTillLabel = new Label(MyDate.formatDateSmart(item.getWaitingTillDate()), "ItemDetailsLabel");
             waitingTillLabel.setMaterialIcon(Icons.iconWaitingDateMaterial);
-            waitingTillLabel.setGap(LABEL_GAP);
+            waitingTillLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 waitingTillLabel.setName("WaitingTill");
             }
@@ -3074,7 +3079,7 @@ public class ScreenListOfItems extends MyForm {
 //            effortEstimateLabel = new Label("E:" + MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
             effortEstimateLabel = new Label("E" + MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
             effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
-            effortEstimateLabel.setGap(LABEL_GAP);
+            effortEstimateLabel.setGap(GAP_LABEL_ICON);
             if (false) { //TODO!!! show once there is a decent Estimate symbol
                 effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
             }
@@ -3203,7 +3208,7 @@ public class ScreenListOfItems extends MyForm {
             if (!item.isTemplate() && owner != null
                     && (category instanceof Category
                     //                    || (owner instanceof ItemList && (((ItemList) owner).isSystemList())))) {
-                    || (ownerItemOrItemList instanceof ItemList 
+                    || (ownerItemOrItemList instanceof ItemList
                     && ((((ItemList) ownerItemOrItemList).isSystemList()) || ((ItemList) ownerItemOrItemList).isNoSave())))) {
                 if (owner instanceof Item) {
                     southDetailsContainer.addComponent(new Label(owner.getText(), "ListOfItemsOwnerItem"));

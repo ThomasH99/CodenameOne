@@ -1390,7 +1390,7 @@ FunDread { /*expand subtasks*/
 
 ListOfItemsMyCheckBox {
     cn1-derive: ListOfItemsText;
-    font-size: 130%;
+    font-size: 120%;
     margin-top: 0mm;
     margin-bottom: 0mm;
     margin-left:1.5mm;
@@ -1434,7 +1434,7 @@ ListOfItemListsBase {
     cn1-derive: ListOfItemsTextBase; /*Label;*/
     margin: 0;/**/
     padding: 0;/**/
-    background: white;
+    /*background: white;*/
     /*margin-left: 2mm;/**/
 }
 
@@ -1446,7 +1446,7 @@ ItemListContainer {
 
 ListOfItemListsTextCont { /*the 'span' container of the wrap button with the icon/text of the itemlist*/
     cn1-derive: ListOfItemListsBase;
-    /*text-decoration: bold;xxx*/
+    /*text-decoration: bold;*/
     font-family :  "native:MainBold"; /*"native:MainLight";*/
 }
 ListOfItemListsText { /*the text/name of the itemlist*/
@@ -1516,7 +1516,7 @@ CategoryListTextCont { /*the 'span' container of the wrap button with the icon/t
     cn1-derive: CategoryListBase;
     margin: 0;/**/
     padding: 0;/**/
-    /*text-decoration: bold;xxx*/
+    /*text-decoration: bold;*/
 }
 
 CategoryListText { /*the text/name of the category*/
@@ -1927,6 +1927,31 @@ WorkSlotPinchInsertHintLabelXXX {
     padding: 0mm;
 }
 
+
+/* STATISTICS */
+StatisticsItemListContainer1 { /*south container with details for a List/Cat/Date interval*/
+    cn1-derive:ItemListContainer;
+    background:lightgray;
+    padding: 0.7mm 1mm 0.7mm 1mm;
+}
+StatisticsItemListContainer2 { /*south container with details for a List/Cat/Date interval*/
+    cn1-derive:ItemListContainer;
+    padding: 0.2mm 1mm 0.2mm 1mm;
+}
+StatisticsGroupDetails { /*south container with details for a List/Cat/Date interval*/
+    cn1-derive:Container;
+    margin: 0 2mm 0 2mm;
+}
+StatisticsDetail { /*label with details for a group, Estimate sum and Work Time sum*/
+    cn1-derive:ItemListSmall;
+}
+
+StatisticsDetailActual { /*label with details for a group, Estimate sum and Work Time sum*/
+    cn1-derive:ListOfItemListsRemainingTime;
+}
+StatisticsDetailTaskCountActual { /*label with details for a group, Estimate sum and Work Time sum*/
+    cn1-derive:ListOfItemListsShowItems;
+}
 
 /* WORKSLOT */
 WorkSlotContainer {
