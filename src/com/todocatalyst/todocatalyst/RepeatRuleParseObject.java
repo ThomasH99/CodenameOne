@@ -335,6 +335,8 @@ public class RepeatRuleParseObject
         }
     }
 
+    private List cachedUndoneInstances; //need to cache this list which may become long and gets called multiple time by equals
+
     /**
      * keep track of undone (not Done/Cancelled/Deleted) repeat instances (not
      * used for WorkSlots?!). Used to delete repeat instances if repeatRule is
@@ -348,9 +350,16 @@ public class RepeatRuleParseObject
     public List<RepeatRuleObjectInterface> getListOfUndoneInstances() {
         //TODO!!!! used for WorkSlots? (is externalized as if WorkSlots could be in list)
         List list = getList(PARSE_REPEAT_INSTANCE_ITEMLIST);
+        if (Config.TEST && list != null) {
+            Log.p("RepeatRuleObject.getListOfUndoneInstances() called with list size=" + list.size());
+        }
         if (list != null) {
-//            DAO.getInstance().fetchAllElementsInSublist(list, false);
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
+            if (cachedUndoneInstances == null) { //            DAO.getInstance().fetchAllElementsInSublist(list, false);
+                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
+                cachedUndoneInstances = list;
+            } else {
+                return cachedUndoneInstances;
+            }
         } else {
             list = new ArrayList();
         }
@@ -365,6 +374,8 @@ public class RepeatRuleParseObject
         }
     }
 
+    private List cachedDoneInstances; //need to cache this list which may become long and gets called multiple time by equals
+
     /**
      * keep track of done (Done/Cancelled/Deleted) repeat instances (not used
      * for WorkSlots?!). Used to delete repeat instances if repeatRule is
@@ -375,8 +386,16 @@ public class RepeatRuleParseObject
     public List<RepeatRuleObjectInterface> getListOfDoneInstances() {
         //TODO!!!! used for WorkSlots? (is externalized as if WorkSlots could be in list)
         List list = getList(PARSE_REPEAT_COMPLETED_INSTANCES);
+        if (Config.TEST && list != null) {
+            Log.p("RepeatRuleObject.getListOfDoneInstances() called with list size=" + list.size());
+        }
         if (list != null) {
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
+            if (cachedDoneInstances == null) {
+                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
+                cachedDoneInstances = list;
+            } else {
+                return cachedDoneInstances;
+            }
         } else {
             list = new ArrayList();
         }
@@ -2608,7 +2627,9 @@ public class RepeatRuleParseObject
          *
          */
 //</editor-fold>
-        if (Config.TEST) ASSERT.that(getListOfDoneInstances().contains(repeatRuleOriginator) || getListOfUndoneInstances().contains(repeatRuleOriginator), "originator [" + repeatRuleOriginator + "] neither in done or undone lists, for RR=" + this);
+        if (Config.TEST) {
+            ASSERT.that(getListOfDoneInstances().contains(repeatRuleOriginator) || getListOfUndoneInstances().contains(repeatRuleOriginator), "originator [" + repeatRuleOriginator + "] neither in done or undone lists, for RR=" + this);
+        }
 
         Item repeatRuleOriginatorItem = (Item) repeatRuleOriginator;
 //        assert (true || getTotalNumberOfInstancesGeneratedSoFar() > 0); // ">0" - not the case if only one simultaneous instance
@@ -2706,12 +2727,12 @@ public class RepeatRuleParseObject
                     }
 //                DAO.getInstance().saveNew(this, true);
                     DAO.getInstance().saveNew(this);
-                    DAO.getInstance().saveNew((ParseObject)keep);
+                    DAO.getInstance().saveNew((ParseObject) keep);
                     DAO.getInstance().saveNew(updatedOwners);
                     DAO.getInstance().saveNewExecuteUpdate();
-                    
+
                 } else { //if completion RR is NOT dated, then we always keep one instance (infinite repeat)
-                    
+
                     List<RepeatRuleObjectInterface> undoneList = getListOfUndoneInstances();
                     if (Config.TEST) {
                         ASSERT.that(undoneList.size() == 0 || undoneList.contains(repeatRuleOriginator), "getListOfUndoneRepeatInstances does not contain originator=" + repeatRuleOriginator + " list=" + undoneList);
@@ -5937,9 +5958,8 @@ public class RepeatRuleParseObject
 
     public String toStringWObjId() {
         return "RepRu=[" + (getObjectIdP() == null ? "no ObjId" : getObjectIdP()) + "]" + getText()
-                +"; DONE("+getListOfDoneInstances().size()+")= ["+getListOfDoneInstances()+"]"
-                +"; UNDONE("+getListOfDoneInstances().size()+")= ["+getListOfUndoneInstances()+"]"
-                ;
+                + "; DONE(" + getListOfDoneInstances().size() + ")= [" + getListOfDoneInstances() + "]"
+                + "; UNDONE(" + getListOfDoneInstances().size() + ")= [" + getListOfUndoneInstances() + "]";
     }
 
     public void copyMeInto(RepeatRuleParseObject destiny) {
@@ -6467,10 +6487,10 @@ public class RepeatRuleParseObject
         if (getNumberOfDaysRepeatsAreGeneratedAhead() != repeatRule.getNumberOfDaysRepeatsAreGeneratedAhead()) {
             return false;
         }
-        if (getListOfDoneInstances().size()!=repeatRule.getListOfDoneInstances().size()) {
+        if (getListOfDoneInstances().size() != repeatRule.getListOfDoneInstances().size()) {
             return false;
         }
-        if (getListOfUndoneInstances().size()!=repeatRule.getListOfUndoneInstances().size()) {
+        if (getListOfUndoneInstances().size() != repeatRule.getListOfUndoneInstances().size()) {
             return false;
         }
         if (!getListOfDoneInstances().equals(repeatRule.getListOfDoneInstances())) {

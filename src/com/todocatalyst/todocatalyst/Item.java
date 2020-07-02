@@ -67,6 +67,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private boolean mustUpdateAlarmsXXXNotUsed = false; //track changes that will require alarms to be updated
     private boolean noSave = false;
     private FilterSortDef hardcodedFilter = null;
+    private boolean isBeingEdited;
 
     /**
      * Copied from CN1 OnOffSwitch.java
@@ -95,6 +96,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (setDefaultRemaining) {
             setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
         }
+    }
+
+    public Item(List<Item> subtasks) {
+        this();
+        setList(subtasks);
     }
 
 //    public Item(Item source) {
@@ -2213,7 +2219,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    return compareLong(getCompletedDate(), c.getCompletedDate());
                     return compareDate(getCompletedDate(), c.getCompletedDate());
                 case Item.COMPARE_CREATED_DATE:
-                    return compareLong(getCreatedDate().getTime(), c.getCreatedDate().getTime());
+                    return compareLong(getCreatedAt().getTime(), c.getCreatedAt().getTime());
                 case Item.COMPARE_DUE_DATE:
                     return compareLong(getDueDate(), c.getDueDate());
                 case Item.COMPARE_HIDE_UNTIL_DATE:
@@ -2342,21 +2348,24 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     /**
-     * undo a previous delete
+     * undo a previous delete, including undoing deletion of subtasks
      *
-     * @param deleteRefDate the date of the original delete to undo, necessary
+     * @param deleteRefDateN the date of the original delete to undo, necessary
      * to avoid undeleting e.g. subtasks that were deleted earlier on. If null,
      * ignored.
-     * @param limitDate only undelete if deleted *on or after* this date, used
+     * @param limitDateN only undelete if deleted *on or after* this date, used
      * to undelete only tasks that were deleted during a particular editing
-     * session (in ScreenItem2)
+     * session (in ScreenItem2). Ignore if null
      * @return
      */
-    public boolean undelete(Date deleteRefDate, Date limitDate) {
+    public boolean undelete(Date deleteRefDateN, Date limitDateN) {
 
         //do nothing if item is not soft-deleted on the deleteRefDate or is deleted *before* limitDate
-        if ((deleteRefDate != null && !deleteRefDate.equals(getSoftDeletedDateN())
-                || (getSoftDeletedDateN() != null && limitDate != null && getSoftDeletedDateN().getTime() <= limitDate.getTime()))) {
+//        if (((deleteRefDateN != null && !deleteRefDateN.equals(getSoftDeletedDateN()))
+//                || (getSoftDeletedDateN() != null && limitDateN != null && getSoftDeletedDateN().getTime() <= limitDateN.getTime()))) {
+        if (getSoftDeletedDateN() == null
+                || (deleteRefDateN != null && !deleteRefDateN.equals(getSoftDeletedDateN()))
+                || (limitDateN != null && getSoftDeletedDateN().getTime() <= limitDateN.getTime())) {
             //i.getSoftDeletedDateN().getTime() > undeleteAfter.getTime()
             return false;
         }
@@ -2364,7 +2373,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //DELETE SUBTASKS - delete all subtasks (since they are owned by this item)
         List<Item> itemsSubtasksOfThisItem = getListFull();
         for (Item item : itemsSubtasksOfThisItem) {
-            item.undelete(deleteRefDate, limitDate); //let each item delete itself properly, will recurse down the project hierarchy
+            item.undelete(deleteRefDateN, limitDateN); //let each item delete itself properly, will recurse down the project hierarchy
         }
 
         //TODO!!! (?)anything to do to handle case where subtasks are created and saved, but where the new mother task is finally not saved?
@@ -4775,13 +4784,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //!(onlyUndone && isDone()) <=> !onlyUndone || !isDone()
     }
 
-    @Override
-    public int getNumberOfSubtasks(boolean onlyUndone, boolean countLeafTasks) {
+    public static int getNumberOfSubtasks(List<Item> subtasks, boolean onlyUndone, boolean countLeafTasks) {
         int count = 0;
-        for (Object obj : getListFull()) { //full: count every subtask
+        for (Object obj : subtasks) { //full: count every subtask
             count += ((ItemAndListCommonInterface) obj).getNumberOfItems(onlyUndone, countLeafTasks);
         }
         return count; //if !countLeafTasks, then add 1 for this Item
+    }
+
+    @Override
+    public int getNumberOfSubtasks(boolean onlyUndone, boolean countLeafTasks) {
+//        int count = 0;
+//        for (Object obj : getListFull()) { //full: count every subtask
+//            count += ((ItemAndListCommonInterface) obj).getNumberOfItems(onlyUndone, countLeafTasks);
+//        }
+//        return count; //if !countLeafTasks, then add 1 for this Item
+        return getNumberOfSubtasks(getListFull(), onlyUndone, countLeafTasks);
     }
 
     /**
@@ -5017,14 +5035,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            setStartedOnDate(System.currentTimeMillis());
                 item.setStartedOnDate(now);
             }
-            if (item.getStartedOnDate() != 0 && newStatus == ItemStatus.CREATED) { //if setting back, reset startedOn date
+            if (false && item.getStartedOnDate() != 0 && newStatus == ItemStatus.CREATED) { //UI: no keep org/first startedOn date. if setting back, reset startedOn date
                 item.setStartedOnDate(null);
             }
             //UI: StartedOnDate RESET: not relevant, always keep the first set StartedOnDate (unless manually deleted)
 
             //CompletedDate: SET set to Now if changing to Done/Cancelled from other state
             //UI: also use Completed date to store date when task was cancelled (for historical data)
-            if (item.getCompletedDate().getTime() == 0 && (previousStatus != ItemStatus.DONE && previousStatus != ItemStatus.CANCELLED)
+//            if (item.getCompletedDate().getTime() == 0 && (previousStatus != ItemStatus.DONE && previousStatus != ItemStatus.CANCELLED)
+            if ((previousStatus != ItemStatus.DONE && previousStatus != ItemStatus.CANCELLED) //UI: set to completed every time it is set to Done! (whether 0 or not before)
                     && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED)) {
                 //TODO!!!! should actual effort be reduced to zero?? No, any effort spend should be kept even for Cancelled tasks
                 item.setCompletedDate(now, false, false); //UI: also use Completed date to store date when task was cancelled (for historical data)
@@ -5200,7 +5219,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
 //    protected void updateStatusOnSubtaskStatusChange(Item subtask, ItemStatus oldStatus, ItemStatus newStatus, Date now) {
     protected void updateStatusOnSubtaskStatusChange(Date now) {
-        ItemStatus subtaskStatus = getStatusFromSubtasks();
+        ItemStatus subtaskStatus = getStatusFromSubtasksN();
         setStatus(subtaskStatus, false, true, true, now);
     }
 
@@ -5346,11 +5365,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             mustUpdateAlarmsXXXNotUsed = true; //update alarms
         }
 
-        if (false && newStatus == ItemStatus.WAITING) { //behaviour too specific to UI/screen in which a task is set waiting, so don't do here
-            MyForm.showDialogSetWaitingDateAndAlarmIfAppropriate(this); //only call if we're changing TO Waiting status
-//            MyForm.showDialogUpdateRemainingTime(getRemaining());
-        }
-
+//        if (false && oldStatus != ItemStatus.WAITING && newStatus == ItemStatus.WAITING) { //NB!! behaviour too specific to UI/screen in which a task is set waiting, so don't do here
+//            MyForm.showDialogSetWaitingDateAndAlarmIfAppropriate(this); //only call if we're changing TO Waiting status
+////            MyForm.showDialogUpdateRemainingTime(getRemaining());
+//        }
         if (!isProject()) {
             setStatusInParse(newStatus); //must set *before* updating supertasks
         } else {
@@ -5436,13 +5454,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * to do currently); - if at least one task is Ongoing (and some
      * Cancelled/Waiting/Done) => Ongoing; - else: Created
      *
-     * @return
+     * @return status as described above, or null if no subtasks
      */
-    public ItemStatus getStatusFromSubtasks() {
-        return getStatus(getListFull());
+    public ItemStatus getStatusFromSubtasksN() {
+        return getStatusN(getListFull());
     }
 
-    public static ItemStatus getStatus(List<Item> list) {
+    public static ItemStatus getStatusN(List<Item> list) {
+        if (list == null || list.size() == 0) {
+            return null;
+        }
         //TODO optimization: only calculate/update a project's status when a subtask changes and then simply return the project's status here instead of calculating dynamically
         Bag<ItemStatus> statusCount = new Bag<ItemStatus>();
         int listSize = list.size();
@@ -7900,45 +7921,49 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public List<Category> updateCategories(List<Category> locallyEditedCategories, boolean onlyAddNewCatsDontRemoveAny) {
 //        if (locallyEditedCategories == null || locallyEditedCategories.size() == 0) {
-        if (locallyEditedCategories == null || locallyEditedCategories.isEmpty()) {
+        if (locallyEditedCategories == null) {// || locallyEditedCategories.isEmpty()) {
             return new ArrayList();
         }
 //        Item item = this;
-
+        if (isTemplate()) { //for a template, we don't add it to any categories, just save the final set of categories
+            setCategories(locallyEditedCategories); //set the item's categories as the old ones + newly added ones
+            return new ArrayList();
+        } else {
 //        Set<Category> addedCats = new HashSet(locallyEditedCategories);//make a copy of the edited set of categories
-        List<Category> addedCats = new ArrayList(locallyEditedCategories);//make a copy of the edited set of categories
-        addedCats.removeAll(getCategories()); //remove all that were already set of the item to get only the newly added categories
-        for (Category cat : addedCats) {
+            List<Category> addedCats = new ArrayList(locallyEditedCategories);//make a copy of the edited set of categories
+            addedCats.removeAll(getCategories()); //remove all that were already set of the item to get only the newly added categories
+            for (Category cat : addedCats) {
 //            cat.addItemAtIndex(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : cat.getSize());
-            cat.addItemToCategory(this, false);
+                cat.addItemToCategory(this, false);
 //            DAO.getInstance().saveInBackground((ParseObject) cat);
-        }
+            }
 
-        List<Category> unSelectedCats = new ArrayList();
-        if (!onlyAddNewCatsDontRemoveAny) {
+            List<Category> unSelectedCats = new ArrayList();
+            if (!onlyAddNewCatsDontRemoveAny) {
 //            Set<Category> unSelectedCats = new HashSet(item.getCategories());
 //            unSelectedCats = new ArrayList(Arrays.asList(item.getCategories()));
-            unSelectedCats.addAll(getCategories());
-            unSelectedCats.removeAll(locallyEditedCategories); //remove the categories that are still selected after editing. Those remaining in unSelectedCats have been unselected by user and should be removed
-            for (Category cat : unSelectedCats) {
+                unSelectedCats.addAll(getCategories());
+                unSelectedCats.removeAll(locallyEditedCategories); //remove the categories that are still selected after editing. Those remaining in unSelectedCats have been unselected by user and should be removed
+                for (Category cat : unSelectedCats) {
 //                cat.remove(item);
-                cat.removeItemFromCategory(this, false);
+                    cat.removeItemFromCategory(this, false);
 //                DAO.getInstance().saveInBackground((ParseObject) cat);
-            }
-            setCategories(new ArrayList(locallyEditedCategories)); //set the item's categories as the locally edited ones
-        } else {
-            //only set the item's categories to the old ones + the newly added
-            ArrayList<Category> existingCatsPlusAdded = new ArrayList(getCategories());
-//            existingCatsPlusAdded.addAll(addedCats);
-            for (Category cat : addedCats) {
-                if (!existingCatsPlusAdded.contains(cat)) {
-                    existingCatsPlusAdded.add(cat);
                 }
+                setCategories(new ArrayList(locallyEditedCategories)); //set the item's categories as the locally edited ones
+            } else {
+                //only set the item's categories to the old ones + the newly added
+                ArrayList<Category> existingCatsPlusAdded = new ArrayList(getCategories());
+//            existingCatsPlusAdded.addAll(addedCats);
+                for (Category cat : addedCats) {
+                    if (!existingCatsPlusAdded.contains(cat)) {
+                        existingCatsPlusAdded.add(cat);
+                    }
+                }
+                setCategories(existingCatsPlusAdded); //set the item's categories as the old ones + newly added ones
             }
-            setCategories(existingCatsPlusAdded); //set the item's categories as the old ones + newly added ones
+            addedCats.addAll(unSelectedCats);
+            return addedCats;
         }
-        addedCats.addAll(unSelectedCats);
-        return addedCats;
     }
 
     /**
@@ -7963,7 +7988,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 setCategories(cats);
             }
             if (addItemToCategory) {
-                category.addItemToCategory(this, false);
+                UpdateItem prevUpdate = opsUpdateInheritedValues.get(PARSE_CATEGORIES);
+                opsUpdateInheritedValues.put(PARSE_CATEGORIES, (subtask) -> {
+                    if (prevUpdate != null) {
+                        prevUpdate.update(subtask); //make sure that multiple updates of categories are kept
+                    }
+                    category.addItemToCategory(this, false);
+                    DAO.getInstance().saveNew((ParseObject) category);
+                    return true;
+                });
             }
         }
 //        this.addUniqueToArrayField(PARSE_CATEGORIES, category); //TODO: will addUniqueToArrayField create the list if not already existing?
@@ -8333,7 +8366,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        return getCreatedAt() == null ? 0 : getCreatedAt().getTime(); //createdAt returns null for just created object
 //        return getCreatedDateD().getTime();
 //    }
-    public Date getCreatedDate() {
+    public Date getCreatedDateXXX() {
 //        return getCreatedAt();
         return getCreatedAt() == null ? new MyDate(0) : getCreatedAt(); //createdAt returns null for just created object
     }
@@ -8956,7 +8989,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @throws ParseException
      */
-    public void updateBeforeSave() {
+    @Override
+    public void updateOnSave() {
         if (!updateSubtaskOngoing) {
 
             updateSubtaskOngoing = true;
@@ -9954,7 +9988,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 break;
             case PARSE_CREATED_AT:
                 if (toCSV) {
-                    list.add(MyDate.formatDateNew(getCreatedDate()));
+                    list.add(MyDate.formatDateNew(getCreatedAt()));
                 } else {
                     Log.p("Cannot import " + Item.CREATED_DATE);
                 }
@@ -11135,6 +11169,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         save.putNotZero(Item.PARSE_DREAD_FUN_VALUE, item.getDreadFunValueN());
 
         save.putNotZero(Item.PARSE_EARNED_VALUE, item.getEarnedValue());
+    }
+
+    /**
+     * indicates that this item is currently being edited
+     *
+     * @param isBeingEdited
+     */
+    public void setEditOngoing(boolean isBeingEdited) {
+        this.isBeingEdited = isBeingEdited;
+    }
+
+    public boolean isEditOngoing() {
+        return isBeingEdited;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

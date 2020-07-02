@@ -169,6 +169,7 @@ public class ScreenMain extends MyForm {
     public void addCommandsToToolbar(Toolbar toolbar, Container cont) { //, Resources theme) {
 
         toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
+        toolbar.addCommandToOverflowMenu(makeInterruptCommand(true));
 
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());
         MyReplayCommand listOfAlarms = MyReplayCommand.create(ScreenListOfAlarms.screenTitle, Icons.iconMainAlarms/*FontImage.create(" \ue838 ", iconStyle)*/,
@@ -300,7 +301,7 @@ public class ScreenMain extends MyForm {
             Command allTasks = MyReplayCommand.create(SCREEN_ALL_TASKS_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainAllTasks, (e) -> {
                         FilterSortDef allTasksSystemFilter = DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString());
                         new ScreenListOfItems(ALL_TASKS,
-                                () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(false, false, true, false, false), allTasksSystemFilter, true), 
+                                () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(false, false, true, false, false), allTasksSystemFilter, true),
                                 ScreenMain.this, (i) -> {
                                 }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
                     }
@@ -309,11 +310,11 @@ public class ScreenMain extends MyForm {
         }
 
         Command projects = MyReplayCommand.create(SCREEN_PROJECTS_TITLE, Icons.iconMainProjects, (e) -> {
-            MyForm myForm = new ScreenListOfItems(SCREEN_PROJECTS_TITLE, "No projects", () -> new ItemList(DAO.getInstance().getAllProjects()), 
+            MyForm myForm = new ScreenListOfItems(SCREEN_PROJECTS_TITLE, "No projects", () -> new ItemList(DAO.getInstance().getAllProjects()),
                     ScreenMain.this, (i) -> {
-            }, 
-            ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES //| ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER //ScreenListOfItems.OPTION_NO_TIMER | 
-                    | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME|ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
+                    },
+                    ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES //| ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER //ScreenListOfItems.OPTION_NO_TIMER | 
+                    | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
             );
 //            myForm.setShowIfEmptyList("You don't have any projects");
             myForm.show();
@@ -394,7 +395,7 @@ public class ScreenMain extends MyForm {
                     ScreenMain.this, (i) -> {
                     },
                     ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
-                    | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME|ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
+                    | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
             );
             myForm.setTextToShowIfEmptyList("No completed tasks the last month");
             myForm.show();
@@ -411,7 +412,7 @@ public class ScreenMain extends MyForm {
                     ScreenMain.this, (i) -> {
                     },
                     ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
-                    | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME|ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
+                    | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
             );
             myForm.setTextToShowIfEmptyList("No tasks created the last month");
             myForm.show();
@@ -428,7 +429,7 @@ public class ScreenMain extends MyForm {
                             ScreenMain.this, (i) -> {
                             },
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
-                            | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME|ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
+                            | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
                     );
                     myForm.setTextToShowIfEmptyList("No tasks have been changed the last month");
                     myForm.show();
@@ -443,7 +444,7 @@ public class ScreenMain extends MyForm {
                         DAO.getInstance().getTouched24hLog(), filterSort, true), ScreenMain.this, (i) -> {
                         },
                                 ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
-                                | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME|ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
+                                | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
                         ).show();
                     }
             );

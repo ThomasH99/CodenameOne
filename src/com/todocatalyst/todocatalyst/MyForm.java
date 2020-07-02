@@ -44,6 +44,7 @@ import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.spinner.Picker;
+import com.codename1.ui.spinner.PickerDialog;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.ui.util.UITimer;
 import com.parse4cn1.ParseObject;
@@ -116,7 +117,7 @@ public class MyForm extends Form {
 
     private Date editSessionStartTime;
     private Command searchCmd;
-    
+
     static int GAP_LABEL_ICON = 0; //in pixels!
 
     protected Command getSearchCmd() {
@@ -955,6 +956,28 @@ public class MyForm extends Form {
      */
 //    static void dialogSetWaitingDateAndAlarm(Item item, Map<Object, UpdateField> parseIdMap2) {
     static void showDialogSetWaitingDateAndAlarmIfAppropriate(Item item) {
+        if (MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting.getBoolean()) {
+            //                || (item.getWaitingTillDate().getTime() != 0 && item.getWaitingAlarmDate().getTime() != 0)) {
+//                || (item.getWaitingTillDate().getTime() < MyDate.currentTimeMillis() || item.getWaitingAlarmDate().getTime() < MyDate.currentTimeMillis())) {
+
+            new PickerDialog("Set Waiting", "Waiting tasks are automatically hidden until the set date.",
+                    Format.f("Set a {0}", Item.WAIT_UNTIL_DATE),
+                    item.getWaitingTillDate(),
+                    new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemWaitingDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS),
+                    Format.f("Set a {0}", Item.WAITING_ALARM_DATE), item.getWaitingAlarmDate(),
+                    d -> item.setWaitingTillDate(d), d -> item.setWaitingAlarmDate(d),
+                    (d) -> d != null && d.getTime() != 0
+                    //if a waiting date is defined, set alarm default days before, 
+                    //UI: it is OK to set WaitingDate in the past (item will not be hidden), or alarmDate in the past (alarm will just never be activated)
+                    //UI: if no waitingTillDate is set, the alarm Date will be set to defaultWaitDaysAhead-defaultAlarmDaysBeforeWaitingDate
+                    //                    ? new MyDate(Math.max(MyDate.currentTimeMillis(), d.getTime() - MyPrefs.itemWaitingAlarmDefaultDaysBeforeWaitingDate.getInt() * MyDate.DAY_IN_MILLISECONDS))
+                    ? new MyDate(d.getTime() - MyPrefs.itemWaitingAlarmDefaultDaysBeforeWaitingDate.getInt() * MyDate.DAY_IN_MILLISECONDS)
+                    : new MyDate(MyDate.currentTimeMillis() + ((MyPrefs.itemWaitingDateDefaultDaysAheadInTime.getInt() - MyPrefs.itemWaitingAlarmDefaultDaysBeforeWaitingDate.getInt()) * MyDate.DAY_IN_MILLISECONDS))
+            ).show();
+        }
+    }
+
+    static void showDialogSetWaitingDateAndAlarmIfAppropriateOLD(Item item) {
         if (!MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting.getBoolean()
                 || (item.getWaitingTillDate().getTime() != 0 && item.getWaitingAlarmDate().getTime() != 0)) {
             return; //do nothing if both waiting dates are already set
@@ -1005,7 +1028,19 @@ public class MyForm extends Form {
 //        return dia;
     }
 
-    static void showDialogUpdateActualTimeIfAppropriate(Item item) {
+    static Long showDialogUpdateActualTimeIfAppropriate(long actualCurrent) {
+        if (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
+            PickerDialog dia = new PickerDialog(Format.f("Set {0 Actual effort}", Item.EFFORT_ACTUAL),
+                    Format.f("Enter how much {0 actual effort} for this task?", Item.EFFORT_ACTUAL),
+                    actualCurrent);
+            return (Long) dia.show();
+        } else {
+            return null;
+        }
+
+    }
+
+    static void showDialogUpdateActualTimeIfAppropriateOLD(Item item) {
         if (false && (item.isDone()
                 || !(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean() //                || (MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZeroXXX.getBoolean() && item.getActual() == 0)))
                 ))) {
@@ -1024,7 +1059,13 @@ public class MyForm extends Form {
         cont.add(new SpanLabel(Format.f("Enter how much {0 actual effort} for this task?", Item.EFFORT_ACTUAL)));
 
         //TODO!!!! if marking a project, with undone subtasks, Done, then also show sum of subtask actuals to know how much time was spend on them
-        MyDurationPicker actualPicker = new MyDurationPicker(item.getActualForProjectTaskItself(), "0:00");
+//        MyDurationPicker actualPicker = new MyDurationPicker(item.getActualForProjectTaskItself(), "0:00");
+        Picker actualPicker = new Picker();
+        actualPicker.setType(Display.PICKER_TYPE_DURATION);
+        actualPicker.setDuration(item.getActualForProjectTaskItself());
+//        actualPicker.set
+//        Picker actualPicker = new Picker(item.getActualForProjectTaskItself());
+        actualPicker.setUseLightweightPopup(true);
         actualPicker.addActionListener((e) -> {
             item.setActual(actualPicker.getDuration(), false); //false, since this dialog is ONLY called when setting a task status, so no reason
             actualPicker.stopEditing(null);
@@ -1050,6 +1091,59 @@ public class MyForm extends Form {
         })));
         dia.show();
         actualPicker.startEditingAsync();
+    }
+
+    /**
+     * returns the dueDate in dueDate, or sets it to 0 is skipped
+     *
+     * @param dueDate
+     */
+    static Date showDialogSetDueDate(Date dueDate) {
+        assert dueDate != null;
+
+        PickerDialog dia = new PickerDialog(Format.f("Set {0 due date}", Item.DUE_DATE),
+                Format.f("This template has dates relative to {0 due date}, enter a {0} ", Item.DUE_DATE),
+                dueDate);
+        return (Date) dia.show();
+    }
+
+    static void showDialogSetDueDateOLD(Date dueDate) {
+        assert dueDate != null;
+        Dialog dia = new Dialog();
+        //"Set "+Item.DUE_DATE, "This template has dates relative to {0 due date}, please set {0}   SUBTASK_KEY, this, cmds);
+        dia.setTitle(Format.f("Set {0 due date}", Item.DUE_DATE));
+        dia.setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+        dia.setCommandsAsButtons(true);
+        dia.setAutoDispose(true); //should be default according to javadoc, but doesn't autodispose on [OK]
+        dia.growOrShrink();
+
+        Container cont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
+        dia.add(cont);
+
+        String popupText = "The template has fields that are set relative to due date but no due date is set for. If you set a due date now, the dependent fields will be updated, otherwise they will be ignored. Next time you use this template you can set a due date before inserting the template";
+        cont.add(new SpanLabel(Format.f("This template has dates relative to {0 due date}, enter a {0} ", Item.DUE_DATE)));
+
+//        MyDateAndTimePicker dueDatePicker = new MyDateAndTimePicker(dueDate, "<set date>");
+        Picker dueDatePicker = new Picker();
+        dueDatePicker.setType(Display.PICKER_TYPE_DATE_AND_TIME);
+        dueDatePicker.setDate(dueDate);
+//        actualPicker.set
+//        Picker actualPicker = new Picker(item.getActualForProjectTaskItself());
+        dueDatePicker.setUseLightweightPopup(true);
+
+        dueDatePicker.addActionListener((e) -> {
+            dueDatePicker.stopEditing(() -> dia.dispose());
+//            dia.dispose(); //dispose of dialog on Done on picker
+        });
+        cont.add(dueDatePicker);
+        cont.addComponent(new Button(Command.create("Skip", null, (e) -> {
+//            dueDatePicker.stopEditing(null); //close picker
+            dueDatePicker.stopEditing(() -> dia.dispose()); //close picker
+//            dia.dispose(); //close dialog
+            dueDate.setTime(0);
+        })));
+//        dueDatePicker.startEditingAsync();
+        dia.show();
     }
 
     static Dialog showDialogUpdateRemainingTime(MyDurationPicker remainingTimePicker) {
@@ -2355,7 +2449,7 @@ public class MyForm extends Form {
 //                }
 //                    addNewTaskToListAndSave(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg);
                 if (itemListOrg instanceof Category) {
-                    ((Category) itemListOrg).addItemToCategory(newItem, null, false, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+                    ((Category) itemListOrg).addItemToCategory(newItem, null, false, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //false because added above (before editing)
                     Inbox.getInstance().addToList(newItem, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
 //                    DAO.getInstance().saveNew(true, newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
                     DAO.getInstance().saveNew(newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
@@ -5264,7 +5358,7 @@ public class MyForm extends Form {
 //    }
 //</editor-fold>
 //    @Override
-    public void pointerReleasedXXX(int[] x, int[] y) {
+    public void pointerReleased(int[] x, int[] y) {
         if (pinchInsertInitiated) {
             if (Config.TEST_PINCH) {
                 Log.p("pointerReleased(int[] x, int[] y) called!!!!");
@@ -5276,7 +5370,7 @@ public class MyForm extends Form {
     }
 
 //    @Override
-    public void pointerReleasedXXX(int x, int y) {
+    public void pointerReleased(int x, int y) {
         if (pinchInsertInitiated) {
             if (Config.TEST_PINCH) {
                 Log.p("pointerReleased(int x, int y) called!!!!");
@@ -5391,6 +5485,11 @@ public class MyForm extends Form {
             //TODO!!! What happens if a pinch out is changed to PinchIn while moving fingers? Simply remove the inserted container!
             int yMin = Math.min(y[1], y[0]); //y[1] <= y[0] ? y[1] : y[0];
             int yMax = Math.max(y[1], y[0]); // y[1] > y[0] ? y[1] : y[0];
+            int xTop;
+            if (yMin==y[0])
+                xTop=x[0];
+            else
+                xTop=x[1];
             int newYDist = yMax - yMin;
             int pinchOutThreshold = Display.getInstance().convertToPixels((float) 0.7); //threshold for starting to pinch out about 1.5mm
 //                if (newYDist<0)newYDist=0; //should not be allowed to become negative
@@ -5421,7 +5520,7 @@ public class MyForm extends Form {
                 Container parent;
                 if (pinchingOut) {
                     int[] yAdj = new int[2];
-                    if (Config.TEST) { //TODO set values in hard, or improve efficiencys
+                    if (Config.TEST) { //TODO set values in hard, or improve efficiency
                         yAdj[0] = yMin + newYDist / 10 * MyPrefs.pinchAdjustUpper.getInt();
                         yAdj[1] = yMax - newYDist / 10 * MyPrefs.pinchAdjustLower.getInt();
                     } else {
@@ -5459,7 +5558,10 @@ public class MyForm extends Form {
                     pinchContainer.getParent().revalidateWithAnimationSafety(); //refresh to reflect to new pinched size of pinchContainer
                 }
             }
-            super.pointerDragged(x, y); //OK to have this call, not causing problems for above pinch logic??
+            if (false) { //if calling super.point... here, pinching will also scroll!
+                super.pointerDragged(x, y); //OK to have this call, not causing problems for above pinch logic??
+            }
+                super.pointerDragged(xTop, yMin); //emulate a single finger to ensure scriolling up as inserting pichcontainer
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            super.pointerDragged(x, y); //leaving this call will make the screen scroll at the same time if the two fingers move

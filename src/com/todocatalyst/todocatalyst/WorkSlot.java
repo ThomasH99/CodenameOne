@@ -2131,7 +2131,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public void updateBeforeSave() {
+    public void updateOnSave() {
         if (opsAfterSubtaskUpdates != null) {
             while (!opsAfterSubtaskUpdates.isEmpty()) {
                 Runnable f = opsAfterSubtaskUpdates.remove(0); //ensures that each operation is only called once, even if iterating (the run() calls an operation which calls saveInBackground triggering 

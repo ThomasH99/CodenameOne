@@ -157,8 +157,8 @@ public class Icons {
     final static char iconStatusTab = FontImage.MATERIAL_MORE_HORIZ;
 
     final static char iconSettings = FontImage.MATERIAL_SETTINGS;
-    final static char iconInsertTaskAbove = FontImage.MATERIAL_CALL_MADE;
-    final static char iconInsertTaskBelow = FontImage.MATERIAL_SUBDIRECTORY_ARROW_RIGHT; //TODO: make as horizontal flip of MATERIAL_CALL_MADE
+    final static char iconInsertTaskAbove = FontImage.MATERIAL_TRENDING_UP; //MATERIAL_CALL_MADE;
+    final static char iconInsertTaskBelow = FontImage.MATERIAL_TRENDING_DOWN; //MATERIAL_SUBDIRECTORY_ARROW_RIGHT; //TODO: make as horizontal flip of MATERIAL_CALL_MADE
 
     //Main screen menu icons
     final static char iconMainOverdue = FontImage.MATERIAL_ASSIGNMENT_LATE;

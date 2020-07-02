@@ -1392,9 +1392,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     /**
      * update at the very last moment, just before saving, so that all other
-     * changes to an element have been effectuated
+     * changes to an element have been effectuated. This enables Cancelling
+     * changes like inserting templates, changing categories etc which impact
+     * other elements but which many be cancelled
      */
-    default public void updateBeforeSave() {
+    default public void updateOnSave() {
 //        assert false; //Do nothing unless specified by specialized object
     }
 

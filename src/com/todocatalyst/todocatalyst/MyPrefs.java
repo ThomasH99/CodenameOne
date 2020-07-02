@@ -307,7 +307,8 @@ public class MyPrefs {
             = new PrefEntry("**", "neverChangeProjectsSubtasksWhenChangingProjectStatus", false, "**");
 
     static PrefEntry waitingAskToSetWaitingDateWhenMarkingTaskWaiting
-            = new PrefEntry("Popup to set " + Item.WAIT_UNTIL_DATE + " and " + Item.WAITING_ALARM_DATE + " when setting a task to " + ItemStatus.WAITING, "waitingAskToSetWaitingDateWhenMarkingTaskWaiting", true, "**does nothing if both of the waiting dates are already set");
+            = new PrefEntry("Popup to set " + Item.WAIT_UNTIL_DATE + " and " + Item.WAITING_ALARM_DATE + " when setting a task to " + ItemStatus.WAITING, 
+                    "waitingAskToSetWaitingDateWhenMarkingTaskWaiting", true, "**does nothing if both of the waiting dates are already set");
 
     static PrefEntry updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem
             = new PrefEntry("Copy initial values between " + Item.EFFORT_ESTIMATE + " and " + Item.EFFORT_REMAINING + " the first time these values are being edited for a task",
@@ -360,6 +361,19 @@ public class MyPrefs {
             = new PrefEntry("Default for how long before the Due date the alarm is set (", //"Don't hide Completed tasks the day they were completed
                     "itemDefaultAlarmTimeBeforeDueDateInMinutes",
                     60, "**");
+    static PrefEntry itemWaitingDateDefaultDaysAheadInTime //TODO!!! No, only ask if overwriting an alreadyd defined value!
+            = new PrefEntry("Default number of days ahead in time for Waiting dates (0 disables)", //"Don't hide Completed tasks the day they were completed
+                    "itemWaitingDateDefaultDaysAheadInTime",
+                    7, "**");
+    static PrefEntry itemWaitingAlarmDefaultDaysBeforeWaitingDate //TODO!!! No, only ask if overwriting an alreadyd defined value!
+            = new PrefEntry("Default number of days ahead in time for Waiting dates (0 disables)", //"Don't hide Completed tasks the day they were completed
+                    "itemWaitingAlarmDefaultDaysBeforeWaitingDate",
+                    1, "**");
+
+    static PrefEntry itemAlwaysCancelSubtaskEditsWhenCancellingEditOfProject 
+            = new PrefEntry("When canceling edits of a project, always cancel added/deleted subtasks", 
+                    "itemAlwaysCancelSubtaskEditsWhenCancellingEditOfProject",
+                    false, "If you cancel editing of a project, you will normally be asked if you want to cancel added/deleted subtasks (including from templates). Setting this option automatically cancels those edits without asking for confirmation");
 
     // ************** inherit values from owning Project *************
     final static String INHERITS = "Subtasks inherit ";

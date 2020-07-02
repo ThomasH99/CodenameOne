@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 import net.informaticalibera.cn1.nativelogreader.NativeLogs;
 
 /**
@@ -257,6 +258,28 @@ public class ScreenRepair extends MyForm {
                 //                add(" ").
                 add(w40, new SpanLabel("Currency Symbol:")).add(right, new SpanLabel(l10n.getCurrencySymbol())).
                 //                add(" ").
+                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_ALARM, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_ALARM))).
+                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_BUTTON_PRESS, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_BUTTON_PRESS))).
+                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_CONFIRMATION, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_CONFIRMATION))).
+                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_ERROR, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_ERROR))).
+                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_INFO, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_INFO))).
+                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_WARNING, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_WARNING))).
+                
+                add(span2, uneditableCheck("isAllowMinimizing ", d.isAllowMinimizing())).
+                add(span2, uneditableCheck("isBuiltinSoundsEnabled ", d.isBuiltinSoundsEnabled())).
+                
+                add(span2, uneditableCheck("isNativePicker supported for Calendar", d.isNativePickerTypeSupported(Display.PICKER_TYPE_CALENDAR))).
+                add(span2, uneditableCheck("isNativePicker supported for Date", d.isNativePickerTypeSupported(Display.PICKER_TYPE_DATE))).
+                add(span2, uneditableCheck("isNativePicker supported for Date and Time", d.isNativePickerTypeSupported(Display.PICKER_TYPE_DATE_AND_TIME))).
+                add(span2, uneditableCheck("isNativePicker supported for Duration", d.isNativePickerTypeSupported(Display.PICKER_TYPE_DURATION))).
+                add(span2, uneditableCheck("isNativePicker supported for Duration Hours", d.isNativePickerTypeSupported(Display.PICKER_TYPE_DURATION_HOURS))).
+                add(span2, uneditableCheck("isNativePicker supported for Duration Minutes", d.isNativePickerTypeSupported(Display.PICKER_TYPE_DURATION_MINUTES))).
+                add(span2, uneditableCheck("isNativePicker supported for Strings", d.isNativePickerTypeSupported(Display.PICKER_TYPE_STRINGS))).
+                add(span2, uneditableCheck("isNativePicker supported for Time", d.isNativePickerTypeSupported(Display.PICKER_TYPE_TIME))).
+                
+                add(span2, uneditableCheck("isNativeTitle ", d.isNativeTitle())).
+                add(span2, uneditableCheck("isNotificationSupported ", d.isNotificationSupported())).
+                
                 add(span2, uneditableCheck("Are Mutable Images Fast", d.areMutableImagesFast())).
                 add(span2, uneditableCheck("Can Dial", d.canDial())).
                 add(span2, uneditableCheck("Can Force Orientation", d.canForceOrientation())).
@@ -385,6 +408,12 @@ public class ScreenRepair extends MyForm {
 
         L10NManager l10n = L10NManager.getInstance();
         hi.add(new SpanLabel("format(double)")).add(l10n.format(11.11)).
+                add(new SpanLabel("Locale (Display.getInstance().getLocalizationManager().getLocale()) = " 
+                        + Display.getInstance().getLocalizationManager().getLocale())).
+                add(new SpanLabel("TimeZone (TimeZone.getDefault()) zone id = " + TimeZone.getDefault().getID())).
+                add(new SpanLabel("TimeZone (TimeZone.getDefault()) raw offset = " + MyDate.formatDuration(TimeZone.getDefault().getRawOffset()))).
+                add(new SpanLabel("TimeZone (TimeZone.getDefault()) useDaylightZone = " + TimeZone.getDefault().useDaylightTime())).
+                add(new SpanLabel("TimeZone (TimeZone.getDefault()) toString = " + TimeZone.getDefault().toString())).
                 add(new SpanLabel("format(int)")).add(l10n.format(33)).
                 add(new SpanLabel("formatCurrency")).add(l10n.formatCurrency(53.267)).
                 add(new SpanLabel("formatDateLongStyle")).add(l10n.formatDateLongStyle(new Date())).
@@ -834,6 +863,7 @@ public class ScreenRepair extends MyForm {
         })));
 
         content.add(new Button(Command.create("Play all built-in sounds", null, (e9) -> {
+            Display.getInstance().isBuiltinSoundAvailable(SCREEN_TITLE);
             Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
             Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_BUTTON_PRESS);
             Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_CONFIRMATION);

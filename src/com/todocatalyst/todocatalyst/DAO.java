@@ -556,7 +556,7 @@ public class DAO {
         for (int i = 0, size = list.size(); i < size; i++) {
             Object val = list.get(i);
             if (val == null) {//&& Config.TEST) {
-                ASSERT.that(val != null, "NULL ELEMENT IN LIST - REMOVING IT!!!! index="+i+", size="+size+", List=" + list);
+                ASSERT.that(val != null, "NULL ELEMENT IN LIST - REMOVING IT!!!! index=" + i + ", size=" + size + ", List=" + list);
                 list.remove(i);
                 size--;
             } else {
@@ -3110,8 +3110,9 @@ public class DAO {
 //        query.orderByAscending(Item.PARSE_COMPLETED_DATE); //don't request sorted, do that when showing
         query.whereGreaterThanOrEqualTo(Item.PARSE_COMPLETED_DATE, startDate);
         query.whereLessThanOrEqualTo(Item.PARSE_COMPLETED_DATE, endDate);
-        if(onlyLeafTasks)
-        query.whereDoesNotExist(Item.PARSE_SUBTASKS);
+        if (onlyLeafTasks) {
+            query.whereDoesNotExist(Item.PARSE_SUBTASKS);
+        }
 //        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
 //        query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
 
@@ -5083,6 +5084,8 @@ public class DAO {
             ParseObject p = (ParseObject) parseObjects.get(i);
             if (p.getObjectIdP() == null) {
                 return true;
+            } else if (p instanceof ItemAndListCommonInterface) {
+                return listContainsUnsaved(((ItemAndListCommonInterface) p).getListFull());
             }
         }
         return false;
@@ -5376,7 +5379,7 @@ public class DAO {
             List subtasks = item.getListFull();
             if (subtasks != null && subtasks.size() > 0) {
 //            if (listContainsUnsaved(subtasks) || saveSubtasks) { //should always save subtasks if project is new(?!)
-                if (listContainsUnsaved(subtasks)) { //should always save subtasks if project is new(?!)
+                if (true || listContainsUnsaved(subtasks)) { //PB: check on listContains only checks top-level not deeper leves of subtasks. should always save subtasks if project is new(?!)
                     item.setList(null);
                     if (item.getObjectIdP() == null) { //if project not saved, then subtasks are not either (the entire project hierarchy is new instances)
                         saveList(subtasks, postSaveActionN);
@@ -6278,7 +6281,7 @@ public class DAO {
                 if (((ItemAndListCommonInterface) p).isNoSave()) {
                     continue; //skip nosave elements
                 } else {
-                    ((ItemAndListCommonInterface) p).updateBeforeSave();
+                    ((ItemAndListCommonInterface) p).updateOnSave();
                 }
             }
             if (Config.TEST) {
@@ -6320,6 +6323,9 @@ public class DAO {
 //    }
 
     public void saveNew(Collection<ParseObject> parseObjects) {
+        if (parseObjects == null || parseObjects.isEmpty()) {
+            return;
+        }
         saveNewImpl(parseObjects, null, false);
     }
 
@@ -7705,7 +7711,10 @@ public class DAO {
         return results;
     }
 
-    public List<Category> convCatObjectIdsListToCategoryList(List<String> categoryIdList) {
+    public List<Category> convCatObjectIdsListToCategoryListN(List<String> categoryIdList) {
+        if (categoryIdList == null) {
+            return null;
+        }
         List<Category> categories = new ArrayList();
         if (categoryIdList != null) {
             for (String c : categoryIdList) {
@@ -7715,9 +7724,10 @@ public class DAO {
         return categories;
     }
 
-    public List<Item> convItemObjectIdsListToItemList(List<String> itemIdList) {
-        List<Item> items = new ArrayList();
+    public List<Item> convItemObjectIdsListToItemListN(List<String> itemIdList) {
+        List<Item> items = null;
         if (itemIdList != null) {
+            items = new ArrayList();
             for (String itm : itemIdList) {
                 items.add(fetchItem(itm));
             }

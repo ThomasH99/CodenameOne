@@ -1594,7 +1594,7 @@ public class MyDate extends Date {
         if (date.getTime() == 0) {
             return "No date"; //"NONE"
         }
-        java.util.Calendar cal = java.util.Calendar.getInstance();
+//        java.util.Calendar cal = java.util.Calendar.getInstance();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        java.util.Calendar cal = java.util.Calendar.getInstance(TimeZone.getDefault());
 //        Calendar calendar = Calendar.getInstance(TimeZone.getDefault());
@@ -1604,8 +1604,9 @@ public class MyDate extends Date {
 //        cal.setTime(new Date(date.getTime() - tz.getRawOffset()));
 //        cal.setTime(new Date(date.getTime() ));
 //</editor-fold>
-        cal.setTime(date);
-        com.codename1.l10n.DateFormat dtfmt;
+//        cal.setTime(date);
+//        com.codename1.l10n.DateFormat dtfmt;
+        SimpleDateFormat dtfmt;
 //        com.codename1.l10n.DateFormat timeFmt;
         String str;
         //SimpleDateFormat("EEE, yyyy-MM-dd KK:mm a"); //http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
@@ -1616,27 +1617,31 @@ public class MyDate extends Date {
 //                    dtfmt = new SimpleDateFormat(" KK:mm a");
                     dtfmt = new SimpleDateFormat("KK:mm a");
 //                    str += dtfmt.format(cal.getTime());
-                    str = str + (str.length() != 0 ? " " : "") + dtfmt.format(cal.getTime()); //add space before time if not first string
+//                    str = str + (str.length() != 0 ? " " : "") + dtfmt.format(cal.getTime()); //add space before time if not first string
+                    str = str + (str.length() != 0 ? " " : "") + dtfmt.format(date); //add space before time if not first string
                 }
             } else {
                 dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "") + (includeDate ? "MM/dd/yyyy" : "")
                         + (includeDate && includeTimeOfDay ? " " : "")
                         + (includeTimeOfDay ? "KK:mm a" : ""));
-                str = dtfmt.format(cal.getTime());
+//                str = dtfmt.format(cal.getTime());
+                str = dtfmt.format(date);
             }
         } else {
             if (useYesterdayTodayTomorrow && (str = formatAsYesterdayTodayTomorrow(date)) != null) {
 //                str = formatAsYesterdayTodayTomorrow(date);
                 if (includeTimeOfDay) {
                     dtfmt = new SimpleDateFormat("HH:mm");
-                    str = str + (str.length() != 0 ? " " : "") + dtfmt.format(cal.getTime()); //add space before time if not first string
+//                    str = str + (str.length() != 0 ? " " : "") + dtfmt.format(cal.getTime()); //add space before time if not first string
+                    str = str + (str.length() != 0 ? " " : "") + dtfmt.format(date); //add space before time if not first string
                 }
             } else {
                 dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "")
                         + (includeDate ? "dd/MM/yyyy" : "")
                         + (includeDate && includeTimeOfDay ? " " : "")
                         + (includeTimeOfDay ? "HH:mm" : "")); //TODO if not using date, will add a space too much between EEE and HH:mm
-                str = dtfmt.format(cal.getTime());
+//                str = dtfmt.format(cal.getTime());
+                str = dtfmt.format(date);
             }
         }
         return str;
@@ -1897,6 +1902,7 @@ public class MyDate extends Date {
         } else {
             dtfmt = new SimpleDateFormat((showLeadingZeroForHour ? "HH" : "H") + ":mm" + (showSeconds ? ":ss" : ""));
         }
+//        return dtfmt.format(cal.getTime());
         return dtfmt.format(cal.getTime());
     }
 
@@ -2053,16 +2059,16 @@ public class MyDate extends Date {
         return date;
     }
 
-    private static String formatDateL10NShort(long timeInMilliSeconds, boolean dateOnlyNoTime) {
-        return formatDateL10NShort(timeInMilliSeconds); //TODO!!!! write code to return date without time
+    private static String formatDateL10NShortXXX(long timeInMilliSeconds, boolean dateOnlyNoTime) {
+        return formatDateL10NShortXXX(timeInMilliSeconds); //TODO!!!! write code to return date without time
     }
 
-    private static String formatDateL10NShort(long timeInMilliSeconds) {
+    private static String formatDateL10NShortXXX(long timeInMilliSeconds) {
 //        return L10NManager.getInstance().formatDateShortStyle(new Date(timeInMilliSeconds));
-        return formatDateL10NShort(new MyDate(timeInMilliSeconds));
+        return formatDateL10NShortXXX(new MyDate(timeInMilliSeconds));
     }
 
-    private static String formatDateL10NShort(Date date) {
+    private static String formatDateL10NShortXXX(Date date) {
         return L10NManager.getInstance().formatDateShortStyle(date);
     }
 

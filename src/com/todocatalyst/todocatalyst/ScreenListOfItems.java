@@ -749,7 +749,7 @@ public class ScreenListOfItems extends MyForm {
 
         //NEW ITEM
 //        Command newCmd = new Command("OldCmd", Icons.iconNewToolbarStyle) {
-        if (!optionNoNewButton) {
+        if (!optionNoNewButton&&getScreenType()!=ScreenType.INBOX) { //don't show AddNew 
 //            if (itemListOrg.isNoSave()) {
 //            toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox());
 
@@ -1622,9 +1622,11 @@ public class ScreenListOfItems extends MyForm {
                 toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
                     showPreviousScreen(true);
                 }, "Cancel"));
+            } else {
+                toolbar.addCommandToOverflowMenu(makeCancelCommand());
             }
-
         }
+
         if (Config.TEST && itemListOrg instanceof ItemList) {
             Command showIssuesInList = new CommandTracked("Show list issues", Icons.iconRepair) {
                 @Override
@@ -1664,254 +1666,254 @@ public class ScreenListOfItems extends MyForm {
      * which it is a subtask (null if none)
      * @return
      */
-    //<editor-fold defaultstate="collapsed" desc="comment">
-    //    protected Container buildItemContainer(Item item, ItemList motherItemList) {
-    //        return buildItemContainer(item, motherItemList, null);
-    //    }
-    //
-    //    protected Container buildItemContainer(Item item, Item motherItem) { //, ItemList itemList, ScreenListOfItems thisScreen) {
-    //        return buildItemContainer(item, null, motherItem);
-    //    }
-    //
-    //    protected Container buildItemContainer(Item item, ItemList motherItemList, Item motherItem) { //, ItemList itemList, ScreenListOfItems thisScreen) {
-    //
-    //        Container mainCont = new Container(new BorderLayout());
-    //        Container bottomLeft = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
-    //
-    //        MyDropContainer swipCont = new MyDropContainer(item, motherItemList, motherItem, bottomLeft, null, mainCont, ()-> draggableMode); //use filtered/sorted ItemList for Timer
-    //        Label itemLabel = new Label(item.getText());
-    //        mainCont.addComponent(CENTER, itemLabel);
-    ////        MyDropHandler dropHandler = new MyDropHandler(item.getText(), item, motherItemList, motherItem, cont);
-    ////        cont.setLeadComponent(dropHandler); // let the drophandler handle all events (to test if getLeadComponent() return null; works
-    ////        cont.addComponent(CENTER, dropHandler);
-    //
-    //        //EDIT Item in list
-    //        Button editItemButton = new Button() {
-    //            @Override
-    //            public void longPointerPress(int x, int y) {
-    //                super.longPointerPress(x, y);
-    //                Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
-    //            }
-    //        };
-    ////        Command editCmd = new Command(item.getText()) {
-    //        Command editCmd = new Command("", iconEditSymbol) {
-    //            @Override
-    //            public void actionPerformed(ActionEvent evt) {
-    ////                Item item = (Item) editItemButton.getClientProperty("item");
-    //                Item item = (Item) mainCont.getClientProperty("item");
-    //                new ScreenItem(item, ScreenListOfItems.this, () -> {
-    //                    DAO.getInstance().save(item);
-    ////                    dragAndDropContainer.replace(swipCont, buildItemContainer(item, motherItemList, motherItem), null); //update the container with edited content
-    //                    dragAndDropContainer.replace(swipCont, buildTreeOrSingleItemContainer(item, motherItemList), null); //update the container with edited content
-    //                }).show();
-    ////                new ScreenItem(item, thisScreen).show();
-    //            }
-    //        };
-    //        editItemButton.setCommand(editCmd);
-    //        mainCont.putClientProperty("item", item);
-    //        editItemButton.setUIID("Label");
-    ////        editItemButton.setGrabsPointerEvents(true);
-    //
-    ////        cont.addComponent(CENTER, editItemButton);
-    ////        Container west = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
-    ////        if (item.getPriority() != 0) {
-    ////            west.add(new Label(item.getPriority() + ""));
-    ////        } else {
-    ////            west.add(new Label(" "));
-    ////        }
-    //        //WEST
-    //        CheckBox itemStatusCheckBox = new CheckBox() {
-    //            @Override
-    //            public void longPointerPress(int x, int y) {
-    //                super.longPointerPress(x, y);
-    //                Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
-    //            }
-    //        };
-    //        itemStatusCheckBox.addActionListener((e) -> {
-    ////                super.addActionListener(l); //To change body of generated methods, choose Tools | Templates.
-    //            item.setDone(!item.isDone()); //invert status
-    //            DAO.getInstance().save(item);
-    //        });
-    //
-    //        itemStatusCheckBox.setSelected(item.isDone());
-    //        Container west = Container.encloseIn(BoxLayout.x(),
-    //                itemStatusCheckBox,
-    //                item.getPriority() != 0 ? new Label(item.getPriority() + "") : new Label(" ")
-    //        );
-    //        mainCont.addComponent(WEST, west);
-    //
-    //        //EAST
-    //        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
-    //
-    //        //EDIT subtasks in Item
-    //        Button subTasksButton = new Button(iconShowMore) {
-    ////            @Override
-    ////            public Component getLeadComponent() {
-    ////                return null;
-    ////            }
-    //        };
-    //        if (item.getItemListSize() != 0) {
-    //            Command expandSubTasks = new Command("[" + item.getItemListSize() + "]");// {
-    //            subTasksButton.setCommand(expandSubTasks);
-    //            swipCont.putClientProperty("subTasksButton", subTasksButton);
-    //            subTasksButton.setUIID("Label");
-    //            east.addComponent(subTasksButton);
-    //        }
-    //
-    //        if (item.getDueDateD().getTime() != 0) {
-    //            east.addComponent(new Label("D:" + L10NManager.getInstance().formatDateShortStyle(new Date(item.getDueDate()))));
-    //        }
-    //
-    //        //ALARM SET icon
-    //        east.addComponent(new Label(item.getAlarmDate() != 0 ? iconAlarmSet : null));
-    //
-    ////<editor-fold defaultstate="collapsed" desc="comment">
-    ////        long finishTime;
-    ////        int idx;
-    ////        if (motherItemList != null) {
-    ////            idx = motherItemList.getItemIndex(item); //TODO optimize by passing index to here
-    ////        } else {
-    ////            idx = motherItem.getItemList().getItemIndex(item); //TODO optimize by passing index to here
-    ////        }
-    ////        ASSERT.that(idx>=0, "Item ["+item+"] not found in ItemList ["+itemList+"] as expected");
-    ////        if ((finishTime = itemList.getFinishTime(idx)) != 0) {
-    ////        WorkTimeDefinition wtd = itemList.getWorkTimeAllocatorN();
-    ////        java.util.List workSlotList = itemListOrg.getWorkSlotListN();
-    ////        if (workSlotList != null && workSlotList.size() > 0) {
-    ////            WorkTimeDefinition wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(), itemList); //use possibly filtered/sorted list here. UI: finishTime is calcuated based on current view/filter/sort. E.g. if you always work by priority and not manual sorting
-    ////        if (false) {
-    ////            if (wtd != null && (finishTime = wtd.getFinishTime(idx)) != 0) {
-    ////                east.addComponent(new Label("F:" + L10NManager.getInstance().formatDateTimeShort(new Date(finishTime))));
-    ////            }
-    ////        }
-    ////</editor-fold>
-    //        east.addComponent(editItemButton);
-    //
-    //        mainCont.addComponent(EAST, east);
-    //
-    //        Container south = Container.encloseIn(BoxLayout.x(),
-    //                new Label("(R:" + item.getRemainingEffortInMinutes() + "/A:" + item.getActualEffortInMinutes() + ")"),
-    //                item.getHideUntilDateD().getTime() != 0 ? new Label("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD())) : new Label("")
-    //        );
-    //        if (motherItemList != null) {
-    //            long finishTime;
-    //            int idx = motherItemList.getItemIndex(item); //TODO optimize by passing index to here
-    //            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeAllocatorN();
-    //            if (wtd != null && (finishTime = wtd.getFinishTime(idx)) != 0) {
-    //                south.addComponent(new Label("F:" + L10NManager.getInstance().formatDateTimeShort(new Date(finishTime))));
-    //            }
-    //        }
-    //
-    //        mainCont.addComponent(SOUTH, south);
-    //
-    //        bottomLeft.add(new Button("X")); //Create new task below
-    //        if (false) {
-    //            bottomLeft.add(new Button(iconTimerSymbol)); //Start Timer on this
-    //            bottomLeft.add(new Button("Z")); //Move to top of list or 'start' or select(?)
-    //            bottomLeft.add(new Button("Z")); //Set Waiting/Cancel/...
-    //            bottomLeft.add(new Button("Z")); //Postpone due date?
-    //            bottomLeft.add(new Button("Z")); //See details of task?
-    //            bottomLeft.add(new Button("X")); //Edit(?) -> use [>] instead
-    //        }
-    //
-    ////<editor-fold defaultstate="collapsed" desc="comment">
-    ////        if (true) {
-    ////        cont.setDraggable(true);
-    ////        cont.setDropTarget(true);
-    ////            return cont;//ignore Swipeable for the moment
-    ////        } else {
-    ////            SwipeableContainer swip = new SwipeableContainer(bottom, cont);
-    ////            swip.addSwipeOpenListener(new ActionListener() {
-    ////                @Override
-    ////                public void actionPerformed(ActionEvent evt) {
-    ////                    if (swip.isOpenedToRight()) {
-    ////                        item.setDone(true);
-    ////                    }
-    ////                }
-    ////            });
-    ////            swip.setDraggable(true);
-    ////            return swip;
-    ////        }
-    ////</editor-fold>
-    ////        return cont;//ignore Swipeable for the moment
-    //        return swipCont;//ignore Swipeable for the moment
-    //    }
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="comment">
-    //    class TreeItemList extends TreeInitialCollapse {
-    //
-    //        private int myDepthIndent = 15;
-    ////        private TreeModel treeParent;
-    ////            Tree dt = new Tree(listOfItemLists) {
-    //
-    ////        TreeItemList(ItemList listOfItemLists, boolean collapseTopLevelNode) {
-    //        TreeItemList(TreeModel listOrItemOrListOfItemLists, TreeModel treeParent, boolean collapseTopLevelNode) {
-    //            super(listOrItemOrListOfItemLists, treeParent, collapseTopLevelNode);
-    ////            this.treeParent = treeParent;
-    //            setNodeIcon(null);
-    //            setFolderOpenIcon(iconShowLess);
-    //            setFolderIcon(iconShowMore);
-    //        }
-    //
-    //        @Override
-    //        protected Component createNode(Object node, int depth) {
-    //            Container cmp = null;
-    //            Item item = (Item) node;
-    ////            if (item.getItemListSize() > 0) {
-    ////            cmp = buildItemContainer((Item) node, (Item) getModel());
-    ////            if (treeParent != null) {
-    //            if (treeParent instanceof Item) {
-    //                cmp = buildItemContainer((Item) node, (Item) treeParent);
-    //            } else if (treeParent instanceof ItemList) {
-    //                cmp = buildItemContainer((Item) node, (ItemList) treeParent);
-    //            } else {
-    //                assert false : "treeParent should only be Item or ItemList: treeParent=" + treeParent;
-    //            }
-    ////            }
-    ////            } else if (node instanceof Item) {
-    ////                cmp = Container.encloseIn(BoxLayout.y(), new Label(((Item) node).getText())); //TODO!!! replace by appropriate container
-    ////            } else {
-    ////                assert false : "unknown type of node" + node;
-    ////            }
-    ////                cmp.setUIID("TreeNode"); cmp.setTextUIID("TreeNode"); if(model.isLeaf(node)) {cmp.setIcon(nodeImage);} else {cmp.setIcon(folder);}
-    //            cmp.getSelectedStyle().setMargin(LEFT, depth * myDepthIndent);
-    //            cmp.getUnselectedStyle().setMargin(LEFT, depth * myDepthIndent);
-    //            cmp.getPressedStyle().setMargin(LEFT, depth * myDepthIndent);
-    //            cmp.setScrollable(false); //to avoid nested scrolling, http://stackoverflow.com/questions/36044418/how-to-extend-infinitecontainer-with-the-capability-of-expanding-the-nodes-in-th
-    //            return cmp;
-    //        }
-    //
-    //        @Override
-    //        protected void bindNodeListener(ActionListener l, Component node) {
-    //            Object expandCollapseButton = node.getClientProperty("subTasksButton");
-    ////            assert node.getClientProperty("subTasksButton") != null : "no subTaskButton defined";
-    //            if (expandCollapseButton != null && expandCollapseButton instanceof Button) //            ((Button) (((Container) node).getClientProperty("subTasksButton"))).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
-    //            {
-    //                ((Button) (expandCollapseButton)).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
-    //                ((Button) (expandCollapseButton)).putClientProperty("TreeContainer", node);
-    //            }
-    //        }
-    //
-    //        @Override
-    //        protected void setNodeIcon(Image icon, Component node) {
-    //            Object expandCollapseButton = node.getClientProperty("subTasksButton");
-    //            if (expandCollapseButton != null && expandCollapseButton instanceof Button) //            ((Button) (((Container) node).getClientProperty("subTasksButton"))).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
-    //            {
-    //                ((Button) (expandCollapseButton)).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
-    //            }
-    //        }
-    //    };
-    //</editor-fold>
-    //<editor-fold defaultstate="collapsed" desc="comment">
-    //    private Container buildTreeOrSingleItemContainer(Item item, ItemList listOfItems) {
-    //        if (item.getItemListSize() > 0) {
-    //            return new TreeItemList(item, listOfItems, true); //for a project, we'll always use Tree (since few lists will be empty)
-    //        } else {
-    //            return buildItemContainer(item, listOfItems);
-    //        }
-    //
-    //    }
-    //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    protected Container buildItemContainer(Item item, ItemList motherItemList) {
+//        return buildItemContainer(item, motherItemList, null);
+//    }
+//
+//    protected Container buildItemContainer(Item item, Item motherItem) { //, ItemList itemList, ScreenListOfItems thisScreen) {
+//        return buildItemContainer(item, null, motherItem);
+//    }
+//
+//    protected Container buildItemContainer(Item item, ItemList motherItemList, Item motherItem) { //, ItemList itemList, ScreenListOfItems thisScreen) {
+//
+//        Container mainCont = new Container(new BorderLayout());
+//        Container bottomLeft = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+//
+//        MyDropContainer swipCont = new MyDropContainer(item, motherItemList, motherItem, bottomLeft, null, mainCont, ()-> draggableMode); //use filtered/sorted ItemList for Timer
+//        Label itemLabel = new Label(item.getText());
+//        mainCont.addComponent(CENTER, itemLabel);
+////        MyDropHandler dropHandler = new MyDropHandler(item.getText(), item, motherItemList, motherItem, cont);
+////        cont.setLeadComponent(dropHandler); // let the drophandler handle all events (to test if getLeadComponent() return null; works
+////        cont.addComponent(CENTER, dropHandler);
+//
+//        //EDIT Item in list
+//        Button editItemButton = new Button() {
+//            @Override
+//            public void longPointerPress(int x, int y) {
+//                super.longPointerPress(x, y);
+//                Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
+//            }
+//        };
+////        Command editCmd = new Command(item.getText()) {
+//        Command editCmd = new Command("", iconEditSymbol) {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+////                Item item = (Item) editItemButton.getClientProperty("item");
+//                Item item = (Item) mainCont.getClientProperty("item");
+//                new ScreenItem(item, ScreenListOfItems.this, () -> {
+//                    DAO.getInstance().save(item);
+////                    dragAndDropContainer.replace(swipCont, buildItemContainer(item, motherItemList, motherItem), null); //update the container with edited content
+//                    dragAndDropContainer.replace(swipCont, buildTreeOrSingleItemContainer(item, motherItemList), null); //update the container with edited content
+//                }).show();
+////                new ScreenItem(item, thisScreen).show();
+//            }
+//        };
+//        editItemButton.setCommand(editCmd);
+//        mainCont.putClientProperty("item", item);
+//        editItemButton.setUIID("Label");
+////        editItemButton.setGrabsPointerEvents(true);
+//
+////        cont.addComponent(CENTER, editItemButton);
+////        Container west = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+////        if (item.getPriority() != 0) {
+////            west.add(new Label(item.getPriority() + ""));
+////        } else {
+////            west.add(new Label(" "));
+////        }
+//        //WEST
+//        CheckBox itemStatusCheckBox = new CheckBox() {
+//            @Override
+//            public void longPointerPress(int x, int y) {
+//                super.longPointerPress(x, y);
+//                Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
+//            }
+//        };
+//        itemStatusCheckBox.addActionListener((e) -> {
+////                super.addActionListener(l); //To change body of generated methods, choose Tools | Templates.
+//            item.setDone(!item.isDone()); //invert status
+//            DAO.getInstance().save(item);
+//        });
+//
+//        itemStatusCheckBox.setSelected(item.isDone());
+//        Container west = Container.encloseIn(BoxLayout.x(),
+//                itemStatusCheckBox,
+//                item.getPriority() != 0 ? new Label(item.getPriority() + "") : new Label(" ")
+//        );
+//        mainCont.addComponent(WEST, west);
+//
+//        //EAST
+//        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
+//
+//        //EDIT subtasks in Item
+//        Button subTasksButton = new Button(iconShowMore) {
+////            @Override
+////            public Component getLeadComponent() {
+////                return null;
+////            }
+//        };
+//        if (item.getItemListSize() != 0) {
+//            Command expandSubTasks = new Command("[" + item.getItemListSize() + "]");// {
+//            subTasksButton.setCommand(expandSubTasks);
+//            swipCont.putClientProperty("subTasksButton", subTasksButton);
+//            subTasksButton.setUIID("Label");
+//            east.addComponent(subTasksButton);
+//        }
+//
+//        if (item.getDueDateD().getTime() != 0) {
+//            east.addComponent(new Label("D:" + L10NManager.getInstance().formatDateShortStyle(new Date(item.getDueDate()))));
+//        }
+//
+//        //ALARM SET icon
+//        east.addComponent(new Label(item.getAlarmDate() != 0 ? iconAlarmSet : null));
+//
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        long finishTime;
+////        int idx;
+////        if (motherItemList != null) {
+////            idx = motherItemList.getItemIndex(item); //TODO optimize by passing index to here
+////        } else {
+////            idx = motherItem.getItemList().getItemIndex(item); //TODO optimize by passing index to here
+////        }
+////        ASSERT.that(idx>=0, "Item ["+item+"] not found in ItemList ["+itemList+"] as expected");
+////        if ((finishTime = itemList.getFinishTime(idx)) != 0) {
+////        WorkTimeDefinition wtd = itemList.getWorkTimeAllocatorN();
+////        java.util.List workSlotList = itemListOrg.getWorkSlotListN();
+////        if (workSlotList != null && workSlotList.size() > 0) {
+////            WorkTimeDefinition wtd = new WorkTimeDefinition(itemListOrg.getWorkSlotListN(), itemList); //use possibly filtered/sorted list here. UI: finishTime is calcuated based on current view/filter/sort. E.g. if you always work by priority and not manual sorting
+////        if (false) {
+////            if (wtd != null && (finishTime = wtd.getFinishTime(idx)) != 0) {
+////                east.addComponent(new Label("F:" + L10NManager.getInstance().formatDateTimeShort(new Date(finishTime))));
+////            }
+////        }
+////</editor-fold>
+//        east.addComponent(editItemButton);
+//
+//        mainCont.addComponent(EAST, east);
+//
+//        Container south = Container.encloseIn(BoxLayout.x(),
+//                new Label("(R:" + item.getRemainingEffortInMinutes() + "/A:" + item.getActualEffortInMinutes() + ")"),
+//                item.getHideUntilDateD().getTime() != 0 ? new Label("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD())) : new Label("")
+//        );
+//        if (motherItemList != null) {
+//            long finishTime;
+//            int idx = motherItemList.getItemIndex(item); //TODO optimize by passing index to here
+//            WorkTimeDefinition wtd = motherItemList.getSourceItemList().getWorkTimeAllocatorN();
+//            if (wtd != null && (finishTime = wtd.getFinishTime(idx)) != 0) {
+//                south.addComponent(new Label("F:" + L10NManager.getInstance().formatDateTimeShort(new Date(finishTime))));
+//            }
+//        }
+//
+//        mainCont.addComponent(SOUTH, south);
+//
+//        bottomLeft.add(new Button("X")); //Create new task below
+//        if (false) {
+//            bottomLeft.add(new Button(iconTimerSymbol)); //Start Timer on this
+//            bottomLeft.add(new Button("Z")); //Move to top of list or 'start' or select(?)
+//            bottomLeft.add(new Button("Z")); //Set Waiting/Cancel/...
+//            bottomLeft.add(new Button("Z")); //Postpone due date?
+//            bottomLeft.add(new Button("Z")); //See details of task?
+//            bottomLeft.add(new Button("X")); //Edit(?) -> use [>] instead
+//        }
+//
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (true) {
+////        cont.setDraggable(true);
+////        cont.setDropTarget(true);
+////            return cont;//ignore Swipeable for the moment
+////        } else {
+////            SwipeableContainer swip = new SwipeableContainer(bottom, cont);
+////            swip.addSwipeOpenListener(new ActionListener() {
+////                @Override
+////                public void actionPerformed(ActionEvent evt) {
+////                    if (swip.isOpenedToRight()) {
+////                        item.setDone(true);
+////                    }
+////                }
+////            });
+////            swip.setDraggable(true);
+////            return swip;
+////        }
+////</editor-fold>
+////        return cont;//ignore Swipeable for the moment
+//        return swipCont;//ignore Swipeable for the moment
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    class TreeItemList extends TreeInitialCollapse {
+//
+//        private int myDepthIndent = 15;
+////        private TreeModel treeParent;
+////            Tree dt = new Tree(listOfItemLists) {
+//
+////        TreeItemList(ItemList listOfItemLists, boolean collapseTopLevelNode) {
+//        TreeItemList(TreeModel listOrItemOrListOfItemLists, TreeModel treeParent, boolean collapseTopLevelNode) {
+//            super(listOrItemOrListOfItemLists, treeParent, collapseTopLevelNode);
+////            this.treeParent = treeParent;
+//            setNodeIcon(null);
+//            setFolderOpenIcon(iconShowLess);
+//            setFolderIcon(iconShowMore);
+//        }
+//
+//        @Override
+//        protected Component createNode(Object node, int depth) {
+//            Container cmp = null;
+//            Item item = (Item) node;
+////            if (item.getItemListSize() > 0) {
+////            cmp = buildItemContainer((Item) node, (Item) getModel());
+////            if (treeParent != null) {
+//            if (treeParent instanceof Item) {
+//                cmp = buildItemContainer((Item) node, (Item) treeParent);
+//            } else if (treeParent instanceof ItemList) {
+//                cmp = buildItemContainer((Item) node, (ItemList) treeParent);
+//            } else {
+//                assert false : "treeParent should only be Item or ItemList: treeParent=" + treeParent;
+//            }
+////            }
+////            } else if (node instanceof Item) {
+////                cmp = Container.encloseIn(BoxLayout.y(), new Label(((Item) node).getText())); //TODO!!! replace by appropriate container
+////            } else {
+////                assert false : "unknown type of node" + node;
+////            }
+////                cmp.setUIID("TreeNode"); cmp.setTextUIID("TreeNode"); if(model.isLeaf(node)) {cmp.setIcon(nodeImage);} else {cmp.setIcon(folder);}
+//            cmp.getSelectedStyle().setMargin(LEFT, depth * myDepthIndent);
+//            cmp.getUnselectedStyle().setMargin(LEFT, depth * myDepthIndent);
+//            cmp.getPressedStyle().setMargin(LEFT, depth * myDepthIndent);
+//            cmp.setScrollable(false); //to avoid nested scrolling, http://stackoverflow.com/questions/36044418/how-to-extend-infinitecontainer-with-the-capability-of-expanding-the-nodes-in-th
+//            return cmp;
+//        }
+//
+//        @Override
+//        protected void bindNodeListener(ActionListener l, Component node) {
+//            Object expandCollapseButton = node.getClientProperty("subTasksButton");
+////            assert node.getClientProperty("subTasksButton") != null : "no subTaskButton defined";
+//            if (expandCollapseButton != null && expandCollapseButton instanceof Button) //            ((Button) (((Container) node).getClientProperty("subTasksButton"))).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
+//            {
+//                ((Button) (expandCollapseButton)).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
+//                ((Button) (expandCollapseButton)).putClientProperty("TreeContainer", node);
+//            }
+//        }
+//
+//        @Override
+//        protected void setNodeIcon(Image icon, Component node) {
+//            Object expandCollapseButton = node.getClientProperty("subTasksButton");
+//            if (expandCollapseButton != null && expandCollapseButton instanceof Button) //            ((Button) (((Container) node).getClientProperty("subTasksButton"))).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
+//            {
+//                ((Button) (expandCollapseButton)).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
+//            }
+//        }
+//    };
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private Container buildTreeOrSingleItemContainer(Item item, ItemList listOfItems) {
+//        if (item.getItemListSize() > 0) {
+//            return new TreeItemList(item, listOfItems, true); //for a project, we'll always use Tree (since few lists will be empty)
+//        } else {
+//            return buildItemContainer(item, listOfItems);
+//        }
+//
+//    }
+//</editor-fold>
     /**
      * returns true if the list is displayed sorted (meaning eg that drag and
      * drop should not be enabled)
@@ -1937,6 +1939,7 @@ public class ScreenListOfItems extends MyForm {
 
     public ItemAndListCommonInterface getDisplayedElement() {
         return itemListOrg;
+
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2532,11 +2535,14 @@ public class ScreenListOfItems extends MyForm {
                 if (((newStatus == ItemStatus.DONE && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean())
                         || (newStatus == ItemStatus.WAITING && MyPrefs.askToEnterActualIfMarkingTaskWaitingOutsideTimer.getBoolean()))
                         && !wasTimerRunningForTheTask) {
-                    showDialogUpdateActualTimeIfAppropriate(item);
+                    Long newActual = showDialogUpdateActualTimeIfAppropriate(item.getActualForProjectTaskItself());
+                    if (newActual != null) {
+                        item.setActual(newActual, false); //false, since this dialog is ONLY called when setting a task status, so no reason to change due to Actual
+                    }
                 }
 
                 //if setting Waiting, ask if set waiting date and/or waiting alarm
-                if (false && newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) { //DEACTIVATE, waiting for proper Done/Retrospective screen
+                if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) { //DEACTIVATE, waiting for proper Done/Retrospective screen
                     showDialogSetWaitingDateAndAlarmIfAppropriate(item); //only call if we're changing TO Waiting status
                 }
 
@@ -3209,7 +3215,8 @@ public class ScreenListOfItems extends MyForm {
                     && (category instanceof Category
                     //                    || (owner instanceof ItemList && (((ItemList) owner).isSystemList())))) {
                     || (ownerItemOrItemList instanceof ItemList
-                    && ((((ItemList) ownerItemOrItemList).isSystemList()) || ((ItemList) ownerItemOrItemList).isNoSave())))) {
+                    && ((((ItemList) ownerItemOrItemList).isSystemList()) || ((ItemList) ownerItemOrItemList).isNoSave()))
+                    && owner!=ownerItemOrItemList)) { //don't show the list itself, e.g. Inbox
                 if (owner instanceof Item) {
                     southDetailsContainer.addComponent(new Label(owner.getText(), "ListOfItemsOwnerItem"));
                 } else {

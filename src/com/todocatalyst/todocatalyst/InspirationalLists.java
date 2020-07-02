@@ -43,7 +43,7 @@ public class InspirationalLists {
         }
 
         Comparator<Item> getSortingComparator() {
-            return (i1, i2) -> compareDate(i1.getCreatedDate(), i2.getCreatedAt());
+            return (i1, i2) -> compareDate(i1.getCreatedAt(), i2.getCreatedAt());
         }
     };
 

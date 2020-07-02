@@ -221,23 +221,25 @@ public class ScreenCategoryPicker extends MyForm {
 //        Sort categories by Name (default), by creation date (most recent first), by most used (#tasks), by used most recently?, by ??
 //        Search w autocomplete
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
-            toolbar.addCommandToOverflowMenu(
-                    "Cancel", null, (e) -> {
-                        //restore originally selected categories
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    selectedCategories.clear();
-//                    selectedCategories.addAll(selectedCategoriesOriginal);
-//                    previousForm.revalidate();
-//                    previousForm.showBack();
-//</editor-fold>
-//                        showPreviousScreenOrDefault(previousForm, false);
-                        if (false) {
-                            showPreviousScreen(false);
-                        } else {
-                            showPreviousScreen(true); //could call w false, but for consistency use true
-                        }
-                    }
-            );
+//            toolbar.addCommandToOverflowMenu(
+//                    "Cancel", null, (e) -> {
+//                        //restore originally selected categories
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    selectedCategories.clear();
+////                    selectedCategories.addAll(selectedCategoriesOriginal);
+////                    previousForm.revalidate();
+////                    previousForm.showBack();
+////</editor-fold>
+////                        showPreviousScreenOrDefault(previousForm, false);
+//                        if (false) {
+//                            showPreviousScreen(false);
+//                        } else {
+//                            showPreviousScreen(true); //could call w false, but for consistency use true
+//                        }
+//                    }
+//            );
+            toolbar.addCommandToOverflowMenu(makeCancelCommand());
+
         }
 
 

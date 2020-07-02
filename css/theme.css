@@ -2185,5 +2185,15 @@ Switch {
     margin-left: 5mm;
     /*padding: 0 0mm 0 2mm;*/
     padding: 0mm 0mm 0mm 0mm;
+}
 
+PickerDialog{
+    cn1-derive: Dialog;
+    color: red;
+    background-color: lightpink;
+}
+PickerDialogText{
+    cn1-derive: Label;
+    text-align:center;
+    color: green;
 }

@@ -925,10 +925,11 @@ public class Category<E extends ItemAndListCommonInterface>  extends ItemList im
             } else
                 insertIndex = insertAfterOrEndOfList ? getListFull().size() : 0;
 //            addItemToCategory(item, insertIndex,addCategoryToItem);
-            addItemAtIndex(item, insertIndex);
-            if (addCategoryToItem) {
-                item.addCategoryToItem(this, false);
-            }
+//            addItemAtIndex(item, insertIndex);
+//            if (addCategoryToItem) {
+//                item.addCategoryToItem(this, false);
+//            }
+            addItemToCategory(item, insertIndex, addCategoryToItem);
         }
     }
 

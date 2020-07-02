@@ -1008,7 +1008,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //            Display.getInstance().setBadgeNumber(0);
 //        }
 //        Form current = Display.getInstance().getCurrent();
-        if (current != null) {
+        if (false && Config.TEST && current != null) {
 //            if (false && current == ScreenTimer.getInstance()) { //NOT necessary since current.show() should update the timemr
 //                ScreenTimer.getInstance().refreshDisplayedTimerInfo();//repaint to update timer count (especially necessary if timer is only updating every minute or so, otherwise it will show wrong time for a long time)
 //            }
@@ -1254,6 +1254,14 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //        NetworkManager.getInstance().addToQueueAndWait(rss);
 //        records = rss.getResults();
 //        System.out.println(records);
+/* 
+Badge update: check if a new day has started (is Today>lastBadgeUpdateDate?), if so, update the badge. optimization: check if already updated today and app not launched since
+Make a special fetch that gets all leaf tasks etc so no need to access cache/local storage!
+
+Update alarms: 
+Consider situations: phone's been off for some time (days/weeks); change of time-zone?!; 
+*/
+
         long t1 = System.currentTimeMillis();
         Log.p("performBackgroundFetch called, time=" + new Date() + ", deadline=" + deadline + ", date(deadline)="
                 + new MyDate(deadline) + "; deadline value=" + deadline + "ms; deadline vs now=" + (deadline - System.currentTimeMillis()));

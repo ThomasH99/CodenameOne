@@ -124,7 +124,6 @@ public class StickyHeader extends Button implements ScrollListener {
 //        this.setUIID(uiid);
 //        hideShowButton.setUIID(iconUiid);
 //    }
-
     private void hideFollowingComponents(boolean hide) {
         Container parent = getParent();
         int index = parent.getComponentIndex(this);
@@ -142,13 +141,12 @@ public class StickyHeader extends Button implements ScrollListener {
 
     public Container addXXX(Component comp) {
 //        return super.add(BorderLayout.CENTER, comp);
-return null;
+        return null;
     }
-    
+
 //    public void setText(Component comp) {
 //        return super.add(BorderLayout.CENTER, comp);
 //    }
-
     @Override
     protected void initComponent() {
         super.initComponent();
@@ -271,23 +269,29 @@ return null;
                 Form form = getComponentForm();
                 if (form != null) {
                     Container contPane = getComponentForm().getContentPane();
+                    Component scrollableComp = getComponentForm().findScrollableChild(form.getContentPane());
+//                    Component contPane = scrollableComp;
+
+                    if (true||scrollableComp instanceof Container) {
+//                        Container contPane = (Container) scrollableComp;
 //                int tx = contPane.getAbsoluteX() + contPane.getStyle().getMarginLeft(isRTL()); //- getX(); //WORKS
-                    int tx = contPane.getAbsoluteX() + contPane.getStyle().getMarginLeft(isRTL()) + getParent().getX(); //- getX(); //WORKS
+                        int tx = contPane.getAbsoluteX() + contPane.getStyle().getMarginLeft(isRTL()) + getParent().getX(); //- getX(); //WORKS
 //                int ty = getComponentForm().getContentPane().getY() - getY();
-                    int ty = contPane.getAbsoluteY() - getY(); //WORKS
+                        int ty = contPane.getAbsoluteY() - getY(); //WORKS
 
 //                tx = getParent().getAbsoluteX() + getParent().getStyle().getPaddingLeft(isRTL()) + getParent().getScrollX() - getX(); //latest CN1 version, pbs: shifts sticky lable a few pixels left, and leaves a transparent space above the sticky label where the scrolled elements can be seen behind/through the label
 //                ty = getParent().getAbsoluteY() + getParent().getStyle().getPaddingTop() + getParent().getScrollY() - getY();
-                    g.setClip(0, 0, rect.getWidth(), rect.getHeight());
+                        g.setClip(0, 0, rect.getWidth(), rect.getHeight());
 
-                    g.translate(tx, ty);
-                    StickyHeader.this.paintComponentBackground(g);
-                    StickyHeader.this.paint(g);
-                    if (StickyHeader.this.getStyle().getBorder() != null) {
-                        StickyHeader.this.paintBorder(g);
+                        g.translate(tx, ty);
+                        StickyHeader.this.paintComponentBackground(g);
+                        StickyHeader.this.paint(g);
+                        if (StickyHeader.this.getStyle().getBorder() != null) {
+                            StickyHeader.this.paintBorder(g);
+                        }
+                        g.translate(-tx, -ty);
+                        g.setClip(cx, cy, cw, ch);
                     }
-                    g.translate(-tx, -ty);
-                    g.setClip(cx, cy, cw, ch);
                 }
             }
         };

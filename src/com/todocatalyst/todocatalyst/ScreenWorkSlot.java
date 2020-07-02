@@ -193,19 +193,6 @@ public class ScreenWorkSlot extends MyForm {
 //        }));
 //</editor-fold>
 
-        if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //        toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> { //DONE!! replace with default Cancel command MyForm.makeCancelCommand()??
-            //should always be OK to cancel editing a workslot
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            Log.p("Clicked");
-////            item.revert(); //forgetChanges***/refresh
-////            previousForm.showBack(); //drop any changes
-//            previousForm.revalidate();
-//            previousForm.show(); //drop any changes
-//        });
-//</editor-fold>
-            toolbar.addCommandToOverflowMenu(makeCancelCommand());
-        }
-
         //DELETE
         toolbar.addCommandToOverflowMenu("Delete", null, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -228,6 +215,19 @@ public class ScreenWorkSlot extends MyForm {
             }).show();
         }
         ));
+
+        if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //        toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> { //DONE!! replace with default Cancel command MyForm.makeCancelCommand()??
+            //should always be OK to cancel editing a workslot
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            Log.p("Clicked");
+////            item.revert(); //forgetChanges***/refresh
+////            previousForm.showBack(); //drop any changes
+//            previousForm.revalidate();
+//            previousForm.show(); //drop any changes
+//        });
+//</editor-fold>
+            toolbar.addCommandToOverflowMenu(makeCancelCommand());
+        }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToSideMenu("New Task", icon, (e) -> {

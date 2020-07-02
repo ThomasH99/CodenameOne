@@ -181,18 +181,19 @@ public class ScreenCategoryProperties extends MyForm {
 
         //CANCEL
         if (true||MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
-            toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            Log.p("Clicked");
-//            item.revert(); //forgetChanges***/refresh
-//            previousForm.showBack(); //drop any changes
-//            previousForm.revalidate();
-
-//            previousForm.show(); //drop any changes
-//                showPreviousScreenOrDefault(previousForm, false);
-//</editor-fold>
-                showPreviousScreen(false);
-            });
+//            toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            Log.p("Clicked");
+////            item.revert(); //forgetChanges***/refresh
+////            previousForm.showBack(); //drop any changes
+////            previousForm.revalidate();
+//
+////            previousForm.show(); //drop any changes
+////                showPreviousScreenOrDefault(previousForm, false);
+////</editor-fold>
+//                showPreviousScreen(false);
+//            });
+            toolbar.addCommandToOverflowMenu(makeCancelCommand());
         }
 
         if (Config.TEST) {

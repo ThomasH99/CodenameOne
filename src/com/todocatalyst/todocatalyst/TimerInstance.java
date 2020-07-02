@@ -106,6 +106,7 @@ public class TimerInstance extends ParseObject {
                     + "\" is no longer in the list \"" + projectOrItemList.getText()
                     + "\". \n\n Start over from the start of the list or stop timer?", "Start over", "Stop Timer");
         } else { //if (projectOrItemList instanceof Item)
+            ASSERT.that(projectOrItemList instanceof Item,"projectOrItemList NOT instance of Item, projectOrItemList="+projectOrItemList);
             return Dialog.show("Timer", "The timed task \"" + item.getText()
                     + "\" is no longer in the project \"" + projectOrItemList.getText()
                     + "\". \n\n Start over from the start of the project or stop Timer?", "Start over", "Stop Timer");
@@ -838,7 +839,8 @@ public class TimerInstance extends ParseObject {
 //                        if (showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(previousTimedItem, project)) {
 //</editor-fold>
                     if (!startOverOnFirstElementIfPreviousNotFound && lookForItemAfterThis != null && !itemList.contains(lookForItemAfterThis)) {
-                        if (showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(lookForItemAfterThis, project)) {
+//                        if (showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(lookForItemAfterThis, project)) {
+                        if (showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(lookForItemAfterThis, itemList)) {
                             //TODO!!!! if element not found, let user pick which one to continue with
                             startOverOnFirstElementIfPreviousNotFound = true;
                         } else {

@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -207,12 +208,13 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         } else {
 
             //first deal with any repeating workslots (remove expired and add new repeat instances
-            List<RepeatRuleParseObject> workSlotsWithRepeatRules = new ArrayList<>();
+            HashSet<RepeatRuleParseObject> workSlotsWithRepeatRules = new HashSet<>();
             for (WorkSlot ws : sortedOnStartTimeWorkslotList) {
                 //NB! workSlot list can contain both individual workslots and (many) repeats of same workSlot -> 
                 //gather all repeatRules to update in batch:
                 RepeatRuleParseObject repeatRule = ws.getRepeatRuleN();
-                if (repeatRule != null && !(workSlotsWithRepeatRules.contains(repeatRule))) { //contains(): keep only one instance of each rule if multiple workslots originate from same rule
+//                if (repeatRule != null && !(workSlotsWithRepeatRules.contains(repeatRule))) { //contains(): keep only one instance of each rule if multiple workslots originate from same rule
+                if (repeatRule != null ) { //contains(): keep only one instance of each rule if multiple workslots originate from same rule
                     workSlotsWithRepeatRules.add(repeatRule);
                 }
             }
