@@ -512,6 +512,9 @@ public class MyPrefs {
             = new PrefEntry("Reduce Screen title font size for long texts", "titleAutoSize", true, "**");
     static PrefEntry scrollToolbarOffScreenOnScrollingDown
             = new PrefEntry("Hide the toolbar at top of the screen when scrolling a screen down", "scrollToolbarOffScreenOnScrollingDown", true, "**");
+    static PrefEntry firstDoubleTapScrollsToBottomOfScreen
+            = new PrefEntry("First statusbar doubletap scrolls to bottom of list instead of top", 
+                    "firstDoubleTapScrollsToBottomOfScreen", true, "First time the status bar of a scrolled task list is doubleHide the toolbar at top of the screen when scrolling a screen down");
 
     //OTHER / SYSTEM-LEVEL
     static PrefEntry enableCancelInAllScreens
@@ -526,8 +529,9 @@ public class MyPrefs {
             = new PrefEntry("Enable pinch insert in lists", "pinchInsertEnabled", true, "**");
     static PrefEntry pinchInsertActivateEditing
             = new PrefEntry("Automatically start editing new task after pinch insert ", "pinchInsertActivateEditing", true, "**");
-    static PrefEntry screenRotationDisabled
-            = new PrefEntry("Disable screen rotation", "screenRotationDisabled", true, "**");
+    static PrefEntry screenEnableDisplayRotationToLandscape
+            = new PrefEntry("Enable screen rotation to landscape", "screenEnableDisplayRotation", false, 
+                    "Rotation to landscape mode is disabled by default, setting this option enables it");
     static PrefEntry enableShowingSystemInfo
             = new PrefEntry("Show additional system information like unique identified", "enableShowingSystemInfo", true, "**");
     static PrefEntry enableSafeArea

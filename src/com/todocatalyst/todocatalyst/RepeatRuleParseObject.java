@@ -1257,40 +1257,40 @@ public class RepeatRuleParseObject
         datesList.show();
     }
 
-    public void showListOfRepeatRuleGeneratedDatesOLD(int maxInstances) {
-        Vector datesVector = new Vector();
-//        int i = 0;
-        int nextI = 0;
-        int nbDatesToShowInEachStep = 20;
-
-        Command showMoreCmd = new Command("Show " + nbDatesToShowInEachStep + " more");
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        Date nextDate = new Date();
-//        Date startDate = new Date();
-//        nextDate = startDate;
-//        int repeats = Math.min(calcNumberOfRepeats(), MAX_REPEATS);
-//        List<Date> dates = generateListOfDates(startDate, calcSubsetEndDate(startDate), repeats);
-//        simulateDates = true;
-//</editor-fold>
-//        List<Date> dates = createDates(maxInstances);
-//        Date startDate = getSpecifiedStartDate();
-        Date startDate = getStartDateForRefreshRule(new MyDate());
-        Date endDate = getEndDateD();
-//        nextDate = startDate;
-        int repeats = Math.min(calcNumberOfRepeats(true), maxInstances);
-//        return generateListOfDates(startDate, calcSubsetEndDate(startDate), repeats,true);
-        List<Date> dates = generateListOfDates(startDate, endDate, repeats, true, false);
-
-        do {
-            for (int i = nextI, size = Math.min(dates.size(), nextI + nbDatesToShowInEachStep - 1); i < size; i++) { //Math.min(dates.size in case the dates list is shorter than nbDatesToShowInEachStep
-                datesVector.addElement(MyDate.formatDateNew(dates.get(i), false, true, true, true, MyPrefs.dateShowDatesInUSFormat.getBoolean()));
-            }
-            nextI += nbDatesToShowInEachStep;
-        } while (Dialog.show("Dates", new com.codename1.ui.List(datesVector),
-                //                new Command[]{new Command("Exit"), nextI >= maxInstances ? showMoreCmd : new Command("No more")}) == showMoreCmd);
-                new Command[]{new Command("Exit"), nextI >= maxInstances ? showMoreCmd : new Command("That's all")}) == showMoreCmd);
-//        simulateDates = false;
-    }
+//    public void showListOfRepeatRuleGeneratedDatesOLD(int maxInstances) {
+//        Vector datesVector = new Vector();
+////        int i = 0;
+//        int nextI = 0;
+//        int nbDatesToShowInEachStep = 20;
+//
+//        Command showMoreCmd = new Command("Show " + nbDatesToShowInEachStep + " more");
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        Date nextDate = new Date();
+////        Date startDate = new Date();
+////        nextDate = startDate;
+////        int repeats = Math.min(calcNumberOfRepeats(), MAX_REPEATS);
+////        List<Date> dates = generateListOfDates(startDate, calcSubsetEndDate(startDate), repeats);
+////        simulateDates = true;
+////</editor-fold>
+////        List<Date> dates = createDates(maxInstances);
+////        Date startDate = getSpecifiedStartDate();
+//        Date startDate = getStartDateForRefreshRule(new MyDate());
+//        Date endDate = getEndDateD();
+////        nextDate = startDate;
+//        int repeats = Math.min(calcNumberOfRepeats(true), maxInstances);
+////        return generateListOfDates(startDate, calcSubsetEndDate(startDate), repeats,true);
+//        List<Date> dates = generateListOfDates(startDate, endDate, repeats, true, false);
+//
+//        do {
+//            for (int i = nextI, size = Math.min(dates.size(), nextI + nbDatesToShowInEachStep - 1); i < size; i++) { //Math.min(dates.size in case the dates list is shorter than nbDatesToShowInEachStep
+//                datesVector.addElement(MyDate.formatDateNew(dates.get(i), false, true, true, true, MyPrefs.dateShowDatesInUSFormat.getBoolean()));
+//            }
+//            nextI += nbDatesToShowInEachStep;
+//        } while (Dialog.show("Dates", new com.codename1.ui.List(datesVector),
+//                //                new Command[]{new Command("Exit"), nextI >= maxInstances ? showMoreCmd : new Command("No more")}) == showMoreCmd);
+//                new Command[]{new Command("Exit"), nextI >= maxInstances ? showMoreCmd : new Command("That's all")}) == showMoreCmd);
+////        simulateDates = false;
+//    }
 
     //<editor-fold defaultstate="collapsed" desc="comment">
 //    public Date getNextDueDateOLD() {
@@ -2099,7 +2099,7 @@ public class RepeatRuleParseObject
 //                return new Date(MyDate.MAX_DATE);
 //            } else {
 //</editor-fold>
-            Date startDaysAheadFromDate = new MyDate(Math.max(MyDate.currentTimeMillis(), getSpecifiedStartDateXXXZZZ().getTime())); //handle case where startDate is in the future (so > than now)
+            Date startDaysAheadFromDate = new MyDate(Math.max(MyDate.currentTimeMillis(), getSpecifiedStartDateZZZ().getTime())); //handle case where startDate is in the future (so > than now)
             Date lastDateForSimultRepeats
                     //                    = MyDate.getEndOfDay(new Date(MyDate.currentTimeMillis() + numberOfDaysRepeatsAreGeneratedAhead * MyDate.DAY_IN_MILLISECONDS)); //UI: if nbDays==1, we generate until end of tomorrow
                     = MyDate.getEndOfDay(new MyDate(startDaysAheadFromDate.getTime() + numberOfDaysRepeatsAreGeneratedAhead * MyDate.DAY_IN_MILLISECONDS)); //UI: if nbDays==1, we generate until end of tomorrow
@@ -2125,16 +2125,16 @@ public class RepeatRuleParseObject
      * @param lastGenerated
      * @return
      */
-    private Date calcSubsetBeginningDateXXX(Date lastGenerated) {
-        Date subsetBeginningDate;
-        if (lastGenerated.getTime() != MyDate.MIN_DATE) {
-            subsetBeginningDate = lastGenerated;
-        } else {
-//            subsetBeginningDate = getSpecifiedStartDate();
-            subsetBeginningDate = getSpecifiedStartDateXXXZZZ();
-        }
-        return subsetBeginningDate;
-    }
+//    private Date calcSubsetBeginningDateXXX(Date lastGenerated) {
+//        Date subsetBeginningDate;
+//        if (lastGenerated.getTime() != MyDate.MIN_DATE) {
+//            subsetBeginningDate = lastGenerated;
+//        } else {
+////            subsetBeginningDate = getSpecifiedStartDate();
+//            subsetBeginningDate = getSpecifiedStartDateXXXZZZ();
+//        }
+//        return subsetBeginningDate;
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public RepeatRuleObjectInterface updateRepeatInstancesOnDoneCancelOrDeleteXXX(WorkSlot workSlot) {
@@ -2604,13 +2604,13 @@ public class RepeatRuleParseObject
 ////        }
 //    }
 //</editor-fold>
-    private Date getDueDateOrNowIfUndefinedXXX(RepeatRuleObjectInterface repeatRuleOriginator, Date now) {
-        Date startRepeatFromDate = repeatRuleOriginator.getRepeatStartTime(false); //UI: if editing a repeatRule, repeating will start from the edited rule
-        if (startRepeatFromDate.getTime() == 0) { //UI: this shouldn't happen (since ScreenRR ensures due date is always set), BUT could happen if user deletes the due date
-            startRepeatFromDate = now; //if no existing date to start from, then start from Now
-        }//                Date startRepeatFromTime = latestDoneDate != null ? latestDoneDate : now;
-        return startRepeatFromDate;
-    }
+//    private Date getDueDateOrNowIfUndefinedXXX(RepeatRuleObjectInterface repeatRuleOriginator, Date now) {
+//        Date startRepeatFromDate = repeatRuleOriginator.getRepeatStartTime(false); //UI: if editing a repeatRule, repeating will start from the edited rule
+//        if (startRepeatFromDate.getTime() == 0) { //UI: this shouldn't happen (since ScreenRR ensures due date is always set), BUT could happen if user deletes the due date
+//            startRepeatFromDate = now; //if no existing date to start from, then start from Now
+//        }//                Date startRepeatFromTime = latestDoneDate != null ? latestDoneDate : now;
+//        return startRepeatFromDate;
+//    }
 
     public void updateItemsWhenRuleCreatedOrEdited(RepeatRuleObjectInterface repeatRuleOriginator, boolean firstTime) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -6766,22 +6766,22 @@ public class RepeatRuleParseObject
      *
      * @return
      */
-    public long getSpecifiedStartDateXXX() {
-        return getSpecifiedStartDateXXXZZZ().getTime();
-    }
-
-    public Date getSpecifiedStartDateXXXZZZ() {
+//    public long getSpecifiedStartDateXXX() {
+//        return getSpecifiedStartDateXXXZZZ().getTime();
+//    }
+//
+    public Date getSpecifiedStartDateZZZ() {
 //        return specifiedStartDate;
 //        return getLong(SPECIFIED_START_DATE);
         Date date = getDate(PARSE_SPECIFIED_START_DATE);
         return (date == null) ? new MyDate(0) : date;
     }
 
-    private Date getStartDateForCompletion(Date defaultDate, boolean completionDate) {
-        Date date = getLatestDateGenerated(completionDate); //when we generate a new date upon completion, it should be based on the latest date generated, whether already done/completed or not
-//        return (date.equals(new MyDate(MyDate.MIN_DATE))) ? defaultDate : date;
-        return (date.getTime() == MyDate.MIN_DATE) ? defaultDate : date;
-    }
+//    private Date getStartDateForCompletion(Date defaultDate, boolean completionDate) {
+//        Date date = getLatestDateGenerated(completionDate); //when we generate a new date upon completion, it should be based on the latest date generated, whether already done/completed or not
+////        return (date.equals(new MyDate(MyDate.MIN_DATE))) ? defaultDate : date;
+//        return (date.getTime() == MyDate.MIN_DATE) ? defaultDate : date;
+//    }
 
 //    private Date getStartDateForCompletion() {
 //        return getStartDateForCompletion(new MyDate()); //use now for default
@@ -7858,38 +7858,38 @@ public class RepeatRuleParseObject
      * date stored in the list of generated instances). This is used to ensure
      * that e.g. deleted or done instances do not re-appear
      */
-    public Date getLastGeneratedDateDXXX() {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        Date date = getDate(PARSE_LAST_DATE_GENERATED);
-//        return (date == null) ? new Date(MyDate.MIN_DATE) : date;
-//        List generatedInstances = getListOfUndoneRepeatInstances();
-//        if (generatedInstances.size() == 0) {
-////            return new Date(MyDate.MIN_DATE);
-//            return getSpecifiedStartDateD();
-//        } else {
-//            return ((RepeatRuleObjectInterface) generatedInstances.get(generatedInstances.size() - 1)).getRepeatStartTime(false);
+//    public Date getLastGeneratedDateDXXX() {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        Date date = getDate(PARSE_LAST_DATE_GENERATED);
+////        return (date == null) ? new Date(MyDate.MIN_DATE) : date;
+////        List generatedInstances = getListOfUndoneRepeatInstances();
+////        if (generatedInstances.size() == 0) {
+//////            return new Date(MyDate.MIN_DATE);
+////            return getSpecifiedStartDateD();
+////        } else {
+////            return ((RepeatRuleObjectInterface) generatedInstances.get(generatedInstances.size() - 1)).getRepeatStartTime(false);
+////        }
+////</editor-fold>
+////optimization: calculate as we go along? or sort long lists first?
+//        Date lastDate = new MyDate(MyDate.MIN_DATE);
+//        //also include done instances in case e.g. the last instance was completed first --> UI: side effect: if an earlier instance was set to a later date than the last instance and then closed, that date would be used
+//        List<RepeatRuleObjectInterface> done = getListOfDoneInstances();
+//        for (RepeatRuleObjectInterface t : done) {
+//            Date d = t.getRepeatStartTime(false);
+//            if (d.getTime() > lastDate.getTime()) {
+//                lastDate = d;
+//            }
 //        }
-//</editor-fold>
-//optimization: calculate as we go along? or sort long lists first?
-        Date lastDate = new MyDate(MyDate.MIN_DATE);
-        //also include done instances in case e.g. the last instance was completed first --> UI: side effect: if an earlier instance was set to a later date than the last instance and then closed, that date would be used
-        List<RepeatRuleObjectInterface> done = getListOfDoneInstances();
-        for (RepeatRuleObjectInterface t : done) {
-            Date d = t.getRepeatStartTime(false);
-            if (d.getTime() > lastDate.getTime()) {
-                lastDate = d;
-            }
-        }
-
-        List<RepeatRuleObjectInterface> undone = getListOfUndoneInstances();
-        for (RepeatRuleObjectInterface t : undone) {
-            Date d = t.getRepeatStartTime(false);
-            if (d.getTime() > lastDate.getTime()) {
-                lastDate = d;
-            }
-        }
-        return lastDate;
-    }
+//
+//        List<RepeatRuleObjectInterface> undone = getListOfUndoneInstances();
+//        for (RepeatRuleObjectInterface t : undone) {
+//            Date d = t.getRepeatStartTime(false);
+//            if (d.getTime() > lastDate.getTime()) {
+//                lastDate = d;
+//            }
+//        }
+//        return lastDate;
+//    }
 
     /**
      * used to keep track of when a repeatrule has repeated the indicated number
@@ -7907,13 +7907,13 @@ public class RepeatRuleParseObject
      *
      * @param countOfInstancesGeneratedSoFar
      */
-    private void setTotalNumberOfInstancesGeneratedSoFarXXX(int countOfInstancesGeneratedSoFar) {
-        if (countOfInstancesGeneratedSoFar != 0) {
-            put(PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR, countOfInstancesGeneratedSoFar);
-        } else {
-            remove(PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR);
-        }
-    }
+//    private void setTotalNumberOfInstancesGeneratedSoFarXXX(int countOfInstancesGeneratedSoFar) {
+//        if (countOfInstancesGeneratedSoFar != 0) {
+//            put(PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR, countOfInstancesGeneratedSoFar);
+//        } else {
+//            remove(PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR);
+//        }
+//    }
 
     int getTotalNumberOfDoneInstances() {
 //        Integer i = getInt(PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR);

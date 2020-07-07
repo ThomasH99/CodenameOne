@@ -148,16 +148,25 @@ public class AlarmHandler {
         if (false && !MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) { //DONE: optimization: rather not *schedule* this if setting is deactivate and avoid need to reload preferences
             return;
         }
+
+        //optimization: check if there are active alarms within the next 60min (fetch interval) and if yes, waith with fetching till next time
+        //TODO!!!! how to set alarms for alarms edited on other devices? Still via push?!
 //        int maxNbFreeNotifications = notificationList.getNumberAvailableLocalNotificationSlots();
 //        List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
         List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS);
         if (newAlarmsList != null && newAlarmsList.size() > 0) { //only do something if we successfully got the list (avoid cancelling alarms if anything went wrong with the fetch)
 
             notificationList.cancelAndRemoveAllAvailableLocalNotifications();
+            Log.p("updateLocalNotificationsOnBackgroundFetch():cancelling local notifications");
 
             Item item;
             while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
                 item = newAlarmsList.remove(0);
+                if (item.getNextcomingAlarmRecordN() == null) {
+                    Log.p("updateLocalNotificationsOnBackgroundFetch(): getNextcomingAlarmRecordN()==null!!! for item=" + item);
+                } else {
+                    Log.p("updateLocalNotificationsOnBackgroundFetch(): setting notification for Item=" + item + "; alarmTime=" + MyDate.formatDateNew(item.getNextcomingAlarmRecordN().alarmTime));
+                }
                 notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecordN());
             }
             refreshInAppTimerAndSaveNotificationList();
@@ -484,13 +493,13 @@ public class AlarmHandler {
     /**
      * call eg if alarms are turned off or on on the devices
      */
-    public void cancelAllAlarmsXXX() {
-//                    AlarmHandler.getInstance().removeExpiredAlarm(expired);
-        while (!expiredAlarms.isEmpty()) {
-            expiredAlarms.remove(0);
-        }
-        expiredAlarmSave();
-    }
+//    public void cancelAllAlarmsXXX() {
+////                    AlarmHandler.getInstance().removeExpiredAlarm(expired);
+//        while (!expiredAlarms.isEmpty()) {
+//            expiredAlarms.remove(0);
+//        }
+//        expiredAlarmSave();
+//    }
 
     /**
      * called by inApp timer or from local notification when an alarm expires

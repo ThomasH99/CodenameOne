@@ -4270,23 +4270,23 @@ before getting to here, we've already covered the following cases where both bef
 //    }
 //    @Override
 //</editor-fold>
-    public void pointerReleasedxxx(int x, int y) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (pointerReleasedListeners != null && pointerReleasedListeners.hasListeners()) {
-//            ActionEvent ev = new ActionEvent(this, ActionEvent.Type.PointerReleased, x, y);
-//            pointerReleasedListeners.fireActionEvent(ev);
-//            if(ev.isConsumed()) {
-//                return;
-//            }
+//    public void pointerReleasedxxx(int x, int y) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (pointerReleasedListeners != null && pointerReleasedListeners.hasListeners()) {
+////            ActionEvent ev = new ActionEvent(this, ActionEvent.Type.PointerReleased, x, y);
+////            pointerReleasedListeners.fireActionEvent(ev);
+////            if(ev.isConsumed()) {
+////                return;
+////            }
+////        }
+////        pointerReleaseImpl(x, y);
+////        scrollOpacity = 0xff;
+////</editor-fold>
+//        super.pointerReleased(x, y);
+//        if (Config.TEST_DRAG_AND_DROP) {
+//            Log.p("MyDragAndDropSwipeableContainer.pointerReleased (D&D) x=" + x + " y=" + y);
 //        }
-//        pointerReleaseImpl(x, y);
-//        scrollOpacity = 0xff;
-//</editor-fold>
-        super.pointerReleased(x, y);
-        if (Config.TEST_DRAG_AND_DROP) {
-            Log.p("MyDragAndDropSwipeableContainer.pointerReleased (D&D) x=" + x + " y=" + y);
-        }
-    }
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void refreshAfterDrop() {
 //        ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw

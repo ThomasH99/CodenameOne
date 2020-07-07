@@ -102,22 +102,22 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        return getWorkSlotListN();
 //    }
 //    public void setWorkSlotList(WorkSlotList workSlotList);
-    default public void setWorkSlotListXXX(WorkSlotList workSlotList) {
-        //TODO currently not stored in ItemList but get from DAO
-//        workSlotListBuffer = null;
-//        workSlotListBuffer = workSlotList;
-//        workTimeAllocator = null;
-//        if (workSlotList != null && workSlotList.getWorkSlotListFull().size() > 0) {
-//            put(PARSE_WORKSLOTS, workSlotList.getWorkSlots());
-        WorkSlot.sortWorkSlotList(workSlotList.getWorkSlotListFull());
-        if (Config.TEST) {
-            ASSERT.that(workSlotList != null || workSlotList.getWorkSlotListFull().size() == 0 || MyUtil.isSorted(workSlotList.getWorkSlotListFull(),
-                    (ws1, ws2) -> ((int) ((((WorkSlot) ws2).getStartTime()) - ((WorkSlot) ws1).getStartTime()))),
-                    () -> "setting list of workslots which is NOT sorted: " + workSlotList.getWorkSlotListFull());
-        }
-        workSlotList.setOwner(this);
-        setWorkSlotsInParse(workSlotList.getWorkSlotListFull());
-    }
+//    default public void setWorkSlotListXXX(WorkSlotList workSlotList) {
+//        //TODO currently not stored in ItemList but get from DAO
+////        workSlotListBuffer = null;
+////        workSlotListBuffer = workSlotList;
+////        workTimeAllocator = null;
+////        if (workSlotList != null && workSlotList.getWorkSlotListFull().size() > 0) {
+////            put(PARSE_WORKSLOTS, workSlotList.getWorkSlots());
+//        WorkSlot.sortWorkSlotList(workSlotList.getWorkSlotListFull());
+//        if (Config.TEST) {
+//            ASSERT.that(workSlotList != null || workSlotList.getWorkSlotListFull().size() == 0 || MyUtil.isSorted(workSlotList.getWorkSlotListFull(),
+//                    (ws1, ws2) -> ((int) ((((WorkSlot) ws2).getStartTime()) - ((WorkSlot) ws1).getStartTime()))),
+//                    () -> "setting list of workslots which is NOT sorted: " + workSlotList.getWorkSlotListFull());
+//        }
+//        workSlotList.setOwner(this);
+//        setWorkSlotsInParse(workSlotList.getWorkSlotListFull());
+//    }
 
     /**
      * return overlapping workslots, or null if none
@@ -1201,19 +1201,19 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * force the calculation of worktime for every subtask - is this really
      * necessary??
      */
-    default public void forceCalculationOfWorkTimeXXX() {
-        List<? extends ItemAndListCommonInterface> subtasks = getList();
-        if (subtasks != null) {
-            int size = subtasks.size();
-            for (int i = size; i < size && i >= 0; i--) {
-                ItemAndListCommonInterface elt = subtasks.get(i);
-                if (!elt.isDone()) { //for the last unDone element
-                    elt.getFinishTime(); //getFinishTime to force calculation of  workTime for all tasks
-                    return;
-                }
-            }
-        }
-    }
+//    default public void forceCalculationOfWorkTimeXXX() {
+//        List<? extends ItemAndListCommonInterface> subtasks = getList();
+//        if (subtasks != null) {
+//            int size = subtasks.size();
+//            for (int i = size; i < size && i >= 0; i--) {
+//                ItemAndListCommonInterface elt = subtasks.get(i);
+//                if (!elt.isDone()) { //for the last unDone element
+//                    elt.getFinishTime(); //getFinishTime to force calculation of  workTime for all tasks
+//                    return;
+//                }
+//            }
+//        }
+//    }
 
     default boolean isUseDefaultFilter() {
         return true;

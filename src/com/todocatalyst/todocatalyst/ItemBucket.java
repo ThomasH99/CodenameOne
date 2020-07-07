@@ -376,34 +376,34 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
 
     List<WorkSlot> cachedWorkSlots;
 
-    public List getWorkSlotsFromParseNOLD() {
-        if (level == 0) {
-            if (cachedWorkSlots == null) {
-                cachedWorkSlots = DAO.getInstance().getWorkSlots(getStartTime(), getEndTime());
-            }
-            return cachedWorkSlots;
-        } else if (groupOn == ScreenStatistics2.GroupOn2.lists || groupOn == ScreenStatistics2.GroupOn2.categories) {
-            return ((ItemList) hashValue).getWorkSlots(getStartTime(), getEndTime());
-        } else if ((groupOn == ScreenStatistics2.GroupOn2.day || groupOn == ScreenStatistics2.GroupOn2.week || groupOn == ScreenStatistics2.GroupOn2.month)) {
-            if (level == 1) {
-                if (hash != null) { //hash!=null means we have subbuckets
-                    List<WorkSlot> wslots = new ArrayList();
-                    for (ItemBucket bucket : (List<ItemBucket>) getListFull()) {
-                        List<WorkSlot> ws = ((ItemList) bucket.hashValue).getWorkSlotsFromParseN(); //we're only adding the worksltos previously stored in ItemBucket
-                        if (ws != null) {
-                            wslots.addAll(((ItemList) bucket.hashValue).getWorkSlotsFromParseN()); //we're only adding the worksltos previously stored in ItemBucket
-                        }
-                    }
-                    return wslots;
-                } else { //no sucbuckets, get workSlots from level above with this level's start/end time
-                    return ((ItemList) getOwnerBucket().hashValue).getWorkSlots(getStartTime(), getEndTime());
-                }
-            } else if (level == 2) {
-                return ((ItemList) getOwnerBucket().hashValue).getWorkSlots(getStartTime(), getEndTime());
-            }
-        }
-        return null;
-    }
+//    public List getWorkSlotsFromParseNOLD() {
+//        if (level == 0) {
+//            if (cachedWorkSlots == null) {
+//                cachedWorkSlots = DAO.getInstance().getWorkSlots(getStartTime(), getEndTime());
+//            }
+//            return cachedWorkSlots;
+//        } else if (groupOn == ScreenStatistics2.GroupOn2.lists || groupOn == ScreenStatistics2.GroupOn2.categories) {
+//            return ((ItemList) hashValue).getWorkSlots(getStartTime(), getEndTime());
+//        } else if ((groupOn == ScreenStatistics2.GroupOn2.day || groupOn == ScreenStatistics2.GroupOn2.week || groupOn == ScreenStatistics2.GroupOn2.month)) {
+//            if (level == 1) {
+//                if (hash != null) { //hash!=null means we have subbuckets
+//                    List<WorkSlot> wslots = new ArrayList();
+//                    for (ItemBucket bucket : (List<ItemBucket>) getListFull()) {
+//                        List<WorkSlot> ws = ((ItemList) bucket.hashValue).getWorkSlotsFromParseN(); //we're only adding the worksltos previously stored in ItemBucket
+//                        if (ws != null) {
+//                            wslots.addAll(((ItemList) bucket.hashValue).getWorkSlotsFromParseN()); //we're only adding the worksltos previously stored in ItemBucket
+//                        }
+//                    }
+//                    return wslots;
+//                } else { //no sucbuckets, get workSlots from level above with this level's start/end time
+//                    return ((ItemList) getOwnerBucket().hashValue).getWorkSlots(getStartTime(), getEndTime());
+//                }
+//            } else if (level == 2) {
+//                return ((ItemList) getOwnerBucket().hashValue).getWorkSlots(getStartTime(), getEndTime());
+//            }
+//        }
+//        return null;
+//    }
 
     @Override
     public List getWorkSlotsFromParseN() {

@@ -497,14 +497,14 @@ public class MyToggleButton extends Container {
 //        super.setSelectedIndex(index); //trigger selection listener
     }
 
-    public void setSelectedIndexXXX(int index) {
-        setSelectedIndexState(index, true);
-    }
-
-    public void flipSelectedIndexXXX(int index) {
-//        buttonsArray[index].setSelected(!buttonsArray[index].isSelected());
-        setSelectedIndexState(index, !isSelected(index)); //flip selected state
-    }
+//    public void setSelectedIndexXXX(int index) {
+//        setSelectedIndexState(index, true);
+//    }
+//
+//    public void flipSelectedIndexXXX(int index) {
+////        buttonsArray[index].setSelected(!buttonsArray[index].isSelected());
+//        setSelectedIndexState(index, !isSelected(index)); //flip selected state
+//    }
 
     /**
      * returns the selected logical value. NO: If no values are defined, then
@@ -528,18 +528,18 @@ public class MyToggleButton extends Container {
     /**
      * returns vector with all selected names
      */
-    public Vector getSelectedNamesXXX() {
-        Vector selectedNames = new Vector();
-        for (int i = 0, size = buttonsArray.length; i < size; i++) {
-//        for (int i = 0, size = size(); i < size; i++) {
-//            if (buttonsArray[i].isSelected()) {
-            if (isSelected(i)) {
-//                selectedValues.addElement(new Integer(values[i]));
-                selectedNames.addElement(names[i]);
-            }
-        }
-        return selectedNames;
-    }
+//    public Vector getSelectedNamesXXX() {
+//        Vector selectedNames = new Vector();
+//        for (int i = 0, size = buttonsArray.length; i < size; i++) {
+////        for (int i = 0, size = size(); i < size; i++) {
+////            if (buttonsArray[i].isSelected()) {
+//            if (isSelected(i)) {
+////                selectedValues.addElement(new Integer(values[i]));
+//                selectedNames.addElement(names[i]);
+//            }
+//        }
+//        return selectedNames;
+//    }
 
     /**
      * returns the index of the *first* selected element (in case there are
@@ -576,18 +576,18 @@ public class MyToggleButton extends Container {
      * nothing is done
      *
      */
-    public void setSelectedNameXXX(String name) {
-//        int index = 0;
+//    public void setSelectedNameXXX(String name) {
+////        int index = 0;
+////        for (int i = 0, size = names.length; i < size; i++) {
 //        for (int i = 0, size = names.length; i < size; i++) {
-        for (int i = 0, size = names.length; i < size; i++) {
-            if (names[i].equals(name)) {
-//                index = i;
-                setSelectedIndexState(i, true);
-            }
-        }
-//        buttonsArray[index].setSelected(true);
-//        buttonsArray[index].setSelected(true);
-    }
+//            if (names[i].equals(name)) {
+////                index = i;
+//                setSelectedIndexState(i, true);
+//            }
+//        }
+////        buttonsArray[index].setSelected(true);
+////        buttonsArray[index].setSelected(true);
+//    }
 
     /**
      * if a set of values is defined, then select the corresponding ComboBox

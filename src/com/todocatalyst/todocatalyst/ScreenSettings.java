@@ -67,9 +67,10 @@ public class ScreenSettings extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.keepScreenAlwaysOnInApp);
 
         if (Display.getInstance().canForceOrientation()) {
-            addSettingBoolean(content, parseIdMap2, MyPrefs.screenRotationDisabled,
-                    () -> Display.getInstance().lockOrientation(true),
-                    () -> Display.getInstance().lockOrientation(false));
+            addSettingBoolean(content, parseIdMap2, MyPrefs.screenEnableDisplayRotationToLandscape,
+//                    () -> Display.getInstance().lockOrientation(false));
+                    () -> Display.getInstance().unlockOrientation(),
+                    () -> Display.getInstance().lockOrientation(true)            );
         }
         //Safe area on/off
         addSettingBoolean(content, parseIdMap2, MyPrefs.enableSafeArea,

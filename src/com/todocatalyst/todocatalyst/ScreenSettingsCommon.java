@@ -87,93 +87,93 @@ public class ScreenSettingsCommon extends MyForm {
         }
     }
 
-    static Switch addSettingBooleanXXX(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
+//    static Switch addSettingBooleanXXX(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
+//
+////        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
+//        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
+//        Switch compForActionListener = null;
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (tableLayout) {
+////            cont.add(new SpanLabel(prefEntry.getFieldScription()));
+////            cont.add(maxDescriptionSize, new SpanLabel(prefEntry.getFieldScription()));
+////
+////            compForActionListener=new MyOnOffSwitch(parseIdMap2, () -> {
+////                return MyPrefs.getBoolean(prefEntry);
+////            }, (b) -> {
+////                MyPrefs.setBoolean(prefEntry, b);
+////            });
+////            cont.add(rightAdj,compForActionListener );
+////
+////            String helpText =prefEntry.getHelpText();
+////            if (!helpText.equals("")&&!helpText.contains("**")) {
+////                cont.add(span2Cols, new SpanLabel(helpText));
+////            }
+////        } else
+////</editor-fold>
+//        {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            cont.add(BorderLayout.center(new SpanLabel(prefEntry.getFieldScription())).add(BorderLayout.EAST, new MyOnOffSwitch(parseIdMap2, () -> {
+////                return MyPrefs.getBoolean(prefEntry);
+////            }, (b) -> {
+////                MyPrefs.setBoolean(prefEntry, b);
+////            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
+////</editor-fold>
+//            cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener = new MyOnOffSwitch(parseIdMap2, () -> {
+//                return MyPrefs.getBoolean(prefEntry);
+//            }, (b) -> {
+//                MyPrefs.setBoolean(prefEntry, b);
+//            }), prefEntry.getHelpText()));
+//        }
+//        return compForActionListener;
+//    }
 
-//        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
-        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
-        Switch compForActionListener = null;
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (tableLayout) {
-//            cont.add(new SpanLabel(prefEntry.getFieldScription()));
-//            cont.add(maxDescriptionSize, new SpanLabel(prefEntry.getFieldScription()));
-//
-//            compForActionListener=new MyOnOffSwitch(parseIdMap2, () -> {
-//                return MyPrefs.getBoolean(prefEntry);
-//            }, (b) -> {
-//                MyPrefs.setBoolean(prefEntry, b);
-//            });
-//            cont.add(rightAdj,compForActionListener );
-//
-//            String helpText =prefEntry.getHelpText();
-//            if (!helpText.equals("")&&!helpText.contains("**")) {
-//                cont.add(span2Cols, new SpanLabel(helpText));
+//    static Switch addSettingBooleanOLD(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnAction, Runnable onOffAction) {
+////        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
+//        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
+//        Switch compForActionListener = new MyOnOffSwitch(parseIdMap2, () -> {
+//            return MyPrefs.getBoolean(prefEntry);
+//        }, (b) -> {
+//            MyPrefs.setBoolean(prefEntry, b);
+//        });
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (tableLayout) {
+////            cont.add(new SpanLabel(prefEntry.getFieldScription()));
+////            cont.add(maxDescriptionSize, new SpanLabel(prefEntry.getFieldScription()));
+////
+////            compForActionListener=new MyOnOffSwitch(parseIdMap2, () -> {
+////                return MyPrefs.getBoolean(prefEntry);
+////            }, (b) -> {
+////                MyPrefs.setBoolean(prefEntry, b);
+////            });
+////            cont.add(rightAdj,compForActionListener );
+////
+////            String helpText =prefEntry.getHelpText();
+////            if (!helpText.equals("")&&!helpText.contains("**")) {
+////                cont.add(span2Cols, new SpanLabel(helpText));
+////            }
+////        } else
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            cont.add(BorderLayout.center(new SpanLabel(prefEntry.getFieldScription())).add(BorderLayout.EAST, new MyOnOffSwitch(parseIdMap2, () -> {
+////                return MyPrefs.getBoolean(prefEntry);
+////            }, (b) -> {
+////                MyPrefs.setBoolean(prefEntry, b);
+////            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
+////</editor-fold>
+//        cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener, prefEntry.getHelpText()));
+//        compForActionListener.addActionListener((e) -> {
+//            if (compForActionListener.isOn()) {
+//                if (onOnAction != null) {
+//                    onOnAction.run();
+//                }
+//            } else {
+//                if (onOffAction != null) {
+//                    onOffAction.run();
+//                }
 //            }
-//        } else
-//</editor-fold>
-        {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            cont.add(BorderLayout.center(new SpanLabel(prefEntry.getFieldScription())).add(BorderLayout.EAST, new MyOnOffSwitch(parseIdMap2, () -> {
-//                return MyPrefs.getBoolean(prefEntry);
-//            }, (b) -> {
-//                MyPrefs.setBoolean(prefEntry, b);
-//            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
-//</editor-fold>
-            cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener = new MyOnOffSwitch(parseIdMap2, () -> {
-                return MyPrefs.getBoolean(prefEntry);
-            }, (b) -> {
-                MyPrefs.setBoolean(prefEntry, b);
-            }), prefEntry.getHelpText()));
-        }
-        return compForActionListener;
-    }
-
-    static Switch addSettingBooleanOLD(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnAction, Runnable onOffAction) {
-//        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
-        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
-        Switch compForActionListener = new MyOnOffSwitch(parseIdMap2, () -> {
-            return MyPrefs.getBoolean(prefEntry);
-        }, (b) -> {
-            MyPrefs.setBoolean(prefEntry, b);
-        });
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (tableLayout) {
-//            cont.add(new SpanLabel(prefEntry.getFieldScription()));
-//            cont.add(maxDescriptionSize, new SpanLabel(prefEntry.getFieldScription()));
-//
-//            compForActionListener=new MyOnOffSwitch(parseIdMap2, () -> {
-//                return MyPrefs.getBoolean(prefEntry);
-//            }, (b) -> {
-//                MyPrefs.setBoolean(prefEntry, b);
-//            });
-//            cont.add(rightAdj,compForActionListener );
-//
-//            String helpText =prefEntry.getHelpText();
-//            if (!helpText.equals("")&&!helpText.contains("**")) {
-//                cont.add(span2Cols, new SpanLabel(helpText));
-//            }
-//        } else
-//</editor-fold>
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            cont.add(BorderLayout.center(new SpanLabel(prefEntry.getFieldScription())).add(BorderLayout.EAST, new MyOnOffSwitch(parseIdMap2, () -> {
-//                return MyPrefs.getBoolean(prefEntry);
-//            }, (b) -> {
-//                MyPrefs.setBoolean(prefEntry, b);
-//            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
-//</editor-fold>
-        cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener, prefEntry.getHelpText()));
-        compForActionListener.addActionListener((e) -> {
-            if (compForActionListener.isOn()) {
-                if (onOnAction != null) {
-                    onOnAction.run();
-                }
-            } else {
-                if (onOffAction != null) {
-                    onOffAction.run();
-                }
-            }
-        });
-        return compForActionListener;
-    }
+//        });
+//        return compForActionListener;
+//    }
 
     static void addSettingBoolean(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnAction, Runnable onOffAction) {
 //        cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener, prefEntry.getHelpText()));

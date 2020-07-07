@@ -188,7 +188,7 @@ MyIcon {
 */
 
 #Constants {
-    includeNativeBool: true; 
+    /*includeNativeBool: true;*/ 
     ComponentGroupBool: true;
     labelGap: 1;
 
@@ -319,6 +319,21 @@ StatusBar {
 
     background-color: transparent;/**/
 }
+StatusBarZeroSize {
+    /*cn1-derive: Button;/**/
+    /*cn1-derive: Container;/**/
+    /*color: blue;/**/
+    /*padding-top: 2mm;  /*no longer needed on iphone 10 with safeArea*/
+    /*    padding-bottom: 3mm; */
+
+    margin: 0;
+    padding: 0;
+    background-color: transparent;/**/
+}
+
+StatusBarButton { /*the 'virtual' button in the statusbar that catches clicks to scroll to top/bottom/swithc position */
+    cn1-derive: StatusBar;
+}
 
 Toolbar {
     /*cn1-derive: Button;/**/
@@ -392,9 +407,9 @@ CommandList { /* the overflow menu itself */
 
 SearchFieldContainer {
     cn1-derive: Container;
-    padding-top: 1mm;
+    padding-top: 0mm;
     margin-top: 1mm;
-    border-top-width: 1px;
+    border-bottom-width: 1px;
     /*    border-top-color: black;*/
     border: gray;
     border: solid;
@@ -775,7 +790,7 @@ ScreenItemCommentDateStamp {
     /*  border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     /*color: black;*/
     /*    font-size: 100%;*/
-    padding: 0.5mm 0mm 0mm 0.5mm;
+    padding: 0.5mm 0mm 0mm 0.6mm;
     margin: 0 0;
     /*color: blue;*/
     /*background: green;*/
@@ -924,7 +939,7 @@ BigTimerTimer {
     /*https://stackoverflow.com/questions/60801160/how-to-select-a-native-monospace-font-in-theme-css/60931071#60931071*/
     font-family:  monospace; /*should now be valid*/
     /*font-size: 200%;*/
-    font-size: 15mm; /*34pt; 200%;/**56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
+    font-size: large; /*use large as suggested here: https://stackoverflow.com/questions/62119533/how-to-set-a-specific-font-size-on-devices-using-css 15mm; /*34pt; 200%;/**56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
     border: 1mm solid gray;
     background-color: blue;
     text-align: center;
@@ -1416,7 +1431,7 @@ ListOfItemsAlarmDate {
 }
 ListOfItemsOwnerList{ /*showing the owner list of an item */
     cn1-derive: ItemListSmall;
-    padding: 0 4pt;
+    padding: 0 4pt 1pt 0;
     border: 1pt solid grey;
     color:grey;
 }

@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.io.Log;
 import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
 import com.codename1.ui.Display;
@@ -40,6 +41,9 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
                 return MyDate.formatDateTimeNew(date); //
             }
         });
+        addActionListener((e) -> {
+            Log.p("ActionListener called on MyDateAndTimePicker, actionEvent=" + e);
+        });
     }
 
     MyDateAndTimePicker(Date date, String zeroValuePatternVal) {
@@ -70,7 +74,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
     }
 
 //    @Override
-    protected void updateValueXXX() {
+    protected void updateValue() {
         Date date = getDate();
         if (date != null && date.getTime() == 0 && zeroValuePattern != null) {
             setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
@@ -113,10 +117,12 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
         if (getDate() == null || getDate().getTime() == 0) {
 //                setDate(new Date());
             if (getDefaultValue != null) { //                getDate().setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
-                setDate(((Date) getDefaultValue.getVal())); //use this instead of setDate to set date to avoid updating label before showing picker
+//                setDate(((Date) getDefaultValue.getVal())); //use this instead of setDate to set date to avoid updating label before showing picker
+                getDate().setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
             } else { //                getDate().setTime(MyDate.roundUpToNextMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
-            //                getDate().setTime(MyDate.roundToNearestMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
-                setDate(MyDate.roundToNearestMinute(new MyDate())); //use this instead of setDate to set date to avoid updating label before showing picker
+                //                getDate().setTime(MyDate.roundToNearestMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+//                setDate(MyDate.roundToNearestMinute(new MyDate())); //use this instead of setDate to set date to avoid updating label before showing picker
+                getDate().setTime(MyDate.roundToNearestMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
             }
         }
         super.pressed();

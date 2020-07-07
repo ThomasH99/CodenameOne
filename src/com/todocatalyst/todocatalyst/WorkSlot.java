@@ -1794,20 +1794,20 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return items;
 //    }
 ////</editor-fold>
-    public Item getItemsInWorkSlotAsArticialItemXXX() {
-//        List<? extends ItemAndListCommonInterface> subtasks = getTasksInWorkSlotForToday();
-        ItemAndListCommonInterface owner = getOwner();
-        owner.forceCalculationOfWorkTimeXXX();
-        Item artificialItem = new Item();
-//        artificialItem.setList(getTasksInWorkSlotForToday());
-        artificialItem.setList(new ArrayList(itemsWithNonZeroSlicesOfThisWorkSlot)); //work on a copy!
-        artificialItem.setText(
-                WorkSlot.WORKSLOT
-                + " " + MyDate.formatTimeNew(getStartTimeD()) + "-" + MyDate.formatTimeNew(getEndTimeD())
-                + (getOwner() != null ? " in " + getOwner().getText() : "")
-        );
-        return artificialItem;
-    }
+//    public Item getItemsInWorkSlotAsArticialItemXXX() {
+////        List<? extends ItemAndListCommonInterface> subtasks = getTasksInWorkSlotForToday();
+//        ItemAndListCommonInterface owner = getOwner();
+//        owner.forceCalculationOfWorkTimeXXX();
+//        Item artificialItem = new Item();
+////        artificialItem.setList(getTasksInWorkSlotForToday());
+//        artificialItem.setList(new ArrayList(itemsWithNonZeroSlicesOfThisWorkSlot)); //work on a copy!
+//        artificialItem.setText(
+//                WorkSlot.WORKSLOT
+//                + " " + MyDate.formatTimeNew(getStartTimeD()) + "-" + MyDate.formatTimeNew(getEndTimeD())
+//                + (getOwner() != null ? " in " + getOwner().getText() : "")
+//        );
+//        return artificialItem;
+//    }
 
 ////<editor-fold defaultstate="collapsed" desc="comment">
     @Override

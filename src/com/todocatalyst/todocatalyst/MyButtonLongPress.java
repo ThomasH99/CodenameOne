@@ -17,7 +17,7 @@ import com.codename1.ui.events.ActionEvent;
  *
  * @author Thomas
  */
-public class MyButtonLongPressXXX extends Button {
+public class MyButtonLongPress extends Button {
 
 //    Command shortPressCmd;
     Command longPressCmd;
@@ -56,11 +56,11 @@ public class MyButtonLongPressXXX extends Button {
     //        setCommand(shortPressWrapperCmd);
     //    }
     //</editor-fold>
-    public MyButtonLongPressXXX() {
+    public MyButtonLongPress() {
         super();
     }
     
-    public MyButtonLongPressXXX(Command shortPressCmd, Command longPressCmd, Image icon) {
+    public MyButtonLongPress(Command shortPressCmd, Command longPressCmd, Image icon) {
         super(shortPressCmd);
 //        this.shortPressCmd = shortPressCmd;
         this.longPressCmd = longPressCmd;
@@ -68,7 +68,7 @@ public class MyButtonLongPressXXX extends Button {
         setUIID("Label");
     }
     
-    public MyButtonLongPressXXX(Command shortPressCmd, Command longPressCmd) {
+    public MyButtonLongPress(Command shortPressCmd, Command longPressCmd) {
         this(shortPressCmd, longPressCmd, null);
     }
     

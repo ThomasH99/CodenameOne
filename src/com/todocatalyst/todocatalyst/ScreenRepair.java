@@ -16,12 +16,16 @@ import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.Font;
 import com.codename1.ui.Form;
+import com.codename1.ui.SwipeableContainer;
+import com.codename1.ui.Tabs;
 import com.codename1.ui.TextArea;
+import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.Layout;
+import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.util.StringUtil;
 import com.parse4cn1.ParseBatch;
@@ -258,16 +262,14 @@ public class ScreenRepair extends MyForm {
                 //                add(" ").
                 add(w40, new SpanLabel("Currency Symbol:")).add(right, new SpanLabel(l10n.getCurrencySymbol())).
                 //                add(" ").
-                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_ALARM, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_ALARM))).
-                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_BUTTON_PRESS, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_BUTTON_PRESS))).
-                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_CONFIRMATION, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_CONFIRMATION))).
-                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_ERROR, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_ERROR))).
-                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_INFO, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_INFO))).
-                add(span2, uneditableCheck("Is sound available for "+Display.SOUND_TYPE_WARNING, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_WARNING))).
-                
+                add(span2, uneditableCheck("Is sound available for " + Display.SOUND_TYPE_ALARM, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_ALARM))).
+                add(span2, uneditableCheck("Is sound available for " + Display.SOUND_TYPE_BUTTON_PRESS, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_BUTTON_PRESS))).
+                add(span2, uneditableCheck("Is sound available for " + Display.SOUND_TYPE_CONFIRMATION, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_CONFIRMATION))).
+                add(span2, uneditableCheck("Is sound available for " + Display.SOUND_TYPE_ERROR, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_ERROR))).
+                add(span2, uneditableCheck("Is sound available for " + Display.SOUND_TYPE_INFO, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_INFO))).
+                add(span2, uneditableCheck("Is sound available for " + Display.SOUND_TYPE_WARNING, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_WARNING))).
                 add(span2, uneditableCheck("isAllowMinimizing ", d.isAllowMinimizing())).
                 add(span2, uneditableCheck("isBuiltinSoundsEnabled ", d.isBuiltinSoundsEnabled())).
-                
                 add(span2, uneditableCheck("isNativePicker supported for Calendar", d.isNativePickerTypeSupported(Display.PICKER_TYPE_CALENDAR))).
                 add(span2, uneditableCheck("isNativePicker supported for Date", d.isNativePickerTypeSupported(Display.PICKER_TYPE_DATE))).
                 add(span2, uneditableCheck("isNativePicker supported for Date and Time", d.isNativePickerTypeSupported(Display.PICKER_TYPE_DATE_AND_TIME))).
@@ -276,10 +278,8 @@ public class ScreenRepair extends MyForm {
                 add(span2, uneditableCheck("isNativePicker supported for Duration Minutes", d.isNativePickerTypeSupported(Display.PICKER_TYPE_DURATION_MINUTES))).
                 add(span2, uneditableCheck("isNativePicker supported for Strings", d.isNativePickerTypeSupported(Display.PICKER_TYPE_STRINGS))).
                 add(span2, uneditableCheck("isNativePicker supported for Time", d.isNativePickerTypeSupported(Display.PICKER_TYPE_TIME))).
-                
                 add(span2, uneditableCheck("isNativeTitle ", d.isNativeTitle())).
                 add(span2, uneditableCheck("isNotificationSupported ", d.isNotificationSupported())).
-                
                 add(span2, uneditableCheck("Are Mutable Images Fast", d.areMutableImagesFast())).
                 add(span2, uneditableCheck("Can Dial", d.canDial())).
                 add(span2, uneditableCheck("Can Force Orientation", d.canForceOrientation())).
@@ -301,7 +301,7 @@ public class ScreenRepair extends MyForm {
                 add(span2, uneditableCheck("Screen Saver Disable", d.isScreenSaverDisableSupported())).
                 add(span2, uneditableCheck("Simulator", d.isSimulator()));
 
-        add(w40, new SpanLabel("Display.getInstance().getProperty:")).add(right, new SpanLabel("")).
+        hi.add(w40, new SpanLabel("Display.getInstance().getProperty:")).add(right, new SpanLabel("")).
                 add(w40, new SpanLabel("AppName:")).add(right, new SpanLabel(Display.getInstance().getProperty("AppName", "NONE"))).
                 add(w40, new SpanLabel("appVersion:")).add(right, new SpanLabel(Display.getInstance().getProperty("appVersion", "NONE"))).
                 //https://github.com/codenameone/CodenameOne/issues/2677
@@ -408,7 +408,7 @@ public class ScreenRepair extends MyForm {
 
         L10NManager l10n = L10NManager.getInstance();
         hi.add(new SpanLabel("format(double)")).add(l10n.format(11.11)).
-                add(new SpanLabel("Locale (Display.getInstance().getLocalizationManager().getLocale()) = " 
+                add(new SpanLabel("Locale (Display.getInstance().getLocalizationManager().getLocale()) = "
                         + Display.getInstance().getLocalizationManager().getLocale())).
                 add(new SpanLabel("TimeZone (TimeZone.getDefault()) zone id = " + TimeZone.getDefault().getID())).
                 add(new SpanLabel("TimeZone (TimeZone.getDefault()) raw offset = " + MyDate.formatDuration(TimeZone.getDefault().getRawOffset()))).
@@ -1265,6 +1265,137 @@ public class ScreenRepair extends MyForm {
                 }
                 ));
 
+        content.add(
+                new Button(new Command("Test Done/Next button on virtual keyboard", Icons.iconSettings) {
+                    @Override
+                    public void actionPerformed(ActionEvent evt) {
+                        Label status = new Label("Safe area OFF");
+                        MyForm hi = new MyForm("Hi World", ScreenRepair.this, null);
+                        hi.setScrollableY(true);
+                        hi.getContentPane().setSafeArea(false);
+                        if (false) {
+                            hi.getToolbar().addCommandToOverflowMenu("Safe area ON", null, ev -> {
+                                hi.getContentPane().setSafeArea(true);
+                                status.setText("Safe ON");
+                                hi.revalidate();
+                                System.out.println("Item 1 selected");
+                            });
+                            hi.getToolbar().addCommandToOverflowMenu("Safe area OFF", null, ev -> {
+                                hi.getContentPane().setSafeArea(false);
+                                status.setText("Safe OFF");
+                                hi.revalidate();
+                                System.out.println("Item 2 selected");
+                            });
+                        }
+                        hi.add(new Label("Hi World"));
+                        hi.add(status);
+
+                        Tabs tabs = new Tabs();
+                        hi.add(tabs);
+
+                        Container statusCont = new Container(BoxLayout.y());
+                        Container statusCont2 = new Container(BoxLayout.y());
+                        tabs.addTab("Tab1", statusCont);
+                        tabs.addTab("Tab1", statusCont2);
+
+//            TextField textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
+//            textEntryField.setUIID("ListPinchInsertTextField");
+//            textEntryField.setHint("MyTextField2/InlineInsert");
+//            textEntryField.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
+//            statusCont.add(textEntryField);
+//            statusCont.add("ENormal TextField from InlineInsert:");
+                        TextField textEntryField2 = new TextField("TextField,-Trvs: Kbd:next, bar:Done"); //TODO!!!! need field to enter edit mode
+//            textEntryField2.setUIID("ListPinchInsertTextField");
+//            textEntryField2.setHint("Normal TextField from InlineInsert");
+                        textEntryField2.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
+                        textEntryField2.setTraversable(false);
+                        statusCont.add(textEntryField2);
+
+                        statusCont.add("Normal TextField, noCaps:");
+                        TextField textEntryField3 = new TextField(""); //TODO!!!! need field to enter edit mode
+                        textEntryField3.setUIID("ListPinchInsertTextField");
+                        textEntryField3.setHint("Normal TextField from InlineInsert ");
+                        textEntryField3.setConstraint(TextField.ANY); //UI: automatically set caps sentence (first letter uppercase)
+                        textEntryField3.setTraversable(false);
+                        statusCont.add(textEntryField3);
+
+                        statusCont.add("Enter a decimal value (non-travesable):");
+                        TextField numField = new TextField();
+                        numField.setConstraint(TextArea.DECIMAL);
+                        numField.setTraversable(false);
+                        statusCont.add(numField);
+
+                        statusCont.add("Enter a decimal value (travesable):");
+                        TextField numField2 = new TextField();
+                        numField2.setConstraint(TextArea.DECIMAL);
+                        numField2.setTraversable(true);
+                        statusCont.add(numField2);
+
+                        TextArea textField2 = new TextArea("TextArea", 3, 80);
+                        textField2.setConstraint(TextArea.ANY);
+                        statusCont.add(textField2);
+
+                        TextArea textField5 = new TextArea("TextArea, no constraint", 3, 80);
+//                textField5.setConstraint(TextArea.ANY);
+                        statusCont.add(textField5);
+
+                        TextField textField1 = new TextField("TextField", "TextField", 3, 80);
+                        textField1.setConstraint(TextArea.ANY);
+                        statusCont.add(textField1);
+
+                        statusCont.add("MyDateAndTimePicker:");
+                        statusCont.add(new MyDateAndTimePicker());
+
+                        statusCont.add("Normal date Picker:");
+                        Picker datetimepicker = new Picker();
+                        datetimepicker.setType(Display.PICKER_TYPE_DATE_AND_TIME);
+                        statusCont.add(datetimepicker);
+
+                        statusCont.add("Normal date Picker w lead:");
+                        Picker datetimepicker2 = new Picker();
+                        datetimepicker2.setType(Display.PICKER_TYPE_DATE_AND_TIME);
+                        Container visibleField = BorderLayout.centerCenterEastWest(datetimepicker2, new Button(">"), null);
+                        ((Container) visibleField).setLeadComponent(datetimepicker2);
+                        statusCont.add(visibleField);
+
+                        statusCont2.add("Enter a decimal value (non-travesable):");
+                        statusCont2.add("Normal date Picker inSwipe:");
+                        Picker datetimepicker4 = new Picker();
+                        datetimepicker4.setType(Display.PICKER_TYPE_DATE_AND_TIME);
+                        SwipeableContainer swipeCont = new SwipeableContainer(new Button("Swipe"), datetimepicker4);
+                        statusCont2.add(swipeCont);
+
+                        statusCont2.add("Enter a decimal value (non-travesable):");
+                        statusCont2.add("Date Picker in Swipe+Lead:");
+                        Picker datetimepicker5 = new Picker();
+                        datetimepicker5.setType(Display.PICKER_TYPE_DATE_AND_TIME);
+                        Container visibleField2 = BorderLayout.centerCenterEastWest(datetimepicker5, new Button(">"), null);
+                        ((Container) visibleField2).setLeadComponent(datetimepicker5);
+                        SwipeableContainer swipeCont2 = new SwipeableContainer(new Button("Swipe"), visibleField2);
+                        statusCont2.add(swipeCont2);
+
+                        statusCont2.add("Enter a decimal value (non-travesable):");
+                        TextField numField3 = new TextField();
+                        numField3.setConstraint(TextArea.DECIMAL);
+                        numField3.setTraversable(false);
+                        statusCont2.add(numField3);
+
+                        TextField textEntryField4 = new TextField("TextField,-Trvs: Kbd:next, bar:Done"); //TODO!!!! need field to enter edit mode
+                        textEntryField4.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
+                        textEntryField4.setTraversable(false);
+                        statusCont2.add(textEntryField4);
+
+//            MyTextField textField3 = new MyTextField("Simple MyTextField", 3, 80);
+//            statusCont.add(textField3);
+//
+////                  MyTextField(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint,  int alignment) {
+//            MyTextField textField4 = new MyTextField("Normal MyTextField", 80, 3, 5, 200, TextArea.DECIMAL);
+//            statusCont.add(textField4);
+                        hi.show();
+                    }
+                }
+                ));
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        content.add(
 //                new Button(new Command("Edit RepeatRule", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
 //                    @Override
@@ -1272,7 +1403,7 @@ public class ScreenRepair extends MyForm {
 //                    ) {
 //                        RepeatRuleParseObject repeatRule = new RepeatRuleParseObject();
 //                        repeatRule.setSpecifiedStartDate(new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 48).getTime());
-//                        new ScreenRepeatRule("test", repeatRule, new Item("taskX", 15, new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 24)), 
+//                        new ScreenRepeatRule("test", repeatRule, new Item("taskX", 15, new Date(System.currentTimeMillis() + MyDate.HOUR_IN_MILISECONDS * 24)),
 //                                (MyForm) content.getComponentForm(), () -> {
 //                        }, true, null, null, false).show();
 //                    }
@@ -1304,6 +1435,7 @@ public class ScreenRepair extends MyForm {
 //
 //        })));
 //        content.add(new Button(new Command("Show items with both ownerItem and ownerList")));
+//</editor-fold>
         return content;
     }
 }

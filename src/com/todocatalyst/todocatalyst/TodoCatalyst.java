@@ -845,12 +845,16 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //            Display.getInstance().setPreferredBackgroundFetchInterval(Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt()/2,1)*MyDate.HOUR_IN_MILISECONDS); //max(.., 1): ensure that interval never gets 0 after division by 2
 //            Display.getInstance().setPreferredBackgroundFetchInterval(Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt()* 3600 / 2, 3600/4) ); //max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
 //            AlarmHandler.setPreferredBackgroundFetchInterval();
-//</editor-fold>
 //max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
 //int fetchIntervalSeconds = Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * 3600 / 2, 3600 / 4);
 //int fetchIntervalSeconds = Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() *3600 / 2, 3600 / 4);
 //            Display.getInstance().setPreferredBackgroundFetchInterval(fetchIntervalSeconds); 
-            AlarmHandler.setPreferredBackgroundFetchInterval();
+//</editor-fold>
+            if (false) {
+                AlarmHandler.setPreferredBackgroundFetchInterval();
+            } else {
+                Display.getInstance().setPreferredBackgroundFetchInterval(60 * 60); //every hour
+            }
             Log.p("Background Fetch IS Supported");
         } else {
             Log.p("Background Fetch is NOT Supported");
@@ -936,14 +940,18 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //        } else {
 //            new ScreenLogin(theme).go();
 //</editor-fold>
-        Display.getInstance().setProperty("iosHideToolbar", "true"); //prevent ttoolbar over keyboard to show (Done/Next button): https://stackoverflow.com/questions/48727116/codename-one-done-button-of-ios-virtual-keyboard
-
+        if (false) {
+            Display.getInstance().setProperty("iosHideToolbar", "true"); //prevent ttoolbar over keyboard to show (Done/Next button): https://stackoverflow.com/questions/48727116/codename-one-done-button-of-ios-virtual-keyboard
+        }
         if (Display.getInstance().canForceOrientation()) {
             if (false && Display.getInstance().isTablet()) {
                 Display.getInstance().lockOrientation(true); //lock screen rotation to portrait=true, https://stackoverflow.com/questions/48712682/codenameone-rotate-display
             }//        }
 //            Display.getInstance().lockOrientation(!Config.TEST); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
-            Display.getInstance().lockOrientation(MyPrefs.screenRotationDisabled.getBoolean()); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
+            if (MyPrefs.screenEnableDisplayRotationToLandscape.getBoolean()) {
+                Display.getInstance().unlockOrientation(); //enable screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
+            }
+            Display.getInstance().lockOrientation(true); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
         }
 
         //Check if already logged in, if so, removeFromCache cache
@@ -1237,6 +1245,17 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         Log.p("destroy()");
     }
 
+    final static String LAST_BADGE_UPDATE_TIME_FILENAME = "LastBadgeUpdateDate";
+
+    private void updateBadgeCountAtStartOfNewDay() {
+        Date lastBadgeUpdate = (Date) Storage.getInstance().readObject(LAST_BADGE_UPDATE_TIME_FILENAME);
+        Date now = new MyDate();
+        if (lastBadgeUpdate == null || MyDate.getStartOfDay(now).getTime() > MyDate.getStartOfDay(lastBadgeUpdate).getTime()) {
+            Storage.getInstance().writeObject(LAST_BADGE_UPDATE_TIME_FILENAME, now);
+            refreshBadgeCount();
+        }
+    }
+
     /*https://www.codenameone.com/manual/push.html*/
     /**
      * This method will be called in the background by the platform. Note: This
@@ -1248,6 +1267,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
      */
     @Override
     public void performBackgroundFetch(long deadline, Callback<Boolean> onComplete) {
+        //use Display.getInstance().setPreferredBackgroundFetchInterval(int) to initiate and set fetch interval
         //https://www.codenameone.com/blog/background-fetch.html
         //https://www.codenameone.com/javadoc/com/codename1/background/BackgroundFetch.html
 //        RSSService rss = new RSSService("http://rss.slashdot.org/Slashdot/slashdotMain");
@@ -1260,15 +1280,19 @@ Make a special fetch that gets all leaf tasks etc so no need to access cache/loc
 
 Update alarms: 
 Consider situations: phone's been off for some time (days/weeks); change of time-zone?!; 
-*/
+         */
 
         long t1 = System.currentTimeMillis();
-        Log.p("performBackgroundFetch called, time=" + new Date() + ", deadline=" + deadline + ", date(deadline)="
-                + new MyDate(deadline) + "; deadline value=" + deadline + "ms; deadline vs now=" + (deadline - System.currentTimeMillis()));
+        Log.p("performBackgroundFetch called, time=" + new Date() + ", deadline=" + MyDate.formatDuration(deadline) + ", date(deadline)="
+                + new MyDate(deadline) + "; deadline value=" + deadline + "ms; deadline-now=" + (deadline - System.currentTimeMillis()));
+        Log.p("Calling AlarmHandler.updateLocalNotificationsOnBackgroundFetch() from backgroundFetch");
         AlarmHandler.getInstance().updateLocalNotificationsOnBackgroundFetch();
 //        System.out.println("performBackgroundFetch/deadline=" + deadline);
         onComplete.onSucess(Boolean.TRUE);
 //        Log.p("performBackgroundFetch finished=");
+
+        updateBadgeCountAtStartOfNewDay();
+
         Log.p("performBackgroundFetch finished, time=" + new Date() + "; duration in ms=" + (System.currentTimeMillis() - t1));
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1385,7 +1409,8 @@ Consider situations: phone's been off for some time (days/weeks); change of time
      * @see LocalNotification
      */
     @Override
-    public void localNotificationReceived(String notificationId) {
+    public void localNotificationReceived(String notificationId
+    ) {
         //https://www.codenameone.com/blog/local-notifications.html
 //        AlarmHandler.getInstance().localNotificationReceived(notificationId);
         storedNotificationId = notificationId; //processed in start()

@@ -133,9 +133,9 @@ public class SaveEditedValuesLocally {//extends HashMap {
         SaveEditedValuesLocally.this.setListenToYScrollComponent(myForm.findScrollableContYChild());
     }
 
-    public Integer getScrollYXXX() {
-        return (Integer) get(SCROLL_VALUE_KEY);
-    }
+//    public Integer getScrollYXXX() {
+//        return (Integer) get(SCROLL_VALUE_KEY);
+//    }
 
     /**
      * will scroll the form to the last stored scrollY position (if any) and
@@ -483,20 +483,20 @@ public class SaveEditedValuesLocally {//extends HashMap {
      *
      * @return
      */
-    public List<ItemAndListCommonInterface> getListOfElementsNXXX(String key) {
-        Object eltList = get(key);
-        if (eltList != null) {
-            List<String> ids = (List) eltList;
-            List<ItemAndListCommonInterface> elements = new ArrayList();
-            for (String id : ids) {
-                ItemAndListCommonInterface owner = DAO.getInstance().fetchItemOwner(id);
-                elements.add(owner);
-            }
-            return elements;
-        } else {
-            return null;
-        }
-    }
+//    public List<ItemAndListCommonInterface> getListOfElementsNXXX(String key) {
+//        Object eltList = get(key);
+//        if (eltList != null) {
+//            List<String> ids = (List) eltList;
+//            List<ItemAndListCommonInterface> elements = new ArrayList();
+//            for (String id : ids) {
+//                ItemAndListCommonInterface owner = DAO.getInstance().fetchItemOwner(id);
+//                elements.add(owner);
+//            }
+//            return elements;
+//        } else {
+//            return null;
+//        }
+//    }
 
     public List<ItemAndListCommonInterface> getOwnersN() {
         if (get(Item.PARSE_OWNER_ITEM) != null) {
@@ -575,9 +575,9 @@ public class SaveEditedValuesLocally {//extends HashMap {
         return ids;
     }
 
-    public void removeOwnerXXX() {
-        remove(Item.PARSE_OWNER_ITEM);
-    }
+//    public void removeOwnerXXX() {
+//        remove(Item.PARSE_OWNER_ITEM);
+//    }
 
     public void removeOwners() {
         remove(Item.PARSE_OWNER_ITEM);

@@ -12,6 +12,7 @@ import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
 import static com.todocatalyst.todocatalyst.Item.PARSE_RESTART_TIMER;
 import static com.todocatalyst.todocatalyst.Item.PARSE_WORKSLOTS;
+import com.todocatalyst.todocatalyst.MyForm.ScreenType;
 import static com.todocatalyst.todocatalyst.MyForm.getListAsCommaSeparatedString;
 import static com.todocatalyst.todocatalyst.MyUtil.removeTrailingPrecedingSpacesNewLinesEtc;
 //import com.todocatalyst.todocatalyst.MyTree.MyTreeModel;
@@ -2599,35 +2600,34 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param previousItem
      * @return
      */
-    private E getNextAfterEvenIfFilteredXXX(E previousItem, boolean returnFirstItemIfPreviousNotFound) {
-        List<E> list = getList();
-        int index = list.indexOf(previousItem);
-        if (index >= 0) {
-            if (index < list.size() - 1) //if there is an element *after* previousItem in the list
-            {
-                return getList().get(index + 1);
-            } else {
-                if (returnFirstItemIfPreviousNotFound && list.size() > 0) {
-                    return list.get(0);
-                } else {
-                    return null; //else: previousItem was found in list, but was the last item
-                }
-            }
-        } else { //previousItem was NOT dfound in the list, try to find in unfiltered list and return first unfiltered item after it (if any)
-            List<E> listFull = getListFull();
-            int indexFull = listFull.indexOf(previousItem);
-            if (indexFull >= 0) {
-                //run through the elements in listFull and if return the first one which is in listFiltered  (if any)
-                for (E elt : listFull.subList(indexFull + 1, listFull.size())) { //only working if no duplicates in list!!
-                    if (list.contains(elt)) {
-                        return elt;
-                    }
-                }
-            }
-            return null;
-        }
-    }
-
+//    private E getNextAfterEvenIfFilteredXXX(E previousItem, boolean returnFirstItemIfPreviousNotFound) {
+//        List<E> list = getList();
+//        int index = list.indexOf(previousItem);
+//        if (index >= 0) {
+//            if (index < list.size() - 1) //if there is an element *after* previousItem in the list
+//            {
+//                return getList().get(index + 1);
+//            } else {
+//                if (returnFirstItemIfPreviousNotFound && list.size() > 0) {
+//                    return list.get(0);
+//                } else {
+//                    return null; //else: previousItem was found in list, but was the last item
+//                }
+//            }
+//        } else { //previousItem was NOT dfound in the list, try to find in unfiltered list and return first unfiltered item after it (if any)
+//            List<E> listFull = getListFull();
+//            int indexFull = listFull.indexOf(previousItem);
+//            if (indexFull >= 0) {
+//                //run through the elements in listFull and if return the first one which is in listFiltered  (if any)
+//                for (E elt : listFull.subList(indexFull + 1, listFull.size())) { //only working if no duplicates in list!!
+//                    if (list.contains(elt)) {
+//                        return elt;
+//                    }
+//                }
+//            }
+//            return null;
+//        }
+//    }
     public E getNextItemAfter(Item previousItem, boolean returnFirstItemIfPreviousNotFound) {
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
         List<E> list = getList(); //get filtered list
@@ -3447,55 +3447,56 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
 //    @Override
     public boolean equalsXXX(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (obj == this) {
-            return true;
-        }
-//        if (this.getClass() != o.getClass()) {
+//        if (obj == null) {
 //            return false;
 //        }
-        if (!(obj instanceof ItemList)) {
-            return false;
-        }
-
-        ItemList itemList = (ItemList) obj;
-
-//        if (!this.getClassName().equals(o2.getClassName())) {
-//            return false; //different ParseObject class, different object
+//        if (obj == this) {
+//            return true;
 //        }
-//        if (o2.isNoSave() && isNoSave() && o2.getText().equals(getText())) {
-//            return true; //special case to ensure that temporare lists with same name remain expanded in ScreenStatistics
-//        }
-//        return (this.getObjectIdP() != null && this.getObjectIdP().equals(o2.getObjectIdP()));
-//        if (false) {
-//            if (this.getObjectIdP() != null) {
-//                return this.getObjectIdP().equals(itemList.getObjectIdP());
-//            } else {
-//                return (itemList.isNoSave() && isNoSave() && itemList.getText().equals(getText())); //special case to ensure that temporare lists with same name remain expanded in ScreenStatistics
-//            }
-//        }
-        if (getObjectIdP() != null) {//&& itemList.getObjectIdP() != null) {
-            //compare isDirty in case we have two instances of the same 
-            if (Config.CHECK_OWNERS) {
-                ASSERT.that(!getObjectIdP().equals(itemList.getObjectIdP()) || isDirty() == itemList.isDirty(),
-                        () -> "comparing dirty and not dirty instance of same object, this=" + this + ", other=" + obj);
-            }
-            if (getObjectIdP().equals(itemList.getObjectIdP())) {
-                return true;
-            }
-        }
-        return false;
-
-//        if (this.getObjectIdP() != null && this.getObjectIdP().equals(o2.getObjectIdP())) {
-//            return true; //same ParseObject, same object
-//        }
-//        if (false && !this.getText().equals(o2.getText())) { //DON'T compare on name only
-//            return false; //different name, different object
+////        if (this.getClass() != o.getClass()) {
+////            return false;
+////        }
+//        if (!(obj instanceof ItemList)) {
+//            return false;
 //        }
 //
+//        ItemList itemList = (ItemList) obj;
+//
+////        if (!this.getClassName().equals(o2.getClassName())) {
+////            return false; //different ParseObject class, different object
+////        }
+////        if (o2.isNoSave() && isNoSave() && o2.getText().equals(getText())) {
+////            return true; //special case to ensure that temporare lists with same name remain expanded in ScreenStatistics
+////        }
+////        return (this.getObjectIdP() != null && this.getObjectIdP().equals(o2.getObjectIdP()));
+////        if (false) {
+////            if (this.getObjectIdP() != null) {
+////                return this.getObjectIdP().equals(itemList.getObjectIdP());
+////            } else {
+////                return (itemList.isNoSave() && isNoSave() && itemList.getText().equals(getText())); //special case to ensure that temporare lists with same name remain expanded in ScreenStatistics
+////            }
+////        }
+//        if (getObjectIdP() != null) {//&& itemList.getObjectIdP() != null) {
+//            //compare isDirty in case we have two instances of the same 
+//            if (Config.CHECK_OWNERS) {
+//                ASSERT.that(!getObjectIdP().equals(itemList.getObjectIdP()) || isDirty() == itemList.isDirty(),
+//                        () -> "comparing dirty and not dirty instance of same object, this=" + this + ", other=" + obj);
+//            }
+//            if (getObjectIdP().equals(itemList.getObjectIdP())) {
+//                return true;
+//            }
+//        }
 //        return false;
+//
+////        if (this.getObjectIdP() != null && this.getObjectIdP().equals(o2.getObjectIdP())) {
+////            return true; //same ParseObject, same object
+////        }
+////        if (false && !this.getText().equals(o2.getText())) { //DON'T compare on name only
+////            return false; //different name, different object
+////        }
+////
+////        return false;
+        return false;
     }
 
 //    @Override
@@ -4047,6 +4048,38 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public boolean isRestartTimerOnNotFound() {
         Boolean restartTimerOnNotFound = getBoolean(PARSE_RESTART_TIMER);
         return restartTimerOnNotFound != null; //return null to indicate NOT deleted
+    }
+
+    public static FilterSortDef getSystemDefaultFilter(ScreenType screenType) {
+        switch (screenType) {
+            case NEXT:
+                return new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
+                        + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false, false);
+            case OVERDUE:
+                return new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
+            case COMPLETION_LOG:
+                return new FilterSortDef(Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
+            case CREATION_LOG:
+                return new FilterSortDef(Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
+            case TOUCHED:
+                return new FilterSortDef(Item.PARSE_UPDATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false); //true => show most recent first
+        }
+        return null;
+    }
+
+    public FilterSortDef getFilterSortDef(boolean returnDefaultFilterIfNoneDefined) {
+        FilterSortDef filterSortDef = getFilterSortDefN();
+        //automatically recover from the situation where the predefined/default filter for system lists were not saved:
+        if (Config.TEST && filterSortDef == null && isSystemList()) {
+//            getSystemDefaultFilter(ScreenType.valueOf(getSystemName()));
+            ScreenType st = ScreenType.getScreenType(getSystemName());
+            if (st != null) {
+                filterSortDef = getSystemDefaultFilter(st);
+                setFilterSortDef(filterSortDef);
+                DAO.getInstance().saveNew((ParseObject) this);
+            }
+        }
+        return filterSortDef;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

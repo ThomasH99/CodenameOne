@@ -409,34 +409,34 @@ class MyComponentGroup extends ComponentGroup {
      * @param selectedIndex an illegal value, e.g. -1, will lead to all being
      * unselected
      */
-    public void selectOLD(int selectedIndex) {
-        int size = this.getComponentCount();
-//        if (selectedIndex < 0 || selectedIndex >= size) {
-//            return;
+//    public void selectOLD(int selectedIndex) {
+//        int size = this.getComponentCount();
+////        if (selectedIndex < 0 || selectedIndex >= size) {
+////            return;
+////        }
+//        int nbSelected = getSelectedValues().size();
+//        int oldIndex = getSelectedIndex();
+//        for (int i = 0; i < size; i++) {
+////            ((RadioButton) this.getComponentAt(i)).setSelected(i == selectedIndex);
+//            if (i == selectedIndex) {
+//                if (this.getComponentAt(i) instanceof RadioButton) {
+//                    ((RadioButton) this.getComponentAt(i)).setSelected(true);
+//                } else if (this.getComponentAt(i) instanceof CheckBox) {
+//                    ((CheckBox) this.getComponentAt(i)).setSelected(true);
+//                }
+//                if (selectionListener != null) {
+//                    selectionListener.fireSelectionEvent(oldIndex, selectedIndex);
+//                }
+//            } else {
+////                ((Button) this.getComponentAt(i)).setSelected(false);
+//                if (this.getComponentAt(i) instanceof RadioButton) {
+//                    ((RadioButton) this.getComponentAt(i)).setSelected(false);
+//                } else if (this.getComponentAt(i) instanceof CheckBox) {
+//                    ((CheckBox) this.getComponentAt(i)).setSelected(false);
+//                }
+//            }
 //        }
-        int nbSelected = getSelectedValues().size();
-        int oldIndex = getSelectedIndex();
-        for (int i = 0; i < size; i++) {
-//            ((RadioButton) this.getComponentAt(i)).setSelected(i == selectedIndex);
-            if (i == selectedIndex) {
-                if (this.getComponentAt(i) instanceof RadioButton) {
-                    ((RadioButton) this.getComponentAt(i)).setSelected(true);
-                } else if (this.getComponentAt(i) instanceof CheckBox) {
-                    ((CheckBox) this.getComponentAt(i)).setSelected(true);
-                }
-                if (selectionListener != null) {
-                    selectionListener.fireSelectionEvent(oldIndex, selectedIndex);
-                }
-            } else {
-//                ((Button) this.getComponentAt(i)).setSelected(false);
-                if (this.getComponentAt(i) instanceof RadioButton) {
-                    ((RadioButton) this.getComponentAt(i)).setSelected(false);
-                } else if (this.getComponentAt(i) instanceof CheckBox) {
-                    ((CheckBox) this.getComponentAt(i)).setSelected(false);
-                }
-            }
-        }
-    }
+//    }
     /**
      * select the tiven index, if selectedIndex does not match any (-1 or larger than array), all are unselected
      * @param selectedIndex 
@@ -523,9 +523,9 @@ class MyComponentGroup extends ComponentGroup {
         selectIndex(getIndexOfValue(value));
     }
     
-    public void selectValuesXXX(Vector initiallySelectedValues) {
-        selectValues(initiallySelectedValues);
-    }
+//    public void selectValuesXXX(Vector initiallySelectedValues) {
+//        selectValues(initiallySelectedValues);
+//    }
     
     public void selectValues(Vector initiallySelectedValues) {
         for (Object o : initiallySelectedValues) {

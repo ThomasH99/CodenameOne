@@ -549,7 +549,7 @@ public class ScreenRepeatRule extends MyForm {
 //        repeatStartDatePicker = new MyDateAndTimePicker((Date) makeStartDate.getVal()); //"<no Start date**>"
 //        repeatStartDatePicker = new MyDateAndTimePicker(makeStartDate); //makeStartDate: NOT good: will only set default value once pressed
 //        repeatStartDatePicker = new MyDateAndTimePicker(repeatRuleEdited.getSpecifiedStartDateD().getTime() != 0 ? repeatRuleEdited.getSpecifiedStartDateD() : defaultStartDate); // "<no Start date**>"
-        repeatStartDatePickerXXX = new MyDateAndTimePicker(repeatRuleEdited.getSpecifiedStartDateXXXZZZ()); // "<no Start date**>"
+        repeatStartDatePickerXXX = new MyDateAndTimePicker(repeatRuleEdited.getSpecifiedStartDateZZZ()); // "<no Start date**>"
         if (Config.TEST) {
             repeatStartDatePickerXXX.setName("repeatStartDatePicker");
         }
@@ -1393,7 +1393,7 @@ public class ScreenRepeatRule extends MyForm {
 //                    }
 //                } else {
 //</editor-fold>
-                if (false && myRepeatRule.getSpecifiedStartDateXXXZZZ().getTime() == 0) {//if no due date was set in the original task for the repeat rule, then use the first generated 
+                if (false && myRepeatRule.getSpecifiedStartDateZZZ().getTime() == 0) {//if no due date was set in the original task for the repeat rule, then use the first generated 
                     if (itemDueDate != null && itemDueDate.getTime() != 0) {
                         myRepeatRule.setSpecifiedStartDateXXXZZZ(itemDueDate); //TODO: what value to use if this case becomes relevant??
                     } else {

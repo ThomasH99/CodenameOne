@@ -109,26 +109,26 @@ public class CategoryList extends ItemList {
         return null;
     }
 
-    public synchronized boolean reloadFromParseXXX(boolean forceLoadFromParse, Date startDate, Date endDate) {
-//        CategoryList t = INSTANCE;
-//        INSTANCE = null; //next call to getInstance() will re-initiate/refresh the instance
-//        return t;
-//        INSTANCE.add(temp);
-//        INSTANCE.setList(temp.getList()); //NO good because shortcircuts the addItem logic (bags etc)
-        CategoryList temp = DAO.getInstance().getCategoryList();//forceLoadFromParse); //, startDate, endDate);
-        if (temp != null) {
-            CategoryList current = getInstance();
-//            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
-            current.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
-            for (ItemAndListCommonInterface elt : temp.getList()) {
-//                INSTANCE.addItem(elt);
-                current.addItem(elt);
-            }
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(this); //
-            return true;
-        }
-        return false;
-    }
+//    public synchronized boolean reloadFromParseXXX(boolean forceLoadFromParse, Date startDate, Date endDate) {
+////        CategoryList t = INSTANCE;
+////        INSTANCE = null; //next call to getInstance() will re-initiate/refresh the instance
+////        return t;
+////        INSTANCE.add(temp);
+////        INSTANCE.setList(temp.getList()); //NO good because shortcircuts the addItem logic (bags etc)
+//        CategoryList temp = DAO.getInstance().getCategoryList();//forceLoadFromParse); //, startDate, endDate);
+//        if (temp != null) {
+//            CategoryList current = getInstance();
+////            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+//            current.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+//            for (ItemAndListCommonInterface elt : temp.getList()) {
+////                INSTANCE.addItem(elt);
+//                current.addItem(elt);
+//            }
+//            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(this); //
+//            return true;
+//        }
+//        return false;
+//    }
 
     @Override
     public int getVersion() {

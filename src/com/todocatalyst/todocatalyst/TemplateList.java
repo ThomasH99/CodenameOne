@@ -80,24 +80,24 @@ public class TemplateList<T> extends ItemList {
 //        }
 //    }
 //</editor-fold>
-    public synchronized boolean reloadFromParseXXX(boolean forceLoadFromParse, Date startDate, Date endDate) {
-//        TemplateList t= INSTANCE;
-//        INSTANCE=null; //next call to getInstance() will re-initiate/refresh the instance
-//        return t;
-        TemplateList temp = DAO.getInstance().getTemplateList();//forceLoadFromParse, startDate, endDate);
-        if (temp != null) {
-            TemplateList current = getInstance();
-//            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
-            current.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
-            for (Object elt : temp.getListFull()) {
-//                INSTANCE.addItem((ItemAndListCommonInterface) elt);
-                current.addItem((ItemAndListCommonInterface) elt);
-            }
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(this); //
-            return true;
-        }
-        return false;
-    }
+//    public synchronized boolean reloadFromParseXXX(boolean forceLoadFromParse, Date startDate, Date endDate) {
+////        TemplateList t= INSTANCE;
+////        INSTANCE=null; //next call to getInstance() will re-initiate/refresh the instance
+////        return t;
+//        TemplateList temp = DAO.getInstance().getTemplateList();//forceLoadFromParse, startDate, endDate);
+//        if (temp != null) {
+//            TemplateList current = getInstance();
+////            INSTANCE.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+//            current.clear(); //this is to avoid that an already cached instance get recreated (like the above code did)
+//            for (Object elt : temp.getListFull()) {
+////                INSTANCE.addItem((ItemAndListCommonInterface) elt);
+//                current.addItem((ItemAndListCommonInterface) elt);
+//            }
+//            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(this); //
+//            return true;
+//        }
+//        return false;
+//    }
 
     @Override
     public int getVersion() {

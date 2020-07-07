@@ -238,7 +238,7 @@ public class ScreenListOfAlarms extends MyForm {
                 showPreviousScreen(true); //false);
             });
 
-            Button snoozeAll = new MyButtonLongPressXXX(
+            Button snoozeAll = new MyButtonLongPress(
                     CommandTracked.create("Snooze All", Icons.iconSnooze, (evt) -> {
 //                        Date snooze = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + ((long) MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS));
                         Date snooze = new MyDate(MyDate.currentTimeMillis() + ((long) MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt()) * MyDate.MINUTE_IN_MILLISECONDS);
@@ -458,7 +458,7 @@ public class ScreenListOfAlarms extends MyForm {
         cancelAlarm.setUIID("ScreenAlarmsCancelAlarm");
 
         //SNOOZE BUTTON
-        Button snoozeAlarm = new MyButtonLongPressXXX(
+        Button snoozeAlarm = new MyButtonLongPress(
                 CommandTracked.create("", Icons.iconSnooze, (evt) -> {
                     Date snoozeExpireTimeInMillis;
                     if (MyPrefs.alarmReuseIndividuallySetSnoozeDurationForNormalSnooze.getBoolean() && ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis != 0) //                        snoozeExpireTimeInMillis = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + ((ScreenListOfAlarms) myForm).individuallySetSnoozeTimeMillis)); //UI: snooze interval always from the moment you activate snooze
@@ -549,31 +549,31 @@ public class ScreenListOfAlarms extends MyForm {
         }
     }
 
-    protected Container buildContentPaneForAlarmListOLD(List<ExpiredAlarm> expiredAlarms, MyForm previousForm) {
-        parseIdMap2.parseIdMapReset();
-        if (expiredAlarms != null && expiredAlarms.size() > 0) {
-//        Container cont = new Container();
-            Container cont = new ContainerScrollY(BoxLayout.y());
-            cont.setScrollableY(true);
-//        for (int i = 0, size = expiredAlarms.size(); i < size; i++) {
-//            ExpiredAlarm notif = expiredAlarms.get(i);
-            for (ExpiredAlarm notif : expiredAlarms) {
-//            ExpiredAlarm notif = expiredAlarms.get(i);
-                if (notif.alarmTime.getTime() <= now) {
-                    Item item = DAO.getInstance().fetchItem(notif.objectId);
-                    showDetails.add(item);
-//                Component cmp = buildItemAlarmContainer(ScreenListOfAlarms.this, item, notif, expiredAlarms, () -> refreshAfterEdit(),
-                    Component cmp = buildItemAlarmContainer(ScreenListOfAlarms.this, item, notif, expiredAlarms, () -> refreshAfterEdit(),
-                            keepPos, previousForm, expandedObjects);
-                    cont.add(cmp);
-                } else {
-                    break;
-                }
-            }
-            return cont;
-        } else {
-            return BorderLayout.centerCenter(new SpanLabel(getTextToShowIfEmptyList()));
-        }
-    }
+//    protected Container buildContentPaneForAlarmListOLD(List<ExpiredAlarm> expiredAlarms, MyForm previousForm) {
+//        parseIdMap2.parseIdMapReset();
+//        if (expiredAlarms != null && expiredAlarms.size() > 0) {
+////        Container cont = new Container();
+//            Container cont = new ContainerScrollY(BoxLayout.y());
+//            cont.setScrollableY(true);
+////        for (int i = 0, size = expiredAlarms.size(); i < size; i++) {
+////            ExpiredAlarm notif = expiredAlarms.get(i);
+//            for (ExpiredAlarm notif : expiredAlarms) {
+////            ExpiredAlarm notif = expiredAlarms.get(i);
+//                if (notif.alarmTime.getTime() <= now) {
+//                    Item item = DAO.getInstance().fetchItem(notif.objectId);
+//                    showDetails.add(item);
+////                Component cmp = buildItemAlarmContainer(ScreenListOfAlarms.this, item, notif, expiredAlarms, () -> refreshAfterEdit(),
+//                    Component cmp = buildItemAlarmContainer(ScreenListOfAlarms.this, item, notif, expiredAlarms, () -> refreshAfterEdit(),
+//                            keepPos, previousForm, expandedObjects);
+//                    cont.add(cmp);
+//                } else {
+//                    break;
+//                }
+//            }
+//            return cont;
+//        } else {
+//            return BorderLayout.centerCenter(new SpanLabel(getTextToShowIfEmptyList()));
+//        }
+//    }
 
 }

@@ -555,36 +555,37 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
                 if (false) {
                     textEntryField.setText(""); //NOT needed since container never reused, leave text fo debugging. //clear text now that new item is created
                 }
-                lastCreatedItem = continueAddingNewItems ? newItem : null; //ensures that MyTree2 will create a new insertContainer after newTask
+                if (newItem.hasSaveableData()) {
+                    lastCreatedItem = continueAddingNewItems ? newItem : null; //ensures that MyTree2 will create a new insertContainer after newTask
 //                DAO.getInstance().saveInBackground(newItem, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP())); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
 //                DAO.getInstance().saveNew(newItem, () -> saveKeys(newItem)); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
-                DAO.getInstance().saveNew(newItem); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
-                DAO.getInstance().triggerParseUpdate(); //need to save synchrnouesly to get objId to store for recreating new pinchinsert on exit
-                saveKeys(newItem);
+                    DAO.getInstance().saveNew(newItem); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                    DAO.getInstance().triggerParseUpdate(); //need to save synchrnouesly to get objId to store for recreating new pinchinsert on exit
+                    saveKeys(newItem);
 
-                if (category2 != null && newItem.getCategories().contains(category2)) {//contains(): only move item within category if the user has not removed the category during manual editing
-                    category2.moveItemInCategory(newItem, refItem, false, this.insertBeforeElement); //if category was not removed during manual editing, then move the item to the right position wrt refItem
-                    DAO.getInstance().saveNew((ParseObject) category2, false); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
-                }
-
-                //ensure that any manuale edits to the item's preset owner are taken into account when saving it
-                if (insertAsSubt && newItem.getOwner() == refItem) { //add as subtask to previous task, and keep the subtask level
-                    if (myForm.expandedObjects != null) {
-                        myForm.expandedObjects.add(refItem); //If inserted as subtask, expand the project to keep it visible
+                    if (category2 != null && newItem.getCategories().contains(category2)) {//contains(): only move item within category if the user has not removed the category during manual editing
+                        category2.moveItemInCategory(newItem, refItem, false, this.insertBeforeElement); //if category was not removed during manual editing, then move the item to the right position wrt refItem
+                        DAO.getInstance().saveNew((ParseObject) category2, false); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                     }
-                    DAO.getInstance().saveNew((ParseObject) refItem, false); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
-                    insertAsSubt = false; //remove the subtask property so next task does not become a subtask to the subtask
-                    myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK);
-                }
 
-                //the item may have been inserted into a (new) owner on exit, if so do nothing. If already added, e.g. to end of Inbox, then move to right place. Otherwise insert
-                if (itemOrItemListForNewElements != null && newItem.getOwner() == itemOrItemListForNewElements) {
-                    itemOrItemListForNewElements.moveOrAddItemInList(newItem, refItem, !this.insertBeforeElement); //add after item, unless insertBeforeElement is true, then insert *before* element
-                    DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewElements, false); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
-                }
+                    //ensure that any manuale edits to the item's preset owner are taken into account when saving it
+                    if (insertAsSubt && newItem.getOwner() == refItem) { //add as subtask to previous task, and keep the subtask level
+                        if (myForm.expandedObjects != null) {
+                            myForm.expandedObjects.add(refItem); //If inserted as subtask, expand the project to keep it visible
+                        }
+                        DAO.getInstance().saveNew((ParseObject) refItem, false); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                        insertAsSubt = false; //remove the subtask property so next task does not become a subtask to the subtask
+                        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK);
+                    }
+
+                    //the item may have been inserted into a (new) owner on exit, if so do nothing. If already added, e.g. to end of Inbox, then move to right place. Otherwise insert
+                    if (itemOrItemListForNewElements != null && newItem.getOwner() == itemOrItemListForNewElements) {
+                        itemOrItemListForNewElements.moveOrAddItemInList(newItem, refItem, !this.insertBeforeElement); //add after item, unless insertBeforeElement is true, then insert *before* element
+                        DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewElements, false); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                    }
 //                myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, false); //always insert *after* just created inline item
-                myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
-                myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //task now created for text, so remove locally saved text
+                    myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
+                    myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //task now created for text, so remove locally saved text
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (false) {
 //                    myForm.setKeepPos(new KeepInSameScreenPosition(newItem, this, -1)); //if editing the new task in separate screen,
@@ -599,7 +600,8 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
                     //need to close *this* container, and then let the previous form create a new one!
                     closePinchContainer(false); //NO, keep iserting even when returning from editing details of new item
 //                }
-                DAO.getInstance().triggerParseUpdate();
+                    DAO.getInstance().triggerParseUpdate();
+                }
             }, () -> myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE), newItem.isTemplate(), predefinedValues);
 
             screenItem2.show();
@@ -737,7 +739,7 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
         if ((refItem != null && refItem.isTemplate()) || itemOrItemListForNewElements == TemplateList.getInstance()) {
             newItem.setTemplate(true);
         }
-        
+
         return newItem;
     }
 

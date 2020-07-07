@@ -196,9 +196,9 @@ public class CleanUpDataInconsistencies {
      * @param description
      * @param list
      */
-    private void cleanUpCircularReferencesInHierarchyXXX(String description, List list) {
-
-    }
+//    private void cleanUpCircularReferencesInHierarchyXXX(String description, List list) {
+//
+//    }
 
     private String getClassOfElement(ItemAndListCommonInterface element) {
         if (element instanceof Item) {
@@ -357,33 +357,33 @@ public class CleanUpDataInconsistencies {
      * @param executeCleanup
      * @return true if any duplicates were found
      */
-    private boolean cleanUpDuplicatesInListOLD(String description, List inputList, boolean executeCleanup) {
-        //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
-        //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
-        if (inputList == null) {
-            return false;
-        }
-        //other lists than ItemList
-        ASSERT.that(!(inputList instanceof ItemList));
-        ArrayList cleanList = new ArrayList();
-        int size = inputList.size();
-        for (int i = 0; i < size; i++) {
-            Object elt = inputList.get(i);
-            if (cleanList.contains(elt)) {
-//                log(description + " contains duplicate of \"" + elt + "\" at position " + i + " (list= " + inputList + ")");
-                log("List with duplicate. Element= \"" + elt + "\" at index=" + i + ", list=[" + inputList + "]");
-                logAction("Remove duplicate element");
-            } else {
-                cleanList.add(elt);
-            }
-        }
-        boolean someElementWereDeleted = inputList.size() != cleanList.size();
-        if (executeCleanup) {
-            inputList.clear();
-            inputList.addAll(cleanList);
-        }
-        return someElementWereDeleted;
-    }
+//    private boolean cleanUpDuplicatesInListOLD(String description, List inputList, boolean executeCleanup) {
+//        //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
+//        //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
+//        if (inputList == null) {
+//            return false;
+//        }
+//        //other lists than ItemList
+//        ASSERT.that(!(inputList instanceof ItemList));
+//        ArrayList cleanList = new ArrayList();
+//        int size = inputList.size();
+//        for (int i = 0; i < size; i++) {
+//            Object elt = inputList.get(i);
+//            if (cleanList.contains(elt)) {
+////                log(description + " contains duplicate of \"" + elt + "\" at position " + i + " (list= " + inputList + ")");
+//                log("List with duplicate. Element= \"" + elt + "\" at index=" + i + ", list=[" + inputList + "]");
+//                logAction("Remove duplicate element");
+//            } else {
+//                cleanList.add(elt);
+//            }
+//        }
+//        boolean someElementWereDeleted = inputList.size() != cleanList.size();
+//        if (executeCleanup) {
+//            inputList.clear();
+//            inputList.addAll(cleanList);
+//        }
+//        return someElementWereDeleted;
+//    }
 
     private boolean cleanUpDuplicatesInList(String description, List inputList, boolean executeCleanup) {
         //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re

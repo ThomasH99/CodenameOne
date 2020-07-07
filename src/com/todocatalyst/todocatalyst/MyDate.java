@@ -229,21 +229,21 @@ public class MyDate extends Date {
 ////        time = calendar.getTime().getTime();
 //    }
 //</editor-fold>
-    public long getTimeXXX() {
-//        return time;
-//        return (timeWithFlags & topmostSignbit) == 0 ? (timeWithFlags & timeMask) : (timeWithFlags & timeMask) | flagMask; //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
-//        return (timeWithFlags & topmostSignbit) == 0 ? (timeWithFlags & timeMask) : ((timeWithFlags & timeMask) | flagMask); //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
-        return (timeWithFlags); //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
-    }
+//    public long getTimeXXX() {
+////        return time;
+////        return (timeWithFlags & topmostSignbit) == 0 ? (timeWithFlags & timeMask) : (timeWithFlags & timeMask) | flagMask; //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
+////        return (timeWithFlags & topmostSignbit) == 0 ? (timeWithFlags & timeMask) : ((timeWithFlags & timeMask) | flagMask); //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
+//        return (timeWithFlags); //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
+//    }
 
 //    private long getTimeWithFlags() {
 //        return timeWithFlags;
 //    }
-    public void setTimeXXX(long time) {
-//        this.timeWithFlags = time | timeSetBit | dateSetBit; //if setting time directly like this, we don't know if only date or time is set, so set both flags
-        this.timeWithFlags = time;
-        super.setTime(time);
-    }
+//    public void setTimeXXX(long time) {
+////        this.timeWithFlags = time | timeSetBit | dateSetBit; //if setting time directly like this, we don't know if only date or time is set, so set both flags
+//        this.timeWithFlags = time;
+//        super.setTime(time);
+//    }
 
     /**
      * set time to value, keep flags. Used internally to update the time
@@ -835,29 +835,29 @@ public class MyDate extends Date {
 //        // This way we can make the following calculation without having to worry about rounding errors
 //        return (int) ((calendar.getTime().getTime() - getTime()) / DAY_IN_MILLISECONDS);
 //    }
-    public void addDaysXXX(int days) {
-//        time += days * DAY_IN_MILLISECONDS;
-//        setTime(getTimeWithFlags() + days * DAY_IN_MILLISECONDS);
-        addToTimeKeepFlags(days * DAY_IN_MILLISECONDS);
-    }
+//    public void addDaysXXX(int days) {
+////        time += days * DAY_IN_MILLISECONDS;
+////        setTime(getTimeWithFlags() + days * DAY_IN_MILLISECONDS);
+//        addToTimeKeepFlags(days * DAY_IN_MILLISECONDS);
+//    }
 
 //    public void subtractDays(int days) {
 //        time -= days * DAY_IN_MILLISECONDS;
 //    }
-    public void addMinutesXXX(int minutes) {
-//        time += minutes * MINUTE_IN_MILLISECONDS;
-//        setTime(getTime() + minutes * MINUTE_IN_MILLISECONDS);
-        addToTimeKeepFlags(minutes * MINUTE_IN_MILLISECONDS);
-    }
+//    public void addMinutesXXX(int minutes) {
+////        time += minutes * MINUTE_IN_MILLISECONDS;
+////        setTime(getTime() + minutes * MINUTE_IN_MILLISECONDS);
+//        addToTimeKeepFlags(minutes * MINUTE_IN_MILLISECONDS);
+//    }
 
 //    public void subtractMinutes(int minutes) { //-use addMinutes(-3)
 //        time -= minutes * MINUTE_IN_MILLISECONDS;
 //    }
-    public void addHoursXXX(int hours) {
-//        time += hours * HOUR_IN_MILISECONDS;
-//        setTime(getTime() + hours * HOUR_IN_MILISECONDS);
-        addToTimeKeepFlags(hours * HOUR_IN_MILISECONDS);
-    }
+//    public void addHoursXXX(int hours) {
+////        time += hours * HOUR_IN_MILISECONDS;
+////        setTime(getTime() + hours * HOUR_IN_MILISECONDS);
+//        addToTimeKeepFlags(hours * HOUR_IN_MILISECONDS);
+//    }
 
 //    public void subtractHours(int hours) {
 //        time -= hours * HOUR_IN_MILISECONDS;
@@ -868,13 +868,13 @@ public class MyDate extends Date {
      * valid, the value itself is returned (no change). If dayOfMonth is <1, the
      * same value is returned.
      */
-    public int getValidDayOfMonthXXX(int dayOfMonth, int month, int year) {
-        int daysInMonth = getDaysInMonth(month, year);
-        while (dayOfMonth > daysInMonth && dayOfMonth > 1) {
-            dayOfMonth--; //reduce date until we reach a valid one for the given month/year
-        }
-        return dayOfMonth;
-    }
+//    public int getValidDayOfMonthXXX(int dayOfMonth, int month, int year) {
+//        int daysInMonth = getDaysInMonth(month, year);
+//        while (dayOfMonth > daysInMonth && dayOfMonth > 1) {
+//            dayOfMonth--; //reduce date until we reach a valid one for the given month/year
+//        }
+//        return dayOfMonth;
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
@@ -1045,13 +1045,13 @@ public class MyDate extends Date {
      * @param date
      * @return
      */
-    public static int getDayInWeekXXX(Date date) {
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(date);
-        int v = calendar.get(Calendar.DAY_OF_WEEK);
-        v = calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH);
-        return v;
-    }
+//    public static int getDayInWeekXXX(Date date) {
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.setTime(date);
+//        int v = calendar.get(Calendar.DAY_OF_WEEK);
+//        v = calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH);
+//        return v;
+//    }
 
     /**
      * eg first Monday of month will return 1, 3rd Sunday 2ill return 3
@@ -2059,18 +2059,18 @@ public class MyDate extends Date {
         return date;
     }
 
-    private static String formatDateL10NShortXXX(long timeInMilliSeconds, boolean dateOnlyNoTime) {
-        return formatDateL10NShortXXX(timeInMilliSeconds); //TODO!!!! write code to return date without time
-    }
+//    private static String formatDateL10NShortXXX(long timeInMilliSeconds, boolean dateOnlyNoTime) {
+//        return formatDateL10NShortXXX(timeInMilliSeconds); //TODO!!!! write code to return date without time
+//    }
 
-    private static String formatDateL10NShortXXX(long timeInMilliSeconds) {
-//        return L10NManager.getInstance().formatDateShortStyle(new Date(timeInMilliSeconds));
-        return formatDateL10NShortXXX(new MyDate(timeInMilliSeconds));
-    }
+//    private static String formatDateL10NShortXXX(long timeInMilliSeconds) {
+////        return L10NManager.getInstance().formatDateShortStyle(new Date(timeInMilliSeconds));
+//        return formatDateL10NShortXXX(new MyDate(timeInMilliSeconds));
+//    }
 
-    private static String formatDateL10NShortXXX(Date date) {
-        return L10NManager.getInstance().formatDateShortStyle(date);
-    }
+//    private static String formatDateL10NShortXXX(Date date) {
+//        return L10NManager.getInstance().formatDateShortStyle(date);
+//    }
 
     public static String addNthPostFix(String str) {
         char lastChiffer = str.charAt(str.length() - 1);
@@ -2089,9 +2089,9 @@ public class MyDate extends Date {
      * returns the time now (System.currentTimeMillis()). Provide to make it
      * possible to override this function, e.g. for test purposes.
      */
-    static long getNowXXX() {
-        return System.currentTimeMillis();
-    }
+//    static long getNowXXX() {
+//        return System.currentTimeMillis();
+//    }
     /**
      * how much should be *added* the System.currentTimeMillis() to get the
      * forced time. Eg to simulate +24h, the value will be 24h in milliseconds
@@ -2405,11 +2405,12 @@ public class MyDate extends Date {
 
 //    @Override
     public boolean equalsXXX(Object date) {
-//        Date.equals() == return obj instanceof Date && getTime() == ((Date) obj).getTime();
-        if (date == null || !(date instanceof Date)) {
-            return false;
-        }
-        return ((Date) date).getTime() == getTime();
+////        Date.equals() == return obj instanceof Date && getTime() == ((Date) obj).getTime();
+//        if (date == null || !(date instanceof Date)) {
+//            return false;
+//        }
+//        return ((Date) date).getTime() == getTime();
+return false;
     }
 // <editor-fold defaultstate="collapsed" desc="comment">
 //        / ================================================== ==
