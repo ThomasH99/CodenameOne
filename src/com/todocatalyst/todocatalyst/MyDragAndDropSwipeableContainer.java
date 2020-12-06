@@ -207,12 +207,15 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //</editor-fold>
             oldOwner.moveToPositionOf(itemOrItemList, refItem, insertAfterRefItemOrEndOfList);
 //            DAO.getInstance().saveInBackground((ParseObject) oldList, (ParseObject) itemOrItemList);
-            DAO.getInstance().saveNew((ParseObject) oldOwner, false); //no need to save itemOrItemList since owner is the same
+//            DAO.getInstance().saveNew((ParseObject) oldOwner); //no need to save itemOrItemList since owner is the same
+            DAO.getInstance().saveToParseNow((ParseObject) oldOwner); //no need to save itemOrItemList since owner is the same
         } else {
             oldOwner.removeFromList(itemOrItemList);
 //            newOwner.addToList(newPos, itemOrItemList);
             newOwner.addToList(itemOrItemList, refItem, insertAfterRefItemOrEndOfList);
-            DAO.getInstance().saveNew(false, (ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
+//            DAO.getInstance().saveNew(false, (ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
+//            DAO.getInstance().saveNew((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
+            DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
         }
     }
 
@@ -338,21 +341,25 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //            }
 //</editor-fold>
             oldCategory.moveToPositionOf(item, refItem, insertAfterOrEndOfList);
-            DAO.getInstance().saveNew(false, (ParseObject) oldCategory, (ParseObject) item); //only save list once
+//            DAO.getInstance().saveNew( (ParseObject) oldCategory, (ParseObject) item); //only save list once
+//            DAO.getInstance().saveToParseNow((ParseObject) oldCategory, (ParseObject) item); //only save list once
         } else { //oldCategory != newCategory || oldCategory == null
             if (oldCategory != null && newCategory != null) { //different categories, but both non-null: remove from old and add to new at newPos (~'normal' case)
                 oldCategory.removeItemFromCategory(item, true);
 //                newCategory.addItemToCategory(item, newPos, true);
                 newCategory.addItemToCategory(item, refItem, true, insertAfterOrEndOfList);
-                DAO.getInstance().saveNew(false, (ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
+                DAO.getInstance().saveToParseNow((ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
             } else if (newCategory != null) { //item was dragged into a category, but not from another category (e.g. a subtask of a project) (~not very intuitive since the dragged item will be added to the category, but also stay in place where it was before, but I guess OK - "what you do is what you get")
 //                newCategory.addItemToCategory(item, newPos, true);
                 newCategory.addItemToCategory(item, refItem, true, insertAfterOrEndOfList);
-                DAO.getInstance().saveNew(false, (ParseObject) newCategory, (ParseObject) item);
+//                DAO.getInstance().saveNew( (ParseObject) newCategory, (ParseObject) item);
+                DAO.getInstance().saveToParseNow((ParseObject) newCategory, (ParseObject) item);
             } else if (false && oldCategory != null) { //item was eg dragged from category into a subtask of an expanded project (in an expanded category)
                 //should this case even be supported? Visible effect: drag from an expanded Category into a subtask, and it disappears from the Category
+//                oldCategory.removeItemFromCategory(item, true);
                 oldCategory.removeItemFromCategory(item, true);
-                DAO.getInstance().saveNew(false, (ParseObject) oldCategory, (ParseObject) item);
+//                DAO.getInstance().saveNew(false, (ParseObject) oldCategory, (ParseObject) item);
+                DAO.getInstance().saveToParseNow((ParseObject) oldCategory, (ParseObject) item);
             }
         }
     }
@@ -878,6 +885,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         return null;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * find the
      *
@@ -885,29 +893,31 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @return
      */
 //    protected static MyDragAndDropSwipeableContainer findMyDDContAtTopLevelAbove(Component comp) {
-    protected static Category findPrecedingCategory(Component comp) {
-//        while (comp != null) {
-//            if (comp instanceof MyDragAndDropSwipeableContainer && ((MyDragAndDropSwipeableContainer) comp).getDragAndDropCategory() != null) {
-//                return ((MyDragAndDropSwipeableContainer) comp).getDragAndDropCategory();
-//            } else {
-//                comp = comp.getParent();
-//            }
+//    protected static Category findPrecedingCategory(Component comp) {
+////        while (comp != null) {
+////            if (comp instanceof MyDragAndDropSwipeableContainer && ((MyDragAndDropSwipeableContainer) comp).getDragAndDropCategory() != null) {
+////                return ((MyDragAndDropSwipeableContainer) comp).getDragAndDropCategory();
+////            } else {
+////                comp = comp.getParent();
+////            }
+////        }
+////        return null;
+//        MyDragAndDropSwipeableContainer categoryCont = findMyDDContAboveHoldingCategory(comp);
+//        if (categoryCont != null) {
+//            return (Category) categoryCont.getDragAndDropObject();
+//        } else {
+//            return null;
 //        }
-//        return null;
-        MyDragAndDropSwipeableContainer categoryCont = findMyDDContAboveHoldingCategory(comp);
-        if (categoryCont != null) {
-            return (Category) categoryCont.getDragAndDropObject();
-        } else {
-            return null;
-        }
-    }
+//    }
+//</editor-fold>
 
-    protected static MyDragAndDropSwipeableContainer findMyDDContAboveHoldingCategory(Component comp) {
+    protected static MyDragAndDropSwipeableContainer findMyDDContAboveHoldingCategory(MyDragAndDropSwipeableContainer comp) {
         Component c = comp;
         while (c != null) {
             if (c instanceof MyDragAndDropSwipeableContainer
                     && ((((MyDragAndDropSwipeableContainer) c).getDragAndDropObject() instanceof Category)
-                    || (((MyDragAndDropSwipeableContainer) c).getDragAndDropCategory() instanceof Category))) {
+//                    || (((MyDragAndDropSwipeableContainer) c).getDragAndDropCategory() instanceof Category) //this would wrongfully return the MyDDCont of an expanded Item belonging to the Category
+                    )) {
                 return ((MyDragAndDropSwipeableContainer) c);
             } else {
                 c = c.getParent();
@@ -2981,7 +2991,8 @@ T3
                             moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, newCat, true);
                         };
                         insertDropPlaceholder = (dropPh) -> {
-                            addDropPlaceholderToAppropriateParentCont(beforeCategoryCont, dropPh, 1);
+//                            addDropPlaceholderToAppropriateParentCont(beforeCategoryCont, dropPh, 1);
+                            addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
                         };
                     }
                 } else if (beforeElement instanceof Category && (afterElement instanceof Category || afterMyDDCont == null)) {
@@ -3968,7 +3979,7 @@ before getting to here, we've already covered the following cases where both bef
                         } else {
                             Log.p("**********Comp.drop , NO ACTION!!! dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
                         }
-                        DAO.getInstance().triggerParseUpdate();
+//                        DAO.getInstance().saveNewTriggerUpdate();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                dragged.dropSucceeded = true;
 //                                getComponentForm().animateHierarchy(300);

@@ -28,6 +28,7 @@ public class ExpiredAlarm implements Externalizable {
     AlarmType type;
 
     ExpiredAlarm(String objectId, Date alarmTime, AlarmType type) {
+        ASSERT.that(objectId!=null, "trying to set alarm with objectId==null");
         this.objectId = objectId;
         ASSERT.that(type==AlarmType.notification||type==AlarmType.waiting);
         this.alarmTime = alarmTime;
@@ -35,6 +36,7 @@ public class ExpiredAlarm implements Externalizable {
     }
 
     ExpiredAlarm(NotificationShadow notif) {
+        ASSERT.that(notif.getObjectIdStr()!=null, "trying to set alarm with objectId==null, notif="+notif);
         this.objectId = notif.getObjectIdStr();
         this.alarmTime = notif.alarmTime;
         this.type = notif.type;

@@ -49,11 +49,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      *
      * @return
      */
-    public long getRemaining();
+    public long getRemainingTotal();
 
-    public long getEstimate();
+    public long getEstimateTotal();
 
-    public long getActual();
+    public long getActualTotal();
 //    public long getWorkTimeSum();
 
 //    public Date getRemainingEffortD(); //TODO use getRemainingEffortD everywhere instead of getRemainingEffort
@@ -118,7 +118,6 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        workSlotList.setOwner(this);
 //        setWorkSlotsInParse(workSlotList.getWorkSlotListFull());
 //    }
-
     /**
      * return overlapping workslots, or null if none
      *
@@ -576,7 +575,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     /**
      * sets the *full* list of items owned - MUST never be called with a
      * (filtered) list retrieved via getList() since that would effectively
-     * remove all filtered elements definitively!
+     * remove all filtered elements definitively! Will also remove a previous
+     * owner (and previously inherited values) and add the new owner and update
+     * inherited values (all this by calling setOwnerItem()).
      *
      * @param listOfSubObjects
      */
@@ -590,6 +591,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return
      */
     public boolean isNoSave();
+
+    default public void setAllowAddingElements(boolean allowAddingTasks) {
+//        return false;
+    }
+
+    default public boolean isAllowAddingElements() {
+        return false;
+    }
 
     /**
      * will return the (first) WorkTimeDefinition for this item. The workTime is
@@ -713,6 +722,16 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return
      */
     public String getObjectIdP();
+
+    public String getGuid();
+
+    public boolean isDirty();
+
+    public boolean isUnsaved();
+
+    default public boolean needsSaving() {
+        return isDirty() || isUnsaved();
+    }
 
     /**
      *
@@ -1193,13 +1212,15 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @param objectBefore
      * @param objectAfter
      */
-    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter);
+//    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter);
 
 //    public void forceCalculationOfWorkTime();
 //        @Override
     /**
      * force the calculation of worktime for every subtask - is this really
      * necessary??
+     *
+     * @return
      */
 //    default public void forceCalculationOfWorkTimeXXX() {
 //        List<? extends ItemAndListCommonInterface> subtasks = getList();
@@ -1214,7 +1235,6 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //            }
 //        }
 //    }
-
     default boolean isUseDefaultFilter() {
         return true;
     }
@@ -1234,6 +1254,13 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return hardcodedFilter;
     }
 
+//    default public FilterSortDef getDefaultFilter() {
+//        return FilterSortDef.getDefaultFilter();
+//    }
+    /**
+     *
+     * @param filterSortDef
+     */
     public void setFilterSortDef(FilterSortDef filterSortDef);
 
     /**
@@ -1258,7 +1285,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default public FilterSortDef getFilterSortDef(boolean returnDefaultFilterIfNoneDefined) {
         FilterSortDef filterSortDef = getFilterSortDefN();
         if (filterSortDef == null && returnDefaultFilterIfNoneDefined) {
-            return FilterSortDef.getDefaultFilter();
+//            return FilterSortDef.getDefaultFilter();
+            return getDefaultFilterSortDef();
         }
         return filterSortDef;
     }
@@ -1333,7 +1361,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @param deletedDate
      * @return
      */
-    public boolean deletePrepare(Date deletedDate);
+    public void deletePrepare(Date deletedDate);
 
     default void checkOwners(List<ItemAndListCommonInterface> list) {
         if (list != null) {
@@ -1396,8 +1424,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * changes like inserting templates, changing categories etc which impact
      * other elements but which many be cancelled
      */
-    default public void updateOnSave() {
+    default public void updateBeforeSave() {
 //        assert false; //Do nothing unless specified by specialized object
+    }
+
+    /**
+     * update after saving, notably to set alarms which requires an ObjectId
+     */
+    default public void updateAfterSave() {
     }
 
     /**
@@ -1462,4 +1496,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return added;
     }
 
+    default public String getReplayId() {
+        return getGuid();
+    }
+    
 }

@@ -209,6 +209,8 @@ public class MyTree2 extends ContainerScrollY {
 //        layout.
         setLayout(new BoxLayout(BoxLayout.Y_AXIS));
         setScrollableY(true);
+        setAlwaysTensile(true); //always allow pull down even of short lists
+
 //        if (folder == null) {
 //            folder = UIManager.getInstance().getThemeImageConstant("treeFolderImage");
 //            openFolder = UIManager.getInstance().getThemeImageConstant("treeFolderOpenImage");
@@ -429,7 +431,8 @@ public class MyTree2 extends ContainerScrollY {
             }
         }
         //else create new container:
-        ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS)); dest.setName("ExpandedSubtasks");
+        ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS));
+        dest.setName("ExpandedSubtasks");
         dest.setUIID("ExpandedList");
         parent.addComponent(BorderLayout.CENTER, dest);
         return dest;
@@ -584,8 +587,9 @@ public class MyTree2 extends ContainerScrollY {
                     Object expanded = subNodeCont.getClientProperty(KEY_EXPANDED);
                     if (expanded != null && expanded.equals("true")) {
                         Object nodeElement = subNodeCont.getClientProperty(KEY_OBJECT);
-                        if (nodeElement != null && expandedObjects != null && expandedObjects.contains(nodeElement)) {
-                            expandedObjects.remove(nodeElement);
+//                        if (nodeElement != null && expandedObjects != null && expandedObjects.contains(nodeElement)) {
+                        if (nodeElement instanceof ItemAndListCommonInterface && expandedObjects != null && expandedObjects.contains((ItemAndListCommonInterface)nodeElement)) {
+                            expandedObjects.remove((ItemAndListCommonInterface)nodeElement);
                         } else {
                             assert false : "if KEY_EXPANDED==true, there should be a KEY_OBJECT";
                         }
@@ -605,7 +609,7 @@ public class MyTree2 extends ContainerScrollY {
         itemNode.putClientProperty(KEY_EXPANDED, null);
 //        setNodeIcon(folder, c);
         if (expandedObjects != null) {
-            expandedObjects.remove(itemNode.getClientProperty(KEY_OBJECT));
+            expandedObjects.remove((ItemAndListCommonInterface)itemNode.getClientProperty(KEY_OBJECT));
         }
         //Parent = {North: ItemNode; Center: expandedSubTasks}
         Container itemNodeParent = itemNode.getParent();
@@ -722,7 +726,8 @@ public class MyTree2 extends ContainerScrollY {
 //            }
 //</editor-fold>
             nodeComponent.putClientProperty(KEY_DEPTH, depthVal);
-            if (expandedObjects != null && expandedObjects.contains(current) || expandAllLevels) {
+//            if (expandedObjects != null && expandedObjects.contains(current) || expandAllLevels) {
+            if (expandedObjects instanceof ItemAndListCommonInterface && expandedObjects.contains((ItemAndListCommonInterface)current) || expandAllLevels) {
                 if (expandAllLevels) {
                     expandedObjects.add(current);
                 }
@@ -1208,17 +1213,17 @@ public class MyTree2 extends ContainerScrollY {
 //                        newStr = getDiffStr(previousStickyStr, Item.STATUS + " " + item.getStatus().getName());
                         newStr = getDiffStr(previousStickyStr, makeHeader(Item.STATUS, item.getStatus().getName())); //no undefined value exists for ItemStatus
                         break;
-                    case Item.PARSE_REMAINING_EFFORT:
+                    case Item.PARSE_REMAINING_EFFORT_TOTAL:
 //                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_REMAINING + " " + newTimeString(item.getRemaining()));
-                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EFFORT_REMAINING, newTimeString(item.getRemaining()), item.getRemaining(), 0));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EFFORT_REMAINING, newTimeString(item.getRemainingTotal()), item.getRemainingTotal(), 0));
                         break;
                     case Item.PARSE_ACTUAL_EFFORT:
 //                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_ACTUAL + " " + newTimeString(item.getActual()));
-                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EFFORT_ACTUAL, newTimeString(item.getActual()), item.getActual(), 0));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EFFORT_ACTUAL, newTimeString(item.getActualTotal()), item.getActualTotal(), 0));
                         break;
                     case Item.PARSE_EFFORT_ESTIMATE:
 //                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_ESTIMATE + " " + newTimeString(item.getEstimate()));
-                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EFFORT_ESTIMATE, newTimeString(item.getEstimate()), item.getEstimate(), 0));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EFFORT_ESTIMATE, newTimeString(item.getEstimateTotal()), item.getEstimateTotal(), 0));
                         break;
                     case Item.PARSE_UPDATED_AT:
 //                        newStr = getDiffStr(previousStickyStr, Item.UPDATED_DATE + " " + MyDate.formatDateNew(item.getUpdatedAt()));
@@ -1242,7 +1247,7 @@ public class MyTree2 extends ContainerScrollY {
                         break;
                     case Item.PARSE_DUE_DATE:
 //                        newStr = getDiffStr(previousStickyStr, Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDateD()));
-                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.DUE_DATE, MyDate.formatDateNew(item.getDueDateD()), item.getDueDateD(), new MyDate(0)));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.DUE_DATE, MyDate.formatDateNew(item.getDueDate()), item.getDueDate(), new MyDate(0)));
                         break;
                     case Item.PARSE_WAITING_TILL_DATE:
 //                        newStr = getDiffStr(previousStickyStr, Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitingTillDateD()));
@@ -1293,7 +1298,7 @@ public class MyTree2 extends ContainerScrollY {
                             case DUE_TODAY_CREATED:
                             case DUE_TODAY_ONGOING:
                             case DUE_TODAY_WAITING:
-                                newStr = Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDateD());
+                                newStr = Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDate());
                                 break;
                             case WAITING_TODAY:
                                 newStr = Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitingTillDate());

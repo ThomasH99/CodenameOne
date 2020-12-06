@@ -39,7 +39,8 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
     private Command editNewCmd;
     //    private Container cont=new Container(new BorderLayout());
 
-    private final static String ENTER_WORKSLOT = "New " + WorkSlot.WORKSLOT; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+//    private final static String ENTER_WORKSLOT = "New " + WorkSlot.WORKSLOT; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+    private final static String ENTER_WORKSLOT = "Add " + WorkSlot.WORKSLOT; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
 
     /**
      *
@@ -144,7 +145,8 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
                     insertNewAndSaveChanges(newWorkSlot);
                     lastCreatedWorkSlot = continueAddingNewWorkSlots ? newWorkSlot : null; //ensures that MyTree2 will create a new insertContainer after newTask
                     myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
-                    if(false)this.myForm.refreshAfterEdit();
+                    closePinchContainer(true);
+//                    if(false)this.myForm.refreshAfterEdit();
                 }).show();
             } else {
                 ASSERT.that(false, "Something went wrong here, what to do? ...");
@@ -230,9 +232,10 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
 //        DAO.getInstance().saveInBackground(newWorkSlot, (ParseObject) refWorkSlot);
 //        DAO.getInstance().saveNew(newWorkSlot, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newWorkSlot.getObjectIdP()));
 //        DAO.getInstance().saveNew((ParseObject) workSlotListOwner, true);
-        DAO.getInstance().saveNew(newWorkSlot);
-        DAO.getInstance().saveNew((ParseObject) workSlotListOwner);
-        DAO.getInstance().saveNewExecuteUpdate();
+//        DAO.getInstance().saveNew(newWorkSlot);
+//        DAO.getInstance().saveNew((ParseObject) workSlotListOwner);
+//        DAO.getInstance().saveNewTriggerUpdate();
+        DAO.getInstance().saveToParseNow(newWorkSlot);
         myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newWorkSlot.getObjectIdP());
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item

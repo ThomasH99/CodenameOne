@@ -25,7 +25,7 @@ public class ScreenStatistics2 extends MyForm {
     List<Item> doneItemsFromParseUnsorted;
     ItemBucket itemListStats;
 //    List<WorkSlot> workSlots;
-    MySearchCommand mySearchCmd;
+//    MySearchCommand mySearchCmd;
     ItemBucket toplevelItemBucket;
 
     Date startDate;
@@ -71,11 +71,13 @@ public class ScreenStatistics2 extends MyForm {
         getContentPane().add(BorderLayout.CENTER, buildContentPane(itemListStats));
 
         //refresh searchCmd on new list
-        if (mySearchCmd != null) {
-            getToolbar().removeCommand(mySearchCmd);
+//        if (mySearchCmd != null) {
+        if (getSearchCmd() != null) {
+            getToolbar().removeCommand(getSearchCmd());
         }
-        mySearchCmd = new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(itemListStats));
-        getToolbar().addCommandToRightBar(mySearchCmd);
+//        mySearchCmd = new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(itemListStats));
+        setSearchCmd ( new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(itemListStats)));
+        getToolbar().addCommandToRightBar(getSearchCmd());
 
         revalidate();
         restoreKeepPos();
@@ -304,7 +306,7 @@ public class ScreenStatistics2 extends MyForm {
                         }
                         case categories: { //by Category
                             bucket.hash = (item) -> {
-                                Category firstCat = item.getFirstCategory();
+                                Category firstCat = item.getFirstCategoryN();
                                 if (firstCat == null) {
                                     if (withoutCategoryGroup == null) {
                                         withoutCategoryGroup = new ItemBucket("No Category", Icons.iconCategory, null, this); //null marks the "No Category" bucket create an arbitrary category
@@ -314,7 +316,7 @@ public class ScreenStatistics2 extends MyForm {
                                     return firstCat; //if null, will be sorted first/last in list of ItemBuckets for categories
                                 }
                             };
-                            bucket.name = (item) -> item.getFirstCategory() != null ? item.getFirstCategory().getText() : "No Category";
+                            bucket.name = (item) -> item.getFirstCategoryN() != null ? item.getFirstCategoryN().getText() : "No Category";
                             bucket.comparator = (Comparator<ItemBucket>) (b1, b2) -> FilterSortDef.compareCategoriesNoCatLast((Category) b1.hashValue, (Category) b2.hashValue);
                             bucket.icon = Icons.iconCategory;
                             bucket.initialized = true;

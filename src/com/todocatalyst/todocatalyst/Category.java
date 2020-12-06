@@ -23,7 +23,7 @@ import java.util.Set;
  *
  * @author Thomas
  */
-public class Category<E extends ItemAndListCommonInterface>  extends ItemList implements ItemAndListCommonInterface { //Flatten { //implements ExpandableInterface { //Sublist {
+public class Category<E extends ItemAndListCommonInterface> extends ItemList implements ItemAndListCommonInterface { //Flatten { //implements ExpandableInterface { //Sublist {
 
     final static String CLASS_NAME = "Category";
 
@@ -905,55 +905,63 @@ public class Category<E extends ItemAndListCommonInterface>  extends ItemList im
 //    }
 //</editor-fold>
 
-    public void addItemToCategory(Item item, boolean addCategoryToItem) {
-        addItemToCategory(item, getSize(), addCategoryToItem); //add to end of category list by default
+    public boolean addItemToCategory(Item item, boolean addCategoryToItem) {
+        return addItemToCategory(item, getSize(), addCategoryToItem); //add to end of category list by default
     }
 
     /**
-     * add item to this category
+     * add item to this category, will NOT add categories already in list
      *
      * @param item
      * @param index position at which to insert the item (eg for drag & drop in
      * category list)
      * @param addCategoryToItem if true, also add the category to the item
      */
-    public void addItemToCategory(Item item, Item refItem, boolean addCategoryToItem, boolean insertAfterOrEndOfList) {
+    public boolean addItemToCategory(Item item, Item refItem, boolean addCategoryToItem, boolean insertAfterOrEndOfList) {
         if (item != null) {
             int insertIndex;
             if (refItem != null) {
                 insertIndex = getListFull().indexOf(refItem) + (insertAfterOrEndOfList ? 1 : 0);
-            } else
+            } else {
                 insertIndex = insertAfterOrEndOfList ? getListFull().size() : 0;
+            }
 //            addItemToCategory(item, insertIndex,addCategoryToItem);
 //            addItemAtIndex(item, insertIndex);
 //            if (addCategoryToItem) {
 //                item.addCategoryToItem(this, false);
 //            }
-            addItemToCategory(item, insertIndex, addCategoryToItem);
+            return addItemToCategory(item, insertIndex, addCategoryToItem);
         }
+        return false;
     }
 
     /**
-    move item from its current position within the category's list of items to after/before the refItem's position.
-    If item not already in the category, it will do nothing (to avoid adding it if the user had not inserted it in the first place)
-    @param item
-    @param refItem
-    @param addCategoryToItem
-    @param insertAfterOrEndOfList 
+     * move item from its current position within the category's list of items
+     * to after/before the refItem's position. If item not already in the
+     * category, it will do nothing (to avoid adding it if the user had not
+     * inserted it in the first place)
+     *
+     * @param item
+     * @param refItem
+     * @param addCategoryToItem
+     * @param insertAfterOrEndOfList
      */
     public void moveItemInCategory(Item item, Item refItem, boolean addCategoryToItem, boolean insertAfterOrEndOfList) {
-        if (removeItemFromCategory(item, false)) //only add if already there
+        if (removeItemFromCategory(item, false)) { //only add if already there
             addItemToCategory(item, refItem, false, insertAfterOrEndOfList);
+        }
     }
 
-    public void addItemToCategory(Item item, int index, boolean addCategoryToItem) {
+    public boolean addItemToCategory(Item item, int index, boolean addCategoryToItem) {
         if (item != null) {
 //            addItem(item);
-            addItemAtIndex(item, index);
-            if (addCategoryToItem) {
+            boolean successfullyAdded = addItemAtIndex(item, index);
+            if (successfullyAdded && addCategoryToItem) {
                 item.addCategoryToItem(this, false);
             }
+            return successfullyAdded;
         }
+        return false;
     }
 
     public boolean removeItemFromCategory(Item item, boolean removeCategoryFromItem) {
@@ -1024,45 +1032,67 @@ public class Category<E extends ItemAndListCommonInterface>  extends ItemList im
     public boolean isOwnerOfItemInCategoryBeforeItem(int itemIndex) {
         return isOwnerOfItemInListBeforeItem(getListFull(), itemIndex);
     }
-    
-        /**
+
+    /**
      * By default an ItemList does not delete the items in its list since they
      * are only references.Only the when an ItemList is used to store 'owned'
- items, like the sub-tasks of a task, should the sub-items be deleted.
+     * items, like the sub-tasks of a task, should the sub-items be deleted.
      *
      * @param deleteDate
      */
     @Override
-    public boolean deletePrepare(Date deleteDate) {
+    public void deletePrepare(Date deleteDate) {
+        
+//        List<ParseObject> modified = new ArrayList();
 
         //if a timer was active for this itemList, then remove that (and update any timed item even though it may get soft-deleted below)
         TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
 
+        //remove category from all items referring to it
+        List<Item> items = getListFull();
+        for (Item item : items) {
+            item.removeCategoryFromItem(this, false); //false: leave items in Category to enable restoring it later
+        }
+//        modified.addAll(items);
+//        DAO.getInstance().saveNew((List) items); //save all items that had the category removed
+
         //remove itemList from meta-itemLists (all itemLists to which it is a sub-itemList)
         //remove this ItemList from all lists (ItemLists or Categories) which include it as a sourceList
         List<ItemList<E>> metaList = (List<ItemList<E>>) getMetaList();
+        List<ParseObject> updatedMetaLists = new ArrayList<>();
         if (metaList != null && metaList.size() > 0) {
-            List<ParseObject> updatedMetaLists = new ArrayList<>();
             updatedMetaLists.clear();
             for (ItemList itemList : metaList) {
                 if (itemList.removeSubList(this)) {
                     updatedMetaLists.add(itemList);
                 }
             }
-            DAO.getInstance().saveNew(updatedMetaLists);
+//            DAO.getInstance().saveNew(updatedMetaLists);
+//            modified.addAll(updatedMetaLists);
         }
 
-        CategoryList.getInstance().removeFromList(this,false); //false: keep ref to CategoryList
-        DAO.getInstance().saveNew((ParseObject) CategoryList.getInstance(), false);
+        //remove category from list of categories
+        CategoryList.getInstance().removeFromList(this, false); //false: keep ref to CategoryList
+//        DAO.getInstance().saveNew((ParseObject) CategoryList.getInstance());
+//            modified.addAll(CategoryList.getInstance());
 
+        //soft-delete any filter, NO?!, hard-delete (filters are not shared)
         FilterSortDef filter = getFilterSortDefN();
         if (filter != null) {
             filter.setDeletedDate(deleteDate);
-            DAO.getInstance().delete(filter, false, false);
+//            DAO.getInstance().delete(filter, false, false);
+//            DAO.getInstance().deleteLater(filter, false);
+            DAO.getInstance().saveToParseLater(filter);
+//            modified.addAll(CategoryList.getInstance());
         }
-
+        //set softDeleted date as delete-marker
         setSoftDeletedDate(deleteDate);
-        return true;
+
+        DAO.getInstance().saveToParseLater((List) items); //save all items that had the category removed
+        DAO.getInstance().saveToParseLater(updatedMetaLists);
+        DAO.getInstance().saveToParseLater((ParseObject) CategoryList.getInstance());
+
+//        return modified;
     }
 
 } // end Category

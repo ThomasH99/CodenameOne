@@ -44,7 +44,7 @@ public class ScreenSettingsRepeatRules extends ScreenSettingsCommon {
 //            addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberOfRepeatsToGenerate, 0, 52, 1);
             addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead, 0, 30, 1);
             addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxInterval, 0, 731, 1);
-            addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead, 0, 62, 1);
+            addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberFutureDaysToGenerateAheadZZZ, 0, 62, 1);
         }
     }
 }

@@ -27,11 +27,11 @@ public class InspirationalLists {
             "the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)") {
         @Override
         public boolean test(Item item) {
-            return item.getEarnedValue()>0&&item.getRemaining() > 0; //only keep if remaining is not zero (otherwise divide by zero)!
+            return item.getEarnedValue()>0&&item.getRemainingTotal() > 0; //only keep if remaining is not zero (otherwise divide by zero)!
         }
 
         Comparator<Item> getSortingComparator() {
-            return (i1, i2) -> compareDouble(i1.getEarnedValue() / i1.getRemaining(), i2.getEarnedValue() / i2.getRemaining());
+            return (i1, i2) -> compareDouble(i1.getEarnedValue() / i1.getRemainingTotal(), i2.getEarnedValue() / i2.getRemainingTotal());
         }
     };
 
@@ -57,7 +57,7 @@ public class InspirationalLists {
                     }
 
                     Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareDouble(i1.getEarnedValue() / i1.getRemaining(), i2.getEarnedValue() / i2.getRemaining());
+                        return (i1, i2) -> compareDouble(i1.getEarnedValue() / i1.getRemainingTotal(), i2.getEarnedValue() / i2.getRemainingTotal());
                     }
                 };
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
@@ -68,7 +68,7 @@ public class InspirationalLists {
             case ProgressNoActuals:
                 filter = new FilterSortDef() {
                     public boolean test(Item item) {
-                        return item.getStatus() == ItemStatus.ONGOING && item.getActual() == 0;
+                        return item.getStatus() == ItemStatus.ONGOING && item.getActualTotal() == 0;
                     }
 
                     Comparator<Item> getSortingComparator() {
@@ -84,12 +84,12 @@ public class InspirationalLists {
                 filter = new FilterSortDef() {
                     public boolean test(Item item) {
                         return (item.getStatus() == ItemStatus.CREATED || item.getStatus() == ItemStatus.ONGOING)
-                                && item.getRemaining() <= 10 * MyDate.MINUTE_IN_MILLISECONDS
+                                && item.getRemainingTotal() <= 10 * MyDate.MINUTE_IN_MILLISECONDS
                                 && (item.getChallengeN() != null && (item.getChallengeN() == Challenge.VERY_EASY || item.getChallengeN() == Challenge.EASY));
                     }
 
                     Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareLong(i1.getRemaining(), i2.getRemaining());
+                        return (i1, i2) -> compareLong(i1.getRemainingTotal(), i2.getRemainingTotal());
                     }
                 };
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
@@ -104,7 +104,7 @@ public class InspirationalLists {
                     }
 
                     Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareLong(i1.getRemaining() / i1.getActual(), i2.getRemaining() / i2.getActual());
+                        return (i1, i2) -> compareLong(i1.getRemainingTotal() / i1.getActualTotal(), i2.getRemainingTotal() / i2.getActualTotal());
                     }
                 };
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
@@ -137,8 +137,8 @@ public class InspirationalLists {
                                 && ((item.getImportanceN() == HighMediumLow.HIGH)
                                 && (item.getUrgencyN() == null || item.getUrgencyN() == HighMediumLow.LOW || item.getUrgencyN() == HighMediumLow.MEDIUM))
                                 && (item.getChallengeN() == null || item.getChallengeN() == Challenge.VERY_HARD || item.getChallengeN() == Challenge.HARD)
-                                && (item.getActual() == 0 || item.getActual() > 40 * MyDate.HOUR_IN_MILISECONDS)
-                                && (item.getDueDateD() != null && item.getDueDateD().getTime() < MyDate.currentTimeMillis() //overdue
+                                && (item.getActualTotal() == 0 || item.getActualTotal() > 40 * MyDate.HOUR_IN_MILISECONDS)
+                                && (item.getDueDate() != null && item.getDueDate().getTime() < MyDate.currentTimeMillis() //overdue
                                 || (item.getUpdatedAt() != null && item.getUpdatedAt().getTime() < MyDate.currentTimeMillis() - 90 * MyDate.DAY_IN_MILLISECONDS)); //or not touched since 90 days
                     }
 

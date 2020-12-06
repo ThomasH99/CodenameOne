@@ -39,7 +39,7 @@ import java.util.ListIterator;
 //public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         implements /*ItemListModel,*/
-        MyTreeModel, /*Collection,*/ List, SumField, ItemAndListCommonInterface { //, Iterable { //, DataChangedListener {
+        MyTreeModel, /*Collection,*/ List, /*SumField,*/ ItemAndListCommonInterface { //, Iterable { //, DataChangedListener {
 //        MyTreeModel, /*Collection,*/ List, SumField, Iterable { //, DataChangedListener {
     //TODO implement deep fetchFromCacheOnly to get all tasks and sub-tasks at any depth
     //TODO: implement caching of worksum of sub-tasks (callback from subtasks to all affected owners and categories??)
@@ -66,6 +66,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
     private boolean noSave = false; //set to true for temporary lists, e.g. wrapping a parse search results
+    private boolean allowAddingTasks = false; //set to true for the temporary list used to edit subtasks of a new project
 //    private List<E> filteredSortedList = null;
 //    private List<? extends ItemAndListCommonInterface> cachedList = null;
 //    private List<E> cachedList = null;
@@ -266,14 +267,22 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         this.workTimeAllocator = workTimeAllocator;
     }
 
-    @Override
-    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+//    @Override
+//    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
 
     interface MySaveFunction {
 
         public boolean save();
+    }
+
+    public void setAllowAddingElements(boolean allowAddingTasks) {
+        this.allowAddingTasks = allowAddingTasks;
+    }
+
+    public boolean isAllowAddingElements() {
+        return allowAddingTasks;
     }
 
     /**
@@ -1230,13 +1239,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        boolean status = subtasks.remove(subtask);
 //        setList(subtasks);
 //        return status;
-        boolean status = removeItem(subItemOrList); //TODO: update removeItem to return boolean
+        boolean removed = removeItem(subItemOrList); //TODO: update removeItem to return boolean
 //        assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subItemOrList=" + subItemOrList + ", owner=" + getOwner() + ", list=" + this;
         ASSERT.that(!(this instanceof ItemList) || subItemOrList.getOwner() == this, () -> "list not owner of removed subItemOrList (" + subItemOrList + "), owner=" + getOwner() + ", list=" + this); //
-        if (status && removeReferences) {
+        if (removed && removeReferences) {
             subItemOrList.setOwner(null);
         }
-        return status;
+        return removed;
     }
 
     private Bag cacheBag;
@@ -1678,7 +1687,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      */
     public void setFilterSortDef(FilterSortDef filterSortDef, boolean saveEvenDefaultFilter) {
 //        if (filterSortDef != null && filterSortDef != FilterSortDef.getDefaultFilter()) { //only save if not the default filter
-        if ((filterSortDef != null && !filterSortDef.equals(FilterSortDef.getDefaultFilter())) || saveEvenDefaultFilter) { //only save if changed compared to the default filter
+//        if ((filterSortDef != null && !filterSortDef.equals(FilterSortDef.getDefaultFilter())) || saveEvenDefaultFilter) { //only save if changed compared to the default filter
+        if ((filterSortDef != null && !filterSortDef.equals(getDefaultFilterSortDef())) || saveEvenDefaultFilter) { //only save if changed compared to the default filter
 //            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved --> should be done in DAO now
 //                DAO.getInstance().saveInBackground(filterSortDef); //
 //            }
@@ -1788,12 +1798,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     //</editor-fold>
     /**
      * By default an ItemList does not delete the items in its list since they
-     * are only references. Only the when an ItemList is used to store 'owned'
-     * items, like the sub-tasks of a task, should the sub-items be deleted.
+     * are only references.Only the when an ItemList is used to store 'owned'
+ items, like the sub-tasks of a task, should the sub-items be deleted.
      *
+     * @param deleteDate
      */
     @Override
-    public boolean deletePrepare(Date deleteDate) {
+    public void deletePrepare(Date deleteDate) {
 
         //if a timer was active for this itemList, then remove that (and update any timed item even though it may get soft-deleted below)
         TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
@@ -1801,8 +1812,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         //since we're deleting the list, and thus soft-deleting all its tasks (and their subtasks, recursively), we don't need to remove the list as the tasks' owner!
         List<Item> tasks = (List) getListFull(); //w/o copy get a java.util.ConcurrentModificationException
         for (Item item : tasks) {
-            item.deletePrepare(deleteDate);
+            item.deletePrepare(deleteDate); //item.deletePrepare will remove item from its owner, in this case, this list
         }
+        DAO.getInstance().deleteLater((List) tasks, false); //save soft-deleted state of all subtasks
 
         //remove itemList from meta-itemLists (all itemLists to which it is a sub-itemList)
         //remove this ItemList from all lists (ItemLists or Categories) which include it as a sourceList
@@ -1815,20 +1827,23 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
                     updatedMetaLists.add(itemList);
                 }
             }
-            DAO.getInstance().saveNew(updatedMetaLists);
+//            DAO.getInstance().saveNew(updatedMetaLists);
+            DAO.getInstance().saveToParseLater(updatedMetaLists);
         }
 
         ItemListList.getInstance().removeFromList(this);
-        DAO.getInstance().saveNew((ParseObject) ItemListList.getInstance(), false);
+//        DAO.getInstance().saveNew((ParseObject) ItemListList.getInstance());
+        DAO.getInstance().saveToParseNow((ParseObject) ItemListList.getInstance());
 
         FilterSortDef filter = getFilterSortDefN();
         if (filter != null) {
             filter.setDeletedDate(deleteDate);
-            DAO.getInstance().delete(filter, false, false);
+//            DAO.getInstance().delete(filter, false, false);
+            DAO.getInstance().saveToParseLater(filter);
         }
 
         setSoftDeletedDate(deleteDate);
-        return true;
+//        return true;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1925,7 +1940,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * *already* in the list)
      */
     public boolean addItemAtIndex(E item, int index, boolean addAsOwner) {
-
+        boolean successfullyAdded = false;
         List listFull = getListFull();
 //        List list = getList();
 //        int index;
@@ -1979,6 +1994,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
                 if (Config.TEST) {
                     ASSERT.that(listFull.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
                 }
+                successfullyAdded = true;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
 //                    selectedIndex++;
@@ -1996,11 +2012,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         if (addAsOwner && !isNoSave()) { //never override owner temporary lists as owner
             item.setOwner(this);
         }
-        return true;
+        return successfullyAdded;
     }
 
-    public void addItemAtIndex(E item, int index) {
-        addItemAtIndex(item, index, false);
+    public boolean addItemAtIndex(E item, int index) {
+        return addItemAtIndex(item, index, false);
     }
 
 //    public void moveToPositionOf(E item, E itemRef, boolean insertAfter) {
@@ -2645,7 +2661,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        } else {
 //            nextIndex = prevIndex + 1;
 //        }
-        int nextIndex = prevIndex < 0 && returnFirstItemIfPreviousNotFound ? 0 : prevIndex + 1;
+        int nextIndex = prevIndex == -1 && returnFirstItemIfPreviousNotFound ? 0 : prevIndex + 1;
         if (nextIndex >= 0 && nextIndex < list.size()) { //if nextIndex is a valid index
             return list.get(nextIndex);
         }
@@ -3149,18 +3165,17 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return Item.getStatus(getList()); //TODO replace by generic Item.getStatus(List)
     }
 
-    public long getSumField() {
-        return 0;
-    }
-
-    public long getSumField(int fieldId) {
-        return getSumField();
-    }
-
-    public boolean ignoreSumField() {
-        return false;  //never ignore sum of ItemLists (TODO!!!! are there cases where the sum should be ignored?
-    }
-
+//    public long getSumField() {
+//        return 0;
+//    }
+//
+//    public long getSumField(int fieldId) {
+//        return getSumField();
+//    }
+//
+//    public boolean ignoreSumField() {
+//        return false;  //never ignore sum of ItemLists (TODO!!!! are there cases where the sum should be ignored?
+//    }
     /**
      * returns true if item!=null and is contained in ItemList
      */
@@ -3572,7 +3587,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return new Date(getRemainingEffort());
 //    }
     @Override
-    public long getRemaining() {
+    public long getRemainingTotal() {
         return getRemaining(false);
     }
 
@@ -3585,13 +3600,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //        }
         for (ItemAndListCommonInterface o : getListFull()) {//use full list to include any hidden elements which still have remaining (eg Waiting)
-            sum += (!o.isDone() || includeDoneTasks) ? o.getRemaining() : 0;
+            sum += (!o.isDone() || includeDoneTasks) ? o.getRemainingTotal() : 0;
         }
         return sum;
     }
 
     @Override
-    public long getEstimate() {
+    public long getEstimateTotal() {
         return getEstimate(false);
     }
 
@@ -3604,13 +3619,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //        }
         for (ItemAndListCommonInterface o : getListFull()) {
-            sum += (!o.isDone() || includeDoneTasks) ? o.getEstimate() : 0;
+            sum += (!o.isDone() || includeDoneTasks) ? o.getEstimateTotal() : 0;
         }
         return sum;
     }
 
     @Override
-    public long getActual() {
+    public long getActualTotal() {
         return getActual(false); //normally in list overview we want Actual for completed tasks only
     }
 
@@ -3623,7 +3638,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //        }
         for (ItemAndListCommonInterface o : getListFull()) {
-            sum += (o.isDone() || includeUndoneTasks) ? o.getActual() : 0;
+            sum += (o.isDone() || includeUndoneTasks) ? o.getActualTotal() : 0;
         }
         return sum;
     }
@@ -3638,7 +3653,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public long getTotalEffort() {
         long sum = 0;
         for (ItemAndListCommonInterface o : getListFull()) {
-            sum += o.isDone() ? o.getActual() : o.getActual() + o.getRemaining();
+            sum += o.isDone() ? o.getActualTotal() : o.getActualTotal() + o.getRemainingTotal();
         }
         return sum;
     }
@@ -3821,6 +3836,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        workSlotListBuffer = workSlotList;
 //        workTimeAllocator = null;
 //    }
+    List<WorkSlot> workslotsCached;
+
     @Override
 //    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
     public List<WorkSlot> getWorkSlotsFromParseN() {
@@ -3836,12 +3853,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //        }
         if (workslots != null) {
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
-            if (Config.CHECK_OWNERS) {
+            if (workslotsCached == null || !Config.TEST) { //only activate caching in TEST mode for now
+                workslotsCached = DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
+            } else if (Config.CHECK_OWNERS) {
                 checkOwners(workslots);
             }
 //            return new WorkSlotList(this, workslots, true);
-            return workslots;
+//            return workslots;
+            return workslotsCached;
         } else {
             return null; //new WorkSlotList();
         }
@@ -3877,6 +3896,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         } else {
             remove(PARSE_WORKSLOTS);
         }
+        workslotsCached = null;
         if (false) { //done in WorkSlotList
             resetWorkTimeDefinition(); //need to reset this each time the WorkSlot list is changed
         }
@@ -4067,10 +4087,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return null;
     }
 
+    @Override
     public FilterSortDef getFilterSortDef(boolean returnDefaultFilterIfNoneDefined) {
         FilterSortDef filterSortDef = getFilterSortDefN();
         //automatically recover from the situation where the predefined/default filter for system lists were not saved:
-        if (Config.TEST && filterSortDef == null && isSystemList()) {
+        if (filterSortDef == null && returnDefaultFilterIfNoneDefined) {
+            filterSortDef = FilterSortDef.getDefaultFilter();
+        } else if (Config.TEST && filterSortDef == null && isSystemList()) {
 //            getSystemDefaultFilter(ScreenType.valueOf(getSystemName()));
             ScreenType st = ScreenType.getScreenType(getSystemName());
             if (st != null) {

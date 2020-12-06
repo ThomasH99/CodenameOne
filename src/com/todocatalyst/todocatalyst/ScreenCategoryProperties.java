@@ -8,6 +8,8 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.Label;
+import com.codename1.ui.TextArea;
+import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BoxLayout;
 //import com.codename1.ui.*;
@@ -81,7 +83,6 @@ public class ScreenCategoryProperties extends MyForm {
 //    public static String checkCategoryIsValidForSaving(String categoryName, Category category) {
 //        return checkCategoryIsValidForSaving(categoryName, category, true);
 //    }
-
     public static String checkCategoryIsValidForSaving(String categoryName, Category category, boolean showErrorDialog) {
         //TODO extend to check valid subcategories, auto-words, ...
         String errorMsg = null;
@@ -89,9 +90,9 @@ public class ScreenCategoryProperties extends MyForm {
         categoryName = MyUtil.removeTrailingPrecedingSpacesNewLinesEtc(categoryName);
         if (categoryName.isEmpty() && category.getObjectIdP() != null) {
             errorMsg = Format.f("{0 category_or_list} name cannot be empty", Category.CATEGORY); //cannot delete text
-        } else if (CategoryList.getInstance().findCategoryWithName(categoryName,true) != null
-                && CategoryList.getInstance().findCategoryWithName(categoryName,true) != category) { //                return "Category \"" + description.getText() + "\" already exists";
-        //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
+        } else if (CategoryList.getInstance().findCategoryWithName(categoryName, true) != null
+                && CategoryList.getInstance().findCategoryWithName(categoryName, true) != category) { //                return "Category \"" + description.getText() + "\" already exists";
+            //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
             errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists.\n\n Only one {0} with same name is allowed. Please set a different name.", Category.CATEGORY, categoryName);
         }
 
@@ -107,7 +108,7 @@ public class ScreenCategoryProperties extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
+        ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
         buildContentPane(getContentPane());
 //        restoreKeepPos();
@@ -160,27 +161,27 @@ public class ScreenCategoryProperties extends MyForm {
 //        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
         addStandardBackCommand();
 
-        //DELETE
-        if (category.getObjectIdP() != null) { //only Delete categories already on Parse, not one you're just creating (use Cancel instead)
-            toolbar.addCommandToOverflowMenu(CommandTracked.create("Delete", null, (e) -> {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            Log.p("Clicked");
-//            item.revert(); //forgetChanges***/refresh
-//            previousForm.showBack(); //drop any changes
-//            DAO.getInstance().delete(category);
-//            category.softDelete();
-//            previousForm.refreshAfterEdit();
-////            previousForm.revalidate();
-//            previousForm.showBack(); //drop any changes
-//            showPreviousScreenOrDefault(previousForm, true);
-//</editor-fold>
-                DAO.getInstance().delete(category, false, true);
-                showPreviousScreen(true);
-            }));
-        }
+//        //DELETE
+//        if (category.getObjectIdP() != null) { //only Delete categories already on Parse, not one you're just creating (use Cancel instead)
+//            toolbar.addCommandToOverflowMenu(CommandTracked.createMaterial("Delete", Icons.iconDelete, (e) -> {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            Log.p("Clicked");
+////            item.revert(); //forgetChanges***/refresh
+////            previousForm.showBack(); //drop any changes
+////            DAO.getInstance().delete(category);
+////            category.softDelete();
+////            previousForm.refreshAfterEdit();
+//////            previousForm.revalidate();
+////            previousForm.showBack(); //drop any changes
+////            showPreviousScreenOrDefault(previousForm, true);
+////</editor-fold>
+//                DAO.getInstance().delete(category, false, true);
+//                showPreviousScreen(true);
+//            }));
+//        }
 
         //CANCEL
-        if (true||MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
+        if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
 //            toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////            Log.p("Clicked");
@@ -248,6 +249,9 @@ public class ScreenCategoryProperties extends MyForm {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container content) {
         parseIdMap2.parseIdMapReset();
+        
+        boolean hide = MyPrefs.hideIconsInEditTaskScreen.getBoolean();
+
 //        Container content = new Container();
         if (false) {
             TableLayout tl;
@@ -264,28 +268,52 @@ public class ScreenCategoryProperties extends MyForm {
         } else {
 
         }
+        content.add(makeSpacerThin());
 
-        MyTextField categoryName = new MyTextField("Category name", parseIdMap2, () -> category.getText(), (s) -> category.setText(s));
+//        MyTextField description = new MyTextField("Category name", parseIdMap2, () -> category.getText(), (s) -> category.setText(s));
+        MyTextField description = new MyTextField(Item.DESCRIPTION_HINT, 20, 1, 1, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY);
+        description.getHintLabel().setUIID("ScreenItemTaskTextHint");
+        description.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //start with initial caps automatically - TODO!!!! NOT WORKING LIKE THIS!!
 //        content.add(new Label(Category.CATEGORY)).add(categoryName);
-        setEditOnShow(categoryName); //UI: start editing this field
+        description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
+        initField(Item.PARSE_TEXT, description,
+                () -> category.getText(),
+                (t) -> category.setText((String) t),
+                () -> description.getText(),
+                (t) -> description.setText((String) t));
+        setEditOnShow(description); //UI: start editing this field
 //        content.add(layoutN(Category.CATEGORY, categoryName, "**", true));
-        content.add(categoryName);
+        content.add(description);
+
+        content.add(makeSpacerThin());
 
 //        MyTextArea description = new MyTextArea("Description", parseIdMap2, () -> category.getComment(), (s) -> category.setComment(s));
-        MyTextField description = new MyTextField("Description", parseIdMap2, () -> category.getComment(), (s) -> category.setComment(s));
+//        MyTextField comment = new MyTextField("Description", parseIdMap2, () -> category.getComment(), (s) -> category.setComment(s));
+        MyTextField comment = new MyTextField(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
+        comment.setSingleLineTextArea(false);
+        comment.setUIID("ScreenItemComment");
+        comment.getHintLabel().setUIID("ScreenItemCommentHint");
 //        content.add(new Label(Category.DESCRIPTION)).add(description);
 //        content.add(layoutN(Category.DESCRIPTION, description, "**", true));
-        content.add(description);
-        description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
+        initField(Item.PARSE_COMMENT, comment,
+                () -> category.getComment(),
+                (t) -> category.setComment((String) t),
+                () -> comment.getText(),
+                (t) -> comment.setText((String) t));
+        content.add(comment);
 
+        content.add(makeSpacerThin());
+
+        //CREATED
         Label createdDate = new Label(category.getCreatedAt() == null || category.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getCreatedAt()));
 //        content.add(new Label(Item.CREATED_DATE)).add(createdDate);
-        content.add(layoutN(Item.CREATED_DATE, createdDate, "**", true));
-
+        content.add(layoutN(Item.CREATED_DATE, createdDate, "**", true,hide ? null : Icons.iconCreatedDate));
+        
+    //MODIFIED
         Label lastModifiedDate = new Label(category.getUpdatedAt() == null || category.getUpdatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getUpdatedAt()));
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**", true));
-
+        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**", true,hide ? null : Icons.iconModifiedDate));
+        
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
 //            //TODO!! make the validator work, e.g. show Toastbar message
@@ -317,11 +345,11 @@ public class ScreenCategoryProperties extends MyForm {
 //</editor-fold>
         if (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(category.getObjectIdP() == null ? "<set on save>" : category.getObjectIdP(), "ScreenItemValueUneditable");
-            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true,hide ? null : Icons.iconObjectId));
         }
 
-        setCheckIfSaveOnExit(() -> 
-                checkCategoryIsValidForSaving(categoryName.getText(), category, true) == null);
+        setCheckIfSaveOnExit(()
+                -> checkCategoryIsValidForSaving(description.getText(), category, true) == null);
 
         return content;
     }

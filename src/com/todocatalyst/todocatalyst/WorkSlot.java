@@ -45,7 +45,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     final static String WORKSLOTS = "Workslots";
     final static String DESCRIPTION = "Description";//"Name";
     final static String DESCRIPTION_HELP = Format.f("Optional description of the {0 workslot}", WORKSLOT);//"Name";
-    final static String DESCRIPTION_HINT = Format.f("{0 workslot} description", WORKSLOT);//"Optional description";//"Name";
+    final static String DESCRIPTION_HINT = Format.f("Optional {0 workslot} description", WORKSLOT);//"Optional description";//"Name";
 //    final static String INACTIVE = "Inactive";
     final static String DURATION = "Duration";
     final static String DURATION_HELP = "Define the duration of the " + WORKSLOT;
@@ -459,6 +459,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null) { //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
 //                    DAO.getInstance().saveInBackground(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
 //                }
+                newRepeatRuleN.addOriginatorToRule(this); //if new RepeatRule, add WorkSlot as originator
                 setRepeatRuleInParse(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
 //                newRepeatRule.updateWorkslotsForNewRepeatRule(this);
 //                newRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this, true);
@@ -692,7 +693,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      * to exlude fields from copy. Applied recursively
      */
     void copyMeInto(WorkSlot destination) {
-        copyMeInto(destination, CopyMode.COPY_ALL_FIELDS);
+        copyMeInto(destination, CopyMode.COPY_ALL_FIELDSXXX);
     }
 
     void copyMeInto(WorkSlot destination, CopyMode copyFieldDefinition) {
@@ -708,8 +709,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         }
         if (copyFieldDefinition == CopyMode.COPY_TO_REPEAT_INSTANCE) {
             RepeatRuleParseObject repeatRule = getRepeatRuleN();
-            boolean notSaved = false;
-            if (Config.TEST) {
+            if (false&&Config.TEST && repeatRule != null) {
+                boolean notSaved = false;
                 notSaved = repeatRule.getObjectIdP() == null || repeatRule.getObjectIdP().isEmpty(); //repeatRule.isDirty() ||
             }
             destination.setRepeatRuleInParse(getRepeatRuleN());
@@ -1808,7 +1809,6 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        );
 //        return artificialItem;
 //    }
-
 ////<editor-fold defaultstate="collapsed" desc="comment">
     @Override
     public boolean isDone() {
@@ -1826,19 +1826,19 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public long getRemaining() {
+    public long getRemainingTotal() {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         return 0;
     }
 
     @Override
-    public long getEstimate() {
+    public long getEstimateTotal() {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         return 0;
     }
 
     @Override
-    public long getActual() {
+    public long getActualTotal() {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         return 0;
     }
@@ -2013,12 +2013,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        return getWorkTimeAllocatorN().getWorkTime(this);
 //        throw new Error("Not supported yet."); //not supported by WorkSlot
 //    }
-    @Override
-    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+//    @Override
+//    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
+//        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
 //</editor-fold>
-
     @Override
     public int getNumberOfItemsThatWillChangeStatus(boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
         throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -2066,7 +2065,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public boolean deletePrepare(Date deletedDate) {
+    public void deletePrepare(Date deletedDate) {
 
         //DELETE IN OWNER
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2083,7 +2082,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //</editor-fold>
         ItemAndListCommonInterface updatedOwner = removeFromOwner();
         ASSERT.that(updatedOwner != null, "softDeleting workSlot with no owner, workSlot=" + this);
-        DAO.getInstance().saveNew((ParseObject) updatedOwner, false);
+//        DAO.getInstance().saveNew((ParseObject) updatedOwner);
+//        DAO.getInstance().saveToParseLater((ParseObject) updatedOwner); //saved automatically
 
         RepeatRuleParseObject myRepeatRule = getRepeatRuleN();
         if (myRepeatRule != null) {
@@ -2096,7 +2096,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //</editor-fold>
             myRepeatRule.updateWhenWorkslotDeleted(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
             //NB. We don't delete the item's refs to repeatrule
-            DAO.getInstance().saveNew(myRepeatRule, false);
+//            DAO.getInstance().saveNew(myRepeatRule);
+//            DAO.getInstance().saveToParseLater(myRepeatRule); //saved automatically
         }
 
         //TODO!!!! need to delete in Sources - see comments/thoughts on this in comments inside Item.softDelete()
@@ -2106,7 +2107,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        DAO.getInstance().deleteAndWaitXXX((ParseObject) this);
 //            else
 //        DAO.getInstance().saveInBackground((ParseObject) this);
-        return true;
+//        return true;
     }
 
     @Override
@@ -2131,7 +2132,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public void updateOnSave() {
+    public void updateBeforeSave() {
         if (opsAfterSubtaskUpdates != null) {
             while (!opsAfterSubtaskUpdates.isEmpty()) {
                 Runnable f = opsAfterSubtaskUpdates.remove(0); //ensures that each operation is only called once, even if iterating (the run() calls an operation which calls saveInBackground triggering 

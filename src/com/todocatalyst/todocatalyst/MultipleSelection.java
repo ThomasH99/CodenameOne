@@ -73,11 +73,14 @@ public class MultipleSelection {
 //            list.remove(item);
 //            list.add(0, item);
 //            newItemList.setList(list);
+            newItemList.removeFromList(item); //first remove, since addToList below doesn't do anything if item is already in list
             newItemList.addToList(item, false);
         };
     }
+
     static ItemOperation moveToEndOfList(ItemAndListCommonInterface newItemList) {
         return (item) -> {
+            newItemList.removeFromList(item); //first remove, since addToList below doesn't do anything if item is already in list
             newItemList.addToList(item, true);
         };
     }
@@ -124,25 +127,25 @@ public class MultipleSelection {
                 for (Category cat : ref.getCategories()) {
                     ASSERT.that(!cat.contains(ref)); //the ref should normally(?!) be a temporary item
                     if (!prevCategories.contains(cat)) {
-                        prevCategories.add(cat);
+//                        prevCategories.add(cat);
 //                        if (false) {
 //                            cat.addItemAtIndex(item, MyPrefs.insertNewCategoriesForItemsInStartOfIList.getBoolean() ? 0 : cat.getSize());
 //                        }
                         cat.addItemToCategory(item, true);
                         ASSERT.that(item.getObjectIdP() != null); //otherwise the save of cat below will fail
-                        DAO.getInstance().saveNew((ParseObject) cat,false); //no trigger of save since categories will be saved when item is saved
+//                        DAO.getInstance().saveNew((ParseObject) cat); //no trigger of save since categories will be saved when item is saved
                     }
                 }
-                item.setCategories(prevCategories);
+//                item.setCategories(prevCategories);
             }
-            if (ref.getEstimate() != 0) {
-                item.setEstimate(ref.getEstimate());
+            if (ref.getEstimateTotal() != 0) {
+                item.setEstimateForTask(ref.getEstimateTotal());
             }
-            if (ref.getRemaining() != 0) {
-                item.setRemaining(ref.getRemaining());
+            if (ref.getRemainingTotal() != 0) {
+                item.setRemainingForTask(ref.getRemainingTotal());
             }
-            if (ref.getActual() != 0) {
-                item.setActual(ref.getActual(), false);
+            if (ref.getActualForTaskItself()!= 0) {
+                item.setActualForTaskItself(ref.getActualForTaskItself(), false);
             }
             if (ref.getHideUntilDateD().getTime() != 0) {
                 item.setHideUntilDate(ref.getHideUntilDateD());
@@ -196,9 +199,10 @@ public class MultipleSelection {
 //            Item item=items.get(i);
             operation.execute(item);
 //            DAO.getInstance().save(item);
-            DAO.getInstance().saveNew(item, false); //don't save until all are updated
+//            DAO.getInstance().saveNew(item); //don't save until all are updated
         }
-        DAO.getInstance().triggerParseUpdate();
+//        DAO.getInstance().saveNewTriggerUpdate();
+        DAO.getInstance().saveToParseNow((List) items); //don't save until all are updated
     }
 
 //    static void performMultipleOperationsOnAll(ListSelector<Item> items, List<ItemOperation> operations) {
@@ -210,9 +214,10 @@ public class MultipleSelection {
             for (ItemOperation operation : operations) {
                 operation.execute(item);
             }
-            DAO.getInstance().saveNew(item, false); //don't save until all are updated. appropriate here (or triggered where this method is called)
+//            DAO.getInstance().saveNew(item); //don't save until all are updated. appropriate here (or triggered where this method is called)
         }
-        DAO.getInstance().triggerParseUpdate();
+//        DAO.getInstance().saveNewTriggerUpdate();
+            DAO.getInstance().saveToParseNow((List)items); //don't save until all are updated. appropriate here (or triggered where this method is called)
     }
 
 }

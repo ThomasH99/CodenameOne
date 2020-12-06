@@ -19,22 +19,25 @@ public class AutoSaveTimer extends UITimer {
     final static int TEXT_AUTOSAVE_TIMEOUT = 2000; //TODO: make this a setting?
 
     /**
-    
-    @param form the form to which the UITimer is attached
-    @param textField the text field to autosave
-    @param parseObject an optional (can be null) object that will be saved on autotimer, used eg by Timer to save any edited value
-    @param timeout the timeout after which the saving takes place (
-    @param update the update function called on timeout
+     *
+     * @param form the form to which the UITimer is attached
+     * @param textField the text field to autosave
+     * @param parseObject an optional (can be null) object that will be saved on
+     * autotimer, used eg by Timer to save any edited value
+     * @param timeout the timeout after which the saving takes place (
+     * @param update the update function called on timeout
      */
-    private AutoSaveTimer(Form form, TextField textField, ParseObject parseObject, int timeout, Runnable update) {
+    private AutoSaveTimer(MyForm form, TextField textField, ParseObject parseObject, int timeout, Runnable update) {
         super(() -> {
             if (textField.isEditing() && !textField.getText().isEmpty() && update != null) { //only need to save if actively editing (when leaving text field, it is saved locally usimg the normal mechanism)
-                if (update != null) 
+                if (update != null) {
                     update.run(); //timedItem.setText(textField.getText());
-                if (parseObject != null) 
-//                    DAO.getInstance().saveNew(parseObject,true);
-                    DAO.getInstance().saveNew(parseObject);
-                DAO.getInstance().saveNewExecuteUpdate();
+                }
+                if (parseObject != null) { //                    DAO.getInstance().saveNew(parseObject,true);
+//                    DAO.getInstance().saveNew(parseObject);
+//                    DAO.getInstance().saveNewTriggerUpdate();
+                    DAO.getInstance().saveToParseNow(parseObject);
+                }
             }
         });
         textField.addDataChangedListener((chgType, index) -> {
@@ -47,7 +50,7 @@ public class AutoSaveTimer extends UITimer {
         }
     }
 
-    AutoSaveTimer(Form form, TextField textField, ParseObject parseObject, Runnable update) {
+    AutoSaveTimer(MyForm form, TextField textField, ParseObject parseObject, Runnable update) {
         this(form, textField, parseObject, TEXT_AUTOSAVE_TIMEOUT, update);
     }
 

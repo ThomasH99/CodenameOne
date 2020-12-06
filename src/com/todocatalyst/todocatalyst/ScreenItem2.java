@@ -1,6 +1,7 @@
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.compat.java.util.Objects;
+//import com.codename1.compat.java.util.Objects;
+import java.util.Objects;
 import com.codename1.components.InfiniteProgress;
 import com.codename1.components.SpanButton;
 import com.codename1.components.SpanLabel;
@@ -27,6 +28,7 @@ import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.FlowLayout;
+import com.codename1.ui.layouts.GridLayout;
 import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
@@ -48,9 +50,9 @@ import java.util.List;
 public class ScreenItem2 extends MyForm {
     //TODO 
     //TODO!!! update project's remaining time when adding subtasks (via listener?!)
-    //TODO!!! Show visually which tab is selected (OK on device?) 
+    //DONE!!! Show visually which tab is selected (OK on device?) 
     //TODO change 'comment' to 'notes'
-    //TODO auto-wrap all input fields if too wide for screen
+    //DONE auto-wrap all input fields if too wide for screen
     //TODO!!! check if ComponentGroup with Difficulty picker becomes wider than screen
     //TODO add icons to Easy/Difficult, Dread/Fun
     //TODO!! pop-up screen for full screen editing of comments/notes
@@ -100,7 +102,7 @@ public class ScreenItem2 extends MyForm {
 //    static Map<String, GetParseValue> parseIdMap = new HashMap<String, GetParseValue>() ;
 //    Map<Object, UpdateField> parseIdMap2 = new HashMap<Object, UpdateField>();
 //    MyForm previousForm;
-    private Item itemOrg;
+    Item itemOrg;
     private Item itemCopy;
 
     MyTextField description;
@@ -119,7 +121,7 @@ public class ScreenItem2 extends MyForm {
     MyDateAndTimePicker completedDate;
     MyDatePicker hideUntil;
 
-    MyDurationPicker actualEffort;
+    MyDurationPicker actualEffortTask;
     MyComponentGroup challenge;
     MyComponentGroup dreadFun;
     MyNumericTextField earnedValue;
@@ -151,7 +153,7 @@ public class ScreenItem2 extends MyForm {
     private boolean effortEstimateSetManually = false; //true when effortEstimate has been edited to a different value than the original one from item
     private boolean effortEstimateSetAutomatically = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
     private boolean noAutoUpdateOnStatusChange = false; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
-    private String LAST_TAB_SELECTED = "$$LastTabSelected";
+    private final static String LAST_TAB_SELECTED = "$$LastTabSelected";
 //    protected static String FORM_UNIQUE_ID = "ScreenEditItem"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     private static String REPEAT_RULE_DELETED_MARKER = "REPEAT_RULE_DELETED";
@@ -164,8 +166,16 @@ public class ScreenItem2 extends MyForm {
         return callDepth;
     }
 
-    private void setCallDepth(int depth) {
+    private void setCallDepthXXX(int depth) {
         callDepth = depth;
+    }
+
+    private void increaseCallDepth() {
+        callDepth++;
+    }
+
+    private void decreaseCallDepth() {
+        callDepth--;
     }
 
 //    ScreenItem(Item item, MyForm previousForm) { //throws ParseException, IOException {
@@ -179,18 +189,29 @@ public class ScreenItem2 extends MyForm {
     }
 
     ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues) { //throws ParseException, IOException {
-        this(item, previousForm, doneAction, null, templateEditMode, previousValues);
+//        this(item, previousForm, doneAction, null, templateEditMode, previousValues, false);
+        this(item, previousForm, doneAction, null, templateEditMode, previousValues, !previousForm.isTriggerSaveOnExit());
     }
+
+//    ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues, boolean triggerSaveOnExit) { //throws ParseException, IOException {
+//        this(item, previousForm, doneAction, null, templateEditMode, previousValues, triggerSaveOnExit);
+//    }
 //    ScreenItem2(Item item, MyForm previousForm, UpdateField doneAction, boolean templateEditMode) { //throws ParseException, IOException {
 //        this(item, previousForm, doneAction, templateEditMode, null);
 //    }
-
     ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, Runnable cancelAction, boolean templateEditMode, SaveEditedValuesLocally previousValuesN) { //throws ParseException, IOException {
+//        this(item, previousForm, doneAction, cancelAction, templateEditMode, previousValuesN, false);
+        this(item, previousForm, doneAction, cancelAction, templateEditMode, previousValuesN, !previousForm.isTriggerSaveOnExit());
+    }
+
+    private ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, Runnable cancelAction, boolean templateEditMode, SaveEditedValuesLocally previousValuesN,
+            boolean triggerSaveOnExit) { //throws ParseException, IOException {
 //        super("Task", previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
 //        super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, cancelAction);
-        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction,null); //cancelAction handled below
+        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, null); //cancelAction handled below
+        increaseCallDepth();
         setUniqueFormId("ScreenEditItem");
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
         if (false) {
@@ -208,10 +229,16 @@ public class ScreenItem2 extends MyForm {
 //        }
 //</editor-fold>
         this.itemOrg = item;
-        String prevValId = itemOrg.getObjectIdP() != null ? itemOrg.getObjectIdP() : ("From-" + previousForm.getUniqueFormId());
+        setTriggerSaveOnExit(triggerSaveOnExit);
+        this.itemOrg.setEditByForm(this);
+        String prevValId = itemOrg.getObjectIdP() != null
+                ? itemOrg.getObjectIdP()
+                //                : ("From-" + previousForm.getUniqueFormId());
+                : ("Depth" + getCallDepth());
 //        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + item.getObjectIdP());
         this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + prevValId);
         this.previousValues.addAndOverwrite(previousValuesN);
+        this.previousValues.setElementToSaveLocally(itemOrg);
 
         this.templateEditMode = itemOrg.isTemplate() || templateEditMode; //
         getTitleComponent().setEndsWith3Points(true);
@@ -224,13 +251,15 @@ public class ScreenItem2 extends MyForm {
 //            expandedObjects = new ExpandedObjects(getUniqueFormId() + this.itemOrg.getObjectIdP()); //NOT used in this screen
             expandedObjectsInit(this.itemOrg.getObjectIdP()); //NOT used in this screen
         }
-        try {
-            //        DAO.getInstance().deleteCategoryFromAllItems(cat);
-            if (this.itemOrg != null) {
-                this.itemOrg.fetchIfNeeded();
+        if (false) {
+            try {
+                //        DAO.getInstance().deleteCategoryFromAllItems(cat);
+                if (this.itemOrg != null) {
+                    this.itemOrg.fetchIfNeeded();
+                }
+            } catch (ParseException ex) {
+                Log.e(ex);
             }
-        } catch (ParseException ex) {
-            Log.e(ex);
         }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -247,7 +276,7 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
         if (false) {
             itemCopy = new Item(false); //create a coppy to allow changing the owner to update inherited values
-            itemOrg.copyMeInto(itemCopy, Item.CopyMode.COPY_ALL_FIELDS, COPY_EXCLUDE_CATEGORIES | Item.COPY_EXCLUDE_SUBTASKS | Item.COPY_EXCLUDE_REPEAT_RULE); //don't copy categories since that will add the itemCopy to the categories and create ObjId reference errors when saving categories
+            itemOrg.copyMeInto(itemCopy, Item.CopyMode.COPY_ALL_FIELDSXXX, COPY_EXCLUDE_CATEGORIES | Item.COPY_EXCLUDE_SUBTASKS | Item.COPY_EXCLUDE_REPEAT_RULE); //don't copy categories since that will add the itemCopy to the categories and create ObjId reference errors when saving categories
         } else {
             itemCopy = item;
         }
@@ -277,27 +306,29 @@ public class ScreenItem2 extends MyForm {
             //on cancel, delete any added elements
 //            List addedSubtasks = null;
 //            if (editedSubtasks != null) {
-            List<Item> editedSubtasks = previousValues.getSubtaskListN();
-            //TODO!!!! for now, edits to subtasks, including added template subtasks, are not cancelled (for simplicity)
-            if (editedSubtasks != null) { //if null, means no change was made!
-                String errorTxt;
-                Dialog.show("Info", "Be aware that cancelling the edits of a project also cancels all added or removed subtasks", "OK", null);
-                if (true) {//|| ((errorTxt = cancellableSubtaskEditsExist(editedSubtasks, null)) != null && showDialog())) {
+            if (false) {
+                List<Item> editedSubtasks = previousValues.getSubtaskListN();
+                //TODO!!!! for now, edits to subtasks, including added template subtasks, are not cancelled (for simplicity)
+                if (editedSubtasks != null) { //if null, means no change was made!
+                    String errorTxt;
+                    Dialog.show("Info", "Be aware that cancelling the edits of a project also cancels all added or removed subtasks", "OK", null);
+                    if (true) {//|| ((errorTxt = cancellableSubtaskEditsExist(editedSubtasks, null)) != null && showDialog())) {
 
-                    List<Item> addedSubtasks = new ArrayList(editedSubtasks);
-                    addedSubtasks.removeAll(itemOrg.getListFull());
-                    DAO.getInstance().deleteAll((List) addedSubtasks, false, false); //false=soft-delete, could hard-delete, but better to soft-delete to make recoverable (avoid losing work)?!
+                        List<Item> addedSubtasks = new ArrayList(editedSubtasks);
+                        addedSubtasks.removeAll(itemOrg.getListFull());
+                        DAO.getInstance().deleteAll((List) addedSubtasks, false, false); //false=soft-delete, could hard-delete, but better to soft-delete to make recoverable (avoid losing work)?!
 
-                    //deleted subtasks are those which were in the subtask list before the editing and no longer are there
-                    List<Item> deletedSubtasks = new ArrayList(itemOrg.getListFull());
-                    deletedSubtasks.removeAll(editedSubtasks);
-                    //on cancel, UN-delete any deleted subtasks/subprojects
-                    //using softDeleted date is not enough, but if capturing date when ScreenItem2 is launched and then undeleting any deleted *after* that might work?!
-                    Date undeleteAfter = getEditSessionStartTime();
-                    for (Item i : deletedSubtasks) {
+                        //deleted subtasks are those which were in the subtask list before the editing and no longer are there
+                        List<Item> deletedSubtasks = new ArrayList(itemOrg.getListFull());
+                        deletedSubtasks.removeAll(editedSubtasks);
+                        //on cancel, UN-delete any deleted subtasks/subprojects
+                        //using softDeleted date is not enough, but if capturing date when ScreenItem2 is launched and then undeleting any deleted *after* that might work?!
+                        Date editSessionStartTime = previousValues.getEditSessionStartTime(); //on Cancel, use this as reference date for subtasks to delete/undelete
+                        for (Item i : deletedSubtasks) {
 //                if (i.getSoftDeletedDateN().getTime() > undeleteAfter.getTime()) { //checked in undelete()
 //                        i.undelete(null, undeleteAfter);
-                        i.undelete(null, null); //null,null since we ABSOLUTELY need to undelete these subtasks since they're in the original subtask list
+                            i.undeleteZZZ(null, null); //null,null since we ABSOLUTELY need to undelete these subtasks since they're in the original subtask list
+                        }
                     }
                 }
             }
@@ -310,9 +341,18 @@ public class ScreenItem2 extends MyForm {
     }
 
     @Override
+    protected void saveOnExit() {
+//        if (triggerSaveOnExit) {
+//            DAO.getInstance().saveItem3(itemOrg);
+//            DAO.getInstance().triggerParseUpdate();
+//        }
+        DAO.getInstance().saveToParseNow(itemOrg);
+    }
+
+    @Override
     public void refreshAfterEdit() {
         //NOT needed to removeFromCache everything when a subtask has been added
-        ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
+        ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
 
         getContentPane().removeAll(); //clear old content pane
         buildContentPane(getContentPane()); //rebuild and removeFromCache
@@ -323,6 +363,7 @@ public class ScreenItem2 extends MyForm {
 //       super();
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private String cancellableSubtaskEditsExistXXX(List<Item> subtasks, Date startEditDate) {
 //        boolean cancellableEdits = false;
 //        String errorText=null;
@@ -338,15 +379,17 @@ public class ScreenItem2 extends MyForm {
 ////        return cancellableEdits;
 //        return errorText;
 //    }
+//</editor-fold>
     /**
      * validates a Item before saving. Returns null if no error, otherwise an
      * error message string to display.
      */
-    public static boolean checkItemIsValidForSaving(String text, String comment, Date dueDate, long actual, long remaining, int nbSelectedCategories, int nbSubtasks) {
+    public static boolean checkItemHasKeyDataWorthSaving(String text, String comment, Date dueDate,
+            long actual, long remaining, int nbSelectedCategories, int nbSubtasks) {
 
         boolean validData = text.length() != 0
                 || comment.length() != 0
-                || dueDate.getTime() != 0
+                || (dueDate != null && dueDate.getTime() != 0)
                 || actual > 0
                 || remaining > 0
                 || nbSelectedCategories > 0
@@ -358,6 +401,7 @@ public class ScreenItem2 extends MyForm {
         }
     }
 
+    @Override
     public void addCommandsToToolbar(Toolbar toolbar) { //, Resources theme) {
 
         super.addCommandsToToolbar(toolbar);
@@ -396,7 +440,7 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
         addStandardBackCommand();
 
-        setCheckIfSaveOnExit(() -> itemOrg.hasSaveableData());
+        setCheckIfSaveOnExit(() -> itemOrg.hasSaveableData()); //TODO: move to constructor
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Command exitScreenItemAndUpdateAndSave = new Command("", Icons.iconBackToPrevFormToolbarStyle()) {
 //            @Override
@@ -466,20 +510,32 @@ public class ScreenItem2 extends MyForm {
                 //TODO enable user to select which fields to exclude
 //                putEditedValues2(parseIdMap2, item); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
 //                putEditedValues2(parseIdMap2); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
-                parseIdMap2.update(); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
-                Item newTemplate = new Item(false);
-                itemOrg.copyMeInto(newTemplate, Item.CopyMode.COPY_TO_TEMPLATE);
-                DAO.getInstance().saveNew(newTemplate, false);
-//                TemplateList templateList = DAO.getInstance().getTemplateList();
-                TemplateList templateList = TemplateList.getInstance();
-                if (MyPrefs.insertNewItemsInStartOfLists.getBoolean()) {
-                    templateList.add(0, newTemplate);
-                } else {
-                    templateList.add(newTemplate);
+                if (false) {
+                    parseIdMap2.update(false); //put any already edited values before saving as template (=> no Cancel possible on edits on item itself)
                 }
+//                Item newTemplate = new Item(false);
+//                itemOrg.copyMeInto(newTemplate, Item.CopyMode.COPY_TO_TEMPLATE); xxx;
+//                DAO.getInstance().saveNew(newTemplate);
+
+                Item newTemplate = itemOrg.copyMeInto(new Item(false), Item.CopyMode.COPY_TO_TEMPLATE);
+                Item keepOrg = itemOrg;
+                itemOrg = newTemplate;
+                parseIdMap2.update(false); //'hack' to update template with any already edited values before saving as template (=> no Cancel possible on edits on item itself)
+//                DAO.getInstance().saveNew(newTemplate); //save new subtasks (will be deleted again if Cancel
+//                DAO.getInstance().saveToParseNow(newTemplate); //save new subtasks (will be deleted again if Cancel
+                itemOrg = keepOrg; //set it back
+//                TemplateList templateList = DAO.getInstance().getTemplateList();
+//                TemplateList templateList = TemplateList.getInstance();
+//                if (MyPrefs.insertNewItemsInStartOfLists.getBoolean()) {
+//                    templateList.add(0, newTemplate);
+//                } else {
+//                    templateList.add(newTemplate);
+//                }
+                TemplateList.getInstance().addToList(newTemplate);
 //                DAO.getInstance().saveNew((ParseObject) templateList, true);
-                DAO.getInstance().saveNew(newTemplate, templateList);
-                DAO.getInstance().saveNewExecuteUpdate();
+//                DAO.getInstance().saveNew(newTemplate, TemplateList.getInstance());
+//                DAO.getInstance().saveNewTriggerUpdate();
+                DAO.getInstance().saveToParseNow(newTemplate);
 //                ip.dispose();
 //                if (Dialog.show("INFO", "Do you want to edit the template now? You can find and edit it later under Templates.", "Yes", "No")) {
 //                    new ScreenItem(template, ScreenItem.this, () -> {
@@ -488,7 +544,7 @@ public class ScreenItem2 extends MyForm {
 //                }
 //                new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, DAO.getInstance().getTemplateList(), ScreenItem.this, (i) -> {
                 if (MyPrefs.showTemplateListAfterCreatingNewTemplateFromExistingProject.getBoolean()) {
-                    new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, () -> TemplateList.getInstance(), ScreenItem2.this, (i) -> {
+                    new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, () -> TemplateList.getInstance(), ScreenItem2.this, i -> {
                     }, ScreenListOfItems.OPTION_TEMPLATE_EDIT// | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
                     ).show();
                 }
@@ -498,16 +554,17 @@ public class ScreenItem2 extends MyForm {
         if (true || !templateEditMode) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
             //INSERT A TEMPLATE INTO AN ITEM (merge top-level project and add subtasks)
 //            toolbar.addCommandToOverflowMenu(CommandTracked.create("Merge in template", Icons.iconAddFromTemplate, (e) -> { //"Insert template"
-            toolbar.addCommandToOverflowMenu(CommandTracked.create("Add template", Icons.iconAddFromTemplate, (e) -> { //"Merge template", "Inject template", "Insert template"
+//            toolbar.addCommandToOverflowMenu(CommandTracked.create("Add template", Icons.iconAddFromTemplate, (e) -> { //"Merge template", "Inject template", "Insert template"
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("AddFromTemplate", "Add template", Icons.iconAddFromTemplate, (e) -> { //"Merge template", "Inject template", "Insert template"
                 //TODO!! Add "don't show again + setting to all these info popups
                 if (!MyPrefs.askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem.getBoolean()
                         || Dialog.show("INFO", "Inserting a template into a task will add the values and subtasks from the template to the task. It will not overwrite any fields already defined manually in the task", "OK", "Cancel")) {
                     //TODO enable user to select which fields to exclude
 //                    putEditedValues2(parseIdMap2, item); //save any already edited values before inserting the template
 //                    putEditedValues2(parseIdMap2); //save any already edited values before inserting the template to avoid overwriting values only entered into the screen but not stored in the Item itself (yet)
-                    if (false) {
-                        parseIdMap2.update(); //save any already edited values before inserting the template to avoid overwriting values only entered into the screen but not stored in the Item itself (yet)
-                    }//                    Item template = pickTemplateOLD(); //TODO!!!! make this a full Screen picker like CategorySelector
+//                    if (false) {
+//                        parseIdMap2.update(); //save any already edited values before inserting the template to avoid overwriting values only entered into the screen but not stored in the Item itself (yet)
+//                    }//                    Item template = pickTemplateOLD(); //TODO!!!! make this a full Screen picker like CategorySelector
                     List selectedTemplates = new ArrayList();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    if (false) { //shouldn't be necessary
@@ -521,50 +578,60 @@ public class ScreenItem2 extends MyForm {
 
                     new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), null, selectedTemplates, ScreenItem2.this, () -> {
                         if (selectedTemplates.size() >= 1) {
-                            Item template = (Item) selectedTemplates.get(0);
+                            Item templateOrg = (Item) selectedTemplates.get(0);
 //                            Dialog ip = new InfiniteProgress().showInfiniteBlocking();
 //                            template.copyMeInto(item, Item.CopyMode.COPY_FROM_TEMPLATE);
-                            if (true) {
-                                addTemplateToPickers(itemOrg, template);
+                            if (false) {
+                                addTemplateToPickers(itemOrg, templateOrg);
+                                refreshAfterEdit();
                             } else {
-                                template.copyMeInto(itemCopy, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK,
-                                        Item.COPY_EXCLUDE_CATEGORIES
-                                        | //categories handled below
-                                        Item.COPY_EXCLUDE_SUBTASKS
-                                        | Item.COPY_EXCLUDE_REPEAT_RULE);
-//                            if (template.getCategories().size()>0) {
-//                            if (previousValues.get(Item.PARSE_CATEGORIES) != null)//if categories already set
-//                                Item.addCatObjectIdsListToCategoryList(((List<String>) previousValues.get(Item.PARSE_CATEGORIES)), template.getCategories()); //*add* any additional categories in the template
-                                ItemAndListCommonInterface.addListToObjectIdList(((List<String>) previousValues.get(Item.PARSE_CATEGORIES)), (List) template.getCategories()); //*add* any additional categories in the template
-//                            else
-//                                previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(template.getCategories())); //set the edited categories to those of the template
+                                addTemplate(itemOrg, templateOrg);
+                                refreshAfterEdit();
 
-                                if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && template.getRepeatRuleN() != null) {
-                                    previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(template.getRepeatRuleN()));
-                                }
-
-                                List<ParseObject> newSubtasks = new ArrayList();
-                                for (Item tempSubtask : (List<Item>) template.getListFull()) { //full list, filter has no meaning for a template
-//                                item.addToList(subtask); //UI: template subtasks are permanently (no Cancel possible) added to item
-                                    Item subtaskCopy = new Item(false);
-                                    tempSubtask.copyMeInto(subtaskCopy, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
-                                    itemOrg.addToList(subtaskCopy); //UI: template subtasks are permanently (no Cancel possible) added to item
-                                    newSubtasks.add(subtaskCopy);//save each new templateCopy in a list and save them
-                                }
-                                DAO.getInstance().saveNew(newSubtasks);
+                            }
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                            if (false) {
-//                                parseIdMap2.put("SaveSubtasks", () -> DAO.getInstance().saveInBackground(item)); //NECESSARY since if no other edits
-//                            }
-//                            if (false && template.getList().size() > 0) {
-//                                DAO.getInstance().saveInBackground(item); //NECESSARY since if item not saved, or Cancel, the updated subtask list will linger and be saved later
+//                            else {
+////                                templateOrg.copyMeInto(itemCopy, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK,
+//                                templateOrg.copyMeInto(itemCopy, Item.CopyMode.COPY_TO_COPY_PASTE,
+//                                        Item.COPY_EXCLUDE_CATEGORIES
+//                                        | //categories handled below
+//                                        Item.COPY_EXCLUDE_SUBTASKS
+//                                        | Item.COPY_EXCLUDE_REPEAT_RULE);
+////                            if (template.getCategories().size()>0) {
+////                            if (previousValues.get(Item.PARSE_CATEGORIES) != null)//if categories already set
+////                                Item.addCatObjectIdsListToCategoryList(((List<String>) previousValues.get(Item.PARSE_CATEGORIES)), template.getCategories()); //*add* any additional categories in the template
+//                                ItemAndListCommonInterface.addListToObjectIdList(((List<String>) previousValues.get(Item.PARSE_CATEGORIES)), (List) templateOrg.getCategories()); //*add* any additional categories in the template
+////                            else
+////                                previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(template.getCategories())); //set the edited categories to those of the template
+//
+//                                if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && templateOrg.getRepeatRuleN() != null) {
+//                                    previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(templateOrg.getRepeatRuleN()));
+//                                }
+//
+//                                List<ParseObject> newSubtasks = new ArrayList();
+//                                for (Item tempSubtask : (List<Item>) templateOrg.getListFull()) { //full list, filter has no meaning for a template
+////                                item.addToList(subtask); //UI: template subtasks are permanently (no Cancel possible) added to item
+//                                    Item subtaskCopy = new Item(false);
+////                                    tempSubtask.copyMeInto(subtaskCopy, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
+//                                    tempSubtask.copyMeInto(subtaskCopy, Item.CopyMode.COPY_TO_COPY_PASTE, 0);
+//                                    itemOrg.addToList(subtaskCopy); //UI: template subtasks are permanently (no Cancel possible) added to item
+//                                    newSubtasks.add(subtaskCopy);//save each new templateCopy in a list and save them
+//                                }
+//                                DAO.getInstance().saveNew(newSubtasks);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                            if (false) {
+////                                parseIdMap2.put("SaveSubtasks", () -> DAO.getInstance().saveInBackground(item)); //NECESSARY since if no other edits
+////                            }
+////                            if (false && template.getList().size() > 0) {
+////                                DAO.getInstance().saveInBackground(item); //NECESSARY since if item not saved, or Cancel, the updated subtask list will linger and be saved later
+////                            }
+////</editor-fold>
+//                                if (false && itemOrg.getSource() == null) { //source could already be set, e.g. if repeat copy
+//                                    itemCopy.setSource(templateOrg);
+//                                    parseIdMap2.put("SetSource", () -> itemOrg.setSource(templateOrg)); //NECESSARY since if no other edits
+//                                }
 //                            }
 //</editor-fold>
-                                if (false && itemOrg.getSource() == null) { //source could already be set, e.g. if repeat copy
-                                    itemCopy.setSource(template);
-                                    parseIdMap2.put("SetSource", () -> itemOrg.setSource(template)); //NECESSARY since if no other edits
-                                }
-                            }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                            DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item);
 //                            DAO.getInstance().saveTemplateCopyWithSubtasksInBackground(item);
@@ -589,9 +656,11 @@ public class ScreenItem2 extends MyForm {
                     }, 0, 1, true, false, false).show(); //0: Ok to not select any template => nothing inserted
 //                    if (template != null) {
                 };
-            }, "CreateFromTemplate"));
+            }));
 
-            toolbar.addCommandToOverflowMenu(makeEditFilterSortCommand(itemOrg));
+            if (false) { //now done when editing subtasks
+                toolbar.addCommandToOverflowMenu(makeEditFilterSortCommand(itemOrg));
+            }
         }
 
         //DELETE
@@ -616,9 +685,9 @@ public class ScreenItem2 extends MyForm {
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", "Task settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsItem("Settings tasks", ScreenItem2.this, () -> {
-                if (false) {
-                    refreshAfterEdit();
-                }
+//                if (false) {
+//                    refreshAfterEdit();
+//                }
             }).show();
         }
         ));
@@ -992,9 +1061,9 @@ public class ScreenItem2 extends MyForm {
         //use of equals: if old set value was inherited (could be changed to an inherited value during edited) replace with new owner's inherited value
         if (item.isDueDateInheritanceOn()
                 && ((prevOwner == null && dueDate.getDate().getTime() == 0) //prev owner an ItemList and no value set
-                || Objects.equals(dueDate.getDate(), prevOwner.getDueDateD()))) {
-            dueDate.setDate(newOwner.getDueDateD());
-            previousValues.put(Item.PARSE_DUE_DATE, newOwner.getDueDateD());
+                || Objects.equals(dueDate.getDate(), prevOwner.getDueDate()))) {
+            dueDate.setDate(newOwner.getDueDate());
+            previousValues.put(Item.PARSE_DUE_DATE, newOwner.getDueDate());
         }
         if (item.isWaitingTillInheritanceOn()
                 && ((prevOwner == null && waitingTill.getDate().getTime() == 0)
@@ -1102,12 +1171,12 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
     }
 
-    private void addTemplateToPickers(Item item, Item template) {
+    private void addTemplateToPickers(Item itemOrg, final Item templateOrg) {
         //if the user has not yet set a due date and the template has fields depending on due date, ask for a due date
-        if (template.getDueDateD().getTime() != 0) {
+        if (templateOrg.getDueDate().getTime() != 0) {
 
-            boolean templFieldsDependOnDue = template.getAlarmDate().getTime() != 0 || template.getStartByDateD().getTime() != 0
-                    || template.getExpiresOnDate().getTime() != 0 || template.getHideUntilDateD().getTime() != 0;
+            boolean templFieldsDependOnDue = templateOrg.getAlarmDate().getTime() != 0 || templateOrg.getStartByDateD().getTime() != 0
+                    || templateOrg.getExpiresOnDate().getTime() != 0 || templateOrg.getHideUntilDateD().getTime() != 0;
             if (templFieldsDependOnDue) { //only if there are any fields in the template that depend on due date:
                 Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //TODO setting to pich a f
                 if (dueDate.getDate().getTime() == 0) {
@@ -1121,28 +1190,28 @@ public class ScreenItem2 extends MyForm {
                     //MOST FIELDS are only set if not defined (or if user deleted the value in the input field (Pickers etc)
                     if (false && dueDate.getDate().getTime() == 0) { //NB. Due date NEVER set based on due date in template
                         //TODO: make a setting for how far ahead a default due date should be set
-                        dueDate.setDate(template.getDueDateD());
+                        dueDate.setDate(templateOrg.getDueDate());
                     }
                     previousValues.put(Item.PARSE_DUE_DATE, newDueDate); //store due Date locally
 //                long templDueDateAdj = dueDate.getDate().getTime() - template.getDueDateD().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
-                    long templDueDateAdj = newDueDate.getTime() - template.getDueDateD().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
+                    long templDueDateAdj = newDueDate.getTime() - templateOrg.getDueDate().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
                     //CERTAIN DATES are set RELATIVE to the DUE DATE:
                     if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as 
-                        if (alarmDate.getDate() == null && template.getAlarmDate().getTime() != 0) {
+                        if ((alarmDate.getDate() == null || alarmDate.getDate().getTime() == 0) && templateOrg.getAlarmDate().getTime() != 0) {
 //                    alarmDate.setDate(new MyDate(template.getAlarmDate().getTime() + templDueDateAdj));
-                            previousValues.put(Item.PARSE_ALARM_DATE, new MyDate(template.getAlarmDate().getTime() + templDueDateAdj));
+                            previousValues.put(Item.PARSE_ALARM_DATE, new MyDate(templateOrg.getAlarmDate().getTime() + templDueDateAdj));
                         }
-                        if (startByDate.getDate() == null && template.getStartByDateD().getTime() != 0) {
+                        if ((startByDate.getDate() == null || startByDate.getDate().getTime() == 0) && templateOrg.getStartByDateD().getTime() != 0) {
 //                    startByDate.setDate(new MyDate(template.getStartByDateD().getTime() + templDueDateAdj));
-                            previousValues.put(Item.PARSE_START_BY_DATE, new MyDate(template.getStartByDateD().getTime() + templDueDateAdj));
+                            previousValues.put(Item.PARSE_START_BY_DATE, new MyDate(templateOrg.getStartByDateD().getTime() + templDueDateAdj));
                         }
-                        if (expiresOnDate.getDate() == null && template.getExpiresOnDate().getTime() != 0) {
+                        if ((expiresOnDate.getDate() == null || expiresOnDate.getDate().getTime() == 0) && templateOrg.getExpiresOnDate().getTime() != 0) {
 //                    expiresOnDate.setDate(new MyDate(template.getExpiresOnDate().getTime() + templDueDateAdj));
-                            previousValues.put(Item.PARSE_EXPIRES_ON_DATE, new MyDate(template.getExpiresOnDate().getTime() + templDueDateAdj));
+                            previousValues.put(Item.PARSE_EXPIRES_ON_DATE, new MyDate(templateOrg.getExpiresOnDate().getTime() + templDueDateAdj));
                         }
-                        if (hideUntil.getDate() == null && template.getHideUntilDateD().getTime() != 0) {
+                        if ((hideUntil.getDate() == null || hideUntil.getDate().getTime() == 0) && templateOrg.getHideUntilDateD().getTime() != 0) {
 //                    hideUntil.setDate(new MyDate(template.getHideUntilDateD().getTime() + templDueDateAdj));
-                            previousValues.put(Item.PARSE_HIDE_UNTIL_DATE, new MyDate(template.getHideUntilDateD().getTime() + templDueDateAdj));
+                            previousValues.put(Item.PARSE_HIDE_UNTIL_DATE, new MyDate(templateOrg.getHideUntilDateD().getTime() + templDueDateAdj));
                         }
                     }
                 }
@@ -1150,92 +1219,126 @@ public class ScreenItem2 extends MyForm {
         }
 
         if (!isStarredSelected()) {
-            setStarredSelected(template.isStarred());
-            previousValues.put(Item.PARSE_STARRED, template.isStarred());
+            setStarredSelected(templateOrg.isStarred());
+            previousValues.put(Item.PARSE_STARRED, templateOrg.isStarred());
         }
 
-        if (priority.getSelectedIndex() == -1 && template.getPriority() > 0) {
+        if (priority.getSelectedIndex() == -1 && templateOrg.getPriority() > 0) {
 //            importance.selectIndex(template.getPriority() - 1);
-            previousValues.put(Item.PARSE_PRIORITY, template.getPriority());//NB. We store the actual value of Priority locally and adjust when setting the picker
+            previousValues.put(Item.PARSE_PRIORITY, templateOrg.getPriority());//NB. We store the actual value of Priority locally and adjust when setting the picker
         }
 
-        if (importance.getSelectedValue() == null && template.getImportanceN() != null) {
+        if (importance.getSelectedValue() == null && templateOrg.getImportanceN() != null) {
 //            importance.selectValue(template.getImportanceN() != null ? template.getImportanceN().name() : null);
-            previousValues.put(Item.PARSE_IMPORTANCE, template.getImportanceN().name());
+            previousValues.put(Item.PARSE_IMPORTANCE, templateOrg.getImportanceN().name());
         }
-        if (urgency.getSelectedValue() == null && template.getUrgencyN() != null) {
+        if (urgency.getSelectedValue() == null && templateOrg.getUrgencyN() != null) {
 //            urgency.selectValue(template.getUrgencyN() != null ? template.getUrgencyN().name() : null);
-            previousValues.put(Item.PARSE_URGENCY, template.getUrgencyN().name());
+            previousValues.put(Item.PARSE_URGENCY, templateOrg.getUrgencyN().name());
         }
-        if (challenge.getSelectedValue() == null && template.getChallengeN() != null) {
+        if (challenge.getSelectedValue() == null && templateOrg.getChallengeN() != null) {
 //            challenge.selectValue(template.getChallengeN() != null ? template.getChallengeN().name() : null);
-            previousValues.put(Item.PARSE_CHALLENGE, template.getChallengeN().name());
+            previousValues.put(Item.PARSE_CHALLENGE, templateOrg.getChallengeN().name());
         }
-        if (dreadFun.getSelectedValue() == null && template.getDreadFunValueN() != null) {
+        if (dreadFun.getSelectedValue() == null && templateOrg.getDreadFunValueN() != null) {
 //            dreadFun.selectValue(template.getDreadFunValueN().name());
-            previousValues.put(Item.PARSE_DREAD_FUN_VALUE, template.getDreadFunValueN().name());
+            previousValues.put(Item.PARSE_DREAD_FUN_VALUE, templateOrg.getDreadFunValueN().name());
         }
 
-        if (getEarnedValueAsDouble(earnedValue.getText()) == 0 && template.getEarnedValue() > 0) {
+        if (getEarnedValueAsDouble(earnedValue.getText()) == 0 && templateOrg.getEarnedValue() > 0) {
 //            earnedValue.setText(setEarnedValueAsString(template.getEarnedValue()));
-            previousValues.put(Item.PARSE_EARNED_VALUE, setEarnedValueAsString(template.getEarnedValue()));
+            previousValues.put(Item.PARSE_EARNED_VALUE, setEarnedValueAsString(templateOrg.getEarnedValue()));
         }
 
-        if (!template.isProject() && ((remainingEffort.getDuration() == 0 || Item.isRemainingDefaultValue(remainingEffort.getDuration()))) && template.getRemaining() > 0) {
+        if (!templateOrg.isProject() && ((remainingEffort.getDuration() == 0 || Item.isRemainingDefaultValue(remainingEffort.getDuration()))) && templateOrg.getRemainingTotal() > 0) { //UI: adding a template will overwrite the default Remaining
 //            remainingEffort.setDuration(template.getRemaining());
-            previousValues.put(Item.PARSE_REMAINING_EFFORT, template.getRemaining());
+            previousValues.put(Item.PARSE_REMAINING_EFFORT_TOTAL, templateOrg.getRemainingTotal());
         }
 
-        if (!template.isProject() && ((effortEstimate.getDuration() == 0 || Item.isRemainingDefaultValue(effortEstimate.getDuration()))) && template.getEstimate() > 0) {
+        if (!templateOrg.isProject() && ((effortEstimate.getDuration() == 0 || Item.isRemainingDefaultValue(effortEstimate.getDuration()))) && templateOrg.getEstimateTotal() > 0) {
 //            effortEstimate.setDuration(template.getEstimate());
-            previousValues.put(Item.PARSE_EFFORT_ESTIMATE, template.getEstimate());
+            previousValues.put(Item.PARSE_EFFORT_ESTIMATE, templateOrg.getEstimateTotal());
         }
         //SOME FIELDS DO NOT HAVE A SIMPLE INPUT FIELD EDITOR
         //RepeatRule
-        if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && template.getRepeatRuleN() != null) {
+        if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && templateOrg.getRepeatRuleN() != null) {
 //            previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(template.getRepeatRuleN()));
-            previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(template.getRepeatRuleN()));
+            previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(templateOrg.getRepeatRuleN()));
         }
 
         //SPECIAL CASES
-        if ((description.getText().length() == 0 || MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()) && !template.getText().isEmpty()) {
+        if ((description.getText().length() == 0 || MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()) && !templateOrg.getText().isEmpty()) {
 //            description.setText(description.getText().length() == 0 || MyPrefs.addTemplateTaskTextToExistingTaskText.getBoolean()
 //                    ? description.getText() + template.getText() : template.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
-            previousValues.put(Item.PARSE_TEXT, description.getText().length() == 0 ? template.getText()
-                    : description.getText() + " " + template.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
+            previousValues.put(Item.PARSE_TEXT, description.getText().length() == 0 ? templateOrg.getText()
+                    : description.getText() + " " + templateOrg.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
         }
         //Template Comments are ??
 //        comment.setText(comment.getText().length() > 0 ? comment.getText() + "\n" + template.getComment() : template.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
-        previousValues.put(Item.PARSE_COMMENT, comment.getText().length() == 0 ? template.getComment()
-                : comment.getText() + "\n" + template.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
+        previousValues.put(Item.PARSE_COMMENT, comment.getText().length() == 0 ? templateOrg.getComment()
+                : comment.getText() + "\n" + templateOrg.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
 
         //Templates Categories are merged (only new categories in template are added - no cuplicates!)
 //        Item.addCatObjectIdsListToCategoryList(((List<String>) previousValues.get(Item.PARSE_CATEGORIES)), template.getCategories()); //*add* any additional categories in the template
-        List templateCategories = new ArrayList(template.getCategories());
+        List templateCategories = new ArrayList(templateOrg.getCategories());
         templateCategories.removeAll(previousValues.getCategories());
         templateCategories.addAll(previousValues.getCategories());
         previousValues.putCategories(templateCategories);
 //                         
         //Template Subtasks are merged
-        List<Item> templateSubtasks = template.getListFull();
-        if (!templateSubtasks.isEmpty()) {
-            List<Item> previousSubtasks = previousValues.getSubtaskListN();
-            if (previousSubtasks == null) { //if no previous edits to subtasks, create a new list w current subtasks(!)
-                previousSubtasks = new ArrayList(itemOrg.getListFull());
-            }
+        List<Item> templateSubtasksOrg = templateOrg.getListFull();
+////<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false && !templateSubtasksOrg.isEmpty()) {
+//            List<Item> previousSubtasks = previousValues.getSubtaskListN();
+//            if (previousSubtasks == null) { //if no previous edits to subtasks, create a new list w current subtasks(!)
+//                previousSubtasks = new ArrayList(itemOrg.getListFull());
+//            }
+//            List<Item> newSubtasksToSave = new ArrayList();
+////        List<Item> templateSubtasks = template.getListFull();
+////        for (Item tempSubtask : (List<Item>) template.getListFull()) { //full list, filter has no meaning for a template
+//            for (Item tempSubtask : templateSubtasksOrg) { //full list, filter has no meaning for a template
+//                Item newSubtask = new Item(false);
+////                tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
+//                tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_TO_COPY_PASTE, 0);
+////            itemOrg.addToList(subtaskCopy); //UI: template subtasks are permanently (no Cancel possible) added to item
+//                previousSubtasks.add(newSubtask); //UI: template subtasks are permanently (no Cancel possible) added to item
+//                newSubtask.setOwner(item);
+//                newSubtasksToSave.add(newSubtask);//save each new templateCopy in a list and save them
+//            }
+//            DAO.getInstance().saveNew((List) newSubtasksToSave); //save new subtasks (will be deleted again if Cancel
+//
+//            if (itemOrg.getObjectIdP() != null) { //only trigger saving subtasks if their owner is already saved, otherwise subtasks will be saved once the owner save is triggered
+//                DAO.getInstance().saveNewTriggerUpdate(); //save new subtasks (will be deleted again if Cancel
+//            }
+//            previousValues.putSubtaskList(previousSubtasks);
+//        } else 
+////</editor-fold>
+        if (!templateSubtasksOrg.isEmpty()) {
+            ASSERT.that(itemOrg.getObjectIdP() != null, "itemOrg should always have been saved before editing, itemOrg=" + itemOrg); //only trigger saving subtasks if their owner is already saved, otherwise subtasks will be saved once the owner save is triggered
+            List<Item> previousSubtasks = itemOrg.getListFull();
             List<Item> newSubtasksToSave = new ArrayList();
-//        List<Item> templateSubtasks = template.getListFull();
-//        for (Item tempSubtask : (List<Item>) template.getListFull()) { //full list, filter has no meaning for a template
-            for (Item tempSubtask : templateSubtasks) { //full list, filter has no meaning for a template
-                Item newSubtask = new Item(false);
-                tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
-//            itemOrg.addToList(subtaskCopy); //UI: template subtasks are permanently (no Cancel possible) added to item
-                previousSubtasks.add(newSubtask); //UI: template subtasks are permanently (no Cancel possible) added to item
-                newSubtask.setOwner(item);
-                newSubtasksToSave.add(newSubtask);//save each new templateCopy in a list and save them
+            for (Item templateSubtaskOrg : templateSubtasksOrg) { //full list, filter has no meaning for a template
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                Item newSubtask = new Item(false);
+//                tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
+//                previousSubtasks.add(newSubtask); //UI: template subtasks are permanently (no Cancel possible) added to item
+//                templateSubtask.setOwner(itemOrg);
+//                newSubtasksToSave.add(newSubtask);//save each new templateCopy in a list and save them
+//                itemOrg.addToList(templateSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+//</editor-fold>
+//                Item newSubtask = templateSubtaskOrg.copyMeInto(new Item(false), Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
+                Item newSubtask = templateSubtaskOrg.copyMeInto(new Item(false), Item.CopyMode.COPY_TO_COPY_PASTE, 0);
+                itemOrg.addToList(newSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+//                DAO.getInstance().saveNew(newSubtask); //save new subtasks (will be deleted again if Cancel)
             }
-            DAO.getInstance().saveNew((List) newSubtasksToSave); //save new subtasks (will be deleted again if Cancel
-            DAO.getInstance().triggerParseUpdate(); //save new subtasks (will be deleted again if Cancel
+//            previousSubtasks.addAll(templateSubtasks);
+//            DAO.getInstance().saveNew((List) newSubtasksToSave); //save new subtasks (will be deleted again if Cancel
+//            itemOrg.setList(previousSubtasks); ///doe in itemOrg.addToList above
+//            DAO.getInstance().saveNew(itemOrg); //save org item with added subtasks (otherwise lost on Replay)
+            if (false) {
+//                DAO.getInstance().saveNew(itemOrg); //NOT necessary to save itemOrg with added subtasks at this point (?!)
+            }
+//            DAO.getInstance().saveNewTriggerUpdate(); //save new subtasks (will be deleted again if Cancel
             previousValues.putSubtaskList(previousSubtasks);
         }
 
@@ -1248,6 +1351,130 @@ public class ScreenItem2 extends MyForm {
         //Waiting since date
     }
 
+    /**
+     *
+     * @param item
+     * @param templateCopy the template copy to insert, NB! if templateCopy is a
+     * project, the top-level task is only used to set the values (incl.
+     * categories) of the itemOrg and
+     */
+    private void addTemplate(Item itemOrg, final Item templateOrg) {
+        Item templateCopy = templateOrg.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK);
+        //if the user has not yet set a due date and the template has fields depending on due date, ask for a due date
+        if (templateCopy.getDueDate().getTime() != 0) {
+
+            boolean templFieldsDependOnDue = templateCopy.getAlarmDate().getTime() != 0 || templateCopy.getStartByDateD().getTime() != 0
+                    || templateCopy.getExpiresOnDate().getTime() != 0 || templateCopy.getHideUntilDateD().getTime() != 0;
+            if (templFieldsDependOnDue) { //only if there are any fields in the template that depend on due date:
+                Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //TODO setting to pich a f
+//                if (dueDate.getDate().getTime() == 0) {
+                if (itemOrg.getDueDate().getTime() == 0) {
+//                Dialog.show(SUBTASK_KEY, this, cmds);
+                    newDueDate = showDialogSetDueDate(newDueDate);
+//                assert false; 
+                } else {
+//                    newDueDate.setTime(dueDate.getDate().getTime());
+                    newDueDate = itemOrg.getDueDate();
+                }
+                if (newDueDate.getTime() != 0) { //if we now have a dueDate, set the relative fields
+                    //MOST FIELDS are only set if not defined (or if user deleted the value in the input field (Pickers etc)
+                    if (false && dueDate.getDate().getTime() == 0) { //NB. Due date NEVER set based on due date in template
+                        //TODO: make a setting for how far ahead a default due date should be set
+                        dueDate.setDate(templateCopy.getDueDate());
+                    }
+                    long templDueDateAdj = newDueDate.getTime() - templateCopy.getDueDate().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
+                    //CERTAIN DATES are set RELATIVE to the DUE DATE:
+                    if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as 
+                        if (itemOrg.getDueDate().getTime() == 0 && templateCopy.getAlarmDate().getTime() != 0) {
+                            itemOrg.setDueDate(new MyDate(templateCopy.getAlarmDate().getTime() + templDueDateAdj));
+                        }
+                        if (itemOrg.getStartByDateD().getTime() == 0 && templateCopy.getStartByDateD().getTime() != 0) {
+                            itemOrg.setStartByDate(new MyDate(templateCopy.getStartByDateD().getTime() + templDueDateAdj));
+                        }
+                        if (itemOrg.getExpiresOnDate().getTime() == 0 && templateCopy.getExpiresOnDate().getTime() != 0) {
+                            itemOrg.setExpiresOnDate(new MyDate(templateCopy.getExpiresOnDate().getTime() + templDueDateAdj));
+                        }
+                        if (itemOrg.getHideUntilDateD().getTime() == 0 && templateCopy.getHideUntilDateD().getTime() != 0) {
+                            itemOrg.setHideUntilDate(new MyDate(templateCopy.getHideUntilDateD().getTime() + templDueDateAdj));
+                        }
+                    }
+                }
+            }
+        }
+
+        if (!itemOrg.isStarred() && templateCopy.isStarred()) {
+            itemOrg.setStarred(true);
+        }
+
+        if (itemOrg.getPriority() == 0 && templateCopy.getPriority() > 0) {
+            itemOrg.setPriority(templateCopy.getPriority());//NB. We store the actual value of Priority locally and adjust when setting the picker
+        }
+
+        if (itemOrg.getImportanceN() == null && templateCopy.getImportanceN() != null) {
+            itemOrg.setImportance(templateCopy.getImportanceN());
+        }
+        if (itemOrg.getUrgencyN() == null && templateCopy.getUrgencyN() != null) {
+            itemOrg.setUrgency(templateCopy.getUrgencyN());
+        }
+        if (itemOrg.getChallengeN() == null && templateCopy.getChallengeN() != null) {
+            itemOrg.setChallenge(templateCopy.getChallengeN());
+        }
+        if (itemOrg.getDreadFunValueN() == null && templateCopy.getDreadFunValueN() != null) {
+            itemOrg.setDreadFunValue(templateCopy.getDreadFunValueN());
+        }
+
+        if (itemOrg.getEarnedValue() == 0 && templateCopy.getEarnedValue() > 0) {
+            itemOrg.setEarnedValue(templateCopy.getEarnedValue());
+        }
+
+        if (false && !templateCopy.isProject() && ((remainingEffort.getDuration() == 0 || Item.isRemainingDefaultValue(remainingEffort.getDuration()))) && templateCopy.getRemainingTotal() > 0) { //UI: adding a template will overwrite the default Remaining
+//            remainingEffort.setDuration(template.getRemaining());
+            previousValues.put(Item.PARSE_REMAINING_EFFORT_TOTAL, templateCopy.getRemainingTotal());
+        }
+
+        //if template has a task-level estimate and itemOrg has none, or only default value, then use template's estimate
+        if (templateCopy.getEstimateForTask() > 0 && ((itemOrg.getEstimateForTask() == 0 || Item.isRemainingDefaultValue(itemOrg.getEstimateForTask())))) {
+            itemOrg.setEstimateForTask(templateCopy.getEstimateForTask());
+        }
+        //SOME FIELDS DO NOT HAVE A SIMPLE INPUT FIELD EDITOR
+        //RepeatRule
+        if (itemOrg.getRepeatRuleN() == null && templateCopy.getRepeatRuleN() != null) {
+            itemOrg.setRepeatRule(templateCopy.getRepeatRuleN());
+        }
+
+        //SPECIAL CASES
+        if ((itemOrg.getText().isEmpty() || MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()) && !templateCopy.getText().isEmpty()) {
+            itemOrg.setText(itemOrg.getText().isEmpty()
+                    ? templateCopy.getText()
+                    : itemOrg.getText() + " " + templateCopy.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
+        }
+        //Template Comments are ??
+//        comment.setText(comment.getText().length() > 0 ? comment.getText() + "\n" + template.getComment() : template.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
+        itemOrg.setComment(itemOrg.getComment().isEmpty() ? templateCopy.getComment()
+                : itemOrg.getComment() + "\n" + templateCopy.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
+
+        //Templates Categories are merged (only new categories in template are added - no cuplicates!)
+        for (Category c : templateCopy.getCategories()) {
+            c.removeItemFromCategory(templateCopy, true); //doesn't matter if categories are removed from templateCopy since it's never used
+        }
+        itemOrg.addCategories(templateCopy.getCategories());
+//                         
+        //Template Subtasks are merged
+        List<Item> templateSubtasksCopy = templateCopy.getListFull();
+        for (Item templateSubtaskCopy : templateSubtasksCopy) { //full list, filter has no meaning for a template
+            //optimization: adding many subtasks individually will update inhiertance etc multiple times
+            itemOrg.addToList(templateSubtaskCopy); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+        }
+
+        //SOME fields are NOT AFFECTED by a template:
+        //Actual effort
+        //Owner
+        //CreatedOn
+        //Wait until
+        //Waiting reminder
+        //Waiting since date
+    }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private void addTemplateToPickersOLD(Item item, Item template) {
 //        //if the user has not yet set a due date and the template has fields depending on due date, ask for a due date
 //        if (template.getDueDateD().getTime() != 0) {
@@ -1266,7 +1493,7 @@ public class ScreenItem2 extends MyForm {
 //            }
 //            long templDueDateAdj = dueDate.getDate().getTime() - template.getDueDateD().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
 //            //CERTAIN DATES are set RELATIVE to the DUE DATE:
-//            if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as 
+//            if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as
 //                if (alarmDate.getDate() == null && template.getAlarmDate().getTime() != 0) {
 //                    alarmDate.setDate(new MyDate(template.getAlarmDate().getTime() + templDueDateAdj));
 //                }
@@ -1331,7 +1558,7 @@ public class ScreenItem2 extends MyForm {
 //        templateCategories.removeAll(previousValues.getCategories());
 //        templateCategories.addAll(previousValues.getCategories());
 //        previousValues.putCategories(templateCategories);
-////                         
+////
 //        //Template Subtasks are merged
 //        List<Item> subtasks = previousValues.getSubtaskListN();
 //        if (subtasks == null) {
@@ -1360,6 +1587,8 @@ public class ScreenItem2 extends MyForm {
 //        //Waiting reminder
 //        //Waiting since date
 //    }
+//</editor-fold>
+
     private void setStarredSelected(boolean selected) {
         boolean setStarActive = starred.getMaterialIcon() == Icons.iconStarUnselected; //icon is used to store state of starred changes in screen
         starred.setUIID(setStarActive ? "ScreenItemStarredActive" : "ScreenItemStarredNotActive");
@@ -1393,7 +1622,9 @@ public class ScreenItem2 extends MyForm {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container cont) {
 //        Container content = new Container();
-        parseIdMap2.parseIdMapReset();
+        if (false) {
+            parseIdMap2.parseIdMapReset();
+        }
         if (false) {
             TableLayout tl;
 //        int spanButton = 2;
@@ -1412,10 +1643,15 @@ public class ScreenItem2 extends MyForm {
 
 //        Tabs tabs = new Tabs(Component.BOTTOM);
         Tabs tabs = new Tabs();
+        tabs.setTabPlacement(Tabs.BOTTOM);
+//        tabs.setLayout(new GridLayout(4));
         tabs.setUIID("ScreenItemTabsContainer");
 //       tabs.setTabPlacement(Component.BOTTOM);
 //       tabs.setTabPlacement(Component.BOTTOM);
         tabs.setSwipeActivated(MyPrefs.itemEditEnableSwipeBetweenTabs.getBoolean());
+        if (false) {
+            tabs.setEagerSwipeMode(true);
+        }
         tabs.setTabTextPosition(Tabs.RIGHT); //tabs text to the right of the icons
         tabs.setTabUIID("ScreenItemTab");
         tabs.addSelectionListener((oldSel, i) -> {
@@ -1470,7 +1706,7 @@ public class ScreenItem2 extends MyForm {
 //        description = new MyTextArea(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
 //</editor-fold>
 //        description = new MyTextField(Item.DESCRIPTION_HINT, 20, 1, 3, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
-        description = new MyTextField(Item.DESCRIPTION_HINT, 20, 1, 0, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
+        description = new MyTextField(Item.DESCRIPTION_HINT, 20, 1, 1, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY) {
             @Override
             public void longPointerPress(int x, int y) {
                 Log.p("longPointerPress on text area");
@@ -1481,6 +1717,7 @@ public class ScreenItem2 extends MyForm {
             description.putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
         }
         boolean testMoveTextFieldsToOtherTab = false;
+        boolean isTemplate = itemOrg.isTemplate();
 
 //        initField(Item.DESCRIPTION, Item.DESCRIPTION_HELP, description, Item.PARSE_TEXT, () -> item.getText(), (t) -> item.setText((String) t),
 //                () -> description.getText(), (t) -> description.setText((String) t), null);
@@ -1495,6 +1732,8 @@ public class ScreenItem2 extends MyForm {
 //        description.setUIID("ScreenItemTaskText");
         description.setUIID(itemCopy.isStarred() ? "ScreenItemTaskTextStarred" : "ScreenItemTaskText");
         description.getHintLabel().setUIID("ScreenItemTaskTextHint");
+//        description.getHintLabel().setUIID("ScreenItemCommentHint");
+
         description.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //start with initial caps automatically - TODO!!!! NOT WORKING LIKE THIS!!
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyCheckBox status = new MyCheckBox(null, parseIdMap2, () -> item.isDone(), (b) -> item.setDone(b));
@@ -1509,7 +1748,7 @@ public class ScreenItem2 extends MyForm {
 //            }
 //        });
 //</editor-fold>
-        if (description.getText().length() == 0) {
+        if (!description.getText().isEmpty()) {
             setEditOnShow(description); //UI: start editing this field, only if empty (to avoid keyboard popping up)
         }
 
@@ -1518,8 +1757,8 @@ public class ScreenItem2 extends MyForm {
 //        initField(Item.EFFORT_ESTIMATE, Item.EFFORT_ESTIMATE_HELP, effortEstimate, Item.PARSE_EFFORT_ESTIMATE, () -> item.getEffortEstimate(), (l) -> item.setEstimate((long) l),
 //                () -> effortEstimate.getDuration(), (l) -> effortEstimate.setDuration((long) l), null);
         initField(Item.PARSE_EFFORT_ESTIMATE, effortEstimate,
-                () -> itemCopy.getEstimateForProjectTaskItself(),
-                (l) -> itemOrg.setEstimate((long) l, false),
+                () -> itemCopy.getEstimateForTask(),
+                (l) -> itemOrg.setEstimateForTask((long) l, false),
                 () -> effortEstimate.getDuration(),
                 (l) -> effortEstimate.setDuration((long) l));
 
@@ -1527,37 +1766,38 @@ public class ScreenItem2 extends MyForm {
         remainingEffort = new MyDurationPicker();
 //        initField(Item.EFFORT_REMAINING, Item.EFFORT_REMAINING_HELP, effortEstimate, Item.PARSE_REMAINING_EFFORT, () -> item.getRemainingEffort(), (l) -> item.setRemaining((long) l),
 //                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l), null);
-        initField(Item.PARSE_REMAINING_EFFORT, remainingEffort,
+        initField(Item.PARSE_REMAINING_EFFORT_TOTAL, remainingEffort,
                 //                () -> item.getRemaining(false), 
-                () -> itemCopy.getRemainingForProjectTaskItselfFromParse(),
-                (l) -> itemOrg.setRemaining((long) l, false),
+                () -> itemCopy.getRemainingForTaskFromParse(),
+                (l) -> itemOrg.setRemainingForTask((long) l, false),
                 () -> remainingEffort.getDuration(),
                 (l) -> remainingEffort.setDuration((long) l));
 
         //DESCRIPTION
-        description.addActionListener((e) -> {
+        if (false) {
+            description.addActionListener((e) -> {
 //            setTitle(getScreenTitle(item.isTemplate(), description.getText()));
-            Item.EstimateResult res = Item.getEffortEstimateFromTaskText(description.getText(), false);
-            //TODO!!! create a function that will determine when to any of the user setting baesd on the values in description string
-            if (res.minutes != 0) { //UI: alwyas use value in text to override previous value
-                //TODO!!!!! call the same actionListener as when EsitmatePicker is changed 
-                //UI: entering an estimate in the text of an item is used to set remaining effort (and not effort estimate) since this is more useful, e.g. as an easy way to update remaining while editing the item
+                Item.EstimateResult res = Item.getEffortEstimateFromTaskText(description.getText(), false);
+                //TODO!!! create a function that will determine when to any of the user setting baesd on the values in description string
+                if (res.minutes != 0) { //UI: alwyas use value in text to override previous value
+                    //TODO!!!!! call the same actionListener as when EsitmatePicker is changed 
+                    //UI: entering an estimate in the text of an item is used to set remaining effort (and not effort estimate) since this is more useful, e.g. as an easy way to update remaining while editing the item
 //                remainingEffort.setTime(res.minutes); //will set remainingEffort, even if text is changed multiple times. However, manually changing effortEstimate later on won't change remainingEffort. 
 //                remainingEffort.setDuration(res.minutes * MyDate.MINUTE_IN_MILLISECONDS); //will set remainingEffort, even if text is changed multiple times. However, manually changing effortEstimate later on won't change remainingEffort. 
-                remainingEffort.setDurationAndNotify(res.minutes * MyDate.MINUTE_IN_MILLISECONDS); //will set remainingEffort, even if text is changed multiple times. However, manually changing effortEstimate later on won't change remainingEffort. 
-                remainingEffort.repaint();
-                description.setText(res.cleaned); //update text after estimate is removed 
-                description.repaint();
-            }
+                    remainingEffort.setDurationAndNotify(res.minutes * MyDate.MINUTE_IN_MILLISECONDS); //will set remainingEffort, even if text is changed multiple times. However, manually changing effortEstimate later on won't change remainingEffort. 
+                    remainingEffort.repaint();
+                    description.setText(res.cleaned); //update text after estimate is removed 
+                    description.repaint();
+                }
 //            setTitle(getScreenTitle(item.isTemplate(), description.getText()));
-            setTitle((itemOrg.isTemplate() ? "TEMPLATE: " : "") + description.getText());
-        }); //update the form title when text is changed
-
+                setTitle((itemOrg.isTemplate() ? "TEMPLATE: " : "") + description.getText());
+            }); //update the form title when text is changed
+        }
         mainCont.add(makeSpacerThin());
 
         mainCont.add(description);
 //        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, item, 5000, () -> item.setText(description.getText())); //normal that this appear as non-used!
-        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, null, null); //normal that this appear as non-used!
+//        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, null, null); //normal that this appear as non-used!
 
         mainCont.add(makeSpacerThin());
         //COMMENT / NOTES
@@ -1571,7 +1811,11 @@ public class ScreenItem2 extends MyForm {
         AutoSaveTimer commentSaveTimer = new AutoSaveTimer(this, comment, null, null); //NORMAL that appear as non-used since running in background!!
 
 //        mainCont.add(initField(Item.COMMENT, Item.COMMENT_HELP, comment, Item.PARSE_COMMENT, () -> item.getComment(), (t) -> item.setComment((String) t),
-        initField(Item.PARSE_COMMENT, comment, () -> itemCopy.getComment(), (t) -> itemOrg.setComment((String) t), () -> comment.getText(), (t) -> comment.setText((String) t));
+        initField(Item.PARSE_COMMENT, comment,
+                () -> itemCopy.getComment(),
+                (t) -> itemOrg.setComment((String) t),
+                () -> comment.getText(),
+                (t) -> comment.setText((String) t));
 ////<editor-fold defaultstate="collapsed" desc="comment">
 //        comment.putClientProperty("goButton", true);
 //        comment.setUIID("Comment");
@@ -1616,7 +1860,8 @@ public class ScreenItem2 extends MyForm {
         status = new MyCheckBox(itemCopy.getStatus()); //, null);
         initField(Item.PARSE_STATUS, status,
                 () -> itemCopy.getStatus().toString(),
-                (enumStr) -> itemOrg.setStatus((ItemStatus.valueOf((String) enumStr)), false), //item.setStatus((ItemStatus) t, false),
+                //                (enumStr) -> itemOrg.setStatus((ItemStatus.valueOf((String) enumStr)), false), //item.setStatus((ItemStatus) t, false),
+                (enumStr) -> itemOrg.setStatus((ItemStatus.valueOf((String) enumStr)), true), //item.setStatus((ItemStatus) t, false),
                 () -> status.getStatus().toString(), //status.getStatus(), 
                 (enumStr) -> status.setStatus(ItemStatus.valueOf((String) enumStr)));
 //        mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP, null, false, false, false, true));
@@ -1676,7 +1921,9 @@ public class ScreenItem2 extends MyForm {
 //            starred.setUIID(itemCopy.isStarInheritedFrom(setStarActive) ? "ScreenItemStarredInherited" : "ScreenItemStarred");
 //        });
 //</editor-fold>
-        starred.addActionListener(flipStarredIconsAndUIID);
+        if (false) {
+            starred.addActionListener(flipStarredIconsAndUIID);
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        starred.setToggle(true);
 //        if (false) {
@@ -1711,7 +1958,7 @@ public class ScreenItem2 extends MyForm {
         mainCont.add(layoutN(Item.STARRED, starred, Item.STARRED_HELP, null, false, false, false, true, true, Icons.iconStarLabel));
         starred.setUIID(itemCopy.isStarred() ? "ScreenItemStarredActive" : "ScreenItemStarredNotActive");
 //        updateUIIDForInherited(starred, itemCopy.isStarInheritedFrom(starred.getMaterialIcon() == Icons.iconStarSelected));
-        updateUIIDForInherited(starred, itemCopy.isStarInheritedFrom(isStarredSelected()));
+//        updateUIIDForInherited(starred, itemCopy.isStarInheritedFrom(isStarredSelected()));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        taskCont.add(BorderLayout.WEST, status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, starred);
 //        taskCont.add(BorderLayout.WEST, status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, starred);
@@ -1765,7 +2012,10 @@ public class ScreenItem2 extends MyForm {
 //                () -> itemLS.getAlarmDateD(),
 //                (d) -> item.setAlarmDate(d));
 //</editor-fold>
+//        alarmDate = new MyDateAndTimePicker(() -> makeDefaultAlarmDate(dueDate.getDate()));
+//        alarmDate = new MyDateAndTimePicker();
         alarmDate = new MyDateAndTimePicker(() -> makeDefaultAlarmDate(dueDate.getDate()));
+        alarmDate.setName("alarmDatePicker");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        mainCont.add(new Label(Item.ALARM_DATE)).add(addDatePickerWithClearButton(alarmDate));
 //        mainCont.add(new Label(Item.ALARM_DATE)).add(alarmDate.makeContainerWithClearButton());
@@ -1773,8 +2023,7 @@ public class ScreenItem2 extends MyForm {
 //        if (false)mainCont.add(layout(Item.ALARM_DATE, alarmDate.makeContainerWithClearButton(), Item.ALARM_DATE_HELP));
 //</editor-fold>
 //        mainCont.add(layout(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)), true));
-        initField(Item.PARSE_ALARM_DATE,
-                alarmDate,
+        initField(Item.PARSE_ALARM_DATE, alarmDate,
                 () -> itemCopy.getAlarmDate(),
                 (d) -> itemOrg.setAlarmDate((Date) d),
                 () -> alarmDate.getDate(),
@@ -1796,7 +2045,7 @@ public class ScreenItem2 extends MyForm {
                 (d) -> startByDate.setDate((Date) d),
                 () -> itemCopy.isStartByDateInherited(startByDate.getDate()));
         mainCont.add(layoutN(Item.START_BY_TIME, startByDate, Item.START_BY_TIME_HELP, hide ? null : Icons.iconStartByDate));
-        updateUIIDForInherited(startByDate, itemCopy.isStartByDateInherited(startByDate.getDate()));
+//        updateUIIDForInherited(startByDate, itemCopy.isStartByDateInherited(startByDate.getDate()));
 
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(addDatePickerWithClearButton(startByDate));
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(startByDate.makeContainerWithClearButton());
@@ -1810,7 +2059,7 @@ public class ScreenItem2 extends MyForm {
 //        mainCont.add(initField(Item.DUE_DATE, Item.DUE_DATE_HELP, dueDate, Item.PARSE_DUE_DATE, () -> item.getDueDateD(), (t) -> item.setDueDate((Date) t),
 //</editor-fold>
         initField(Item.PARSE_DUE_DATE, dueDate,
-                () -> itemCopy.getDueDateD(),
+                () -> itemCopy.getDueDate(),
                 //<editor-fold defaultstate="collapsed" desc="comment">
                 //                () -> {
                 //                    if (dueDateEditedInRepeatRuleScreen != null) {
@@ -1827,7 +2076,7 @@ public class ScreenItem2 extends MyForm {
 //                new Date(0),
 //                ()->makeDefaultDueDate());
         mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP, hide ? null : Icons.iconSetDueDateToTodayFontImageMaterial));
-        updateUIIDForInherited(dueDate, itemCopy.isDueDateInherited(dueDate.getDate())); //NB! MUST do *after* layoutN() which sets the UIID
+//        updateUIIDForInherited(dueDate, itemCopy.isDueDateInherited(dueDate.getDate())); //NB! MUST do *after* layoutN() which sets the UIID
 
 //        hi.add(LayeredLayout.encloseIn(settingsLabel, FlowLayout.encloseRight(close))) //https://github.com/codenameone/CodenameOne/wiki/Basics---Themes,-Styles,-Components-&-Layouts#layered-layout
         //FINISH_TIME
@@ -1842,7 +2091,7 @@ public class ScreenItem2 extends MyForm {
                     new ScreenListOfWorkTime(itemOrg, itemOrg.getAllocatedWorkTimeN(), ScreenItem2.this).show();
                 }));
 //                mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true));
-                mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true, hide ? null : Icons.iconFinishDateMaterial));
+                mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true, hide ? null : Icons.iconFinishDate));
 
 //                mainCont.add(initField(Item.FINISH_WORK_TIME, Item.FINISH_WORK_TIME_HELP, showWorkTimeDetails, "finishTime", () -> item.getFinishTime(), null,
                 initField("finishTime", showWorkTimeDetails,
@@ -1883,13 +2132,15 @@ public class ScreenItem2 extends MyForm {
 //                : getCategoriesAsCommaSeparatedString(item.getCategories()));
 //        WrapButton categoriesButton = new WrapButton(getCategoriesAsCommaSeparatedString((List<Category> )previousValues.get(Item.PARSE_CATEGORIES,item.getCategories())));
 //</editor-fold>
-        WrapButton categoriesButton = new WrapButton();
-        ActionListener refreshCategoriesButton = (e) -> {
-            String commaSeparatedCategories = getCategoriesAsCommaSeparatedString(previousValues.get(Item.PARSE_CATEGORIES) != null
+        SpanButton categoriesButton = new SpanButton();
+        List<Category> categories = itemOrg.getCategories();
+        categoriesButton.setText(DAO.getInstance().convCategoryListToString(categories));
+        ActionListener refreshCategoriesButtonxxx = (e) -> {
+            String commaSeparatedCategoriesXXX = getCategoriesAsCommaSeparatedString(previousValues.get(Item.PARSE_CATEGORIES) != null
                     //                    ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
                     ? DAO.getInstance().convCatObjectIdsListToCategoryListN((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
                     : itemOrg.getCategories());
-            categoriesButton.setText(commaSeparatedCategories);
+            categoriesButton.setText(commaSeparatedCategoriesXXX);
 //            Container parentToRefresh=categoriesButton.getParent();
 //            while(parentToRefresh!=null && !(parentToRefresh instanceof ))
 //            categoriesButton.getParent().getParent().getParent().revalidate();
@@ -1918,26 +2169,31 @@ public class ScreenItem2 extends MyForm {
 //                ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(), locallyEditedCategories, ScreenItem2.this);
 //                if (previousValues.get(Item.PARSE_CATEGORIES) != null) {
 //</editor-fold>
-            List<Category> catList = (previousValues.get(Item.PARSE_CATEGORIES) != null
-                    //                    ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)) //if previous edited value exists, use that
-                    ? DAO.getInstance().convCatObjectIdsListToCategoryListN((List<String>) previousValues.get(Item.PARSE_CATEGORIES)) //if previous edited value exists, use that
-                    : new ArrayList(itemOrg.getCategories())); //make a copy to be able to compare the edited version to the orginal list from Item after editing
+//            List<Category> catList = (previousValues.get(Item.PARSE_CATEGORIES) != null
+//                    //                    ? Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)) //if previous edited value exists, use that
+//                    ? DAO.getInstance().convCatObjectIdsListToCategoryListN((List<String>) previousValues.get(Item.PARSE_CATEGORIES)) //if previous edited value exists, use that
+//                    : new ArrayList(itemOrg.getCategories())); //make a copy to be able to compare the edited version to the orginal list from Item after editing
+            List<Category> catList = new ArrayList(itemOrg.getCategories());
             ScreenCategoryPicker screenCatPicker = new ScreenCategoryPicker(CategoryList.getInstance(),
                     catList,
                     ScreenItem2.this, () -> {
 //                    categoriesButton.setText(getDefaultIfStrEmpty(getListAsCommaSeparatedString(locallyEditedCategories), "")); //"<click to set categories>"
-                        if (catList.equals(itemOrg.getCategories())) {
-                            previousValues.remove(Item.PARSE_CATEGORIES); //remove previos/edited value (nothing to store)
-//                            if (false) {
-//                                categoriesButton.setText(getCategoriesAsCommaSeparatedString(itemOrg.getCategories())); //"<click to set categories>"
+//                        if (false) {
+//                            if (catList.equals(itemOrg.getCategories())) {
+//                                previousValues.remove(Item.PARSE_CATEGORIES); //remove previos/edited value (nothing to store)
+////                            if (false) {
+////                                categoriesButton.setText(getCategoriesAsCommaSeparatedString(itemOrg.getCategories())); //"<click to set categories>"
+////                            }
+//                            } else {
+////                            previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(catList));
+//                                previousValues.put(Item.PARSE_CATEGORIES, ItemAndListCommonInterface.convListToObjectIdList((List) catList));
+////                            if (false) {
+////                                categoriesButton.setText(getCategoriesAsCommaSeparatedString(catList)); //Button.text now updated based on previousValues! "<click to set categories>"
+////                            }
 //                            }
-                        } else {
-//                            previousValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(catList));
-                            previousValues.put(Item.PARSE_CATEGORIES, ItemAndListCommonInterface.convListToObjectIdList((List) catList));
-//                            if (false) {
-//                                categoriesButton.setText(getCategoriesAsCommaSeparatedString(catList)); //Button.text now updated based on previousValues! "<click to set categories>"
-//                            }
-                        }
+//                        }
+//                        DAO.getInstance().saveToParseLater((List) itemOrg.setCategories(catList)); //save removed categories explicitly
+                        itemOrg.setCategories(catList); //save removed categories explicitly
 //                            categoriesButton.revalidate(); //layout new list of categories, working??
 //                        if (false) {
 //                            categoriesButton.getComponentForm().revalidate(); //layout new list of categories, working??
@@ -1969,16 +2225,20 @@ public class ScreenItem2 extends MyForm {
         );
         categoriesButton.setCommand(categoryEditCmd);
 //        categoriesButton.setText(commaSeparatedCategories);
-        refreshCategoriesButton.actionPerformed(null);
+//        if (false) {
+//            refreshCategoriesButton.actionPerformed(null);
+//        }
 //        categoriesButton.revalidate();
-        parseIdMap2.put(Item.PARSE_CATEGORIES, () -> {
-            if (previousValues.get(Item.PARSE_CATEGORIES) != null) {
+        if (false) {
+            parseIdMap2.put(Item.PARSE_CATEGORIES, () -> {
+                if (previousValues.get(Item.PARSE_CATEGORIES) != null) {
 //                item.setCategories(Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)));
 //                List modifiedCats = itemOrg.updateCategories(Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)));
-                List modifiedCats = itemOrg.updateCategories(DAO.getInstance().convCatObjectIdsListToCategoryListN((List<String>) previousValues.get(Item.PARSE_CATEGORIES)));
-                DAO.getInstance().saveNew(modifiedCats); //save all edited categories (that now points to or no longer points to the Item)
-            }
-        });
+                    List modifiedCats = itemOrg.updateCategories(DAO.getInstance().convCatObjectIdsListToCategoryListN((List<String>) previousValues.get(Item.PARSE_CATEGORIES)));
+                    DAO.getInstance().saveNew(modifiedCats); //save all edited categories (that now points to or no longer points to the Item)
+                }
+            });
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        initField(Item.PARSE_CATEGORIES, categoriesButton, () -> item.getCategories(), (catlist) -> item.setCategories((List) catlist),
 //                () -> Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES)),
@@ -2059,33 +2319,39 @@ public class ScreenItem2 extends MyForm {
         //        }
         //</editor-fold>
 //SUBTASKS
-        //        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, ScreenItem.this, item, templateEditMode));
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainer(item, ScreenItem.this, item, templateEditMode));
 //        if (false) {
 //            mainTabCont.add(BorderLayout.SOUTH, new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2));
 //        }
-        //always store a copy of the subtasks (if any)
+//always store a copy of the subtasks (if any)
 //        if (previousValues.getSubtaskObjIdsListN().size() == 0) { //if no subtasks were previously stored, store now (even if edited item has no subtasks this will work)
-        //false: no need to call, since current subtaskIds get stored on first click on editSubtasks button
-        if (false && previousValues.getSubtaskObjIdsListN() == null) { //if no subtasks were previously stored, store now (even if edited item has no subtasks this will work)
-            //NB in above test, only null will mean no value previously set, an empty list will mean that the list was either empty or previous subtasks were deleted(!)
-            previousValues.putSubtaskList(itemOrg.getListFull());
-        }
-
+//false: no need to call, since current subtaskIds get stored on first click on editSubtasks button
+//        if (false && previousValues.getSubtaskObjIdsListN() == null) { //if no subtasks were previously stored, store now (even if edited item has no subtasks this will work)
+//            //NB in above test, only null will mean no value previously set, an empty list will mean that the list was either empty or previous subtasks were deleted(!)
+//            previousValues.putSubtaskList(itemOrg.getListFull());
+//        }
 //        int numberUndoneSubtasks = itemOrg.getNumberOfSubtasks(true, true); //true: get subtasks, always necessary for a project
 //        int totalNumberSubtasks = itemOrg.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
 //        int numberDoneSubtasks = totalNumberSubtasks - numberUndoneSubtasks;
-        if (true) { //experimental
+//</editor-fold>
+        if (false) { //experimental
+//<editor-fold defaultstate="collapsed" desc="comment">
             Button editSubtasks = new Button();
             initField(Item.PARSE_SUBTASKS, editSubtasks,
-                    () -> ItemAndListCommonInterface.convListToObjectIdList(itemCopy.getListFull()),
+                    //                    () -> ItemAndListCommonInterface.convListToObjectIdList(itemCopy.getListFull()),
+                    () -> itemCopy.getListFull(),
                     //                    () -> previousValues.putSubtaskList(itemOrg.getListFull()),
-                    (subtasksObjIds) -> itemOrg.setList(DAO.getInstance().convItemObjectIdsListToItemListN((List) subtasksObjIds)),
+                    //                    (subtasksObjIds) -> itemOrg.setList(DAO.getInstance().convItemObjectIdsListToItemListN((List) subtasksObjIds)),
+                    (subtasks) -> itemOrg.setList((List<Item>) subtasks),
                     //                    (subtasksObjIds) -> itemOrg.setList(previousValues.getSubtaskList()),
                     //                    () -> null, //
-                    () -> previousValues.getSubtaskObjIdsListN(),//getItemsN(), //editSubtasks.getDate(), //return what to .equal() with original value => list of subtasks (new/deleted/added)
+                    //                    () -> previousValues.getSubtaskObjIdsListN(),//getItemsN(), //editSubtasks.getDate(), //return what to .equal() with original value => list of subtasks (new/deleted/added)
+                    () -> previousValues.getSubtaskListN(),//getItemsN(), //editSubtasks.getDate(), //return what to .equal() with original value => list of subtasks (new/deleted/added)
                     //                    (subtasks) -> previousValues.putItems((List<ItemAndListCommonInterface>) subtasks) //return value to put directly in previousValues => list of suttask objIds
-                    //                    (subtasksObjIds) -> {                    } 
-                    (subtasksObjIds) -> previousValues.putSubtaskObjdIdsList((List) subtasksObjIds)//put(Item.PARSE_SUBTASKS, subtasks) //return value to put directly in previousValues => list of suttask objIds
+                    //                    (subtasksObjIds) -> {                    }
+                    //                    (subtasksObjIds) -> previousValues.putSubtaskObjdIdsList((List) subtasksObjIds)//put(Item.PARSE_SUBTASKS, subtasks) //return value to put directly in previousValues => list of suttask objIds
+                    (subtasks) -> previousValues.putSubtaskList((List<Item>) subtasks)//put(Item.PARSE_SUBTASKS, subtasks) //return value to put directly in previousValues => list of suttask objIds
             ); //() -> previousValues.getItemsN());
 
             Runnable updateSubtaskButton = () -> {
@@ -2104,21 +2370,33 @@ public class ScreenItem2 extends MyForm {
 //                ItemList tempSubtasks = new ItemList(previousValues.getItemsN());
 //                ItemList tempSubtasks = new ItemList(DAO.getInstance().convItemObjectIdsListToItemList((List) previousValues.getSubtaskObjIdsList()));
                 List subtasks = previousValues.getSubtaskListN();
-                ItemList tempItemToHoldSubtasks;
-                if (subtasks == null) {
-                    tempItemToHoldSubtasks = new ItemList(itemOrg.getListFull());
-                } else {
-                    tempItemToHoldSubtasks = new ItemList(previousValues.getSubtaskListN(), true);
-                }
+                Item tempItemToHoldSubtasks = new Item();
+//                ItemList tempItemListToHoldSubtasks;
+//                if (subtasks == null) {
+//                    tempItemListToHoldSubtasks = new ItemList(itemOrg.getListFull(), true);
+//                } else {
+//                    tempItemListToHoldSubtasks = new ItemList(previousValues.getSubtaskListN(), true);
+//                }
+                tempItemToHoldSubtasks.setList(previousValues.getSubtaskListN());
+                tempItemToHoldSubtasks.setFilterSortDef(itemOrg.getFilterSortDef());
+
+//                tempItemListToHoldSubtasks.setAllowAddingElements(true); //work-around to ensure elements can be added (otherwise no Add new task menu item in ScreenListOfItems)
 //                new ScreenListOfItems(description.getText() + " subtasks", () -> tempSubtasks, ScreenItem2.this, (item2) -> {
+//                new ScreenListOfItems(description.getText() + " subtasks", tempItemListToHoldSubtasks, ScreenItem2.this, (item2) -> {
                 new ScreenListOfItems(description.getText() + " subtasks", tempItemToHoldSubtasks, ScreenItem2.this, (item2) -> {
 //                    int numberUndoneSubtasks2 = item2.getNumberOfSubtasks(true, true); //true: get subtasks, always necessary for a project
 //                    int totalNumberSubtasks2 = item2.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
 //                    editSubtasks.setText(totalNumberSubtasks2 == 0 ? "" : "" + numberUndoneSubtasks2 + "/" + totalNumberSubtasks2);
-                    if (Objects.equals(ItemAndListCommonInterface.convListToObjectIdList(tempItemToHoldSubtasks.getListFull()), previousValues.getSubtaskObjIdsListN())) {
+//                    if (Objects.equals(ItemAndListCommonInterface.convListToObjectIdList(tempItemListToHoldSubtasks.getListFull()), previousValues.getSubtaskObjIdsListN())) {
+//                    if (Objects.equals(tempItemListToHoldSubtasks.getListFull(), previousValues.getSubtaskListN())) {
+                    if (Objects.equals(tempItemToHoldSubtasks.getListFull(), previousValues.getSubtaskListN())) {
                         previousValues.putSubtaskList(null); //if subtask were not edited, or edited back to original state (eg reorder) no change wrt original subtask list so store nothing locally
                     } else {
+//                        previousValues.putSubtaskList(tempItemListToHoldSubtasks.getListFull()); // store edited list of subtasks (reordered, added, deleted)
                         previousValues.putSubtaskList(tempItemToHoldSubtasks.getListFull()); // store edited list of subtasks (reordered, added, deleted)
+                    }
+                    if (!Objects.equals(tempItemToHoldSubtasks.getFilterSortDefN(), itemOrg.getFilterSortDefN())) {
+                        itemOrg.setFilterSortDef(tempItemToHoldSubtasks.getFilterSortDefN());
                     }
                     updateSubtaskButton.run(); //update button lable
                 }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
@@ -2127,14 +2405,24 @@ public class ScreenItem2 extends MyForm {
             ));
             updateSubtaskButton.run(); //update button lable
 
-            mainCont.add(layoutN(Item.SUBTASKS, editSubtasks, Item.SUBTASKS_HELP, false, hide ? null : Icons.iconSubTasks));
+            mainCont.add(layoutN(Item.SUBTASKS, editSubtasks, Item.SUBTASKS_HELP, false, hide ? null : Icons.iconEditSubTasks));
 
             parseIdMap2.put(SUBTASK_KEY, () -> {
 //                itemOrg.setList(previousValues.getItemsN());
 //                itemOrg.setList(DAO.getInstance().convItemObjectIdsListToItemList((List) previousValues.getSubtaskObjIdsList()));
+//set correct owner
+                List<Item> listOfSubtasks = previousValues.getSubtaskListN();
+                if (listOfSubtasks != null) {
+                    for (Item subtask : listOfSubtasks) {
+                        subtask.setOwnerItem(itemOrg, true, true);
+                    }
+                }
+//add final list of subtasks (including possibly created in ScreenListOfItems)
+//NB. Even though ScreenListOfItems will add owner it won't be the correct due to use of temporary ItemList for holding the edited subtasks
                 itemOrg.setList(previousValues.getSubtaskListN());
             });
-        } else {
+//</editor-fold>
+        } else { //new version with saving Item fields *before* editing subtasks to ensure inherited values are aligned with fields shown n ScreenItem2
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            //HEADER - EDIT LIST IN FULL SCREEN MODE
 //            Button editSubtasksFullScreen = new Button();
@@ -2185,12 +2473,47 @@ public class ScreenItem2 extends MyForm {
 //            mainCont.
 //          add(layoutN(Item.SUBTASKS, editSubtasksFullScreen, Item.SUBTASKS_HELP, false, hide ? null : Icons.iconSubTasks));
 //</editor-fold>
+            Button editSubtasks = new Button();
+
+//            Runnable updateSubtaskButtonXXX = () -> {
+//                List<Item> subtasks = itemOrg.getListFull();
+//                //optimization: do a single tour of subtasks below and return both results, important for (very) big projects
+//                int numberUndoneSubtasks = Item.getNumberOfSubtasks(subtasks, true, false); //false,false => count all top-level tasks (what you see if you click edit)
+//                int totalNumberSubtasks = Item.getNumberOfSubtasks(subtasks, false, false); //true: get subtasks, always necessary for a project
+//                editSubtasks.setText(totalNumberSubtasks == 0 ? "" : "" + numberUndoneSubtasks + "/" + totalNumberSubtasks);
+//            };
+            List<Item> subtasks = itemOrg.getListFull();
+            int totalNumberSubtasks = Item.getNumberOfSubtasks(subtasks, false, false); //true: get subtasks, always necessary for a project
+            int numberUndoneSubtasks = Item.getNumberOfSubtasks(subtasks, true, false); //false,false => count all top-level tasks (what you see if you click edit)
+
+            editSubtasks.setCommand(MyReplayCommand.create("EditSubtasks", null, null, (e) -> {
+                parseIdMap2.update(false); //update itemOrg with all edited fields, but DON'T save(?), nor update RepeatRule
+                if (false && itemOrg.getObjectIdP() == null) {
+//                    DAO.getInstance().saveNew(itemOrg, true); //save new items before adding subtasks
+//                    DAO.getInstance().saveNew(itemOrg); //save new items before adding subtasks
+//                    DAO.getInstance().saveNewTriggerUpdate(); //save new items before adding subtasks
+                }
+                new ScreenListOfItems(description.getText() + " subtasks", itemOrg, ScreenItem2.this, (item2) -> {
+//                    itemOrg.setList(listOfSubtasks); //done in ScreenListOfItems on Back/exit
+//                    DAO.getInstance().saveNew(itemOrg); //DONE in ScreenListOfItems
+//                    DAO.getInstance().saveNewTriggerUpdate();
+//                    updateSubtaskButton.run(); //update button lable
+                    itemOrg.setList(subtasks);
+                }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
+                ).show();
+            }
+            ));
+            editSubtasks.setText(totalNumberSubtasks == 0 ? "" : "" + numberUndoneSubtasks + "/" + totalNumberSubtasks); //set *after* adding command
+//            updateSubtaskButton.run(); //update button label - NB *after* setCommand above, otherwise [3/3] not shown
+
+            mainCont.add(layoutN(Item.SUBTASKS, editSubtasks, Item.SUBTASKS_HELP, false, hide ? null : Icons.iconEditSubTasks));
         }
+
 //        mainCont.add(makeSpacerThin());
         //REPEAT RULE
-        WrapButton repeatRuleButton = new WrapButton();
+        SpanButton repeatRuleButton = new SpanButton();
         //set text for edit-RR button
-        ActionListener refreshRepeatRuleButtonText = e -> {
+        ActionListener refreshRepeatRuleButtonTextXXX = e -> {
             RepeatRuleParseObject editedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
             String repeatRuleButtonStr;
             if (editedRepeatRule == null) { //no ongoing/previous (locally stored) edits
@@ -2207,30 +2530,33 @@ public class ScreenItem2 extends MyForm {
             }
             repeatRuleButton.setText(repeatRuleButtonStr);
         };
+        repeatRuleButton.setText(itemOrg.getRepeatRuleN() != null ? itemOrg.getRepeatRuleN().getText() : "");
 
         //Cmd for editing RR
         Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenEditItem", "", null, (e) -> {
-            //check if OK to edit RR, return if not
+            if (false) {
+                //check if OK to edit RR, return if not
 //            if (item.getRepeatRule() != null && !locallyEditedRepeatRuleCopy.isRepeatInstanceInListOfActiveInstances(item)) {
-            if (itemOrg.getRepeatRuleN() != null && !itemOrg.getRepeatRuleN().canRepeatRuleBeEdited(itemOrg)) {
-                Dialog.show("INFO", Format.f("Once a repeating {0 task or workslot} has been set {1 DONE} or {2 CANCELLED} the {3 REPEAT_RULE} definition cannot be edited from this task anymore",
-                        Item.TASK, ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
-                return;
-            }
-
-            RepeatRuleParseObject locallyEditedRepeatRuleCopy; //NB - must set locallyEditedRepeatRule like it's done to allow use in lambda fct below
-            RepeatRuleParseObject localRR = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
-
-            if (localRR != null) {
-                locallyEditedRepeatRuleCopy = localRR;
-            } else {
-                if (itemOrg.getRepeatRuleN() == null) {
-                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(); //create a fresh RR
-//                    locallyEditedRepeatRuleCopy.addOriginatorToRule(item); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
-                } else {
-                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(itemOrg.getRepeatRuleN()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
+                if (itemOrg.getRepeatRuleN() != null && !itemOrg.getRepeatRuleN().canRepeatRuleBeEdited(itemOrg)) {
+                    Dialog.show("INFO", Format.f("Once a repeating {0 task or workslot} has been set {1 DONE} or {2 CANCELLED} the {3 REPEAT_RULE} definition cannot be edited from this task anymore",
+                            Item.TASK, ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
+                    return;
                 }
-                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //save new value locally
+
+                RepeatRuleParseObject locallyEditedRepeatRuleCopy; //NB - must set locallyEditedRepeatRule like it's done to allow use in lambda fct below
+                RepeatRuleParseObject localRR = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
+
+                if (localRR != null) {
+                    locallyEditedRepeatRuleCopy = localRR;
+                } else {
+                    if (itemOrg.getRepeatRuleN() == null) {
+                        locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(); //create a fresh RR
+//                    locallyEditedRepeatRuleCopy.addOriginatorToRule(item); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
+                    } else {
+                        locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(itemOrg.getRepeatRuleN()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
+                    }
+                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //save new value locally
+                }
             }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2242,21 +2568,28 @@ public class ScreenItem2 extends MyForm {
 //                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //store edited rule (otherwise not persisted in local memory)
 //            }, true, dueDate.getDate(), () -> makeDefaultDueDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
 //</editor-fold>
+            RepeatRuleParseObject locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(itemOrg.getRepeatRuleN()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
             new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRuleCopy, itemOrg, ScreenItem2.this, () -> {
                 //if a startDate was set in the RR, and none is set for the item, use RR startDate as due date. *unless* the dueDate was reset to 0 (hence the test on item.getDueDateD())
                 if (false && dueDate.getDate().getTime() == 0 && locallyEditedRepeatRuleCopy.getSpecifiedStartDateZZZ().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
                     previousValues.put(Item.PARSE_DUE_DATE, new MyDate(locallyEditedRepeatRuleCopy.getSpecifiedStartDateZZZ().getTime())); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
                 }
-                //if no due date is already set, automatically set the duePicker to the first repeatdate generated
-                if (dueDate.getDate().getTime() == 0) {
-                    previousValues.put(Item.PARSE_DUE_DATE, locallyEditedRepeatRuleCopy.getFirstRepeatDateAfterTodayForWhenEditingRuleWithoutPredefinedDueDateN()); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
+                if (false) {
+                    //if no due date is already set, automatically set the duePicker to the first repeatdate generated
+                    if (dueDate.getDate().getTime() == 0) {
+                        previousValues.put(Item.PARSE_DUE_DATE, locallyEditedRepeatRuleCopy.getFirstRepeatDateAfterTodayForWhenEditingRuleWithoutPredefinedDueDateN()); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
+                    }
+                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //store edited rule (otherwise not persisted in local memory)
                 }
-                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //store edited rule (otherwise not persisted in local memory)
+                if (itemOrg.getDueDate().getTime() == 0) {
+                    itemOrg.setDueDate(locallyEditedRepeatRuleCopy.getFirstRepeatDateAfterTodayForWhenEditingRuleWithoutPredefinedDueDateN()); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
+                }
+                itemOrg.setRepeatRule(locallyEditedRepeatRuleCopy);
             }, true, dueDate.getDate().getTime() != 0 ? dueDate.getDate() : null, () -> makeDefaultDueDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
         repeatRuleButton.setCommand(repeatRuleEditCmd);
-        refreshRepeatRuleButtonText.actionPerformed(null);
+//        refreshRepeatRuleButtonText.actionPerformed(null);
 
         /*
 Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
@@ -2265,15 +2598,19 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 -> "DELETED": the RR has been deleted
          */
 //        parseIdMap2.put(Item.PARSE_REPEAT_RULE, () -> {
-        parseIdMap2.put(REPEAT_RULE_KEY, () -> {
-            Object editedRule = previousValues.get(Item.PARSE_REPEAT_RULE);
-            if (editedRule instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
-                if (itemOrg.getRepeatRuleN() == null) { //if new rule (no previous rule exists), then add item to lists (done *before* calculation of repeats)
-                    ((RepeatRuleParseObject) editedRule).addOriginatorToRule(itemOrg); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
+        if (false) {
+            parseIdMap2.put(REPEAT_RULE_KEY, () -> {
+                Object editedRule = previousValues.get(Item.PARSE_REPEAT_RULE);
+                if (editedRule instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
+                    if (itemOrg.getRepeatRuleN() == null) { //if new rule (no previous rule exists), then add item to lists (done *before* calculation of repeats)
+                        if (false) {
+                            ((RepeatRuleParseObject) editedRule).addOriginatorToRule(itemOrg); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
+                        }
+                    }
+                    itemOrg.setRepeatRule((RepeatRuleParseObject) editedRule);
                 }
-                itemOrg.setRepeatRule((RepeatRuleParseObject) editedRule);
-            }
-        });
+            });
+        }
 
 //        Component repeatRuleContainer = layoutN(true, Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP);
         Component repeatRuleContainer = layoutN(true, Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, hide ? null : Icons.iconRepeat);
@@ -2282,13 +2619,15 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        }
         mainCont.add(repeatRuleContainer);
 
-        dueDate.addActionListener(e -> {
-            if (false) { //de-activate for now since repeatOnCompletion need this
-                boolean hideDue = dueDate.getDate().getTime() == 0;
-                repeatRuleContainer.setHidden(hideDue);
-                animateMyForm();
-            }
-        });
+        if (false) {
+            dueDate.addActionListener(e -> {
+                if (false) { //de-activate for now since repeatOnCompletion need this
+                    boolean hideDue = dueDate.getDate().getTime() == 0;
+                    repeatRuleContainer.setHidden(hideDue);
+                    animateMyForm();
+                }
+            });
+        }
 
 //        if (false) mainCont.add(new SubtaskContainerSimple(item, ScreenItem2.this, templateEditMode, parseIdMap2)); //edit subtasks
         //TODO!!!!! editing of subtasks should be local (and saved locally on app exit)
@@ -2380,13 +2719,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //REMAINING************
         if (isProject) {
 //            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
-            timeCont.addComponent(layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatDurationStd(itemOrg.getRemainingForSubtasks()), "ScreenItemValueUneditable"),
+            timeCont.addComponent(layoutN(Item.EFFORT_REMAINING_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getRemainingForSubtasks()), "ScreenItemValueUneditable"),
                     Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false, hide ? null : Icons.iconRemainingEffort)); //hack to insert after alarmDate field
         }
 //TODO: makes no sense to show remaining for project itself, just confusing??
         String remainingTxt = isProject ? Item.EFFORT_REMAINING_PROJECT : Item.EFFORT_REMAINING;
         String remainingHelpTxt = isProject ? Item.EFFORT_REMAINING_PROJECT_HELP : Item.EFFORT_REMAINING_HELP;
-        timeCont.add(layoutN(remainingTxt, remainingEffort, remainingHelpTxt, hide ? null : (isProject ? Icons.iconEffortProject : Icons.iconRemainingEffort)));
+        timeCont.add(layoutN(remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hide ? null : (isProject ? Icons.iconEffortProject : Icons.iconRemainingEffort)));
         updateUIIDForInherited(remainingEffort, Item.isRemainingDefaultValue(remainingEffort.getDuration()));
 //                MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean());
 //                && remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //NB! MUST do *after* layoutN() which sets the UIID
@@ -2394,7 +2733,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //ACTUAL************
         //if project, show actual for subtasks
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
-            timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, new Label(MyDate.formatDurationStd(itemOrg.getActualForSubtasks()), "ScreenItemValueUneditable"),
+            timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getActualForSubtasks()), "ScreenItemValueUneditable"),
                     Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false, hide ? null : Icons.iconActualEffort));
         }
 
@@ -2413,45 +2752,48 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                () -> actualEffort.getDuration(), (ms) -> actualEffort.setDuration((long) ms));
 //</editor-fold>
 //        actualEffort = new MyDurationPicker( itemLS.getActualEffortProjectTaskItself() );
-        actualEffort = new MyDurationPicker();
+        actualEffortTask = new MyDurationPicker();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        initField(Item.PARSE_ACTUAL_EFFORT, actualEffort,
 //                () -> item.getActualEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS,
 //                (min) -> item.setActualEffort(((long) min) * MyDate.MINUTE_IN_MILLISECONDS),
 //                () -> actualEffort.getDuration(), (ms) -> actualEffort.setDuration((long) ms));
 //</editor-fold>
-        actualEffort.addActionListener((evt) -> {
+        if (false) {
+            actualEffortTask.addActionListener((evt) -> {
 //            status.setStatus(Item.updateStatusOnActualChange(item.getActual(), actualEffort.getDuration(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoingOrDone()));
-            if (actualEffort.getDuration() > 0) { //if user has changed actual
-                if (status.getStatus() == ItemStatus.CREATED) { //only if Created, otherwiwe e.g. DONE may get set back to Ongoing!
-                    status.setStatus(ItemStatus.ONGOING, false);
-                }
-                if (startedOnDate.getDate().getTime() == 0) {
-                    startedOnDate.setDate(new MyDate());
-                }
-            } else { // actual effort set to 0
-                if (itemOrg.isProject() && !itemOrg.areAnySubtasksOngoingOrDone()) { //UI: OK that a project is set ongoing when time is recorded directly on it,even if subtasks are not //if some subtasks are ongoing or done
-                    if (status.getStatus() == ItemStatus.ONGOING) {
-                        status.setStatus(ItemStatus.CREATED, false);
+                if (actualEffortTask.getDuration() > 0) { //if user has changed actual
+                    if (status.getStatus() == ItemStatus.CREATED) { //only if Created, otherwiwe e.g. DONE may get set back to Ongoing!
+                        status.setStatus(ItemStatus.ONGOING, false);
                     }
+                    if (startedOnDate.getDate().getTime() == 0) {
+                        startedOnDate.setDate(new MyDate());
+                    }
+                } else { // actual effort set to 0
+                    if (itemOrg.isProject() && !itemOrg.areAnySubtasksOngoingOrDone()) { //UI: OK that a project is set ongoing when time is recorded directly on it,even if subtasks are not //if some subtasks are ongoing or done
+                        if (status.getStatus() == ItemStatus.ONGOING) {
+                            status.setStatus(ItemStatus.CREATED, false);
+                        }
 //                    if (startedOnDate.getDate().getTime() == 0) 
-                    startedOnDate.setDate(new MyDate(0)); //TODO: always set back to zero? What is set manually for some other reason?
-                } else {
-                    if (status.getStatus() == ItemStatus.ONGOING) {
-                        status.setStatus(ItemStatus.CREATED, false); //if setting actual to 0, set status back to Created
+                        startedOnDate.setDate(new MyDate(0)); //TODO: always set back to zero? What is set manually for some other reason?
+                    } else {
+                        if (status.getStatus() == ItemStatus.ONGOING) {
+                            status.setStatus(ItemStatus.CREATED, false); //if setting actual to 0, set status back to Created
+                        }
+                        startedOnDate.setDate(new MyDate(0));
                     }
-                    startedOnDate.setDate(new MyDate(0));
                 }
-            }
-            status.repaint();
-        });
+                status.repaint();
+            });
+        }
 
-        initField(Item.PARSE_ACTUAL_EFFORT, actualEffort,
-                () -> itemCopy.getActualForProjectTaskItself(),
-                (l3) -> itemOrg.setActual((long) l3, false),
-                () -> actualEffort.getDuration(), (ms) -> actualEffort.setDuration((long) ms));
+        initField(Item.PARSE_ACTUAL_EFFORT_TASK_ITSELF, actualEffortTask,
+                () -> itemCopy.getActualForTaskItself(),
+                (l3) -> itemOrg.setActualForTaskItself((long) l3, false),
+                () -> actualEffortTask.getDuration(),
+                (ms) -> actualEffortTask.setDuration((long) ms));
 
-        timeCont.add(layoutN(actualTxt, actualEffort, actualHelpTxt, hide ? null : (isProject ? Icons.iconEffortProject : Icons.iconActualEffort)));
+        timeCont.add(layoutN(actualTxt, isTemplate ? null : actualEffortTask, actualHelpTxt, hide ? null : (isProject ? Icons.iconEffortProject : Icons.iconActualEffort)));
 
         //ESTIMATE************
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
@@ -2530,7 +2872,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 (d) -> waitingTill.setDate((Date) d),
                 () -> itemCopy.isWaitingTillInherited(waitingTill.getDate()));
         timeCont.add(layoutN(Item.WAIT_UNTIL_DATE, waitingTill, Item.WAIT_UNTIL_DATE_HELP, hide ? null : Icons.iconWaitingDateMaterial));
-        updateUIIDForInherited(waitingTill, itemCopy.isWaitingTillInherited(waitingTill.getDate()));
+//        updateUIIDForInherited(waitingTill, itemCopy.isWaitingTillInherited(waitingTill.getDate()));
 
 //        MyDateAndTimePicker waitingAlarm = new MyDateAndTimePicker(parseIdMap2, () -> itemLS.getWaitingAlarmDateD(), (d) -> item.setWaitingAlarmDate(d)); //"<waiting reminder this date>", 
         waitingAlarm = new MyDateAndTimePicker(); //"<waiting reminder this date>", 
@@ -2554,8 +2896,11 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        statusCont.add(layout(Item.DATE_WHEN_SET_WAITING, dateSetWaitingDate.makeContainerWithClearButton(), "Set automatically when a task is set Waiting"));
 //        statusCont.add(layout(Item.DATE_WHEN_SET_WAITING, dateSetWaitingDate, Item.DATE_WHEN_SET_WAITING_HELP));
 //</editor-fold>
-        initField(Item.PARSE_DATE_WHEN_SET_WAITING, dateSetWaitingDate, () -> itemOrg.getDateWhenSetWaiting(), (s) -> itemOrg.setDateWhenSetWaiting((Date) s),
-                () -> dateSetWaitingDate.getDate(), (s) -> dateSetWaitingDate.setDate((Date) s));
+        initField(Item.PARSE_DATE_WHEN_SET_WAITING, dateSetWaitingDate,
+                () -> itemOrg.getDateWhenSetWaiting(),
+                (s) -> itemOrg.setDateWhenSetWaiting((Date) s),
+                () -> dateSetWaitingDate.getDate(),
+                (s) -> dateSetWaitingDate.setDate((Date) s));
 
         timeCont.add(layoutN(Item.DATE_WHEN_SET_WAITING, dateSetWaitingDate, Item.DATE_WHEN_SET_WAITING_HELP, hide ? null : Icons.iconSetWaitingDateMaterial));
 
@@ -2569,7 +2914,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                     }
                 } else { //clearing the waiting date => replace the Waiting status by whatever is appropriate
                     if (status.getStatus() == ItemStatus.WAITING) { //only update if created or ongoing (not cancelled, Done)
-                        status.setStatus(actualEffort.getDuration() != 0 ? ItemStatus.ONGOING : ItemStatus.CREATED); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+                        status.setStatus(actualEffortTask.getDuration() != 0 ? ItemStatus.ONGOING : ItemStatus.CREATED); //UI: if deleting setWaitingDate, then reset status to whatever it was before
 //                    status.repaint();
                     }
                 }
@@ -2577,21 +2922,23 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             });
         }
 
-        waitingTill.addActionListener((e) -> {
-            noAutoUpdateOnStatusChange = true;
+        if (false) {
+            waitingTill.addActionListener((e) -> {
+                noAutoUpdateOnStatusChange = true;
 //            status.setStatus(ItemStatus.WAITING);
-            if (waitingTill.getDate().getTime() != 0) {
-                if (status.getStatus() == ItemStatus.CREATED || status.getStatus() == ItemStatus.ONGOING) { //only update if created or ongoing (not cancelled, Done)
-                    status.setStatus(ItemStatus.WAITING);
-                    dateSetWaitingDate.setDate(new MyDate());
+                if (waitingTill.getDate().getTime() != 0) {
+                    if (status.getStatus() == ItemStatus.CREATED || status.getStatus() == ItemStatus.ONGOING) { //only update if created or ongoing (not cancelled, Done)
+                        status.setStatus(ItemStatus.WAITING);
+                        dateSetWaitingDate.setDate(new MyDate());
+                    }
+                } else { //clearing the waiting date => replace the Waiting status by whatever is appropriate
+                    if (status.getStatus() == ItemStatus.WAITING) { //only update if created or ongoing (not cancelled, Done)
+                        status.setStatus(actualEffortTask.getDuration() != 0 ? ItemStatus.ONGOING : ItemStatus.CREATED); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+                    }
                 }
-            } else { //clearing the waiting date => replace the Waiting status by whatever is appropriate
-                if (status.getStatus() == ItemStatus.WAITING) { //only update if created or ongoing (not cancelled, Done)
-                    status.setStatus(actualEffort.getDuration() != 0 ? ItemStatus.ONGOING : ItemStatus.CREATED); //UI: if deleting setWaitingDate, then reset status to whatever it was before
-                }
-            }
-            noAutoUpdateOnStatusChange = false;
-        });
+                noAutoUpdateOnStatusChange = false;
+            });
+        }
 
         timeCont.add(makeSpacerThin());
 
@@ -2618,7 +2965,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            timeCont.add(new Label(Item.AUTOCANCEL_BY)).add(addDatePickerWithClearButton(expireByDate));
 //            timeCont.add(new Label(Item.AUTOCANCEL_BY)).add(expireByDate.makeContainerWithClearButton());
 //            timeCont.add(layout(Item.AUTOCANCEL_BY, expireByDate.makeContainerWithClearButton(), "**"));
-            timeCont.add(layoutN(Item.AUTOCANCEL_BY, expiresOnDate, Item.AUTOCANCEL_BY_HELP, hide ? null : Icons.iconAutoCancelByDate));
+//            timeCont.add(layoutN(Item.AUTOCANCEL_BY, expiresOnDate, Item.AUTOCANCEL_BY_HELP, hide ? null : Icons.iconAutoCancelByDate));
+            timeCont.add(layoutN(Item.EXPIRES_ON_DATE, expiresOnDate, Item.EXPIRES_ON_DATE_HELP, hide ? null : Icons.iconAutoCancelByDate));
         }
 
         //TAB PRIO
@@ -2638,7 +2986,10 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        MyComponentGroup priority = new MyComponentGroup(new String[]{"-", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, parseIdMap2,
 //                (s) -> item.setPriority(Integer.parseInt(s.length() == 0 ? "0" : s)));
 //        MyComponentGroup priority = new MyComponentGroup(new String[]{"-", "1", "2", "3", "4", "5", "6", "7", "8", "9"}, true);
-        priority = new MyComponentGroup(new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, true);
+//        priority = new MyComponentGroup(new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, true);
+        priority = new MyComponentGroup(new Integer[]{1, 2, 3, 4, 5, 6, 7, 8, 9},
+                null, //new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, 
+                new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9'}, Icons.myIconFont, true);
         initField(Item.PARSE_PRIORITY, priority,
                 () -> itemCopy.getPriority(),
                 (t) -> itemOrg.setPriority(t != null ? (int) t : 0),
@@ -2722,7 +3073,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        MyComponentGroup challenge = new MyComponentGroup(Item.Challenge.getDescriptionList(), parseIdMap2,
 //                () -> itemLS.getChallengeN() == null ? "" : itemLS.getChallengeN().getDescription(),
 //                (s) -> item.setChallenge(Item.Challenge.getValue(s)));
-        MyComponentGroup challenge1 = new MyComponentGroup(Challenge.getNameList(), Challenge.getDescriptionList(), true);
+//        MyComponentGroup challenge1 = new MyComponentGroup(Challenge.getNameList(), Challenge.getDescriptionList(), true);
+        MyComponentGroup challenge1 = new MyComponentGroup(Challenge.getNameList(), Challenge.getDescriptionList(),
+                Challenge.getIconList(), Challenge.getIconFont(), true);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont.add(new Label("Difficulty")).add(challenge);
 //        prioCont.add(new Label("Difficulty")).add(BorderLayout.center(Container.encloseIn(new FlowLayout(),challenge)));
@@ -2828,16 +3181,27 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                                            ((long) effortEstimate.getTime()) * MyDate.MINUTE_IN_MILLISECONDS),
 //                                    Double.valueOf(earnedValue.getText().equals("") ? "0" : earnedValue.getText())));
 //</editor-fold>
-                    earnedValuePerHour.setText(
-                            L10NManager.getInstance().format(Item.calculateEarnedValuePerHour(
-                                    Item.getTotalExpectedEffort(
-                                            //                                            ((long) remainingEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
-                                            //                                            ((long) actualEffort.getTime()) * MyDate.MINUTE_IN_MILLISECONDS,
-                                            //                                            ((long) effortEstimate.getTime()) * MyDate.MINUTE_IN_MILLISECONDS),
-                                            ((long) remainingEffort.getDuration()),
-                                            ((long) actualEffort.getDuration()),
-                                            ((long) effortEstimate.getDuration())),
-                                    Double.valueOf(earnedValue.getText().equals("") ? "0" : earnedValue.getText())), 2));
+                    List<Item> updatedSubtasksN;
+                    if (false) {
+                        updatedSubtasksN = previousValues.getSubtaskListN();
+                    } else {
+                        updatedSubtasksN = itemOrg.getListFull();
+                    }
+                    long totalEffort = 0;
+                    if (updatedSubtasksN == null || updatedSubtasksN.isEmpty()) { //not a project:
+                        totalEffort = Item.getTotalExpectedEffort(((long) remainingEffort.getDuration()),
+                                ((long) actualEffortTask.getDuration()),
+                                ((long) effortEstimate.getDuration()));
+                    } else { //a project (with edited subtasks!)
+//                        totalEffort = Item.getTotalExpectedEffort(
+//                                Item.getRemainingForSubtasks(updatedSubtasksN),
+//                                Item.getActualForSubtasks(updatedSubtasksN),
+//                                Item.getEstimateForSubtasks(updatedSubtasksN));
+                        totalEffort = Item.getTotalExpectedEffortOfLeafTasks(updatedSubtasksN);
+                    }
+                    double earnedValPerHour = Item.calculateEarnedValuePerHour(totalEffort,
+                            Double.valueOf(earnedValue.getText().equals("") ? "0" : earnedValue.getText()));
+                    earnedValuePerHour.setText(L10NManager.getInstance().format(earnedValPerHour, 2));
 //                    earnedValuePerHour.animate(); //TODO: needed?
                     earnedValuePerHour.repaint(); //TODO: needed?
                 }
@@ -2845,8 +3209,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         };
         earnedValue.addActionListener(earnedValuePerHourUpdater);
         remainingEffort.addActionListener(earnedValuePerHourUpdater);
-        actualEffort.addActionListener(earnedValuePerHourUpdater);
+        actualEffortTask.addActionListener(earnedValuePerHourUpdater);
         earnedValue.addActionListener(earnedValuePerHourUpdater);
+        earnedValuePerHourUpdater.actionPerformed(null); //ensure earned value per hour is updated on each refresh (to reflect e.g. 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyActionListener remainingEffortChangeListener = new MyActionListener() {
 //            @Override
@@ -2932,9 +3297,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             }
             if (remainingEffortSetManually && !effortEstimateSetManually
                     && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
-                    && itemOrg.getEstimate() == 0) { //UI: only allow manual setting if no value was set before
+                    && itemOrg.getEstimateTotal() == 0) { //UI: only allow manual setting if no value was set before
                 effortEstimateSetAutomatically = true;
-                effortEstimate.setDurationAndNotify(remainingEffort.getDuration() + actualEffort.getDuration()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated) 
+                effortEstimate.setDurationAndNotify(remainingEffort.getDuration() + actualEffortTask.getDuration()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated) 
                 effortEstimateSetAutomatically = false;
                 effortEstimate.repaint();
             }
@@ -3046,7 +3411,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                     //                    || remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS)
                     ) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
                 remainingEffortSetAutomatically = true;
-                remainingEffort.setDurationAndNotify(effortEstimate.getDuration() - actualEffort.getDuration()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
+                remainingEffort.setDurationAndNotify(effortEstimate.getDuration() - actualEffortTask.getDuration()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
                 remainingEffortSetAutomatically = false;
                 remainingEffort.repaint();
             }
@@ -3112,15 +3477,16 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //OWNER
 //        MySpanButton editOwnerButton = new MySpanButton();
 //        SpanButton editOwnerButton = new SpanButton();
-        MySpanButton editOwnerButton = new WrapButton();
+        SpanButton editOwnerButton = new SpanButton();
 
-        ActionListener refreshOwnerButton = (e) -> {
+        ActionListener<ActionEvent> refreshOwnerButtonXXX = (e) -> {
             String ownerStr
                     = (previousValues != null && previousValues.getOwnersN() != null)
                     ? (previousValues.getOwnersN().size() > 0 ? previousValues.getOwnersN().get(0).getText() : "")
                     : (itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
             editOwnerButton.setText(ownerStr);
         };
+        editOwnerButton.setText(itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            final Command editOwnerCmd = Command.create(item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = new Command(item.getOwner() == null ? "<no owner>" : item.getOwner().getText()) {
@@ -3132,61 +3498,74 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             projects.remove(itemOrg); //Must not be possible to select the item itself as its own owner. NB to modify the list since not used elsewhere (new created in DAO)
 
             //cconvert list of ObjectId to list of actual owners (well, 0 or 1 owner)
-            List<ItemAndListCommonInterface> locallyEditedOwner
-                    = (previousValues != null && previousValues.getOwnersN() != null)
-                    ? previousValues.getOwnersN() //use previous selection (either new owner or previous owner was unselected
-                    : new ArrayList(Arrays.asList(itemOrg.getOwner())); //fetch the actual owner 
+//            List<ItemAndListCommonInterface> locallyEditedOwner
+//                    = (previousValues != null && previousValues.getOwnersN() != null)
+//                    ? previousValues.getOwnersN() //use previous selection (either new owner or previous owner was unselected
+//                    : new ArrayList(Arrays.asList(itemOrg.getOwner())); //fetch the actual owner 
+            List<ItemAndListCommonInterface> locallyEditedOwner = new ArrayList(Arrays.asList(itemOrg.getOwner())); //fetch the actual owner 
 
-            ItemAndListCommonInterface previousOwner = locallyEditedOwner.get(0);
+//            ItemAndListCommonInterface previousOwner = locallyEditedOwner.get(0);
             ScreenObjectPicker ownerPicker = new ScreenObjectPicker("Select " + Item.OWNER /*+ " for " + item.getText()*/,
                     ItemListList.getInstance(),
                     projects,
+                    //                    itemOrg.getOwner(), 
                     locallyEditedOwner,
                     ScreenItem2.this,
                     () -> {
                         if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
                             ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
-                            if (selectedOwner.equals(itemOrg.getOwner())) {
-                                previousValues.removeOwners(); //store empty list (e.g. if previous owner was selected again)
-                            } else { //new owner (or no owner if unselected)
-                                previousValues.putOwners(locallyEditedOwner); //store objectId of new owner
-                            }
-                            if (false) {
-                                itemCopy.removeValuesInheritedFromOwner(previousOwner); //remove old owner's values, nothing's done if oldOwner is null
-                                itemCopy.updateValuesInheritedFromOwner(selectedOwner);
-                            } else {
-                                if (selectedOwner instanceof Item) {
-                                    updateInheritedPickers(itemOrg, itemOrg.getOwner() instanceof Item ? (Item) itemOrg.getOwner() : null, (Item) selectedOwner);
-                                }
-                            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                            if (false) {
+//                                if (selectedOwner.equals(itemOrg.getOwner())) {
+//                                    previousValues.removeOwners(); //store empty list (e.g. if previous owner was selected again)
+//                                } else { //new owner (or no owner if unselected)
+//                                    previousValues.putOwners(locallyEditedOwner); //store objectId of new owner
+//                                }
+//                                if (false) {
+//                                    itemCopy.removeValuesInheritedFromOwner(previousOwner); //remove old owner's values, nothing's done if oldOwner is null
+//                                    itemCopy.updateValuesInheritedFromOwner(selectedOwner);
+//                                } else {
+//                                    if (selectedOwner instanceof Item) {
+//                                        updateInheritedPickers(itemOrg, itemOrg.getOwner() instanceof Item ? (Item) itemOrg.getOwner() : null, (Item) selectedOwner);
+//                                    }
+//                                }
+//                            }
+//</editor-fold>
+                            itemOrg.setOwner(selectedOwner);
                         } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
                             //SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected
+                            ASSERT.that("SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected");
                             if (itemOrg.getOwner() == null) {
                                 previousValues.removeOwners(); //remove previousValue, e.g. no owner before, none selected now
                             } else {
                                 previousValues.putOwners(locallyEditedOwner); //store empty list (e.g. if previous owner was deselected)
                             }
                         }
+                        editOwnerButton.setText(itemOrg.getOwner().getText());
                     }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
             ownerPicker.show();
         }
         );
         editOwnerButton.setCommand(editOwnerCmd);
-        refreshOwnerButton.actionPerformed(null); //set button text *after* setting command
-        parseIdMap2.put(Item.PARSE_OWNER_ITEM, () -> {
-            List<ItemAndListCommonInterface> newOwnersN = previousValues.getOwnersN();
-            if (newOwnersN != null) { //a new owner is selected (or previous owner unselected
-                if (newOwnersN.size() > 0) { //a new owner is selected
-                    ItemAndListCommonInterface newOwner = newOwnersN.get(0);
-                    ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
-                    newOwner.addToList(itemOrg);
-                    DAO.getInstance().saveNew(false, itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
-                } else { //previousValues.getOwner()==null meaning either no owner was selected or a prevoious owner was unselected (and should be removed)
-                    ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
-                    DAO.getInstance().saveNew((ParseObject) oldOwner, false);
-                }
-            } //else: no change made to original owner so nothing to do!
-        });
+//        refreshOwnerButton.actionPerformed(null); //set button text *after* setting command
+        if (false) {
+            parseIdMap2.put(Item.PARSE_OWNER_ITEM, () -> {
+                assert false; //not used anymore?!
+                List<ItemAndListCommonInterface> newOwnersN = previousValues.getOwnersN();
+                if (newOwnersN != null) { //a new owner is selected (or previous owner unselected
+                    if (newOwnersN.size() > 0) { //a new owner is selected
+                        ItemAndListCommonInterface newOwner = newOwnersN.get(0);
+                        ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
+                        newOwner.addToList(itemOrg);
+//                    DAO.getInstance().saveNew(itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
+                        DAO.getInstance().saveToParseNow(itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
+                    } else { //previousValues.getOwner()==null meaning either no owner was selected or a prevoious owner was unselected (and should be removed)
+                        ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
+                        DAO.getInstance().saveToParseNow((ParseObject) oldOwner);
+                    }
+                } //else: no change made to original owner so nothing to do!
+            });
+        }
         //previousValues stores the ObjectId of the owner, not the owner itself!
         //NB! Item.PARSE_OWNER_ITEM is used to index previousValues, but owner can also be Item.PARSE_OWNER_LIST, but not Item.PARSE_OWNER_TEMPLATE_LIST
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3250,13 +3629,16 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        statusCont.add(layout(Item.STARTED_ON_DATE, startedOnDate.makeContainerWithClearButton(), "Set automatically when using the timer")); //"click to set date when started"
 //        statusCont.add(layout(Item.STARTED_ON_DATE, startedOnDate, Item.STARTED_ON_DATE_HELP)); //"click to set date when started"
 //</editor-fold>
-        if (itemOrg.isProject()) {
-            Label startedOnDateLabel = new Label(itemOrg.getStartedOnDateD().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getStartedOnDateD()));
-            statusCont.add(layoutN(Item.STARTED_ON_DATE_SUBTASKS, startedOnDateLabel, Item.STARTED_ON_DATE_HELP, true, hide ? null : Icons.iconStartedOnDate));
-        } else {
-            initField(Item.PARSE_STARTED_ON_DATE, startedOnDate, () -> itemOrg.getStartedOnDateD(), (s) -> itemOrg.setStartedOnDate((Date) s, true),
-                    () -> startedOnDate.getDate(), (s) -> startedOnDate.setDate((Date) s));
-            statusCont.add(layoutN(Item.STARTED_ON_DATE, startedOnDate, Item.STARTED_ON_DATE_HELP, hide ? null : Icons.iconStartedOnDate)); //"click to set date when started"
+        if (true || !isTemplate) {
+            if (itemOrg.isProject()) {
+                Label startedOnDateLabel = new Label(itemOrg.getStartedOnDateD().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getStartedOnDateD()));
+                statusCont.add(layoutN(Item.STARTED_ON_DATE_SUBTASKS, startedOnDateLabel, Item.STARTED_ON_DATE_HELP, true, hide ? null : Icons.iconStartedOnDate));
+            } else {
+                initField(Item.PARSE_STARTED_ON_DATE, startedOnDate, () -> itemOrg.getStartedOnDateD(), (s) -> itemOrg.setStartedOnDate((Date) s, true),
+                        () -> startedOnDate.getDate(), (s) -> startedOnDate.setDate((Date) s));
+//            statusCont.add(layoutN(Item.STARTED_ON_DATE, isTemplate?new Label(""):startedOnDate, Item.STARTED_ON_DATE_HELP, hide ? null : Icons.iconStartedOnDate)); //"click to set date when started"
+                statusCont.add(layoutN(Item.STARTED_ON_DATE, isTemplate ? null : startedOnDate, Item.STARTED_ON_DATE_HELP, hide ? null : Icons.iconStartedOnDate)); //"click to set date when started"
+            }
         }
 //        statusCont.add(new Label(Item.STARTED_ON_DATE)).add(startedOnDate.)).add(new SpanLabel("Set automatically when using the timer"));
 
@@ -3269,85 +3651,96 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        statusCont.add(layout(Item.COMPLETED_DATE, completedDate.makeContainerWithClearButton(), "Set automatically when a task is completed")); //"click to set a completed date"
 //        statusCont.add(layout(Item.COMPLETED_DATE, completedDate, Item.COMPLETED_DATE_HELP)); //"click to set a completed date"
 //</editor-fold>
-        initField(Item.PARSE_COMPLETED_DATE, completedDate, () -> itemOrg.getCompletedDate(), (s) -> itemOrg.setCompletedDate((Date) s),
+        initField(Item.PARSE_COMPLETED_DATE, completedDate,
+                () -> itemOrg.getCompletedDate(), (s) -> itemOrg.setCompletedDate((Date) s),
                 () -> completedDate.getDate(), (s) -> completedDate.setDate((Date) s));
 
-        statusCont.add(layoutN(Item.COMPLETED_DATE, completedDate, Item.COMPLETED_DATE_HELP, hide ? null : Icons.iconCompletedDate)); //"click to set a completed date"
+        statusCont.add(layoutN(Item.COMPLETED_DATE, isTemplate ? null : completedDate, Item.COMPLETED_DATE_HELP,
+                hide ? null : (status.getStatus() == ItemStatus.CANCELLED ? Icons.iconCancelledDate : Icons.iconCompletedDate))); //"click to set a completed date"
 
-        status.setStatusChangeHandler((oldStatus, newStatus) -> {
-            //if status is set Ongoing and startedOnDate is not set and has not been set explicitly 
-            //if status is changed
-            //TODO!!! move this logic into Item as static method (or ensure consistent with changes made there), OR, at least check it is consistent with logic elsewhere (eg. if a project is set complete when last subtasks is completed, or in screenItemList)
+        if (false) {
+            status.setStatusChangeHandler((oldStatus, newStatus) -> {
+                //if status is set Ongoing and startedOnDate is not set and has not been set explicitly 
+                //if status is changed
+                //TODO!!! move this logic into Item as static method (or ensure consistent with changes made there), OR, at least check it is consistent with logic elsewhere (eg. if a project is set complete when last subtasks is completed, or in screenItemList)
 //            ItemStatus newStatus = status.getStatus();
-            if (newStatus == oldStatus || noAutoUpdateOnStatusChange) {
-                return;
-            }
+                if (newStatus == oldStatus || noAutoUpdateOnStatusChange) {
+                    return;
+                }
 
-            if (newStatus == ItemStatus.CREATED && itemOrg.getActual() > 0) {
-                newStatus = ItemStatus.ONGOING;
-            }
-            Date now = new MyDate();
-            Date zero = new MyDate(0);
+                if (newStatus == ItemStatus.CREATED && itemOrg.getActualTotal() > 0) {
+                    newStatus = ItemStatus.ONGOING;
+                }
+                Date now = new MyDate();
+                Date zeroDate = new MyDate(0);
 //            if (newStatus != item.getStatus()) {
-            if (newStatus == ItemStatus.ONGOING) {
+                if (newStatus == ItemStatus.ONGOING) {
 //                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-                if (startedOnDate.getDate().getTime() == 0) {
-                    startedOnDate.setDateAndNotify(now);
-                    startedOnDate.repaint();
-                }
-                if (completedDate.getDate().getTime() != 0) {
-                    completedDate.setDateAndNotify(zero);
-                    completedDate.repaint();
-                }
-            } else if (newStatus == ItemStatus.CREATED) {
-                //if set back to Created, force startedOnDate and completedDate and WaitingDate and ?? back
-                //TODO!!!!
-                //set back to 0 or if the date was only changed in the UI (item.getStartedOnDate()==0)
+                    if (startedOnDate.getDate().getTime() == 0) {
+                        startedOnDate.setDateAndNotify(now);
+                        startedOnDate.repaint();
+                    }
+//                if (completedDate.getDate().getTime() != 0) {
+//                    completedDate.setDateAndNotify(zeroDate);
+//                    completedDate.repaint();
+//                }
+                } else if (newStatus == ItemStatus.CREATED) {
+                    //if set back to Created, force startedOnDate and completedDate and WaitingDate and ?? back
+                    //TODO!!!!
+                    //set back to 0 or if the date was only changed in the UI (item.getStartedOnDate()==0)
 //                        if ((startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) || item.getStartedOnDate() == 0) {
-                if (startedOnDate.getDate().getTime() != 0) {
-                    startedOnDate.setDateAndNotify(zero);
-                    startedOnDate.repaint();
-                }
-                //TODO!!!!!! check the logic for setting dates back to 0!! 
-                //TODO In general, need to have methods in Item *without* any side-effects on other fields to ensure that the fields are set to the values seen in the UI
-                //TODO extract the logic for which changed fields impact others? Add new Item.setters embedding th needed logic for updating other fields and use those in the places where the automatic updates are needed
+                    if (startedOnDate.getDate().getTime() != 0) {
+                        startedOnDate.setDateAndNotify(zeroDate);
+                        startedOnDate.repaint();
+                    }
+                    //TODO!!!!!! check the logic for setting dates back to 0!! 
+                    //TODO In general, need to have methods in Item *without* any side-effects on other fields to ensure that the fields are set to the values seen in the UI
+                    //TODO extract the logic for which changed fields impact others? Add new Item.setters embedding th needed logic for updating other fields and use those in the places where the automatic updates are needed
 //                        if ((completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
-                if (completedDate.getDate().getTime() != 0) {
-                    completedDate.setDateAndNotify(zero);
-                    completedDate.repaint();
-                }
+//                if (completedDate.getDate().getTime() != 0) {
+//                    completedDate.setDateAndNotify(zeroDate);
+//                    completedDate.repaint();
+//                }
 //                        if ((dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
 //                        if ((dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
 //                            completedDate.setDate(new Date(0));
 //                        }
-            } else if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
+                } else if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
 //                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-                if (startedOnDate.getDate().getTime() == 0) {
-                    startedOnDate.setDateAndNotify(now);
-                    startedOnDate.repaint();
-                }
+                    if (startedOnDate.getDate().getTime() == 0) {
+                        startedOnDate.setDateAndNotify(now);
+                        startedOnDate.repaint();
+                    }
 //                        if (completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) {
-                if (true || completedDate.getDate().getTime() == 0) { //UI: will not change if already set ->NO, will always use latest date when set Done, e.g. if marking done by mistake
-                    completedDate.setDateAndNotify(now);
-                    completedDate.repaint();
-                }
-            } else if (newStatus == ItemStatus.WAITING) {
+                    if (true || completedDate.getDate().getTime() == 0) { //UI: will not change if already set ->NO, will always use latest date when set Done, e.g. if marking done by mistake
+                        completedDate.setDateAndNotify(now);
+                        completedDate.repaint();
+                    }
+                } else if (newStatus == ItemStatus.WAITING) {
 //                        if (dateSetWaitingDate.getDate().getTime() == 0 && dateSetWaitingDate.getDate().getTime() == item.getDateWhenSetWaiting()) {
-                dateSetWaitingDate.setDateAndNotify(now);
-                dateSetWaitingDate.repaint();
+                    dateSetWaitingDate.setDateAndNotify(now);
+                    dateSetWaitingDate.repaint();
 //                        }
-                //UI: set startedOnDate when setting Waiting (even if no effort registered)?
+                    //UI: set startedOnDate when setting Waiting (even if no effort registered)?
 //                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-                if (startedOnDate.getDate().getTime() == 0) {
-                    startedOnDate.setDate(now);
-                    startedOnDate.repaint();
+                    if (startedOnDate.getDate().getTime() == 0) {
+                        startedOnDate.setDate(now);
+                        startedOnDate.repaint();
+                    }
                 }
-            }
-            if (newStatus != ItemStatus.WAITING && dateSetWaitingDate.getDate().getTime() != 0) {
-                dateSetWaitingDate.setDateAndNotify(zero);
-                dateSetWaitingDate.repaint();
-            }
-        });
+
+                if (newStatus != ItemStatus.WAITING && dateSetWaitingDate.getDate().getTime() != 0) {
+                    dateSetWaitingDate.setDateAndNotify(zeroDate);
+                    dateSetWaitingDate.repaint();
+                }
+
+                if ((oldStatus == ItemStatus.CANCELLED || oldStatus == ItemStatus.DONE)
+                        && (newStatus != ItemStatus.CANCELLED && newStatus != ItemStatus.DONE)) {
+                    completedDate.setDateAndNotify(zeroDate);
+                }
+
+            });
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //              status.addActionListener(statusListener);
 //        status.addActionListener((evt) -> {
@@ -3459,19 +3852,20 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            }
 //        };
 //</editor-fold>
-        startedOnDate.addActionListener((evt) -> {
-            //if startedOnDate is set, then if status has not been set explicitly and it is Created (not Waiting), the set it 
+        if (false) {
+            startedOnDate.addActionListener((evt) -> {
+                //if startedOnDate is set, then if status has not been set explicitly and it is Created (not Waiting), the set it 
 //                if (startedOnDate.getDate().getTime() != 0 && item.getStartedOnDate() == 0 && status.getStatus() == item.getStatus() && status.getStatus() == ItemStatus.CREATED) {
-            noAutoUpdateOnStatusChange = true;
-            if (startedOnDate.getDate().getTime() == 0) {
-                //TODO!! should it be allowed to remove a startdate if there is actual effort? YES, because you want to be able to edit freely the different fields of an Item! (not too much intelligence)
+                noAutoUpdateOnStatusChange = true;
+                if (startedOnDate.getDate().getTime() == 0) {
+                    //TODO!! should it be allowed to remove a startdate if there is actual effort? YES, because you want to be able to edit freely the different fields of an Item! (not too much intelligence)
 //                    if (actualEffort.getTime() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter 
-                if (status.getStatus() == ItemStatus.DONE || status.getStatus() == ItemStatus.ONGOING) { //doesn't matter 
-                    status.setStatus(actualEffort.getDuration() == 0 ? ItemStatus.CREATED : ItemStatus.ONGOING);
-                }
-                if (completedDate.getDate().getTime() != 0) {
-                    completedDate.setDate(new MyDate(0));
-                }
+                    if (status.getStatus() == ItemStatus.DONE || status.getStatus() == ItemStatus.ONGOING) { //doesn't matter 
+                        status.setStatus(actualEffortTask.getDuration() == 0 ? ItemStatus.CREATED : ItemStatus.ONGOING);
+                    }
+                    if (completedDate.getDate().getTime() != 0) {
+                        completedDate.setDate(new MyDate(0));
+                    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                else
 //                if (actualEffort.getDuration() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter
@@ -3479,14 +3873,15 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 ////                    status.repaint();
 //                }
 //</editor-fold>
-            } else { //startedOnDate.getDate().getTime() == 0 => startDate was set OR CHANGED(!)
-                if (status.getStatus() == ItemStatus.CREATED) { //UI: DON't set to ONGOING if current state is WAITING/CANCELLED/ONGOING
-                    status.setStatus(ItemStatus.ONGOING);
+                } else { //startedOnDate.getDate().getTime() == 0 => startDate was set OR CHANGED(!)
+                    if (status.getStatus() == ItemStatus.CREATED) { //UI: DON't set to ONGOING if current state is WAITING/CANCELLED/ONGOING
+                        status.setStatus(ItemStatus.ONGOING);
 //                    status.repaint();
+                    }
                 }
-            }
-            noAutoUpdateOnStatusChange = false;
-        });
+                noAutoUpdateOnStatusChange = false;
+            });
+        }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyActionListener completedOnDateListener = new MyActionListener() {
@@ -3544,30 +3939,37 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            }
 //        };
 //</editor-fold>
-        completedDate.addActionListener((evt) -> {
-            //if completeDate is set, then if status has not been set explicitly and it is Created/Ongoing/Waiting), the set it Completed
-            //UI: if startedOnDate is not changed explicitly in UI, the set it to (-Now-). Or later: completedDate-actual (see below TODO)
-            //NB. update startedOnDate *before* updating status, to ensure that completedDate wins (sets to DONE)
-            noAutoUpdateOnStatusChange = true;
-            if (startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
-                //TODO!! define setting to use actualEffort when auto-setting startedOn date?? Probably too smart
-                startedOnDate.setDateAndNotify(new MyDate(completedDate.getDate().getTime())); //UI: if setting a completeDate, then if no startedOn date was set, it will also be set to same time
-                startedOnDate.repaint();
-            }
-
-            if (completedDate.getDate().getTime() != 0) {
-                status.setStatus(ItemStatus.DONE);
-            } else { //deleting completedDate, so reset status
-//                    if (actualEffort.getTime() == 0) {
-                if (actualEffort.getDuration() != 0 || startedOnDate.getDate().getTime() != 0) {
-                    status.setStatus(ItemStatus.ONGOING);
-                } else {
-                    status.setStatus(ItemStatus.CREATED);
+        if (false) {
+            completedDate.addActionListener((evt) -> {
+                //if completeDate is set, then if status has not been set explicitly and it is Created/Ongoing/Waiting), the set it Completed
+                //UI: if startedOnDate is not changed explicitly in UI, the set it to (-Now-). Or later: completedDate-actual (see below TODO)
+                //NB. update startedOnDate *before* updating status, to ensure that completedDate wins (sets to DONE)
+                noAutoUpdateOnStatusChange = true;
+                if (startedOnDate.getDate().getTime() == 0) {// && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
+                    //TODO!! define setting to use actualEffort when auto-setting startedOn date?? Probably too smart
+                    startedOnDate.setDateAndNotify(new MyDate(completedDate.getDate().getTime())); //UI: if setting a completeDate, then if no startedOn date was set, it will also be set to same time
+                    startedOnDate.repaint();
+                } else if (startedOnDate.getDate().getTime() > completedDate.getDate().getTime()) {
+                    //if (previously set) startedOn date is *after* new completed date, then update it to be the same (illogical/impossible to start after completion)
+                    //TODO!! define setting to use actualEffort when auto-setting startedOn date?? Probably too smart
+                    startedOnDate.setDateAndNotify(new MyDate(completedDate.getDate().getTime() - actualEffortTask.getDuration())); //UI: if changing Completed, after StartedOn is *after* update StartedOn to be Completed-Actual duration
+                    startedOnDate.repaint();
                 }
-            }
-            status.repaint();
-            noAutoUpdateOnStatusChange = false;
-        });
+
+                if (completedDate.getDate().getTime() != 0) {
+                    status.setStatus(ItemStatus.DONE);
+                } else { //deleting completedDate, so reset status
+//                    if (actualEffort.getTime() == 0) {
+                    if (actualEffortTask.getDuration() != 0 || startedOnDate.getDate().getTime() != 0) {
+                        status.setStatus(ItemStatus.ONGOING);
+                    } else {
+                        status.setStatus(ItemStatus.CREATED);
+                    }
+                }
+                status.repaint();
+                noAutoUpdateOnStatusChange = false;
+            });
+        }
 
         statusCont.add(makeSpacerThin());
 
@@ -3606,7 +4008,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            statusCont.add(new Label(Item.SOURCE)).add(source); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            statusCont.add(layout(Item.SOURCE, source, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-            statusCont.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+            statusCont.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true, hide ? null : Icons.iconSource)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            sourceLabel.setUIID();
         }
 
@@ -3643,7 +4045,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             statusCont.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hide ? null : Icons.iconObjectId));
         }
 
-        if (Config.TEST) {
+        if (false && Config.TEST) {
 //            Container statusCont=null;
 
             TextField textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
@@ -3921,8 +4323,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             if (itemOrg.getObjectIdP() != null) {
                 return true; //don't ask to save an already saved item
             } else {
-                return checkItemIsValidForSaving(description.getText(), comment.getText(), dueDate.getDate(),
-                        actualEffort.getDuration(),
+                return checkItemHasKeyDataWorthSaving(description.getText(), comment.getText(), dueDate.getDate(),
+                        actualEffortTask.getDuration(),
                         remainingEffort.getDuration(),
                         (((List) previousValues.get(Item.PARSE_CATEGORIES)) != null
                         ? ((List) previousValues.get(Item.PARSE_CATEGORIES)).size()
@@ -3931,8 +4333,17 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             }
         }); //item.getListFull().size() sinze subtasks are stored 
 //TODO: when owner can be edited, use new/edited one
-
         return cont;
+    }
+
+    void showPreviousScreen(boolean callRefreshAfterEdit) {
+        itemOrg.setEditByForm(null); //reset the editing on exit
+        super.showPreviousScreen(callRefreshAfterEdit);
+    }
+
+    @Override
+    void onExit() {
+        decreaseCallDepth();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

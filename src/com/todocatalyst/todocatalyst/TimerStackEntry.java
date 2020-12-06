@@ -346,8 +346,9 @@ public class TimerStackEntry implements Externalizable {
     public void externalize(DataOutputStream out) throws IOException {
 
         if (timedItem != null && timedItem.getObjectIdP() == null) {
-            DAO.getInstance().saveNew(timedItem); //if needed, save temporary item (interupt task) so it is kept if app is closed and can be recovered on startup (and possibly deleted if Timer exited using Cancelled)
-            DAO.getInstance().saveNewExecuteUpdate();
+//            DAO.getInstance().saveNew(timedItem); //if needed, save temporary item (interupt task) so it is kept if app is closed and can be recovered on startup (and possibly deleted if Timer exited using Cancelled)
+//            DAO.getInstance().saveNewTriggerUpdate();
+            DAO.getInstance().saveToParseNow(timedItem);
             timedItemSavedLocallyInTimer = true;
         } else {
             timedItemSavedLocallyInTimer = false;

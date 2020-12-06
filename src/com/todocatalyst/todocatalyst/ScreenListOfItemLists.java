@@ -120,7 +120,7 @@ public class ScreenListOfItemLists extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
+        ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         if (false) {
             getContentPane().removeAll(); //NOT necessary since getContentPane().add() will remove the previous content. AND it will remove components that are added later...
         }
@@ -195,14 +195,17 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
 //        getToolbar().addSearchCommand(makeSearchFunctionSimple(this.itemListList),MyPrefs.defaultIconSizeInMM.getFloat());
 //        MySearchBar mySearchBar = new MySearchBar(getToolbar(), makeSearchFunctionSimple(this.itemListList));
-        toolbar.addCommandToRightBar(new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(itemListList)));
+//        toolbar.addCommandToRightBar(new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(itemListList)));
+        setSearchCmd(new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(itemListList)));
+        toolbar.addCommandToRightBar(getSearchCmd());
 
         //NEW TASK to Inbox
         toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
 
         //NEW ITEMLIST
 //        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconNew, (e) -> {
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconListNew, (e) -> {
+//        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconListNew, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "Add List", Icons.iconListNew, (e) -> {
             ItemList itemList = new ItemList();
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenItemListProperties(itemList, ScreenListOfItemLists.this, () -> {
@@ -214,8 +217,9 @@ public class ScreenListOfItemLists extends MyForm {
 //                    itemListList.addToList(0, itemList);
                     itemListList.addToList(itemList, !MyPrefs.insertNewItemListsInStartOfItemListList.getBoolean()); //TODO: why always add to start of list?! Make it a setting like elsewhere?
 //                    DAO.getInstance().saveNew(true,(ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                    DAO.getInstance().saveNew((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                    DAO.getInstance().saveNewExecuteUpdate();
+//                    DAO.getInstance().saveNew((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                    DAO.getInstance().saveNewTriggerUpdate();
+                    DAO.getInstance().saveToParseNow((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    DAO.getInstance().saveInBackground((ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    previousForm.revalidate(); //refresh list to show new items(??)
 //                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
@@ -472,7 +476,7 @@ public class ScreenListOfItemLists extends MyForm {
             //SHOW/EDIT SUBTASKS OF LIST
 //        editItemPropertiesButton.setIcon(iconEdit);
 //            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-", itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle, (e) -> {
-            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-" + itemList.getObjectIdP(), "", Icons.iconEdit, (e) -> {
+            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-" + itemList.getReplayId(), "", Icons.iconEdit, (e) -> {
                 MyForm f = ((MyForm) mainCont.getComponentForm());
                 f.setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllElementsInSublist((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
@@ -487,8 +491,9 @@ public class ScreenListOfItemLists extends MyForm {
                         //TODO!!!! how to make below save run in background? (objId is needed eg for EditItemList-ObjId of new list)
 //                        DAO.getInstance().saveAndWait((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveNew((ParseObject) itemList,true); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                        DAO.getInstance().saveNew((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                        DAO.getInstance().saveNewExecuteUpdate(); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                        DAO.getInstance().saveNew((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                        DAO.getInstance().saveNewTriggerUpdate(); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                        DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
                         if (false) {
                             swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
@@ -596,8 +601,8 @@ public class ScreenListOfItemLists extends MyForm {
         if (!statisticsMode) {
             if (MyPrefs.listOfItemListsShowRemainingEstimate.getBoolean()) {
 
-                long remainingEffort = itemList.getRemaining();
-                long totalEffort = MyPrefs.listOfItemListsShowTotalTime.getBoolean() ? itemList.getEstimate() : 0;
+                long remainingEffort = itemList.getRemainingTotal();
+                long totalEffort = MyPrefs.listOfItemListsShowTotalTime.getBoolean() ? itemList.getEstimateTotal() : 0;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long workTime = itemList.getWorkSlotListN().getWorkTimeSum();
 //        if (remainingEffort != 0) {
@@ -622,12 +627,12 @@ public class ScreenListOfItemLists extends MyForm {
                 east.addComponent(editItemListPropertiesButton);
             }
         } else { //statisticsMode
-            long actualEffort = itemList.getActual();
+            long actualTotal = itemList.getActualTotal();
 //            long estimatedEffort = itemList.getEffortEstimate();
 //            east.addComponent(new Label("Act:" + MyDate.formatDurationStd(actualEffort),Icons.iconActualEffort));
-            Label actualEffortLabel = new Label(MyDate.formatDurationStd(actualEffort));
-            actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
-            east.addComponent(actualEffortLabel);
+            Label actualTotalLabel = new Label(MyDate.formatDurationStd(actualTotal));
+            actualTotalLabel.setMaterialIcon(Icons.iconActualEffort);
+            east.addComponent(actualTotalLabel);
 //                    + "/E" + MyDate.formatTimeDuration(estimatedEffort)
 //                    + "/W" + MyDate.formatTimeDuration(workTimeSumMillis)));
             east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"

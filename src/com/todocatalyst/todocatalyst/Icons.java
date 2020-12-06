@@ -22,9 +22,10 @@ import com.codename1.ui.plaf.UIManager;
 public class Icons {
 
     //TODO smarter pattern for Icons https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
-    private static Icons INSTANCE;
+//    private static Icons INSTANCE;
 //    public static Font iconFont = Font.createTrueTypeFont("myIconFont", "myiconfont.ttf"); //name and filename
-    public static Font iconFont = Font.createTrueTypeFont("myiconfont", "myiconfont.ttf"); //name and filename, file MUST reside in /src/ root!
+//    public static Font iconFont = Font.createTrueTypeFont("myiconfont", "myiconfont.ttf"); //name and filename, file MUST reside in /src/ root!
+    public static Font myIconFont = Font.createTrueTypeFont("myicons", "myicons.ttf"); //name and filename, file MUST reside in /src/ root!
     Label label = new Label();
 
     private Icons() {
@@ -40,20 +41,6 @@ public class Icons {
 //        }
 //        return INSTANCE;
 //    }
-
-    public static Image makeT(char material) {
-//        return FontImage.createMaterial(material, UIManager.getInstance().getComponentStyle("TitleCommand"));
-        return make(material, "TitleCommand");
-    }
-
-    public static Image makeL(char material) {
-//        return FontImage.createMaterial(material, UIManager.getInstance().getComponentStyle("Label"));
-        return make(material, "Label");
-    }
-
-    public static Image make(char material, String styleUIID) {
-        return FontImage.createMaterial(material, UIManager.getInstance().getComponentStyle(styleUIID));
-    }
 
 //    private final static Style labelStyle = new Label().getStyle();
 //    private final static Style toolBarStyle = new Toolbar().getStyle();
@@ -124,14 +111,35 @@ public class Icons {
 //    final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_ALARM_ON, labelStyle);
 //    final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_NOTIFICATIONS, labelStyle);
     final static char iconAlarmDate = FontImage.MATERIAL_NOTIFICATIONS_NONE;
-    final static char iconAlarmTriggered = FontImage.MATERIAL_NOTIFICATIONS_ACTIVE; //TODO: custom icon
+    final static char iconAlarmTriggered = FontImage.MATERIAL_NOTIFICATIONS_NONE; //TODO: MATERIAL_NOTIFICATIONS_ACTIVE; custom icon
     final static char iconHideUntilDate = FontImage.MATERIAL_VISIBILITY_OFF; //TODO: custom icon
+    final static char iconHideUntilDateCust = 'p'; //TODO: custom icon
     final static char iconAutoCancelByDate = FontImage.MATERIAL_CANCEL_PRESENTATION; //TODO: custom icon
+    final static char iconAutoCancelByDateCust = 'r'; //TODO: custom icon
     final static char iconStartedOnDate = FontImage.MATERIAL_TIMELAPSE; //TODO: custom icon
+    final static char iconStartedOnDateCust = 'j'; //TODO: custom icon
     final static char iconCreatedDate = FontImage.MATERIAL_TRIP_ORIGIN; //TODO: custom icon
+    final static char iconCreatedDateCust = 'n'; //TODO: custom icon
     final static char iconModifiedDate = FontImage.MATERIAL_EDIT; //TODO: custom icon
+    final static char iconModifiedDateCust = 'h'; //TODO: custom icon
     
     final static char iconPriority = FontImage.MATERIAL_PRIORITY_HIGH; //TODO: custom icon
+    final static char iconPrio0Cust = '0'; //custom icon
+    final static char iconPrio1Cust = '1'; //custom icon
+    final static char iconPrio2Cust = '2'; //custom icon
+    final static char iconPrio3Cust = '3'; //custom icon
+    final static char iconPrio4Cust = '4'; //custom icon
+    final static char iconPrio5Cust = '5'; //custom icon
+    final static char iconPrio6Cust = '6'; //custom icon
+    final static char iconPrio7Cust = '7'; //custom icon
+    final static char iconPrio8Cust = '8'; //custom icon
+    final static char iconPrio9Cust = '9'; //custom icon
+    
+    final static char iconImpUrgCust = 'D'; //custom icon
+    final static char iconImpNotUrgCust = 'E'; //custom icon
+    final static char iconNotImpUrgCust = 'F'; //custom icon
+    final static char iconNotImpNotUrgCust = 'G'; //custom icon
+    
     final static char[] iconPriorities = new char[]{FontImage.MATERIAL_PRIORITY_HIGH}; //TODO: custom icon
     
     final static char iconImportance =FontImage.MATERIAL_GRID_ON; // FontImage.MATERIAL_ISO; //TODO: custom icon
@@ -158,7 +166,9 @@ public class Icons {
 
     final static char iconSettings = FontImage.MATERIAL_SETTINGS;
     final static char iconInsertTaskAbove = FontImage.MATERIAL_TRENDING_UP; //MATERIAL_CALL_MADE;
+    final static char iconInsertTaskAboveMy = '?'; //MATERIAL_CALL_MADE;
     final static char iconInsertTaskBelow = FontImage.MATERIAL_TRENDING_DOWN; //MATERIAL_SUBDIRECTORY_ARROW_RIGHT; //TODO: make as horizontal flip of MATERIAL_CALL_MADE
+    final static char iconInsertTaskBelowMy = '>'; //MATERIAL_SUBDIRECTORY_ARROW_RIGHT; //TODO: make as horizontal flip of MATERIAL_CALL_MADE
 
     //Main screen menu icons
     final static char iconMainOverdue = FontImage.MATERIAL_ASSIGNMENT_LATE;
@@ -189,6 +199,7 @@ public class Icons {
     final static char iconCategoryNew = FontImage.MATERIAL_CREATE_NEW_FOLDER;
     final static char iconOwner = FontImage.MATERIAL_LIST_ALT;
     final static char iconObjectId = FontImage.MATERIAL_VPN_KEY;
+    final static char iconSource = FontImage.MATERIAL_CONTENT_COPY;
 
 //    final static char iconFilter = FontImage.MATERIAL_FILTER_LIST;
 //    final static Image iconSettingsLabelStyle = FontImage.createMaterial(iconSettings, labelStyle);
@@ -216,15 +227,19 @@ public class Icons {
     final static char iconMoveAllToEnd = FontImage.MATERIAL_ARROW_DOWNWARD; //TODO: find better symbol (with unchecked boxes)
     final static char iconInvertSelection = FontImage.MATERIAL_FLIP; //TODO: find better symbol (with unchecked boxes)
 
-    final static char iconCompletedDate = FontImage.MATERIAL_DONE; //TODO: find better symbol (with unchecked boxes)
+    final static char iconCompletedDate = FontImage.MATERIAL_EVENT_AVAILABLE; //TODO: find better symbol (with unchecked boxes)
+    final static char iconCompletedDateCust = 'f'; //TODO: find better symbol (with unchecked boxes)
+    final static char iconCancelledDate = FontImage.MATERIAL_EVENT_BUSY; //TODO: find better symbol (with unchecked boxes)
     final static char iconDateRange = FontImage.MATERIAL_DATE_RANGE; //TODO: find better symbol (with unchecked boxes)
     
     final static char iconRepeatOverview = FontImage.MATERIAL_FILTER; //or: DYNAMIC_FEED
 
-    final static char iconSelectedLabelStyleMaterial = FontImage.MATERIAL_CHECK_BOX; //3mm
+    final static char iconSelectedElt = FontImage.MATERIAL_CHECK_BOX; //3mm
+    final static char iconSelectedEltCust = ';'; //3mm
 //    final static Image iconUnselectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED, labelStyle, 2);
 //    final static Image iconUnselectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_CHECK_BOX_OUTLINE_BLANK, labelStyle, 2);
-    final static char iconUnselectedLabelStyleMaterial = FontImage.MATERIAL_CHECK_BOX_OUTLINE_BLANK;
+    final static char iconUnselectedElt = FontImage.MATERIAL_CHECK_BOX_OUTLINE_BLANK;
+    final static char iconUnselectedEltCust = ':';
 //    final static Image iconTemplateStatusSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_DO_NOT_DISTURB_ALT, labelStyle);
 
 //    static Image iconSetDueDateToToday() {
@@ -232,6 +247,7 @@ public class Icons {
 //    }
     static char iconSetDueDateToTodayMaterial = FontImage.MATERIAL_TODAY;
     static char iconSetDueDateToTodayFontImageMaterial = FontImage.MATERIAL_TODAY;
+    static char iconDueDateCust = 'g';
 //    final static Image iconSetDueDateToToday = FontImage.createMaterial(FontImage.MATERIAL_TODAY, labelStyle);
 //    final static Image iconIndentExdendInsertNewTask = FontImage.createMaterial(FontImage.MATERIAL_COMPARE_ARROWS, labelStyle);
 //    final static char iconIndentExdendInsertNewTask = FontImage.MATERIAL_TRANSFORM; //TODO: make icons showing a task indended to subtask and a subtask exdended to super-task
@@ -245,7 +261,8 @@ public class Icons {
 //    static Image iconInsertNewTaskExdend= iconInsertNewTaskIndent.rotate180Degrees(true); //flip the above image
 
 //    final static Image iconCreateSubTask = FontImage.createMaterial(FontImage.MATERIAL_PLAYLIST_PLAY, labelStyle);
-    final static char iconSubTasks = FontImage.MATERIAL_FORMAT_INDENT_INCREASE; //TODO custom icon //MATERIAL_FORMAT_ALIGN_LEFT
+    final static char iconEditSubTasks = FontImage.MATERIAL_FORMAT_INDENT_INCREASE; //TODO custom icon //MATERIAL_FORMAT_ALIGN_LEFT
+    final static char iconEditSubTasksCust = 'B'; //TODO custom icon //MATERIAL_FORMAT_ALIGN_LEFT
 
     //TEMPLATE
     final static char iconNewItemFromTemplate = FontImage.MATERIAL_LIBRARY_ADD;
@@ -299,8 +316,12 @@ public class Icons {
     final static char iconCommentTimeStamp = FontImage.MATERIAL_SCHEDULE;
 
     final static char iconWaitingAlarm = FontImage.MATERIAL_PAUSE; //TODO custom
+    final static char iconWaitingAlarmCust = 'A'; 
+    final static char iconWaitingAlarmExpiredCust = '='; 
     final static char iconWaitingDateMaterial = FontImage.MATERIAL_PAUSE; //TODO custom
+    final static char iconWaitingDateCust = 'k'; //TODO custom
     final static char iconSetWaitingDateMaterial = FontImage.MATERIAL_PAUSE_PRESENTATION;
+    final static char iconSetWaitingDateCust = 'm';
 //    final static Image iconWaitingDate = FontImage.createMaterial(iconWaitingDateMaterial, labelStyle);
 
     final static char iconStartByDate = FontImage.MATERIAL_PRESENT_TO_ALL; //FontImage.MATERIAL_EXIT_TO_APP; //TODO custom icon
@@ -308,33 +329,53 @@ public class Icons {
 
     final static char iconDreadFunNeutral = FontImage.MATERIAL_THUMBS_UP_DOWN; //MATERIAL_SENTIMENT_VERY_SATISFIED;
     final static char iconFun = FontImage.MATERIAL_THUMB_UP; //MATERIAL_SENTIMENT_VERY_SATISFIED
+    final static char iconFunCust = '^'; //MATERIAL_SENTIMENT_VERY_SATISFIED
     final static char iconDread = FontImage.MATERIAL_THUMB_DOWN; //FontImage.MATERIAL_SENTIMENT_VERY_DISSATISFIED;
+    final static char iconDreadCust = ']'; //FontImage.MATERIAL_SENTIMENT_VERY_DISSATISFIED;
 
     final static char iconChallengeVeryEasy = FontImage.MATERIAL_SENTIMENT_VERY_SATISFIED;
     final static char iconChallengeEasy = FontImage.MATERIAL_SENTIMENT_SATISFIED;
+    final static char iconChallengeEasyCust = 'b';
     final static char iconChallengeAverage = FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED;
     final static char iconChallengeHard = FontImage.MATERIAL_SENTIMENT_DISSATISFIED;
+    final static char iconChallengeHardCust = 'c';
     final static char iconChallengeVeryHard = FontImage.MATERIAL_SENTIMENT_VERY_DISSATISFIED;
     
     final static char iconEarnedValue = FontImage.MATERIAL_ATTACH_MONEY;
     final static char iconEarnedValuePerHour = FontImage.MATERIAL_MONETIZATION_ON;
 
     final static char iconWorkSlot = FontImage.MATERIAL_WORK_OUTLINE; //FontImage.MATERIAL_WORK;
+    final static char iconWorkSlotStartTime = FontImage.MATERIAL_SKIP_NEXT; //FontImage.MATERIAL_WORK;
+    final static char iconWorkSlotEndTime = FontImage.MATERIAL_SKIP_PREVIOUS; //FontImage.MATERIAL_WORK;
+    final static char iconWorkSlotDuration = FontImage.MATERIAL_ACCESS_TIME; //FontImage.MATERIAL_WORK;
+    final static char iconWorkSlotTasks = FontImage.MATERIAL_DEHAZE; //FontImage.MATERIAL_WORK;
 
 //    final static Image iconWorkSlotLabelStyle = FontImage.createMaterial(iconWorkSlot, labelStyle);
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_DONE, labelStyle);
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_EVENT, labelStyle);
-    final static char iconFinishDateMaterial = FontImage.MATERIAL_EVENT_AVAILABLE;
+    final static char iconFinishDate = FontImage.MATERIAL_EVENT_AVAILABLE;
+    final static char iconFinishDateCust = 'i';
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_EVENT_AVAILABLE, labelStyle);
 
 //    final static char iconEstimateMaterial = FontImage.MATERIAL_SETTINGS_BACKUP_RESTORE;
     final static char iconEstimateMaterial = FontImage.MATERIAL_HOURGLASS_FULL;
+    final static char iconEstimateCust = '(';
+    final static char iconEstimatePrjCust = ')';
+    
+    
+    
 //    final static char iconEstimateMaterial = FontImage.MATERIAL_RESTORE;
 //    final static Image iconActualEffort = FontImage.createMaterial(FontImage.MATERIAL_TIMELAPSE, labelStyle);
     final static char iconActualEffort = FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
+    final static char iconActualCurrentCust = ',';
+    final static char iconActualCurrentPrjCust = '-';
+    final static char iconActualFinalCust = '.';
+    final static char iconActualFinalPrjCust = '/';
 //    final static Image iconActualEffortLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_HOURGLASS_FULL, labelStyle);
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_TIMELAPSE;
     final static char iconRemainingEffort = FontImage.MATERIAL_HOURGLASS_EMPTY; //MATERIAL_EVENT_AVAILABLE;
+    final static char iconRemainingCust = '*';
+    final static char iconRemainingPrjCust = '+';
 //    final static Image iconRemainingEffortLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_EVENT_AVAILABLE, labelStyle);
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_EVENT_AVAILABLE;
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_RESTORE;
@@ -357,7 +398,9 @@ public class Icons {
 //    final static Image iconBackToPrevFormToolbarStyle = FontImage.createMaterial(iconBackToPreviousScreen, toolBarStyle);
 
     final static char iconEdit = FontImage.MATERIAL_NAVIGATE_NEXT; //MATERIAL_ARROW_FORWARD_IOS; //; //MATERIAL_ARROW_FORWARD; //MATERIAL_CHEVRON_RIGHT;
-    final static char iconEditMyFont = '\ue809';
+//    final static char iconEditMyFont = '\ue809';
+    final static char iconEditCust = 'b';
+    final static char iconEditNarrowCust = '['; //MATERIAL_ARROW_FORWARD_IOS; //; //MATERIAL_ARROW_FORWARD; //MATERIAL_CHEVRON_RIGHT;
 
 //    static Image iconEditPropertiesToolbarStyle() {
 //        return makeT(iconEdit);

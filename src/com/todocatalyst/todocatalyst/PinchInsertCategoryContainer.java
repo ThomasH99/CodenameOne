@@ -33,7 +33,8 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
     private Command editNewCmd;
 //    private Container cont=new Container(new BorderLayout());
 
-    private final static String ENTER_CATEGORY = "New " + Category.CATEGORY; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+//    private final static String ENTER_CATEGORY = "New " + Category.CATEGORY; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+    private final static String ENTER_CATEGORY = "Add " + Category.CATEGORY; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
 
     /**
      *
@@ -131,6 +132,7 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
                 new ScreenCategoryProperties(newCategory, (MyForm) getComponentForm(), () -> {
                     insertNewCategoryAndSaveChanges(newCategory);
                     myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
+                    closePinchContainer(true);
                     if(false)myForm.refreshAfterEdit();
                 }).show();
             } else {
@@ -195,9 +197,10 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
         categoryList.addToList(newCategory, category, !insertBeforeElement); //add after item
 //        DAO.getInstance().saveNew((ParseObject)newCategory, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newCategory.getObjectIdP()));
 //        DAO.getInstance().saveNew((ParseObject) categoryList, true);
-        DAO.getInstance().saveNew((ParseObject) newCategory);
-        DAO.getInstance().saveNew((ParseObject) categoryList);
-        DAO.getInstance().saveNewExecuteUpdate();
+//        DAO.getInstance().saveNew((ParseObject) newCategory);
+//        DAO.getInstance().saveNew((ParseObject) categoryList);
+        DAO.getInstance().saveToParseNow((ParseObject) newCategory);
+//        DAO.getInstance().saveNewTriggerUpdate();
         myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newCategory.getObjectIdP());
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, false); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item

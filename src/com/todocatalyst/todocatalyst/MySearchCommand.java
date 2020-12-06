@@ -7,6 +7,7 @@ package com.todocatalyst.todocatalyst;
 
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
+import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
 import com.codename1.ui.FontImage;
@@ -19,6 +20,8 @@ import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.events.DataChangedListener;
 import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.BoxLayout;
+import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.plaf.UIManager;
 
 /**
@@ -31,16 +34,25 @@ public class MySearchCommand extends CommandTracked {
 
     public static String SEARCH_KEY = "SearchActive";
     public static String SEARCH_TEXT_KEY = "SearchText";
+    public static String SEARCH_HINT = "Search";
+    public static char SEARCH_ICON = Icons.iconCloseCircle;
 //    private Toolbar toolbar;
-    private Container searchContParent;
+//    private Container searchContParent;
     Container searchCont;
+    MyForm myForm;
     private TextField search;
-    private Object positionInHolder;
+//    private Object positionInHolder;
+    private InsertSearchFct insertSearchContFct;
     String hintText;
 //    private OnSearch onSearch;
     private ActionListener onSearch;
     char clearTextIcon;
     private KeepInSameScreenPosition keepPos; //restore scroll position after search
+
+    interface InsertSearchFct {
+
+        void insert(Component searchContainer);
+    }
 
     private MySearchCommand() {
         super("");
@@ -52,7 +64,13 @@ public class MySearchCommand extends CommandTracked {
 //    MySearchBar(Container searchHolder, Object positionInContainer, String hintTxt, char clearTextIcon, ActionListener onSrch){//OnSearch onSearch) {
 //    public static MySearchBar createSearch(Object positionInContainer, String hintTxt, char clearTextIcon, ActionListener onSrch){//OnSearch onSearch) {
 
-    private MySearchCommand(Container searchHolder, Object positionInHolder, String hintTxt, char clearTextIcon, ActionListener onSrch, String analyticsId) {//OnSearch onSearch) {
+//    private MySearchCommand(Container searchHolder, Object positionInHolder, String hintTxt, 
+//            char clearTextIcon, ActionListener onSrch, String analyticsId) {//OnSearch onSearch) {
+//        this(searchHolder, positionInHolder, hintTxt, clearTextIcon, onSrch, analyticsId, insertSearchContFct)
+//    }
+//    private MySearchCommand(MyForm myForm, Object positionInHolder, String hintTxt,
+    private MySearchCommand(MyForm myForm, String hintTxt,
+            char clearTextIcon, ActionListener onSrch, String analyticsId, InsertSearchFct insertSearchContFct) {//OnSearch onSearch) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        this.searchHolder = searchHolder;
 //        MySearchBar searchCmdXXX = new MySearchBar() {
@@ -60,20 +78,43 @@ public class MySearchCommand extends CommandTracked {
 //        };
 //</editor-fold>
         super("");
-        this.searchContParent = searchHolder;
-        this.positionInHolder = positionInHolder;
+//        this.searchContParent = searchHolder;
+//        this.positionInHolder = positionInHolder;
+        this.myForm = myForm;
         this.hintText = hintTxt;
         this.clearTextIcon = clearTextIcon;
         this.onSearch = onSrch;
+        this.insertSearchContFct = insertSearchContFct;
+        if (this.insertSearchContFct == null) {
+            this.insertSearchContFct = (searchCont) -> {
+                Container contentPane = myForm.getContentPane();
+                Layout contentPaneLayout = contentPane.getLayout();
+                if (contentPaneLayout instanceof BorderLayout) {
+                    Component prevNorthComp = ((BorderLayout) contentPaneLayout).getNorth();
+                    if (prevNorthComp instanceof Container) {
+                        ((Container) prevNorthComp).addComponent(0, searchCont); //add search at pos 0 (above eg a StickyHeader)
+                    } else if (prevNorthComp != null) { //if only a single componentn in north, create a new container for both previous component and searchCont
+                        Container northCont = new Container(BoxLayout.y());
+//                        Container parent = northComp.getParent();
+                        northCont.add(searchCont); //add search at pos 0
+                        prevNorthComp.remove();
+                        northCont.add(prevNorthComp); //and existing content (e.g. StickyHeader) at pos 1
+//                        parent.add(northCont);
+                        contentPane.add(BorderLayout.NORTH, northCont);
+                    } else { //no North comp
+                        contentPane.add(BorderLayout.NORTH, searchCont);
+                    }
+                }
+            };
+        }
         setMaterialIcon(FontImage.MATERIAL_SEARCH);
         setAnalyticsActionId(analyticsId);
 
-        ((MyForm)this.searchContParent.getComponentForm()).setSearchCmd(this); //always set searchCmd for Replay (NPE if 
+//        ((MyForm) this.searchContParent.getComponentForm()).setSearchCmd(this); //always set searchCmd for Replay (NPE if 
 //        MyForm myForm = (MyForm) searchHolder.getComponentForm();
 //        if (myForm.previousValues != null && myForm.previousValues.get(MySearchCommand.SEARCH_KEY) != null) {
 //            actionPerformed(null); //re-activate Search, null=>reuse locally stored text
 //        }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MySearchBar searchCmd = this;
 //
@@ -144,19 +185,27 @@ public class MySearchCommand extends CommandTracked {
 //</editor-fold>
     }
 
-    private MySearchCommand(Container searchHolder, Object positionInHolder, String hintTxt, char clearTextIcon, ActionListener onSrch) {//OnSearch onSearch) {
-        this(searchHolder, positionInHolder, hintTxt, clearTextIcon, onSrch,
-                searchHolder != null && searchHolder.getComponentForm() instanceof MyForm
-                ? "Search-" + ((MyForm) searchHolder.getComponentForm()).getUniqueFormId()
-                : "Search-");
-    }
-
-    private MySearchCommand(Container containerForSearch, Object positionInContainer, ActionListener onSearch) { //OnSearch onSearch) {
-        this(containerForSearch, positionInContainer, "Search", Icons.iconCloseCircle, onSearch);
-    }
-
-    public MySearchCommand(Container containerForSearch, ActionListener onSearch) { //OnSearch onSearch) {
-        this(containerForSearch, BorderLayout.NORTH, "Search", Icons.iconCloseCircle, onSearch);
+//    private MySearchCommand(Container containerForSearch, Object positionInHolder, String hintTxt, char clearTextIcon, ActionListener onSrch) {//OnSearch onSearch) {
+//        this(containerForSearch, positionInHolder, hintTxt, clearTextIcon, onSrch,
+//                containerForSearch != null && containerForSearch.getComponentForm() instanceof MyForm
+//                ? "Search-" + ((MyForm) containerForSearch.getComponentForm()).getUniqueFormId()
+//                : "Search-");
+//    }
+//    private MySearchCommand(Container containerForSearch, Object positionInContainer, ActionListener onSearch) { //OnSearch onSearch) {
+//        this(containerForSearch, positionInContainer, SEARCH_HINT, SEARCH_ICON, onSearch);
+//    }
+//    public MySearchCommand(Container containerForSearch, ActionListener onSearch) { //OnSearch onSearch) {
+//        this(containerForSearch, BorderLayout.NORTH, SEARCH_HINT, SEARCH_ICON, onSearch);
+//    }
+    /**
+     * installs
+     *
+     * @param myForm
+     * @param onSearch
+     */
+    public MySearchCommand(MyForm myForm, ActionListener onSearch) { //OnSearch onSearch) {
+//        this((Container) ((BorderLayout) myForm.getContentPane().getLayout()).getNorth(), null, SEARCH_HINT, SEARCH_ICON, onSearch, null);
+        this(myForm, SEARCH_HINT, SEARCH_ICON, onSearch, "Search-" + myForm.getUniqueFormId(), null);
     }
 
     @Override
@@ -164,7 +213,7 @@ public class MySearchCommand extends CommandTracked {
         super.actionPerformed(evt); //To change body of generated methods, choose Tools | Templates.
 //        MySearchCommand searchCmd = this;
 
-        MyForm myForm = (MyForm) searchContParent.getComponentForm();
+//        MyForm myForm = (MyForm) searchContParent.getComponentForm();
         //initialize search container on first activation:
         if (searchCont == null) {
             searchCont = new Container();
@@ -224,13 +273,14 @@ public class MySearchCommand extends CommandTracked {
 //            Container form = cont.getComponentForm();
 //            MyForm myForm = (MyForm) searchContParent.getComponentForm();
             if (true || myForm != null) { //should never be null
-                Container contentPane = myForm.getContentPane();
-                if (contentPane.getLayout() instanceof BorderLayout && ((BorderLayout) contentPane.getLayout()).getNorth() == null) {
-                    contentPane.add(BorderLayout.NORTH, searchCont);
-//                    contentPane.animateHierarchy(300);
-                } else {
-                    ASSERT.that("Trying to add MySearchCommand to ContentPane which is BorderLayout or where North is not empty, form=" + myForm.getUniqueFormId());
-                }
+//                Container contentPane = myForm.getContentPane();
+//                if (contentPane.getLayout() instanceof BorderLayout && ((BorderLayout) contentPane.getLayout()).getNorth() == null) {
+//                    contentPane.add(BorderLayout.NORTH, searchCont);
+////                    contentPane.animateHierarchy(300);
+//                } else {
+//                    ASSERT.that("Trying to add MySearchCommand to ContentPane which is BorderLayout or where North is not empty, form=" + myForm.getUniqueFormId());
+//                }
+                insertSearchContFct.insert(searchCont);
             }
             searchCont.setHidden(true);  //hide by default (immediately unhidden below on first call)
         }
@@ -248,15 +298,20 @@ public class MySearchCommand extends CommandTracked {
                 keepPos = new KeepInSameScreenPosition(myForm); //f.getKeepPos();
             }
             //copied from CN1 SearchBar:
-            if (searchContParent.getComponentForm() == Display.getInstance().getCurrent()) {
+//            Container searchContParent = searchCont.getParent();
+//            if (searchContParent.getComponentForm() == Display.getInstance().getCurrent()) {
+            if (myForm == Display.getInstance().getCurrent()) {
                 search.startEditingAsync();
             } else {
-                if (searchContParent.getComponentForm() != null) {
-                    searchContParent.getComponentForm().setEditOnShow(search);
-                }
+//                if (searchContParent.getComponentForm() != null) {
+//                    searchContParent.getComponentForm().setEditOnShow(search);
+//                }
+                myForm.setEditOnShow(search);
             }
             onSearch.actionPerformed(new ActionEvent(search.getText()));
-            myForm.previousValues.put(SEARCH_KEY, true);
+            if (myForm.previousValues != null) { //may be null in CategorySelector form
+                myForm.previousValues.put(SEARCH_KEY, true);
+            }
         } else { //start hiding searchbar
             //            search.clear();
 //            onSearch.doSearch(""); //keep search text in field it user wants to search again
@@ -266,7 +321,9 @@ public class MySearchCommand extends CommandTracked {
                 myForm.setKeepPos(keepPos);
                 myForm.restoreKeepPos();
             }
-            myForm.previousValues.remove(SEARCH_KEY);
+            if (myForm.previousValues != null) {
+                myForm.previousValues.remove(SEARCH_KEY);
+            }
         }
 
         searchCont.setHidden(!isHidden);

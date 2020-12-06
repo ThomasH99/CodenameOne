@@ -68,7 +68,6 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
 //    public String getObjectId() {
 //        return CLASS_NAME;
 //    }
-
     interface SelectionUpdate {
 
         void update(Object obj, boolean selected);
@@ -85,9 +84,9 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
      */
     ListSelector(List<E> selectedObjects, boolean createCopyOfSelectedObjects, int maxNbSelectedObjects, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded,
             SelectionUpdate selectionUpdate, boolean allowNoSelection, Collection selectableObjects) {
-        if (selectedObjects == null)
+        if (selectedObjects == null) {
             this.selectedObjects = new ArrayList();
-        else {
+        } else {
             this.selectedObjects = createCopyOfSelectedObjects ? new ArrayList(selectedObjects) : selectedObjects;
         }
         this.maxNbSelectedObjects = maxNbSelectedObjects;
@@ -134,8 +133,10 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
     }
 
     /**
-    set (new) referenceSet, and update the selection accordingly (remove any previously selected objects that are not in referenceSet(
-    @param referenceSet null to reset
+     * set (new) referenceSet, and update the selection accordingly (remove any
+     * previously selected objects that are not in referenceSet(
+     *
+     * @param referenceSet null to reset
      */
     public void setReferenceSetAndRefreshSelection(Collection referenceSet) {
         this.referenceSet = referenceSet;
@@ -145,11 +146,15 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
     }
 
     /**
-    ensure that any previously selected objects are consistent with (a subset of) the selectable
-    @param selectableObjects if null, no effect
+     * ensure that any previously selected objects are consistent with (a subset
+     * of) the selectable
+     *
+     * @param selectableObjects if null, no effect
      */
     private void refresh(Collection referenceSet) {
-        if (referenceSet != null) selectedObjects.retainAll(referenceSet);
+        if (referenceSet != null) {
+            selectedObjects.retainAll(referenceSet);
+        }
 //        for (E e:selectedObjects) 
 //            if (!selectableObjects.contains(e)) selectedObjects.remove(e);
     }
@@ -162,19 +167,24 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
      * selected)
      */
     boolean flipSelection(E obj) {
-        if (referenceSet != null && !referenceSet.contains(obj)) return false; //only allow to flip for objects in the referenceSet
-
+        if (referenceSet != null && !referenceSet.contains(obj)) {
+            return false; //only allow to flip for objects in the referenceSet
+        }
         if (!selectedObjects.contains(obj)) { //obj NOT selected
             //SELECT
             if (selectedObjects.size() >= maxNbSelectedObjects) { //too many already selected
                 if (removeFirstAddedObjectIfMoreThanMaxAreAdded) {
                     while (selectedObjects.size() >= maxNbSelectedObjects) {
                         E o = selectedObjects.get(0);
-                        if (selectionUpdate != null) selectionUpdate.update(o, false);
+                        if (selectionUpdate != null) {
+                            selectionUpdate.update(o, false);
+                        }
                         selectedObjects.remove(o); //remove first selected
                     }
                     selectedObjects.add(obj);
-                    if (selectionUpdate != null) selectionUpdate.update(obj, true);
+                    if (selectionUpdate != null) {
+                        selectionUpdate.update(obj, true);
+                    }
                     return true;
                 } else {
                     //nothing, can't select object
@@ -196,10 +206,14 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
 //            } else {
             if (allowNoSelection || selectedObjects.size() > 1) { //if not allowNoSelection, only allow unselect if more than 1 object selected
                 selectedObjects.remove(obj);
-                if (selectionUpdate != null) selectionUpdate.update(obj, false);
+                if (selectionUpdate != null) {
+                    selectionUpdate.update(obj, false);
+                }
                 return true;
             } else {
-                if (selectionUpdate != null) selectionUpdate.update(obj, true); //ensure object stays selected despite the unsuccesful deselection
+                if (selectionUpdate != null) {
+                    selectionUpdate.update(obj, true); //ensure object stays selected despite the unsuccesful deselection
+                }
                 return false;
             }
 //            }
@@ -249,15 +263,28 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
     }
 
     /**
-    serialize objectIds for local storage (to persist selection locally)
-    @return 
-    */
+     * serialize objectIds for local storage (to persist selection locally)
+     *
+     * @return
+     */
     public List<String> getSelectedObjIds() {
         List objIds = new ArrayList();
-        for (Object o: selectedObjects)
-            objIds.add(((ParseObject)o).getObjectIdP());
+        for (Object o : selectedObjects) {
+            objIds.add(((ParseObject) o).getObjectIdP());
+        }
         return objIds;
     }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public List<String> selectItemsInObjIdList(List<String> objIds) {
+//        for (String objId : objIds) {
+//            if (<E> instanceof Item)
+//            objIds.add(((ParseObject) o).getObjectIdP());
+//            select(DAO.getInstance().fetchItem(objId));
+//        }
+//        return objIds;
+//    }
+//</editor-fold>
 
     public int getNumberSelected() {
         return selectedObjects.size();
@@ -284,18 +311,23 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
     }
 
     /**
-    invert the selection wrt to a preset reference set of items
-    @return 
+     * invert the selection wrt to a preset reference set of items
+     *
+     * @return
      */
     public boolean invertSelection() {
-        if (referenceSet != null)
+        if (referenceSet != null) {
             return invertSelection(referenceSet);
-        else return false;
+        } else {
+            return false;
+        }
     }
 
     public void unselectAll() {
         for (E obj : selectedObjects) { //unselect all objects
-            if (selectionUpdate != null) selectionUpdate.update(obj, false);
+            if (selectionUpdate != null) {
+                selectionUpdate.update(obj, false);
+            }
         }
         selectedObjects.clear();
     }
@@ -306,16 +338,20 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
             if (!select(obj)) {
                 sucessfullyAddedAllObjects = false;
             } else {
-                if (selectionUpdate != null) selectionUpdate.update(obj, true);
+                if (selectionUpdate != null) {
+                    selectionUpdate.update(obj, true);
+                }
             }
         }
         return sucessfullyAddedAllObjects;
     }
 
     public boolean selectAll() {
-        if (referenceSet != null)
+        if (referenceSet != null) {
             return selectAll(referenceSet);
-        else return false;
+        } else {
+            return false;
+        }
     }
 
     public E getFirstSelected() {

@@ -75,12 +75,12 @@ public class ScreenSettings extends ScreenSettingsCommon {
         //Safe area on/off
         addSettingBoolean(content, parseIdMap2, MyPrefs.enableSafeArea,
                 () -> {
-                    previousForm.setSafeArea(true);
-                    previousForm.setSafeAreaChanged();
+                    parentForm.setSafeArea(true);
+                    parentForm.setSafeAreaChanged();
                 },
                 () -> {
-                    previousForm.setSafeArea(false);
-                    previousForm.setSafeAreaChanged();
+                    parentForm.setSafeArea(false);
+                    parentForm.setSafeAreaChanged();
                 });
 
         if (true) {

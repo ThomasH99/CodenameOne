@@ -913,7 +913,7 @@ public class ScreenRepeatRule extends MyForm {
 //        showNumberDaysAhead = new MyIntPicker(myRepeatRule.useNumberFutureRepeatsToGenerateAhead()
 //                ? myRepeatRule.getNumberFutureRepeatsToGenerateAhead() : 1, 1, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead.getInt());
         showNumberDaysAheadZZZ = new MyIntPicker(!repeatRuleEdited.useNumberFutureRepeatsToGenerateAhead()
-                ? repeatRuleEdited.getNumberOfDaysRepeatsAreGeneratedAhead() : 1, 1, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead.getInt());
+                ? repeatRuleEdited.getNumberOfDaysRepeatsAreGeneratedAhead() : 1, 1, MyPrefs.repeatMaxNumberFutureDaysToGenerateAheadZZZ.getInt());
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            initialized = true;
 //        } else { //if not initialized

@@ -29,6 +29,8 @@ import com.parse4cn1.ParseConstants;
 import com.parse4cn1.ParseObject;
 import com.parse4cn1.ParseUser;
 import com.parse4cn1.Permissions;
+import com.parse4cn1.operation.DeleteFieldOperation;
+import com.parse4cn1.operation.SetFieldOperation;
 import com.parse4cn1.util.Logger;
 import com.parse4cn1.util.ParseRegistry;
 import static com.todocatalyst.todocatalyst.ScreenLogin.setDefaultACL;
@@ -771,6 +773,10 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         com.codename1.io.Util.register(RepeatRuleParseObject.CLASS_NAME, RepeatRuleParseObject.class); //register Externalizable class
         com.codename1.io.Util.register(FilterSortDef.CLASS_NAME, FilterSortDef.class); //register Externalizable class
         com.codename1.io.Util.register(WorkSlot.CLASS_NAME, WorkSlot.class); //register Externalizable class
+        
+//        com.codename1.io.Util.register("ParseObject", ParseObject.class); //not possible for ParseObject: must be initialized with a classname
+        com.codename1.io.Util.register("SetFieldOperation", SetFieldOperation.class); //register Externalizable class
+        com.codename1.io.Util.register("DeleteFieldOperation", DeleteFieldOperation.class); //register Externalizable class
 //        com.codename1.io.Util.register(ListSelector.CLASS_NAME, ListSelector.class); //register Externalizable class
 //</editor-fold>
 

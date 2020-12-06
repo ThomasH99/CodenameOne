@@ -67,11 +67,11 @@ public class FilterSortDef extends ParseObject {
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
         if (!(obj instanceof FilterSortDef)) {
             return false; //covers obj==null
+        }
+        if (this == obj) {
+            return true;
         }
         FilterSortDef filterSortDef = (FilterSortDef) obj;
 //        if (!Objects.equals(this.getObjectIdP(), filterSortDef.getObjectIdP())) {
@@ -433,8 +433,8 @@ public class FilterSortDef extends ParseObject {
 //        "Task text", "Importance/Urgency", "Status"};
 //</editor-fold>
     private static String[] sortOptions = new String[]{
-        Item.PRIORITY,
         Item.DUE_DATE,
+        Item.PRIORITY,
         Item.EFFORT_REMAINING,
         Item.EFFORT_ESTIMATE,
         Item.EFFORT_ACTUAL,
@@ -454,9 +454,9 @@ public class FilterSortDef extends ParseObject {
         Item.STATUS};
 
     private static String[] sortFields = new String[]{
-        Item.PARSE_PRIORITY,
         Item.PARSE_DUE_DATE,
-        Item.PARSE_REMAINING_EFFORT,
+        Item.PARSE_PRIORITY,
+        Item.PARSE_REMAINING_EFFORT_TOTAL,
         Item.PARSE_EFFORT_ESTIMATE,
         Item.PARSE_ACTUAL_EFFORT,
         Item.PARSE_CHALLENGE,
@@ -823,7 +823,8 @@ public class FilterSortDef extends ParseObject {
 //</editor-fold>
     private void updateAndSetFilterOptions() {
         String filterOptions
-                = (showNewTasks ? FILTER_SHOW_NEW_TASKS + " " : "")
+                = (showAll ? FILTER_SHOW_ALL + " " : "")
+                + (showNewTasks ? FILTER_SHOW_NEW_TASKS + " " : "")
                 + (showOngoingTasks ? FILTER_SHOW_ONGOING_TASKS + " " : "")
                 + (showWaitingTasks ? FILTER_SHOW_WAITING_TASKS + " " : "")
                 + (showDoneTasks ? FILTER_SHOW_DONE_TASKS + " " : "")
@@ -1067,6 +1068,7 @@ public class FilterSortDef extends ParseObject {
                 if (comp.length <= 1) {
 //                    return 0; //TODO!!!! should compare eg objectId to ensure a consistent ordering on every sort
                     return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+//                    return i1.getGuid().compareTo(i2.getGuid()); //compare objectId to ensure a consistent ordering on every sort
                 } else {
                     int res2 = comp[1].compare(i1, i2);
                     if (res2 != 0) {
@@ -1075,6 +1077,7 @@ public class FilterSortDef extends ParseObject {
                         if (comp.length <= 2) {
 //                            return 0;
                             return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+//                            return i1.getGuid().compareTo(i2.getGuid()); //compare objectId to ensure a consistent ordering on every sort
                         } else {
                             int res3 = comp[2].compare(i1, i2);
                             if (res3 != 0) {
@@ -1082,6 +1085,7 @@ public class FilterSortDef extends ParseObject {
                             } else {
 //                                return 0;
                                 return i1.getObjectIdP().compareTo(i2.getObjectIdP()); //compare objectId to ensure a consistent ordering on every sort
+//                                return i1.getGuid().compareTo(i2.getGuid()); //compare objectId to ensure a consistent ordering on every sort
                             }
                         }
                     }
@@ -1290,16 +1294,16 @@ public class FilterSortDef extends ParseObject {
                         : (i1, i2) -> compareInt(i2.getPriority(), i1.getPriority());
             case Item.PARSE_DUE_DATE:
                 return sortDescending
-                        ? (i1, i2) -> compareLong(i2.getDueDate(), i1.getDueDate())
-                        : (i1, i2) -> compareLong(i1.getDueDate(), i2.getDueDate());
-            case Item.PARSE_REMAINING_EFFORT:
+                        ? (i1, i2) -> compareDate(i2.getDueDate(), i1.getDueDate())
+                        : (i1, i2) -> compareDate(i1.getDueDate(), i2.getDueDate());
+            case Item.PARSE_REMAINING_EFFORT_TOTAL:
                 return sortDescending
-                        ? (i1, i2) -> compareLong(i1.getRemaining(), i2.getRemaining()) //show lowest at top
-                        : (i1, i2) -> compareLong(i2.getRemaining(), i1.getRemaining());
+                        ? (i1, i2) -> compareLong(i1.getRemainingTotal(), i2.getRemainingTotal()) //show lowest at top
+                        : (i1, i2) -> compareLong(i2.getRemainingTotal(), i1.getRemainingTotal());
             case Item.PARSE_EFFORT_ESTIMATE:
                 return sortDescending
-                        ? (i1, i2) -> compareLong(i1.getEstimate(), i2.getEstimate()) //show lowest at top
-                        : (i1, i2) -> compareLong(i2.getEstimate(), i1.getEstimate());
+                        ? (i1, i2) -> compareLong(i1.getEstimateTotal(), i2.getEstimateTotal()) //show lowest at top
+                        : (i1, i2) -> compareLong(i2.getEstimateTotal(), i1.getEstimateTotal());
             case Item.PARSE_CHALLENGE:
                 return sortDescending
                         //                        ? (i1, i2) -> i1.getChallengeN().compareTo(i2.getChallengeN())
@@ -1734,6 +1738,28 @@ public class FilterSortDef extends ParseObject {
         updateAndSetFilterOptions();
     }
 
+    public void setShowAll() {
+        boolean showAllTasks = true;
+//        this.showAll = showAllTasks;
+        this.showBeforeHideUntilDate = showAllTasks;
+        this.showCancelledTasks = showAllTasks;
+        this.showDependingOnUndoneTasks = showAllTasks;
+        this.showDoneTasks = showAllTasks;
+//        this.showDoneTillMidnight = showAllTasks;
+        this.showExpiresOnDate = showAllTasks;
+        this.showOngoingTasks = showAllTasks;
+        this.showNewTasks = showAllTasks;
+        this.showWaitingTasks = showAllTasks;
+        updateAndSetFilterOptions();
+    }
+
+    public void setNoSorting() {
+        setSortDescending(false);
+        setSortFieldId("");
+        setSortOn(false);
+//        updateAndSetFilterOptions();
+    }
+
     /**
      * @return the sortOptions
      */
@@ -1805,7 +1831,8 @@ public class FilterSortDef extends ParseObject {
      * @return
      */
     public boolean isNoSave() {
-        return equals(FilterSortDef.getDefaultFilter()) || isNoSave;
+//        return equals(FilterSortDef.getDefaultFilter()) || isNoSave;
+        return isNoSave;
     }
 
     public void internalize(int version, DataInputStream in) throws IOException {

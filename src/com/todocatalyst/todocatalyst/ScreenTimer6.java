@@ -150,6 +150,7 @@ public class ScreenTimer6 extends MyForm {
 //        toolbar.setBackCommand(backCommand); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
 //</editor-fold>
         backCommand=addStandardBackCommand();
+        
         setCheckIfSaveOnExit(() -> {
             TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
             if (timerInstance != null) {//can be null if exiting after finishing with last timer?!
@@ -195,7 +196,7 @@ public class ScreenTimer6 extends MyForm {
         if (timerInstance != null) {
 //        Item timedItem = TimerStack.getInstance().getCurrentlyTimedItemN();
             Item timedItem = timerInstance.getTimedItemN();
-            ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
+            ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
 //        TimerStack.buildContentPane(timerInstance.getTimerContainer(), timerInstance, true, previousValues); //also removes previous content of contentPane
             //clear previous edited values
             if (previousValues != null) {

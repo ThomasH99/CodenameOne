@@ -333,6 +333,7 @@ public class RepeatRuleParseObject
         } else {
             remove(PARSE_REPEAT_INSTANCE_ITEMLIST);
         }
+        cachedUndoneInstances = null;
     }
 
     private List cachedUndoneInstances; //need to cache this list which may become long and gets called multiple time by equals
@@ -372,6 +373,7 @@ public class RepeatRuleParseObject
         } else {
             remove(PARSE_REPEAT_COMPLETED_INSTANCES);
         }
+        cachedDoneInstances = null;
     }
 
     private List cachedDoneInstances; //need to cache this list which may become long and gets called multiple time by equals
@@ -386,7 +388,7 @@ public class RepeatRuleParseObject
     public List<RepeatRuleObjectInterface> getListOfDoneInstances() {
         //TODO!!!! used for WorkSlots? (is externalized as if WorkSlots could be in list)
         List list = getList(PARSE_REPEAT_COMPLETED_INSTANCES);
-        if (Config.TEST && list != null) {
+        if (false && Config.TEST && list != null) {
             Log.p("RepeatRuleObject.getListOfDoneInstances() called with list size=" + list.size());
         }
         if (list != null) {
@@ -400,6 +402,27 @@ public class RepeatRuleParseObject
             list = new ArrayList();
         }
         return list;
+    }
+
+    /**
+     * return the repeat instance for a RepeatRule that should be used when
+     * generating a template from a repeating task/project, return null if none
+     * found (eg rule has not executed yet). Use last Undone task, if none, last
+     * Done task.
+     *
+     * @return
+     */
+    public Item getItemForTemplateN() {
+        List listUndone = getListOfUndoneInstances();
+        if (listUndone.size() > 0) {
+            return (Item) listUndone.get(listUndone.size() - 1);
+        } else {
+            List listDone = getListOfDoneInstances();
+            if (listDone.size() > 0) {
+                return (Item) listDone.get(listDone.size() - 1);
+            }
+        }
+        return null;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1291,7 +1314,6 @@ public class RepeatRuleParseObject
 //                new Command[]{new Command("Exit"), nextI >= maxInstances ? showMoreCmd : new Command("That's all")}) == showMoreCmd);
 ////        simulateDates = false;
 //    }
-
     //<editor-fold defaultstate="collapsed" desc="comment">
 //    public Date getNextDueDateOLD() {
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -1959,31 +1981,33 @@ public class RepeatRuleParseObject
      * @param oldUndoneRepeatInstanceList
      */
     private Set<ItemAndListCommonInterface> deleteUnneededItemOrWorkSlotInstances(List<RepeatRuleObjectInterface> oldUndoneRepeatInstanceList) {
-        Set<ItemAndListCommonInterface> updatedOwners = new HashSet<>();
+//        Set<ItemAndListCommonInterface> updatedOwners = new HashSet<>();
+        Set<ItemAndListCommonInterface> updatedParseObjects = new HashSet<>();
         while (oldUndoneRepeatInstanceList.size() > 0) {
             RepeatRuleObjectInterface obsoleteInstance = oldUndoneRepeatInstanceList.remove(0);
 //            if (obsoleteInstance instanceof Item) {
             if (obsoleteInstance instanceof Item) {
-                if (((Item) obsoleteInstance).getActual() != 0
+                if (((Item) obsoleteInstance).getActualForTaskItself()!= 0
                         && MyPrefs.repeatCancelNotDeleteSuperflousInstancesWithActualRecorded.getBoolean()) { //for Items, not WorkSlots
                     ((Item) obsoleteInstance).setStatus(ItemStatus.CANCELLED);   //UI: Cancel instead of delete if time has been registered (to avoid losing it)
                     ItemAndListCommonInterface oldOwner = ((Item) obsoleteInstance).removeFromOwner();
-                    if (true || !updatedOwners.contains(oldOwner)) {
-                        updatedOwners.add(oldOwner);
+                    if (true || !updatedParseObjects.contains(oldOwner)) { //true -> not needed to check with a set
+                        updatedParseObjects.add(oldOwner);
                     }
-                    DAO.getInstance().saveNew((Item) obsoleteInstance, false); //must save it, but do batched with other updates (in method calling deleteSuperfluousRepeatInstances())
+                    DAO.getInstance().saveNew((Item) obsoleteInstance); //must save it, but do batched with other updates (in method calling deleteSuperfluousRepeatInstances())
                 } else {
                     ItemAndListCommonInterface oldOwner = ((ItemAndListCommonInterface) obsoleteInstance).removeFromOwner();
-                    if (true || !updatedOwners.contains(oldOwner)) {
-                        updatedOwners.add(oldOwner);
+                    if (true || !updatedParseObjects.contains(oldOwner)) {
+                        updatedParseObjects.add(oldOwner);
                     }
 //                DAO.getInstance().delete((ItemAndListCommonInterface) obsoleteInstance, true, false);   //DONE!!!! check that this deletes it in all lists, categories etc! IT DOES (via Item.delete())
-                    DAO.getInstance().delete((ParseObject) obsoleteInstance, true, false);   //DONE!!!! check that this deletes it in all lists, categories etc! IT DOES (via Item.delete())
+                    DAO.getInstance().deleteLater((ParseObject) obsoleteInstance, true);   //DONE!!!! check that this deletes it in all lists, categories etc! IT DOES (via Item.delete())
                 }
             } else if (obsoleteInstance instanceof WorkSlot) {
                 ItemAndListCommonInterface oldOwner = ((WorkSlot) obsoleteInstance).removeFromOwner();
-                updatedOwners.add(oldOwner);
-                DAO.getInstance().delete((ParseObject) obsoleteInstance, true, false);   //DONE!!!! check that this deletes it in all lists, categories etc! IT DOES (via Item.delete())
+                updatedParseObjects.add(oldOwner);
+//                DAO.getInstance().delete((ParseObject) obsoleteInstance, true, false);   //DONE!!!! check that this deletes it in all lists, categories etc! IT DOES (via Item.delete())
+                DAO.getInstance().deleteLater((ParseObject) obsoleteInstance, true);   //DONE!!!! check that this deletes it in all lists, categories etc! IT DOES (via Item.delete())
             }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            } else if (obsoleteInstance instanceof WorkSlot) {
@@ -2000,7 +2024,7 @@ public class RepeatRuleParseObject
 //else: not saved to Parse
 //</editor-fold>
         }
-        return updatedOwners;
+        return updatedParseObjects;
     }
 
     /**
@@ -2135,7 +2159,6 @@ public class RepeatRuleParseObject
 //        }
 //        return subsetBeginningDate;
 //    }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public RepeatRuleObjectInterface updateRepeatInstancesOnDoneCancelOrDeleteXXX(WorkSlot workSlot) {
 //        List<RepeatRuleObjectInterface> repeatInstanceItemList = getListOfUndoneRepeatInstances();
@@ -2611,8 +2634,8 @@ public class RepeatRuleParseObject
 //        }//                Date startRepeatFromTime = latestDoneDate != null ? latestDoneDate : now;
 //        return startRepeatFromDate;
 //    }
-
-    public void updateItemsWhenRuleCreatedOrEdited(RepeatRuleObjectInterface repeatRuleOriginator, boolean firstTime) {
+//    public void updateItemsWhenRuleCreatedOrEdited(RepeatRuleObjectInterface repeatRuleOriginator, boolean firstTime) {
+    public void updateItemsWhenRuleCreatedOrEdited(RepeatRuleObjectInterface repeatRuleOriginator) {
 //<editor-fold defaultstate="collapsed" desc="comment">
         /**
          * //algorithm: ~refresh (reuse existing rule, to avoid
@@ -2669,9 +2692,11 @@ public class RepeatRuleParseObject
 //</editor-fold>
             Collection updatedOwners = deleteUnneededItemOrWorkSlotInstances(undoneList);
 //            DAO.getInstance().saveNew(this, true); //update the rule
-            DAO.getInstance().saveNew(this); //update the rule
-            DAO.getInstance().saveNew(updatedOwners); //update the rule
-            DAO.getInstance().saveNewExecuteUpdate();
+//            DAO.getInstance().saveNew(this); //update the rule
+//            DAO.getInstance().saveNew(updatedOwners); //update the rule
+//            DAO.getInstance().saveNewTriggerUpdate();
+            DAO.getInstance().saveToParseLater(updatedOwners);
+            DAO.getInstance().saveToParseNow(this); //update the rule
 //                DAO.getInstance().deleteBatch((List<ParseObject>)undoneList);
 //            }
 //don't change setTotalNumberOfInstancesGeneratedSoFar()!! UI: Keep the old count of generated instances (but should then show already generated instances to make it possible to understand what happens!)
@@ -2726,10 +2751,12 @@ public class RepeatRuleParseObject
                         checkRefs();
                     }
 //                DAO.getInstance().saveNew(this, true);
-                    DAO.getInstance().saveNew(this);
-                    DAO.getInstance().saveNew((ParseObject) keep);
-                    DAO.getInstance().saveNew(updatedOwners);
-                    DAO.getInstance().saveNewExecuteUpdate();
+//                    DAO.getInstance().saveNew(this);
+//                    DAO.getInstance().saveNew((ParseObject) keep);
+//                    DAO.getInstance().saveNew(updatedOwners);
+//                    DAO.getInstance().saveNewTriggerUpdate();
+                    DAO.getInstance().saveToParseLater(updatedOwners);
+                    DAO.getInstance().saveToParseNow(this, (ParseObject) keep);
 
                 } else { //if completion RR is NOT dated, then we always keep one instance (infinite repeat)
 
@@ -2749,9 +2776,11 @@ public class RepeatRuleParseObject
                     }
                     setListOfUndoneInstances(newList);
                     //NB NO calculation of new instances - that haapens only on completion!
-                    DAO.getInstance().saveNew(this);
-                    DAO.getInstance().saveNew(updatedOwners);
-                    DAO.getInstance().saveNewExecuteUpdate();
+//                    DAO.getInstance().saveNew(this);
+//                    DAO.getInstance().saveNew(updatedOwners);
+//                    DAO.getInstance().saveNewTriggerUpdate();
+                    DAO.getInstance().saveToParseLater(updatedOwners);
+                    DAO.getInstance().saveToParseNow(this);
                 }
             } else {
                 //ACTUALLY nothing to do for a RR on completion: only one instance, changes to RR takes effect upon completion!
@@ -2760,7 +2789,8 @@ public class RepeatRuleParseObject
 //</editor-fold>
         } else { //getRepeatType() == REPEAT_TYPE_FROM_DUE_DATE
             ASSERT.that(getRepeatType() == REPEAT_TYPE_FROM_DUE_DATE);
-            if (false && firstTime) { //code in else branch now works whether first time or not
+//            if (false && firstTime) { //code in else branch now works whether first time or not
+            if (false ) { //code in else branch now works whether first time or not
 //<editor-fold defaultstate="collapsed" desc="first time">
 ////                ASSERT.that(getTotalNumberOfInstancesGeneratedSoFar() == 0, "getTotalNumberOfInstancesGeneratedSoFar() not 0 on firstTime call to repeat rule " + getTotalNumberOfInstancesGeneratedSoFar());
 //                List<RepeatRuleObjectInterface> oldUndoneRepeatInstanceList = getListOfUndoneInstances();  //reuse any existing instances
@@ -2961,7 +2991,8 @@ public class RepeatRuleParseObject
 //                    setLastGeneratedDate(nextRepeatTime); //save last date generated
                     }
                     setListOfUndoneInstances(newRepeatInstanceList);
-                    DAO.getInstance().saveNew(newRepeatInstanceList); //save new instances 
+//                    DAO.getInstance().saveNew(newRepeatInstanceList); //save new instances 
+                    DAO.getInstance().saveToParseLater(newRepeatInstanceList); //save new instances 
                 }
 
 //                 updatedOwners = deleteUnneededItemInstances(oldUndoneRepeatInstanceList);
@@ -2983,9 +3014,11 @@ public class RepeatRuleParseObject
 //                DAO.getInstance().saveNew(newRepeatInstanceList); //save new instances 
 //                DAO.getInstance().saveNew((List<ParseObject>) updatedOwners, true); //save list where new instances were inserted
 //</editor-fold>
-                DAO.getInstance().saveNew((ParseObject) this); //save list where new instances were inserted
-                DAO.getInstance().saveNew(updatedOwners); //save list where new instances were inserted
-                DAO.getInstance().saveNewExecuteUpdate(); //save list where new instances were inserted
+//                DAO.getInstance().saveNew((ParseObject) this); //save list where new instances were inserted
+//                DAO.getInstance().saveNew(updatedOwners); //save list where new instances were inserted
+//                DAO.getInstance().saveNewTriggerUpdate(); //save list where new instances were inserted
+                DAO.getInstance().saveToParseLater(updatedOwners); //save list where new instances were inserted
+                DAO.getInstance().saveToParseNow((ParseObject) this); //save list where new instances were inserted
             }
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -4222,22 +4255,26 @@ public class RepeatRuleParseObject
                         ItemAndListCommonInterface owner = insertIntoList2(completedItem, newRepeatInstance); //insert new created instance in appropriate list and save it
                         Log.p("**new1 repeat instance generated with repeat date=" + nextRepeatTime + ", instance=" + newRepeatInstance);
                         addNewRepeatInstance(newRepeatInstance);
-                        DAO.getInstance().saveNew(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
-                        DAO.getInstance().saveNewExecuteUpdate();
+//                        DAO.getInstance().saveNew(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
+//                        DAO.getInstance().saveNewTriggerUpdate();
+                        DAO.getInstance().saveToParseNow(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
                     } else {
-                        DAO.getInstance().saveNew(this); //OK if repeatInstance or owner are null
-                        DAO.getInstance().saveNewExecuteUpdate();
+//                        DAO.getInstance().saveNew(this); //OK if repeatInstance or owner are null
+//                        DAO.getInstance().saveNewTriggerUpdate();
+                        DAO.getInstance().saveToParseNow(this); //OK if repeatInstance or owner are null
                     }
                 } else {
                     //Create a new repeat instance *without* a due date
                     updateWithCompletedItem(completedItem);
-                    Item newRepeatInstance = (Item) completedItem.cloneMe(Item.CopyMode.COPY_TO_REPEAT_INSTANCE, COPY_EXCLUDE_DUE_DATE, true); //copy RR w/o update
+//                    Item newRepeatInstance = (Item) completedItem.cloneMe(Item.CopyMode.COPY_TO_REPEAT_INSTANCE, COPY_EXCLUDE_DUE_DATE, true); //copy RR w/o update
+                    Item newRepeatInstance = (Item) completedItem.cloneMe(Item.CopyMode.COPY_TO_REPEAT_INSTANCE, COPY_EXCLUDE_DUE_DATE); //copy RR w/o update
                     ItemAndListCommonInterface owner = insertIntoList2(completedItem, newRepeatInstance); //insert new created instance in appropriate list and save it
                     Log.p("**new repeat on completion instance generated *without* repeat date, instance=" + newRepeatInstance);
                     addNewRepeatInstance(newRepeatInstance);
 //                DAO.getInstance().saveNew(true, newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
-                    DAO.getInstance().saveNew(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
-                    DAO.getInstance().saveNewExecuteUpdate();
+//                    DAO.getInstance().saveNew(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
+//                    DAO.getInstance().saveNewTriggerUpdate();
+                    DAO.getInstance().saveToParseNow(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
                 }
             } else { //getRepeatType() == REPEAT_TYPE_FROM_DUE_DATE
                 ASSERT.that(getRepeatType() == REPEAT_TYPE_FROM_DUE_DATE);
@@ -4292,12 +4329,14 @@ public class RepeatRuleParseObject
                     Log.p("**new2 repeat instance generated with repeat date=" + nextRepeatTime + ", instance=" + newRepeatInstance);
                     addNewRepeatInstance(newRepeatInstance);
 //                    DAO.getInstance().saveNew(true, newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
-                    DAO.getInstance().saveNew(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
-                    DAO.getInstance().saveNewExecuteUpdate();
+//                    DAO.getInstance().saveNew(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
+//                    DAO.getInstance().saveNewTriggerUpdate();
+                    DAO.getInstance().saveToParseNow(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
                 } else {
 //                    DAO.getInstance().saveNew(true, this); //OK if repeatInstance or owner are null
-                    DAO.getInstance().saveNew(this); //OK if repeatInstance or owner are null
-                    DAO.getInstance().saveNewExecuteUpdate();
+//                    DAO.getInstance().saveNew(this); //OK if repeatInstance or owner are null
+//                    DAO.getInstance().saveNewTriggerUpdate();
+                    DAO.getInstance().saveToParseNow(this); //OK if repeatInstance or owner are null
                 }
             }
         }
@@ -4470,7 +4509,8 @@ public class RepeatRuleParseObject
 //            deleteUnneededWorkSlotInstancesXXX(oldUndoneRepeatInstanceList); //UI: will delete started but not yet expired workslots <=> delete all workslots that are still 'active'
 //            Set<ItemAndListCommonInterface> updatedOwners = deleteUnneededItemOrWorkSlotInstances(oldUndoneRepeatInstanceList); //UI: will delete started but not yet expired workslots <=> delete all workslots that are still 'active'
             Set updatedOwners = deleteUnneededItemOrWorkSlotInstances(oldUndoneRepeatInstanceList); //UI: will delete started but not yet expired workslots <=> delete all workslots that are still 'active'
-            DAO.getInstance().saveNew(updatedOwners);
+//            DAO.getInstance().saveNew(updatedOwners);
+            DAO.getInstance().saveToParseLater(updatedOwners); //no need to save now, updateWorkSlotsWhenRuleCreatedOrEdited is called when updating a workslot
         } else {
 
             WorkSlot originatorWorkSlot = (WorkSlot) originator;
@@ -4529,13 +4569,18 @@ public class RepeatRuleParseObject
 //            deleteUnneededWorkSlotInstances(oldUndoneRepeatInstanceList); //only set here since otherwise sourceWS may be deleted before crepeat opies are made
 //            deleteUnneededItemOrWorkSlotInstances(oldUndoneRepeatInstanceList); //only set here since otherwise sourceWS may be deleted before crepeat opies are made
             Set updatedOwners = deleteUnneededItemOrWorkSlotInstances(oldUndoneRepeatInstanceList); //UI: will delete started but not yet expired workslots <=> delete all workslots that are still 'active'
-            DAO.getInstance().saveNew(updatedOwners);
+//            DAO.getInstance().saveNew(updatedOwners);
+//
+//            DAO.getInstance().saveNew(newRepeatWorkSlots); //, false);
+////        DAO.getInstance().saveNew(true, this, (ParseObject) owner);
+//            DAO.getInstance().saveNew(this, (ParseObject) owner);
+//            DAO.getInstance().saveNew(updatedOwners); //, false);
+//            DAO.getInstance().saveNewTriggerUpdate();
 
-            DAO.getInstance().saveNew(newRepeatWorkSlots); //, false);
-//        DAO.getInstance().saveNew(true, this, (ParseObject) owner);
-            DAO.getInstance().saveNew(this, (ParseObject) owner);
-            DAO.getInstance().saveNew(updatedOwners); //, false);
-            DAO.getInstance().saveNewExecuteUpdate();
+            DAO.getInstance().saveToParseLater(newRepeatWorkSlots); //, false);
+            DAO.getInstance().saveToParseLater(updatedOwners); //, false);
+//            DAO.getInstance().saveToParseNow(this, (ParseObject) owner);
+            DAO.getInstance().saveToParseLater(this, (ParseObject) owner); //no need to save now, updateWorkSlotsWhenRuleCreatedOrEdited is called when updating a workslot
         }
     }
 
@@ -4940,11 +4985,18 @@ public class RepeatRuleParseObject
             setListOfDoneInstances(expiredWorkSlots);
             setListOfUndoneInstances(orgUndoneRepeatInstanceList); //MUST update listOfUndone to calc correct numberOfRepeats
 
-            DAO.getInstance().saveNew(newRepeatWorkSlotsToSave);
-            DAO.getInstance().saveNew(editedOwners);
-            DAO.getInstance().saveNew(this); //saving RR will save repeatInstances, which must be done before saving workSlotOwner!
+//            DAO.getInstance().saveNew(newRepeatWorkSlotsToSave);
+//            DAO.getInstance().saveNew(editedOwners);
+//            DAO.getInstance().saveNew(this); //saving RR will save repeatInstances, which must be done before saving workSlotOwner!
+//            if (executeSave) {
+//                DAO.getInstance().saveNewTriggerUpdate(); //saving RR will save repeatInstances, which must be done before saving workSlotOwner!
+//            }
+            DAO.getInstance().saveToParseLater(newRepeatWorkSlotsToSave);
+            DAO.getInstance().saveToParseLater(editedOwners);
             if (executeSave) {
-                DAO.getInstance().saveNewExecuteUpdate(); //saving RR will save repeatInstances, which must be done before saving workSlotOwner!
+                DAO.getInstance().saveToParseNow(this); //saving RR will save repeatInstances, which must be done before saving workSlotOwner!
+            } else {
+                DAO.getInstance().saveToParseLater(this); //saving RR will save repeatInstances, which must be done before saving workSlotOwner!
             }
         }
     }
@@ -4965,7 +5017,9 @@ public class RepeatRuleParseObject
         for (Object workslot : undone) {
             ((WorkSlot) workslot).update(modifiedWorkSlot);
         }
-        DAO.getInstance().saveNew(undone); //save all updated (will be only saved if actually modified
+//        DAO.getInstance().saveNew(undone); //save all updated (will be only saved if actually modified
+//        DAO.getInstance().saveToParseNow(undone); //save all updated (will be only saved if actually modified
+        DAO.getInstance().saveToParseLater(undone); //save all updated (will be only saved if actually modified), triggered on saving modified WorkSlot
 //        DAO.getInstance().triggerParseUpdate(); //no need to trigger save here since this is only called from ScreenWorkSlot who will call triggerSave
     }
 
@@ -5695,9 +5749,11 @@ public class RepeatRuleParseObject
             }
         }
         setListOfUndoneInstances(undone); //update list (just in case, shouldn't really be necessary since we're deleting the RR
-        DAO.getInstance().deleteAll(elementsToDelete, true, false); //trigger will be called from the editing of the workslot/item itself
+//        DAO.getInstance().deleteAll(elementsToDelete, true, false); //trigger will be called from the editing of the workslot/item itself
+        DAO.getInstance().deleteLater(elementsToDelete, true); //trigger will be called from the editing of the workslot/item itself
 //        this.delete();
-        DAO.getInstance().saveNew(ownersToUpdate);
+//        DAO.getInstance().saveNew(ownersToUpdate);
+        DAO.getInstance().saveToParseLater(ownersToUpdate);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -5957,9 +6013,9 @@ public class RepeatRuleParseObject
     }
 
     public String toStringWObjId() {
-        return "RepRu=[" + (getObjectIdP() == null ? "no ObjId" : getObjectIdP()) + "]" + getText()
-                + "; DONE(" + getListOfDoneInstances().size() + ")= [" + getListOfDoneInstances() + "]"
-                + "; UNDONE(" + getListOfDoneInstances().size() + ")= [" + getListOfUndoneInstances() + "]";
+        return "RepRu=[" + (getObjectIdP() == null ? "no ObjId" : getObjectIdP()) + "]\"" + getText()
+                + "\"; DONE(" + getListOfDoneInstances().size() + ")= [" + getListOfDoneInstances() + "]"
+                + "; UNDONE(" + getListOfUndoneInstances().size() + ")= [" + getListOfUndoneInstances() + "]";
     }
 
     public void copyMeInto(RepeatRuleParseObject destiny) {
@@ -5967,6 +6023,10 @@ public class RepeatRuleParseObject
     }
 
     public void copyMeInto(RepeatRuleParseObject destiny, boolean copyState) {
+        copyMeInto(destiny, false, false);
+    }
+
+    public void copyMeInto(RepeatRuleParseObject destiny, boolean copyState, boolean makeTemplateCopyXXX) {
 
         RepeatRuleParseObject dest = (RepeatRuleParseObject) destiny;
 //        super.copyMeInto(destiny);
@@ -5998,8 +6058,10 @@ public class RepeatRuleParseObject
         }
 //        dest.setTotalNumberOfInstancesGeneratedSoFarXXX(getTotalNumberOfInstancesGeneratedSoFar());
 
-        dest.setListOfDoneInstances(getListOfDoneInstances()); //copy same instances over (NOT make a copy of them)
-        dest.setListOfUndoneInstances(getListOfUndoneInstances()); //copy same instances over (NOT make a copy of them)
+        if (false && !makeTemplateCopyXXX) {
+            dest.setListOfDoneInstances(getListOfDoneInstances()); //copy same instances over (NOT make a copy of them)
+            dest.setListOfUndoneInstances(getListOfUndoneInstances()); //copy same instances over (NOT make a copy of them)
+        }
 
 //        if (false) {
 //            dest.setLatestDateCompletedOrCancelled(getLatestDateDone());
@@ -6009,16 +6071,20 @@ public class RepeatRuleParseObject
             //copyState means including evrything, the complete state of the object
 //            dest.setLastGeneratedDate(getLastGeneratedDateD());
 
-            List oldList = getListOfUndoneInstances();
-            List newList = new ArrayList();
-            for (int i = 0, size = oldList.size(); i < size; i++) {
-                newList.add(oldList.get(i)); //only copy *references* to item (not make copies of the items)
-            }
-            dest.setListOfUndoneInstances(newList);
-
-            dest.setLatestDateCompletedOrCancelled(getLatestDateDone(getRepeatType() == REPEAT_TYPE_FROM_COMPLETED_DATE));
+//            List oldList = getListOfUndoneInstances();
+//            List newList = new ArrayList();
+//            for (int i = 0, size = oldList.size(); i < size; i++) {
+//                newList.add(oldList.get(i)); //only copy *references* to item (not make copies of the items)
+//            }
+//            dest.setListOfUndoneInstances(newList);
+            //make a copy of the state of the rule (previously generated instances etc) to enable compare when setting??
+            dest.setListOfDoneInstances(new ArrayList(getListOfDoneInstances()));
+            dest.setListOfUndoneInstances(new ArrayList(getListOfUndoneInstances()));
+            if (false) {
+                dest.setLatestDateCompletedOrCancelled(getLatestDateDone(getRepeatType() == REPEAT_TYPE_FROM_COMPLETED_DATE));
 //            dest.setTotalNumberOfInstancesGeneratedSoFar(getTotalNumberOfInstancesGeneratedSoFar());
-            dest.setTotalNumberOfDoneInstancesZZZ(getTotalNumberOfDoneInstances());
+                dest.setTotalNumberOfDoneInstancesZZZ(getTotalNumberOfDoneInstances());
+            }
         }
     }
 
@@ -6782,7 +6848,6 @@ public class RepeatRuleParseObject
 ////        return (date.equals(new MyDate(MyDate.MIN_DATE))) ? defaultDate : date;
 //        return (date.getTime() == MyDate.MIN_DATE) ? defaultDate : date;
 //    }
-
 //    private Date getStartDateForCompletion() {
 //        return getStartDateForCompletion(new MyDate()); //use now for default
 //    }
@@ -7890,7 +7955,6 @@ public class RepeatRuleParseObject
 //        }
 //        return lastDate;
 //    }
-
     /**
      * used to keep track of when a repeatrule has repeated the indicated number
      * of times (to stop the repeat then).
@@ -7914,7 +7978,6 @@ public class RepeatRuleParseObject
 //            remove(PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR);
 //        }
 //    }
-
     int getTotalNumberOfDoneInstances() {
 //        Integer i = getInt(PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR);
 //        return i != null ? i : 0;
@@ -8181,6 +8244,19 @@ public class RepeatRuleParseObject
 
     void setDatePatternChanged(boolean datePatternChanged) {
         this.datePatternChanged = datePatternChanged;
+    }
+    
+    private boolean updateIsPending;
+    public void setUpdatePending(boolean updateIsPending) {
+        this. updateIsPending=updateIsPending;
+    }
+
+    /**
+     * true if the repeatRule has been edited, but the repeat instances have not been recalculated
+     * @return 
+     */
+    public boolean isUpdatePending() {
+        return updateIsPending;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

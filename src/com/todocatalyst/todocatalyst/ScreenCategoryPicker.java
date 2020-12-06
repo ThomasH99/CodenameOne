@@ -201,7 +201,9 @@ public class ScreenCategoryPicker extends MyForm {
 
 //        toolbar.addSearchCommand(makeSearchFunctionSimple(listOfAllCategories, () -> getContentPane()), MyPrefs.defaultIconSizeInMM.getFloat());
 //        getToolbar().addCommandToRightBar(new MySearchCommand(getContentPane(), makeSearchFunctionSimple(listOfAllCategories)));
-        toolbar.addCommandToRightBar(new MySearchCommand(getContentPane(), makeSearchFunctionSimple(listOfAllCategories)));
+//        toolbar.addCommandToRightBar(new MySearchCommand(getContentPane(), makeSearchFunctionSimple(listOfAllCategories)));
+        setSearchCmd(new MySearchCommand(this, makeSearchFunctionSimple(listOfAllCategories)));
+        toolbar.addCommandToRightBar(getSearchCmd());
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ADD_BOX, toolbar.getStyle());

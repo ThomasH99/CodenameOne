@@ -17,6 +17,8 @@ import com.codename1.ui.InfiniteContainer;
 import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.animations.CommonTransitions;
+import com.codename1.ui.animations.FlipTransition;
+import com.codename1.ui.animations.Transition;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
@@ -66,6 +68,8 @@ public class ScreenListOfAlarms extends MyForm {
 
     private static ScreenListOfAlarms INSTANCE;
 
+    private Command backCommand;
+
     public static ScreenListOfAlarms getInstance() {
         if (INSTANCE == null) {
 //            INSTANCE = new ScreenListOfAlarms(AlarmHandler.getInstance().notificationList);
@@ -89,6 +93,8 @@ public class ScreenListOfAlarms extends MyForm {
             setLayout(new BorderLayout());
         }
 
+//        setTransitionInAnimator(CommonTransitions.createSlide(CommonTransitions.SLIDE_HORIZONTAL, false, 200));
+//        setTransitionInAnimator(new FlipTransition());
 //        expandedObjects = new ExpandedObjects(getUniqueFormId());
         expandedObjectsInit("");
 
@@ -105,21 +111,33 @@ public class ScreenListOfAlarms extends MyForm {
     @Override
     public void show() {
         ASSERT.that(false, "shouldn't be called - since it won't add previousForm");
-        show(previousForm);
-    }
-
-    @Override
-    public void showBack(boolean popCommand) {
-        if (AlarmHandler.getInstance().getExpiredAlarms().size() == 0 && exitOnEmptyAlarmList) {
-            exitOnEmptyAlarmList = false;
-            ReplayLog.getInstance().popCmd(); //pop the replay command for show alarm screen
-            showPreviousScreen(true); //exit if the there are no more alarms
-//        Form form = getCurrentFormAfterClosingDialogOrMenu();
-//        exitOnEmptyAlarmList = true;
+        if (false) {
+            show(parentForm);
         } else {
             exitOnEmptyAlarmList = false;
-            super.showBack(popCommand);
+            refreshAfterEdit();
+            super.show();
         }
+
+    }
+
+//    @Override
+    public void showBackXXX(boolean popCommand) {
+        if (false) {
+            if (AlarmHandler.getInstance().getExpiredAlarms().size() == 0 && exitOnEmptyAlarmList) {
+                exitOnEmptyAlarmList = false;
+                ReplayLog.getInstance().popCmd(); //pop the replay command for show alarm screen
+                showPreviousScreen(true); //exit if the there are no more alarms
+//        Form form = getCurrentFormAfterClosingDialogOrMenu();
+//        exitOnEmptyAlarmList = true;
+            } else {
+                exitOnEmptyAlarmList = false;
+//                super.showBack(popCommand);
+            }
+        }
+        exitOnEmptyAlarmList = false;
+//        backCommand.actionPerformed(null);
+//        super.showBack(popCommand);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -138,7 +156,12 @@ public class ScreenListOfAlarms extends MyForm {
 //    }
 //</editor-fold>
     public void show(MyForm previousForm) {
-        ASSERT.that(previousForm != null, "shouldn't be called s previousForm==null");
+        show(previousForm, false);
+    }
+
+    public void show(MyForm previousForm, boolean flipTransition) {
+        if (false) {
+            ASSERT.that(previousForm != null, "shouldn't be called s previousForm==null");
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////        List<ExpiredAlarm> expiredAlarms = AlarmHandler.getInstance().getExpiredAlarms(); //need a copy of the list to avoid java.util.ConcurrentModificationException in CancellAll/SnoozeAll loops below
@@ -151,11 +174,11 @@ public class ScreenListOfAlarms extends MyForm {
 ////        exitOnEmptyAlarmList = true;
 //        } else {
 //</editor-fold>
-        exitOnEmptyAlarmList = false;
-        if (previousForm != null) {
-            this.previousForm = previousForm;
-        } else {
-            MyForm current = getCurrentFormAfterClosingDialogOrMenu();
+            exitOnEmptyAlarmList = false;
+            if (previousForm != null) {
+                this.parentForm = previousForm;
+            } else {
+                MyForm current = getCurrentFormAfterClosingDialogOrMenu();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if ((current instanceof ScreenListOfAlarms)) {
 //        if ((current == this)) {
@@ -166,18 +189,32 @@ public class ScreenListOfAlarms extends MyForm {
 //            this.previousForm = getCurrentFormAfterClosingDialogOrMenu();
 //        }
 //</editor-fold>
-            if ((current != this)) { //don't store ScreenListOfAlarms as previous screen if it is already shown!
-                this.previousForm = current; //getCurrentFormAfterClosingDialogOrMenu();
+                if ((current != this)) { //don't store ScreenListOfAlarms as previous screen if it is already shown!
+                    this.parentForm = current; //getCurrentFormAfterClosingDialogOrMenu();
+                }
+            }
+            refreshAfterEdit();
+//        super.showPreviousScreenOrDefault(form instanceof MyForm ? (MyForm) form : null, true);
+            if (false) {
+                this.setTransitionInAnimator(CommonTransitions.createCover(CommonTransitions.SLIDE_VERTICAL, false, ANIMATION_TIME_DEFAULT));
+                this.setTransitionOutAnimator(CommonTransitions.createUncover(CommonTransitions.SLIDE_VERTICAL, false, ANIMATION_TIME_DEFAULT));
             }
         }
-        refreshAfterEdit();
-//        super.showPreviousScreenOrDefault(form instanceof MyForm ? (MyForm) form : null, true);
-        if (false) {
-            this.setTransitionInAnimator(CommonTransitions.createCover(CommonTransitions.SLIDE_VERTICAL, false, ANIMATION_TIME_DEFAULT));
-            this.setTransitionOutAnimator(CommonTransitions.createUncover(CommonTransitions.SLIDE_VERTICAL, false, ANIMATION_TIME_DEFAULT));
+        //make a flipTransition when AlarmScreen is triggered by expiration of timer (not if launched manually)
+        Transition prevTransition = null;
+        if (flipTransition) {
+            prevTransition = getTransitionInAnimator();
+            setTransitionInAnimator(new FlipTransition());
         }
+        if (true || previousForm == this) { //true always refresh & show, even if current Form is ScreenListOfAlarms
 //        show();
-        super.show();
+            this.parentForm = previousForm; //always store previous form since AlarmScreen is a singleton
+            refreshAfterEdit();
+            super.show();
+            if (prevTransition != null) {
+                setTransitionInAnimator(prevTransition);
+            }
+        }
 //        }
     }
 
@@ -191,12 +228,12 @@ public class ScreenListOfAlarms extends MyForm {
             showPreviousScreen(true); //exit if the there are no more alarms
         } else {
 //            exitOnEmptyAlarmList = false; //reset for the case where expiredAlarms.size() > 0
-            ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
+            ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
 
             now = MyDate.currentTimeMillis();
 
             getContentPane().removeAll();
-            Container alarmCont = buildContentPaneForAlarmList(expiredAlarmsCopy, previousForm);
+            Container alarmCont = buildContentPaneForAlarmList(expiredAlarmsCopy, parentForm);
             getContentPane().add(BorderLayout.CENTER, alarmCont);
             //        if (this.keepPos != null) {
             //            this.keepPos.setNewScrollYPosition();
@@ -273,7 +310,7 @@ public class ScreenListOfAlarms extends MyForm {
 
         //BACK
 //        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand(true));
-        addStandardBackCommand();
+        backCommand = addStandardBackCommand();
 
 //        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("AlarmSettings", "", Icons.iconSettings, (e) -> {
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("AlarmSettings", "Settings", Icons.iconSettings, (e) -> {
@@ -317,8 +354,9 @@ public class ScreenListOfAlarms extends MyForm {
                     testItem.setAlarmDate(new MyDate(now + MyDate.SECOND_IN_MILLISECONDS * 5));
 //                    DAO.getInstance().saveAndWait(testItem);
 //                    DAO.getInstance().saveNew(testItem, true);
-                    DAO.getInstance().saveNew(testItem);
-                    DAO.getInstance().saveNewExecuteUpdate();
+//                    DAO.getInstance().saveNew(testItem);
+//                    DAO.getInstance().saveNewTriggerUpdate();
+                    DAO.getInstance().saveToParseNow(testItem);
 //                    DAO.getInstance().saveInBackground(testItem);
                     Log.p("testItem created=" + testItem + ", alarm=" + new MyDate(now));
                 }
@@ -397,26 +435,30 @@ public class ScreenListOfAlarms extends MyForm {
         Container alarmCont = BorderLayout.south(itemCont); //center to ensure Item takes up full width
         alarmCont.setUIID("ScreenAlarmContainer");
 
-        Label alarmHeader;
+        SpanLabel alarmHeader;
         if ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.waitingRepeat)) {
-            alarmHeader = new Label("Waiting " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true), "ScreenAlarmsWaitingTitle");
-            alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
+            alarmHeader = new SpanLabel("Waiting " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true,true,true), "ScreenAlarmsWaitingTitle");
+//            alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
+            alarmHeader.setFontIcon(Icons.myIconFont,Icons.iconWaitingAlarmExpiredCust);
         } else if ((expiredAlarm.type == AlarmType.snoozedWaiting)) {
-            alarmHeader = new Label("Snooze Waiting " + MyDate.formatDateSmart(expiredAlarm.alarmTime,true), "ScreenAlarmsWaitingTitle"); //"Waiting snoozed "
-            alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
+            alarmHeader = new SpanLabel("Snooze Waiting " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true,true,true), "ScreenAlarmsWaitingTitle"); //"Waiting snoozed "
+//            alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
+            alarmHeader.setFontIcon(Icons.myIconFont,Icons.iconWaitingAlarmExpiredCust);
         } else if ((expiredAlarm.type == AlarmType.snoozedNotif)) {
-            alarmHeader = new Label("Snooze Reminder " + MyDate.formatDateSmart(expiredAlarm.alarmTime,true), "ScreenAlarmsWaitingTitle");
-            alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
+            alarmHeader = new SpanLabel("Snooze Reminder " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true,true,true), "ScreenAlarmsWaitingTitle");
+//            alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
+            alarmHeader.setFontIcon(Icons.myIconFont,Icons.iconWaitingAlarmExpiredCust);
         } else {//     if ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.waitingRepeat)) {
-            alarmHeader = new Label("Reminder " + MyDate.formatDateSmart(expiredAlarm.alarmTime,true), "ScreenAlarmsWaitingTitle");
+            alarmHeader = new SpanLabel("Reminder " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true,true,true), "ScreenAlarmsWaitingTitle");
             alarmHeader.setMaterialIcon(Icons.iconAlarmTriggered);
         }
+        alarmHeader.setIconUIID("ScreenAlarmsWaitingTitle");
 //        else         if ((expiredAlarm.type == AlarmType.snooze )) {
 //            alarmHeader = new Label("Reminder snoozed " + MyDate.formatDateSmart(expiredAlarm.alarmTime), "ScreenAlarmsWaitingTitle");
 //            alarmHeader.setMaterialIcon(Icons.iconAlarmDate);
 //        }
 //        SpanLabel alarmHeader = new SpanLabel(header);
-        Container alarmHeaderCont = BorderLayout.west(alarmHeader);
+        Container alarmHeaderCont = BorderLayout.center(alarmHeader);
         alarmHeaderCont.setUIID("ScreenAlarmsHeaderCont");
         alarmCont.add(BorderLayout.NORTH, alarmHeaderCont);
 
@@ -483,11 +525,11 @@ public class ScreenListOfAlarms extends MyForm {
 
         alarmHeaderCont.add(BorderLayout.EAST, BoxLayout.encloseX(cancelAlarm, snoozeAlarm, snoozePicker));
 //        alarmHeaderCont.add(BorderLayout.CENTER,  snoozePicker);
-        
+
         //hack to promote the expandCollapse subtasks button from the ItemContainer to the AlarmContainer
-        if(false){ //this disables the start of code to enable expansion of task subtasks
-        Object expandButton = itemCont.getClientProperty(KEY_ACTION_ORIGIN);
-        alarmCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandButton);
+        if (false) { //this disables the start of code to enable expansion of task subtasks
+            Object expandButton = itemCont.getClientProperty(KEY_ACTION_ORIGIN);
+            alarmCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandButton);
         }
 
         return alarmCont;
@@ -575,5 +617,4 @@ public class ScreenListOfAlarms extends MyForm {
 //            return BorderLayout.centerCenter(new SpanLabel(getTextToShowIfEmptyList()));
 //        }
 //    }
-
 }

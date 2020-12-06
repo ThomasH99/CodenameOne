@@ -7,6 +7,7 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import com.parse4cn1.ParseObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Vector;
@@ -34,6 +35,7 @@ public class ScreenFilter extends MyForm {
 //    private static String SCREEN_TITLE = "Which tasks to show";
     private static String SCREEN_TITLE = "Edit Filter/Sort"; //"Sort and Filter";
     FilterSortDef filterSortDef;
+    private ItemAndListCommonInterface filterOwner;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public interface Predicate<T> {
 //
@@ -62,9 +64,10 @@ public class ScreenFilter extends MyForm {
 //    }
 //</editor-fold>
 
-    ScreenFilter(FilterSortDef filterSortDef, MyForm previousForm, Runnable updateActionOnDone) {
+    ScreenFilter(FilterSortDef filterSortDef, MyForm previousForm, ItemAndListCommonInterface filterOwner, Runnable updateActionOnDone) {
         super(SCREEN_TITLE, previousForm, updateActionOnDone);
         this.filterSortDef = filterSortDef;
+        this.filterOwner = filterOwner;
 //        FilterPredicate filterPredicate, MyHashMap filterHashMap, 
 //        this.filterPredicate = filterPredicate;
 //        this.filterSortDef.filterMap = filterMap;
@@ -80,7 +83,7 @@ public class ScreenFilter extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
+        ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
         buildContentPane(getContentPane());
 //        restoreKeepPos();
@@ -97,6 +100,24 @@ public class ScreenFilter extends MyForm {
 
         if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
             toolbar.addCommandToOverflowMenu(makeCancelCommand());
+        }
+
+        //DELETE
+//        CommandTracked commandDelete = new CommandTracked(SUBTASK_KEY, icon, SCREEN_STATISTICS);
+//            toolbar.addCommandToOverflowMenu(new CommandTracked(SUBTASK_KEY, icon, SCREEN_STATISTICS));
+        if (filterSortDef.getObjectIdP() != null) { //only Delete Filters already on Parse, not one you're just creating (use Cancel instead)
+            toolbar.addCommandToOverflowMenu(CommandTracked.createMaterial("Delete", Icons.iconDelete, (e) -> {
+
+//                DAO.getInstance().delete(filterSortDef, true, false); //hard-delete, trigger update below
+                DAO.getInstance().deleteLater((ParseObject) filterSortDef, true); //hard-delete, trigger update below
+
+                filterOwner.setFilterSortDef(null);
+
+//                DAO.getInstance().saveNew((ParseObject)filterOwner);
+//                DAO.getInstance().saveNewTriggerUpdate();
+                DAO.getInstance().saveToParseNow((ParseObject) filterOwner);
+                showPreviousScreen(true);
+            }));
         }
 
         if (false) { //TODO: implement these features

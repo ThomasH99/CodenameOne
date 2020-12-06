@@ -5,7 +5,8 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.compat.java.util.Objects;
+//import com.codename1.compat.java.util.Objects;
+import java.util.Objects;
 import com.codename1.components.InfiniteProgress;
 import com.codename1.io.Log;
 import com.codename1.ui.Dialog;
@@ -199,7 +200,6 @@ public class CleanUpDataInconsistencies {
 //    private void cleanUpCircularReferencesInHierarchyXXX(String description, List list) {
 //
 //    }
-
     private String getClassOfElement(ItemAndListCommonInterface element) {
         if (element instanceof Item) {
             return "Item";
@@ -384,7 +384,6 @@ public class CleanUpDataInconsistencies {
 //        }
 //        return someElementWereDeleted;
 //    }
-
     private boolean cleanUpDuplicatesInList(String description, List inputList, boolean executeCleanup) {
         //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
         //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
@@ -423,12 +422,12 @@ public class CleanUpDataInconsistencies {
     }
 
     /**
-     * return true if filter doesNO
-     * T exist in parse
+     * return true if filter doesNO T exist in parse
+     *
      * @param filterOwner
      * @param filterSortDef
      * @param executeCleanup
-     * @return 
+     * @return
      */
     private boolean cleanUpReferencedFilterSortDef(ItemAndListCommonInterface filterOwner, FilterSortDef filterSortDef, boolean executeCleanup) {
 //                FilterSortDef filterSortDef = itemList.getFilterSortDef();
@@ -643,7 +642,7 @@ public class CleanUpDataInconsistencies {
 //        }
 //FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
 //       cleanUpReferencedFilterSortDef(itemList, itemList.getFilterSortDefN(), executeCleanup);
-       cleanUpReferencedFilterSortDef(itemList, (FilterSortDef) itemList.getParseObject(ItemList.PARSE_FILTER_SORT_DEF), executeCleanup);
+        cleanUpReferencedFilterSortDef(itemList, (FilterSortDef) itemList.getParseObject(ItemList.PARSE_FILTER_SORT_DEF), executeCleanup);
 
         //workslots
         cleanUpWorkSlotList(itemList, executeCleanup);
@@ -813,7 +812,7 @@ public class CleanUpDataInconsistencies {
         checkListForNotInParseSoftDeletedReferenceOwner(itemListList, (List) itemListsFromParse, executeCleanup);
 
         if (executeCleanup) {
-            dao.saveNew((ParseObject) itemListList, false);
+            dao.saveNew((ParseObject) itemListList);
         }
     }
 
@@ -860,7 +859,7 @@ public class CleanUpDataInconsistencies {
 //        cleanUpBadObjectReferencesInListOfCategoriesOrItemListsXXX("ItemListList", "ItemList", itemListList); //Clean up links to removed Categories
 //</editor-fold>
         if (executeCleanup) {
-            dao.saveNew((ParseObject) itemListList, false);
+            dao.saveNew((ParseObject) itemListList);
         }
         setLogPrefix("");
     }
@@ -1023,7 +1022,7 @@ public class CleanUpDataInconsistencies {
 //            filterSortDefReferenced.add(filterSortDef);
 //        }
 //       cleanUpReferencedFilterSortDef(category, category.getFilterSortDefN(), executeCleanup);
-       cleanUpReferencedFilterSortDef(category, (FilterSortDef) category.getParseObject(ItemList.PARSE_FILTER_SORT_DEF), executeCleanup);
+        cleanUpReferencedFilterSortDef(category, (FilterSortDef) category.getParseObject(ItemList.PARSE_FILTER_SORT_DEF), executeCleanup);
 
         //workslots
         cleanUpWorkSlotList(category, executeCleanup);
@@ -1148,7 +1147,7 @@ public class CleanUpDataInconsistencies {
                     log("non-template \"" + item + "\" inside template \"" + item + " parseId=" + ((ParseObject) item).getObjectIdP());
                     if (executeCleanup) {
                         item.setTemplate(true);
-                        dao.saveNew(item, false);
+                        dao.saveNew(item);
                     }
                 }
                 makeAllSubTaskTemplatesAndRemoveDuplicates(item, executeCleanup); //iterate down the hierarchy
@@ -1266,7 +1265,7 @@ public class CleanUpDataInconsistencies {
 //</editor-fold>
         if (executeCleanup) {
 //            templateList.setList(templateList);
-            dao.saveNew((ParseObject) templateList, false);
+            dao.saveNew((ParseObject) templateList);
         }
         setLogPrefix("");
         allTemplatesCleaned = true;
@@ -1615,7 +1614,9 @@ public class CleanUpDataInconsistencies {
 
         if (executeCleanup && danglingItems.getSize() > 0) {
             ItemListList.getInstance().addToList(danglingItems);
-            dao.saveNew(ItemListList.getInstance(), danglingItems);
+//            dao.saveNew(ItemListList.getInstance(), danglingItems);
+            dao.saveToParseLater(ItemListList.getInstance());
+            dao.saveToParseNow( danglingItems);
         }
         setLogPrefix("");
         allItemFromParseCleaned = true;
@@ -1806,7 +1807,7 @@ public class CleanUpDataInconsistencies {
         List catItems = item.getCategories();
         if (cleanUpDuplicatesInList("Item \"" + item + "\" (ObjId=" + item.getObjectIdP() + ") list of categories", catItems, executeCleanup)) {
             if (executeCleanup) {
-                item.setCategories(catItems);
+                item.setCategoriesInParse(catItems);
             }
         }
 
@@ -2461,6 +2462,12 @@ public class CleanUpDataInconsistencies {
         log("STARTING (execute=" + executeCleanup + ") ----------------------------");
 
         log("-----------------------------------------------------");
+        log("CLEANING CACHE");
+        log("-----------------------------------------------------");
+        DAO.getInstance().resetAndDeleteAndReloadAllCachedData();
+//        Log.p("Finished updating cache");
+
+        log("-----------------------------------------------------");
         log("ITEMLISTS");
         log("-----------------------------------------------------");
         cleanUpAllItemLists(executeCleanup);
@@ -2513,7 +2520,7 @@ public class CleanUpDataInconsistencies {
         Logger.getInstance().setLogLevel(Log.DEBUG);  //re-enable logging of Parse traffic
         long analysisEndTime = System.currentTimeMillis();
         log("********Duration go through data= " + MyDate.formatDurationStd(analysisEndTime - startAnalysisTime));
-        
+
         if (executeCleanup) {
             log("-----------------------------------------------------");
             log("SAVING CLEANED ELEMENTS -----------------------------");
@@ -2521,7 +2528,7 @@ public class CleanUpDataInconsistencies {
 
             long startSaveTime = System.currentTimeMillis();
 
-            DAO.getInstance().triggerParseUpdate(); //do all saves!
+            DAO.getInstance().saveNewTriggerUpdate(); //do all saves!
             long saveEndTime = System.currentTimeMillis();
 
             log("Duration go through data=" + MyDate.formatDurationStd(saveEndTime - startSaveTime));

@@ -11,6 +11,8 @@ import com.codename1.ui.CheckBox;
 import com.codename1.ui.Component;
 import com.codename1.ui.ComponentGroup;
 import com.codename1.ui.Container;
+import com.codename1.ui.Font;
+import com.codename1.ui.Label;
 import com.codename1.ui.RadioButton;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.events.SelectionListener;
@@ -34,12 +36,13 @@ import java.util.Vector;
  * @author Thomas
  */
 class MyComponentGroup extends ComponentGroup {
-    
+
     Object[] values;
     String[] names;
+//    char[] icons;
 //    ButtonGroup buttonGroup;
     private Button[] buttonsArray;
-    
+
     private static int getIndexOfValue(Object[] values, Object value) {
         for (int i = 0, size = values.length; i < size; i++) {
             if (values[i].equals(value)) {
@@ -48,11 +51,11 @@ class MyComponentGroup extends ComponentGroup {
         }
         return -1;
     }
-    
+
     private int getIndexOfValue(Object value) {
         return getIndexOfValue(values, value);
     }
-    
+
     private static int getIndexOfName(String[] fieldNames, String name) {
         for (int i = 0, size = fieldNames.length; i < size; i++) {
             if (fieldNames[i].equals(name)) {
@@ -61,11 +64,11 @@ class MyComponentGroup extends ComponentGroup {
         }
         return -1;
     }
-    
+
     private int getIndexOfName(String name) {
         return getIndexOfName(names, name);
     }
-    
+
     @Override
     public String toString() {
         String s = "";
@@ -104,21 +107,21 @@ class MyComponentGroup extends ComponentGroup {
         this(valueArray, names, unselectAllowed, verticalLayout, multipleSelectionAllowed, false);
         selectValues(initiallySelected);
     }
-    
+
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout,
             ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
         this(valueArray, names, unselectAllowed, verticalLayout, true, false);
         selectValues(initiallySelected);
         setupLayout(values.length, compGroupRows, nbButtonsInEachRow);
     }
-    
+
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed,
             ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
         this(valueArray, names, unselectAllowed, verticalLayout, multipleSelectionAllowed, false);
         selectValues(initiallySelected);
         setupLayout(values.length, compGroupRows, nbButtonsInEachRow);
     }
-    
+
     MyComponentGroup(Object[] valueArray, String[] names, Vector initiallySelected, boolean unselectAllowed, boolean verticalLayout,
             ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow, boolean sameWidth) {
         this(valueArray, names, unselectAllowed, verticalLayout, true, false);
@@ -204,18 +207,22 @@ class MyComponentGroup extends ComponentGroup {
 //        this(valueArray, names, names[selectedIdx], true, false);
         this(valueArray, names, getIndexOfValue(valueArray, selectedValue), false, false);
     }
-    
+
     MyComponentGroup(Object[] valueArray, String[] names) {
 //        this(valueArray, names, names[selectedIdx], true, false);
         this(valueArray, names, -1, true, false);
     }
-    
+
     MyComponentGroup(Object[] values, String[] names, Object selectedValue, boolean unselectAllowed) {
         this(values, names, getIndexOfValue(values, selectedValue), unselectAllowed, false);
     }
-    
+
     MyComponentGroup(Object[] values, String[] names, boolean unselectAllowed) {
         this(values, names, -1, unselectAllowed, false);
+    }
+
+    MyComponentGroup(Object[] values, String[] names, char[] icons, Font iconFont, boolean unselectAllowed) {
+        this(values, names, icons, iconFont, null, unselectAllowed, false, false, false);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -234,7 +241,7 @@ class MyComponentGroup extends ComponentGroup {
 //        this(values, selectedString, unselectAllowed, false);
         this(values, null, getIndexOfValue(values, selectedString), unselectAllowed, false, false, false);
     }
-    
+
     MyComponentGroup(Object[] values, boolean unselectAllowed) {
         this(values, "", unselectAllowed);
     }
@@ -254,11 +261,13 @@ class MyComponentGroup extends ComponentGroup {
             boolean unselectAllowed, boolean verticalLayout) {
         this(values, names, parseIdMap, null, getSelectedValue, set, unselectAllowed, verticalLayout);
     }
+
     MyComponentGroup(Object[] values, String[] names, ParseIdMap2 parseIdMap, Object mapId, MyForm.GetString getSelectedValue, MyForm.PutString set,
             boolean unselectAllowed, boolean verticalLayout) {
 //        this(values, get.get(), unselectAllowed);
         this(values, names, getSelectedValue.get(), unselectAllowed, verticalLayout, false, false);
-        parseIdMap.put(mapId!=null?mapId:this, () -> {
+        parseIdMap.put(mapId != null ? mapId : this, () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            int size = this.getComponentCount();
 //            for (int i = 0; i < size; i++) {
 //                if (((Button) this.getComponentAt(i)).isSelected()) {
@@ -267,7 +276,8 @@ class MyComponentGroup extends ComponentGroup {
 //                }
 //            }
 //            set.accept("");
-            String selectedStr = (String)this.getSelectedValue();
+//</editor-fold>
+            String selectedStr = (String) this.getSelectedValue();
             set.accept(selectedStr);
         });
     }
@@ -276,20 +286,25 @@ class MyComponentGroup extends ComponentGroup {
     MyComponentGroup(Object[] valueArray, String[] names, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed, boolean noSelectionAllowed) {
         this(valueArray, names, null, unselectAllowed, verticalLayout, multipleSelectionAllowed, noSelectionAllowed);
     }
-    
+
     MyComponentGroup(Object[] valueArray, String[] names, Object selectedValue, boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed, boolean noSelectionAllowed) {
+        this(valueArray, names, null, null, selectedValue, unselectAllowed, verticalLayout, multipleSelectionAllowed, noSelectionAllowed);
+    }
+
+    MyComponentGroup(Object[] valueArray, String[] names, char[] icons, Font iconFont, Object selectedValue,
+            boolean unselectAllowed, boolean verticalLayout, boolean multipleSelectionAllowed, boolean noSelectionAllowed) {
         super();
         this.values = valueArray;
         if (names != null) {
             this.names = names;
             ASSERT.that(this.names.length == values.length, "MyComponentGroup called with different number of values and names, values=" + valueArray + ", names=" + names);
-        } else {
+        } else if (values != null && icons == null) {
             this.names = new String[values.length];
             for (int i = 0, size = values.length; i < size; i++) {
                 this.names[i] = values[i].toString();
             }
         }
-        
+
         this.setHorizontal(!verticalLayout);
 
 //        buttonGroup = new ButtonGroup();
@@ -306,7 +321,7 @@ class MyComponentGroup extends ComponentGroup {
 //                ignoreNextActionEvent = true;
                 ((CheckBox) source).setSelected(true);
             }
-            
+
             if (dispatcher != null) {
                 dispatcher.fireActionEvent(e);
             }
@@ -336,7 +351,7 @@ class MyComponentGroup extends ComponentGroup {
                 }
             }
         };
-        
+
         buttonsArray = new Button[values.length];
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -369,20 +384,44 @@ class MyComponentGroup extends ComponentGroup {
 //</editor-fold>
 
             if (multipleSelectionAllowed) {
-                buttonsArray[i] = new CheckBox(this.names[i]);
+                buttonsArray[i] = new CheckBox();
+                if (names != null) {
+                    buttonsArray[i].setText(this.names[i]);
+                }
+                if (icons != null) {
+                    if (iconFont != null) {
+                        buttonsArray[i].setFontIcon(iconFont, icons[i]);
+                    } else {
+                        buttonsArray[i].setMaterialIcon(icons[i]);
+                    }
+                    buttonsArray[i].setTextPosition(Label.RIGHT);
+                }
                 buttonsArray[i].setUIID("RadioButton");
             } else {
                 if (buttonGroup == null) {
                     buttonGroup = new ButtonGroup();
                 }
-                radioButton = new RadioButton(this.names[i]);
+//                radioButton = new RadioButton(this.names[i]);
+                radioButton = new RadioButton();
+                if (names != null) {
+                    radioButton.setText(names[i]);
+                }
+                if (icons != null) {
+                    if (iconFont != null) {
+                        radioButton.setFontIcon(iconFont, icons[i]);
+                    } else {
+                        radioButton.setMaterialIcon(icons[i]);
+                    }
+                    radioButton.setTextPosition(Label.RIGHT);
+                }
+
 //                radioButton.setToggle(true); //allow to de-select a selected button
                 radioButton.setUnselectAllowed(unselectAllowed); //allow to de-select a selected button
 //                radioButton.addActionListener(buttonListener); //allow to de-select a selected button
                 buttonGroup.add(radioButton);
                 buttonsArray[i] = radioButton;
             }
-            if (Config.TEST) {
+            if (Config.TEST&&names!=null) {
                 buttonsArray[i].setName(this.names[i]);
             }
             this.add(buttonsArray[i]);
@@ -400,7 +439,7 @@ class MyComponentGroup extends ComponentGroup {
 //            select(selectedIndex);
 //</editor-fold>
         }
-        
+
         selectValue(selectedValue);
     }
 
@@ -438,8 +477,10 @@ class MyComponentGroup extends ComponentGroup {
 //        }
 //    }
     /**
-     * select the tiven index, if selectedIndex does not match any (-1 or larger than array), all are unselected
-     * @param selectedIndex 
+     * select the tiven index, if selectedIndex does not match any (-1 or larger
+     * than array), all are unselected
+     *
+     * @param selectedIndex
      */
     public void selectIndex(int selectedIndex) {
 //        int size = this.getComponentCount();
@@ -522,17 +563,16 @@ class MyComponentGroup extends ComponentGroup {
 //</editor-fold>
         selectIndex(getIndexOfValue(value));
     }
-    
+
 //    public void selectValuesXXX(Vector initiallySelectedValues) {
 //        selectValues(initiallySelectedValues);
 //    }
-    
     public void selectValues(Vector initiallySelectedValues) {
         for (Object o : initiallySelectedValues) {
             selectValue(o);
         }
     }
-    
+
     int getSelectedCount() {
         int count = 0;
         for (int i = 0, size = buttonsArray.length; i < size; i++) {
@@ -541,7 +581,7 @@ class MyComponentGroup extends ComponentGroup {
             }
         }
         return count;
-        
+
     }
 
     /**
@@ -605,7 +645,7 @@ class MyComponentGroup extends ComponentGroup {
             return null;
         }
     }
-    
+
     public int getSelectedAsInt() {
 //        int selected = getSelectedIndex();
 //        if (selected >= 0 && selected < values.length) {
@@ -615,7 +655,7 @@ class MyComponentGroup extends ComponentGroup {
 //        }
         return (int) getSelectedValue();
     }
-    
+
     public String getSelectedAsString() {
         return (String) getSelectedValue();
     }
@@ -655,7 +695,7 @@ class MyComponentGroup extends ComponentGroup {
             dispatcher.removeListener(l);
         }
     }
-    
+
     private EventDispatcher selectionListener = null; //new EventDispatcher();
 
     /**
@@ -676,7 +716,7 @@ class MyComponentGroup extends ComponentGroup {
             selectionListener.removeListener(l);
         }
     }
-    
+
     private Container buttonsContainer;
 
     /**
@@ -714,7 +754,7 @@ class MyComponentGroup extends ComponentGroup {
     public void setupLayout(int numberButtons, ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow) {
         setupLayout(numberButtons, compGroupRows, nbButtonsInEachRow, false);
     }
-    
+
     public void setupLayout(int numberButtons, ComponentGroup[] compGroupRows, int[] nbButtonsInEachRow, boolean allButtonsSameWidth) {
 //        if (compGroupRows != null) {
         if (nbButtonsInEachRow != null) {

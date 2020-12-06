@@ -180,7 +180,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
         this.itemsSortedFiltered = (List<Item>) this.ownerItemItemListOrCategory.getList();
 
 //        long requiredWorkTime = ownerOrCategory.getWorkTimeRequiredFromProvider(ownerOrCategory); //calculate how much time is needed from this' subtasks
-        long requiredWorkTime = this.ownerItemItemListOrCategory.getRemaining(); //calculate how much time is needed from all subtasks
+        long requiredWorkTime = this.ownerItemItemListOrCategory.getRemainingTotal(); //calculate how much time is needed from all subtasks
 //        long availWorktime = getAvailableTime();
         long availWorktime = workTimeSlices.getAvailableTime();
 
@@ -669,7 +669,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
                 Item itemOwner = (Item) ownerItemItemListOrCategory;
                 boolean notAProject = !itemOwner.isProject();
 //                long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(notAProject); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
-                long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
+                long remainingPrjTask = itemOwner.getRemainingForTask(); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
                 if (remainingPrjTask > 0 || notAProject) {
                     WorkTimeSlices newWorkTS = workTimeSlices.getWorkTime(remainingPrjTask, ownerItemItemListOrCategory);
                     if (newWorkTS != null) {

@@ -36,7 +36,7 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
-        ScreenType screenType = previousForm.getScreenType();
+        ScreenType screenType = parentForm.getScreenType();
 //       if (screenType)
         switch (screenType) {
             case TODAY:

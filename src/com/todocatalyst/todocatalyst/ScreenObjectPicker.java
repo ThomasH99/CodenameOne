@@ -238,7 +238,7 @@ public class ScreenObjectPicker<E> extends MyForm {
         listCont.setScrollableY(true); //disable scrolling of form, necessary to let lists handle their own scrolling 
         getContentPane().add(BorderLayout.CENTER, listCont);
         addCommandsToToolbar(getToolbar());
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        getToolbar().addSearchCommand((e) -> {
 //            String text = (String) e.getSource();
 //            boolean showAll = (text == null || text.length() == 0);
@@ -252,6 +252,7 @@ public class ScreenObjectPicker<E> extends MyForm {
 ////            getContentPane().animateLayout(150);
 //            animateMyForm();
 //        }, MyPrefs.defaultIconSizeInMM.getFloat());
+//</editor-fold>
         refreshAfterEdit();
     }
 
@@ -285,7 +286,8 @@ public class ScreenObjectPicker<E> extends MyForm {
 
         super.addCommandsToToolbar(toolbar);
 
-        getToolbar().addCommandToRightBar(new MySearchCommand(getContentPane(), (e) -> {
+//        getToolbar().addCommandToRightBar(new MySearchCommand(getContentPane(), (e) -> {
+        setSearchCmd(new MySearchCommand(this, (e) -> {
             String text = (String) e.getSource();
             boolean showAll = (text == null || text.length() == 0);
             for (int i = 0, size = this.checkBoxes.length; i < size; i++) {
@@ -293,6 +295,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             }
             animateMyForm();
         }));
+        getToolbar().addCommandToRightBar(getSearchCmd());
 
         //if (objectCreator!=null)
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllObjects, ScreenObjectPicker.this)); //TODO!!!! enable adding new elements to picker screen
@@ -313,7 +316,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             );
         }
 
-    }
+    };
 
     private Container buildList(List listOfAllObjects, Container cont) {
         parseIdMap2.parseIdMapReset();

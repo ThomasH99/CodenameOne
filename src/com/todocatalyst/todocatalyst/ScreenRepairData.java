@@ -31,7 +31,7 @@ public class ScreenRepairData extends MyForm {
     ScreenRepairData(MyForm mainScreen) { // throws ParseException, IOException {
         super(SCREEN_TITLE, null, () -> {
         });
-        this.previousForm = mainScreen;
+        this.parentForm = mainScreen;
         setLayout(new BoxLayout(BoxLayout.Y_AXIS));
         setScrollableY(true);
         addCommandsToToolbar();

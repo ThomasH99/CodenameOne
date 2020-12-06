@@ -53,6 +53,7 @@ public class StickyHeader extends Button implements ScrollListener {
     public StickyHeader() {
         super();
         setTextPosition(LEFT);
+        setGrabsPointerEvents(true);  //prevent event to be send to component *below* stickyHeader (below glasspane)? 
 //        setLayout(BorderLayout.center());
 //        hideShowButton.setCommand(Command.createMaterial("", FontImage.MATERIAL_EXPAND_LESS, (ev) -> {
 //        hideShowButton.setCommand(Command.createMaterial("", Icons.iconCollapseListStickyHeader, (ev) -> {
@@ -109,9 +110,15 @@ public class StickyHeader extends Button implements ScrollListener {
                 }
             }
             getParent().animateHierarchy(MyForm.ANIMATION_TIME_DEFAULT);
+//            e.consume(); //prevent event to be send to component *below* stickyHeader (below glasspane)? Not working
         });
 
+//        addPointerPressedListener((e) -> e.consume());  //prevent event to be send to component *below* stickyHeader (below glasspane)? Not working
 //        super.add(BorderLayout.EAST, hideShowButton);
+    }
+
+    public void pointerPressed(int x, int y) {
+        super.pointerPressed(x, y);
     }
 
     public StickyHeader(String uiid) {
@@ -272,7 +279,7 @@ public class StickyHeader extends Button implements ScrollListener {
                     Component scrollableComp = getComponentForm().findScrollableChild(form.getContentPane());
 //                    Component contPane = scrollableComp;
 
-                    if (true||scrollableComp instanceof Container) {
+                    if (true || scrollableComp instanceof Container) {
 //                        Container contPane = (Container) scrollableComp;
 //                int tx = contPane.getAbsoluteX() + contPane.getStyle().getMarginLeft(isRTL()); //- getX(); //WORKS
                         int tx = contPane.getAbsoluteX() + contPane.getStyle().getMarginLeft(isRTL()) + getParent().getX(); //- getX(); //WORKS

@@ -79,7 +79,8 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
      * only once and are not used with different items)
      */
     ExpandedObjects(String screenId, ParseObject parseObject) {
-        this(screenId, (parseObject == null || parseObject.getObjectIdP() == null || parseObject.getObjectIdP().isEmpty() ? "NoParseObject" : parseObject.getObjectIdP()));
+//        this(screenId, (parseObject == null || parseObject.getObjectIdP() == null || parseObject.getObjectIdP().isEmpty() ? "NoParseObject" : parseObject.getObjectIdP()));
+        this(screenId, parseObject.getGuid());
     }
 
     private boolean isValidFilename(String filename) {
@@ -92,30 +93,35 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
         }
     }
 
-    private String getUniqueStr(Object element) {
-        String s = null;
-        if (element instanceof ItemAndListCommonInterface) {
-            if (((ItemAndListCommonInterface) element).isNoSave()) {
-                s = ((ItemAndListCommonInterface) element).getText(); //TODO!!!!: a hack to keep expanded state of e.g. temporary statistics -> need to clean up
-            } else {
-                String objId = ((ItemAndListCommonInterface) element).getObjectIdP();
-                if (objId == null) {
-                    //if element doesn't have an ObjId yet, then use hashcode as a temporary one, replace as soon as the ObjId set
-                    s = "" + element.hashCode();
+//    private String getUniqueStr(Object element) {
+    private String getUniqueStr(ItemAndListCommonInterface element) {
+        if (false) {
+            String s = null;
+            if (element instanceof ItemAndListCommonInterface) {
+                if (((ItemAndListCommonInterface) element).isNoSave()) {
+                    s = ((ItemAndListCommonInterface) element).getText(); //TODO!!!!: a hack to keep expanded state of e.g. temporary statistics -> need to clean up
                 } else {
-                    s = objId;
+                    String objId = ((ItemAndListCommonInterface) element).getObjectIdP();
+                    if (objId == null) {
+                        //if element doesn't have an ObjId yet, then use hashcode as a temporary one, replace as soon as the ObjId set
+                        s = "" + element.hashCode();
+                    } else {
+                        s = objId;
+                    }
+                }
+            } else if (element instanceof WorkSlotList) {
+                s = ((WorkSlotList) element).getOwner().getObjectIdP(); //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
+            } else if (element instanceof ExpiredAlarm) {
+                s = ((ExpiredAlarm) element).objectId; //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
+            } else if (Config.TEST) { //NB. the top-level list is by default expanded and if the format is not recognized, we arrive here, which is not a problem
+                if (false) {
+                    ASSERT.that(false, "expanding unsupported element=" + element);
                 }
             }
-        } else if (element instanceof WorkSlotList) {
-            s = ((WorkSlotList) element).getOwner().getObjectIdP(); //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
-        } else if (element instanceof ExpiredAlarm) {
-            s = ((ExpiredAlarm) element).objectId; //store owner id for WorkSlotLists (which are temporary/dynamically calculate)
-        } else if (Config.TEST) { //NB. the top-level list is by default expanded and if the format is not recognized, we arrive here, which is not a problem
-            if (false) {
-                ASSERT.that(false, "expanding unsupported element=" + element);
-            }
+            return s;
+        } else {
+            return element.getGuid();
         }
-        return s;
     }
 
     /**
@@ -128,7 +134,7 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
         boolean result = false;
 
         if (element instanceof ItemAndListCommonInterface) {
-            String uniqueStr = getUniqueStr(element);
+            String uniqueStr = getUniqueStr((ItemAndListCommonInterface)element);
             if (((ItemAndListCommonInterface) element).isNoSave()) {
 //            result = expandedObjects.add(((ItemAndListCommonInterface) element).getText()); //TODO!!!!: a hack to keep expanded state of e.g. temporary statistics -> need to clean up
                 result = expandedObjects.add(uniqueStr); //TODO!!!!: a hack to keep expanded state of e.g. temporary statistics -> need to clean up
@@ -136,19 +142,19 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
                 //if element doesn't have an ObjId yet, then 
 //            DAO.getInstance().saveInBackground(() -> add(element)); //call recursively, may iterate until element is finally saved in background
                 result = expandedObjects.add(uniqueStr);
-                if (false) {
-                    DAO.getInstance().saveNew((ParseObject) element, () -> {
-                        //after element has been successfully saved, replace the temporaryId by the objId:
-                        if (Config.TEST) {
-                            ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null, "Something went wrong: no ObjId set for element=" + element);
-                        }
-                        expandedObjects.remove(uniqueStr);
-//                expandedObjects.add(((ItemAndListCommonInterface) element).getObjectIdP());
-                        expandedObjects.add(getUniqueStr(element));
-                        save();
-//                },true);
-                    }, false);
-                }
+//                if (false) {
+//                    DAO.getInstance().saveNew((ParseObject) element, () -> {
+//                        //after element has been successfully saved, replace the temporaryId by the objId:
+//                        if (Config.TEST) {
+//                            ASSERT.that(((ItemAndListCommonInterface) element).getObjectIdP() != null, "Something went wrong: no ObjId set for element=" + element);
+//                        }
+//                        expandedObjects.remove(uniqueStr);
+////                expandedObjects.add(((ItemAndListCommonInterface) element).getObjectIdP());
+//                        expandedObjects.add(getUniqueStr(element));
+//                        save();
+////                },true);
+//                    });
+//                }
                 //objId will be effectively added, and expandedObjects saved, to expanded once the element has been saved
             } else {
                 result = expandedObjects.add(uniqueStr); //a hashset so no need to check if already added
@@ -220,7 +226,8 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
     }
 
 //        @Override
-    public boolean remove(Object element) {
+//    public boolean remove(Object element) {
+    public boolean remove(ItemAndListCommonInterface element) {
 //            boolean result = super.remove(((ItemAndListCommonInterface) element).getObjectIdP());
 //        boolean result = expandedObjects.remove(((ItemAndListCommonInterface) element).getObjectIdP());
         boolean result = expandedObjects.remove(getUniqueStr(element));
@@ -229,13 +236,15 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
     }
 
 //        @Override
-    public boolean contains(Object element) {
+//    public boolean contains(Object element) {
+    public boolean contains(ItemAndListCommonInterface element) {
 //            return super.contains(((ItemAndListCommonInterface) element).getObjectIdP());
 //        return expandedObjects.contains(((ItemAndListCommonInterface) element).getObjectIdP());
         return expandedObjects.contains(getUniqueStr(element));
     }
 
-    public void updateExpandedUIID(Component comp, Object element, String normalUIId, String expandedUIID) {
+//    public void updateExpandedUIID(Component comp, Object element, String normalUIId, String expandedUIID) {
+    public void updateExpandedUIID(Component comp, ItemAndListCommonInterface element, String normalUIId, String expandedUIID) {
 //            return super.contains(((ItemAndListCommonInterface) element).getObjectIdP());
 //        if (expandedObjects.contains(((ItemAndListCommonInterface) element).getObjectIdP())) {
         if (expandedObjects.contains(getUniqueStr(element))) {

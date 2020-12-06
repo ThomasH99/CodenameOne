@@ -1,22 +1,16 @@
 /*
- * To change this template, choose Tools | Templates
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.ui.Command;
-import com.codename1.ui.Component;
 import com.codename1.ui.Dialog;
-import com.codename1.ui.Image;
 
 /**
  *
- * @author Thomas
+ * @author thomashjelm
  */
-public class MyDialog extends Dialog {
+public class MyDialog extends Dialog{
     
-    MyDialog() {
-        
-    }
-
 }

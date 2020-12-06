@@ -8,6 +8,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
 import com.codename1.ui.Display;
+import com.codename1.ui.Form;
 import com.codename1.ui.events.ActionEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -76,7 +77,7 @@ public class ReplayLog {
 //        deleteAllReplayCommandsFromPreviousScreen(null);
 //    }
 //    void deleteAllReplayCommandsFromPreviousScreen(String screenName) {
-    void clearSetOfScreenCommands() {
+    void clearSetOfScreenCommandsNO_EFFECT() {
 //        if (storeAllCommandsForScreen) {
 //        this.screenName = screenName;
         if (false) { //doesn't make sense to keep the screenCommands on refreshAfterEdit - since Replay will be called immediately after first creation of screen??!!
@@ -132,8 +133,9 @@ public class ReplayLog {
 //        if (nextIndex == -1 || nextIndex < logList.size()) { //do not store command if it is the command being replayed
         if (!replayingInProgress) { //do not store command if it is the command being replayed
             boolean doubleDecl = replayStack.contains(replayCommand.getCmdUniqueID());
-            ASSERT.that(!doubleDecl, () -> "Unique command ID \"" + replayCommand.getCmdUniqueID() + "\" already in list: " + replayStack);
-            if (doubleDecl) {
+            //OK to have commands from ScreenItem2 multiple times in stack, e.g. editSubtasks
+            if (false && doubleDecl) {
+                ASSERT.that(true, () -> "Unique command ID \"" + replayCommand.getCmdUniqueID() + "\" already in list: " + replayStack);
                 //remove a previous command (and all commands after it) which is stuck by mistake (due to crash??)
                 String cmdStr;
                 do {
@@ -205,7 +207,9 @@ public class ReplayLog {
 //                        +Display.getInstance().getCurrent() instanceof MyForm?((MyForm)Display.getInstance().getCurrent()).SCREEN_TITLE:"<not a MyForm>"Display.getInstance().getCurrent().getTitle());
 //                    in screen" + Display.getInstance().getCurrent().getTitle()
                     ASSERT.that(false, "ERROR  ReplayCommand: \"" + cmdUIID + "\" not defined/FILTERED?, idx=" + currentIndex
-                            + (Display.getInstance().getCurrent() != null ? " SCREEN=" + ((MyForm) Display.getInstance().getCurrent()).getUniqueFormId() + ", " : "")
+                            + (Display.getInstance().getCurrent() instanceof MyForm
+                            ? (" SCREEN=" + ((MyForm) Display.getInstance().getCurrent()).getUniqueFormId() + ", ")
+                            : (Display.getInstance().getCurrent() instanceof Form ? (" SCREEN=" + ((Form) Display.getInstance().getCurrent()).getTitle()) : "Form w/o title"))
                             + "\nReplayLog=[" + this + "]"
                             + "\nScreenCmds=[" + screenCommands + "]");
                 }

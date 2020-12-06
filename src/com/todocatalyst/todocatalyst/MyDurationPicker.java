@@ -15,7 +15,7 @@ import java.util.Map;
  *
  * @author Thomas
  */
-class MyDurationPicker extends Picker implements SwipeClear {
+class MyDurationPicker extends Picker implements SwipeClear {//implements SwipeClear {
 
     private final static String DEFAULT_ZERO_VALUE_PATTERN = "";
 //    private String zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN;
@@ -278,7 +278,7 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //    }
 //</editor-fold>
     void swipeClear() {
-        setDurationAndNotify(0L); //will notify myActionListeners
+        setDurationAndNotify(0); //will notify myActionListeners
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -372,14 +372,19 @@ class MyDurationPicker extends Picker implements SwipeClear {
 //            return title;
 //        }
 //</editor-fold>
-    @Override
-    public void clearFieldValue() {
-        swipeClear();
-    }
+//    @Override
+//    public void clearFieldValue() {
+//        swipeClear();
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void fireClicked() { //needed to give access to 'click' the button programmatically
 //        super.fireClicked();
 //    }
 //</editor-fold>
+
+    @Override
+    public void clearFieldValue() {
+        swipeClear();
+    }
 };

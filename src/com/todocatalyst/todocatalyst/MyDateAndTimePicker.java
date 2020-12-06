@@ -23,6 +23,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
 //    private String DEFAULT_ZERO_VALUE_PATTERN = "0";
     private String zeroValuePattern;
     private GetVal getDefaultValue;
+    private boolean inputValidated=true; //true by default, until pressed and a default value is set, then true again if the user explicitely validated the value by pressing Done?
 //    private Button clearButton = null;
 
     MyDateAndTimePicker() {
@@ -42,7 +43,8 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
             }
         });
         addActionListener((e) -> {
-            Log.p("ActionListener called on MyDateAndTimePicker, actionEvent=" + e);
+//            Log.p("ActionListener called on MyDateAndTimePicker, actionEvent=" + e);
+            inputValidated = true;
         });
     }
 
@@ -75,8 +77,8 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
 
 //    @Override
     protected void updateValue() {
-        Date date = getDate();
-        if (date != null && date.getTime() == 0 && zeroValuePattern != null) {
+        Date date = (Date)getValue();
+        if ((date == null || date.getTime() == 0) && zeroValuePattern != null) {
             setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
         } else {
             super.updateValue(); //To change body of generated methods, choose Tools | Templates.
@@ -111,18 +113,22 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
 //                () -> set.accept(this.getDate()));
 //    }
 //</editor-fold>
-//    @Override
+    @Override
     public void pressed() {
         //set date to Now if empty when button is clicked
-        if (getDate() == null || getDate().getTime() == 0) {
+        if (getValue() == null || ((Date)getValue()).getTime() == 0) {
+            inputValidated = false;
 //                setDate(new Date());
+            if (getValue() == null) {
+                setDate(new MyDate(0));
+            }
             if (getDefaultValue != null) { //                getDate().setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
 //                setDate(((Date) getDefaultValue.getVal())); //use this instead of setDate to set date to avoid updating label before showing picker
-                getDate().setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+                ((Date)getValue()).setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
             } else { //                getDate().setTime(MyDate.roundUpToNextMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
                 //                getDate().setTime(MyDate.roundToNearestMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
 //                setDate(MyDate.roundToNearestMinute(new MyDate())); //use this instead of setDate to set date to avoid updating label before showing picker
-                getDate().setTime(MyDate.roundToNearestMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+                ((Date)getValue()).setTime(MyDate.roundToNearestMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
             }
         }
         super.pressed();
@@ -147,6 +153,24 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
     @Override
     public void clearFieldValue() {
         swipeClear();
+    }
+
+//    @Override
+    public Object getValueXXX() {
+        if (inputValidated) {
+            return super.getValue();
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public Date getDate() {
+        if (inputValidated) {
+            return super.getDate();
+        } else {
+            return null;
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

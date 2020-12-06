@@ -51,6 +51,6 @@ public class ASSERT {
     }
 
     public static void that() {
-        that("Should nevern be called!!");
+        that("Should never be called!!");
     }
 }

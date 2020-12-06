@@ -197,6 +197,9 @@ MyIcon {
 
     paintsTitleBarBool: true;
     statusBarScrollsUpBool:true;
+    scrollVisibleBool: true;
+
+    tabsFillRowsBool:true; /*ensures tabs in ScreenItem2 fill out the row*/
 
     /*https://stackoverflow.com/questions/19032940/how-can-i-get-the-ios-7-default-blue-color-programmatically/19033326*/
     /* use as var(--left-padding)*/
@@ -236,6 +239,7 @@ Label {
     /*text-align: left; /**/
     /* font-size: 80%;*/
     color: black;
+    background: transparent;
     /*background-color: #3399ff;*/
     /*padding:0mm 3mm 0 0mm; top+bottom right+left*/
     /*    padding-top: 1mm; 
@@ -253,15 +257,15 @@ DateLabelCentered { /*used to show simulated dates in ScreenRepeatRule */
     text-align: center;
 }
 
-ExpandableContainerTitleXXX { /*used eg to show past/future repeat instances in ScreenRepeatRule */
+/*ExpandableContainerTitleXXX { used eg to show past/future repeat instances in ScreenRepeatRule 
     cn1-derive: StickyHeader;
     text-align: center;
-}
+}*/
 
-ExpandableContainerButtonXXX { /*used eg to show past/future repeat instances in ScreenRepeatRule */
+/*ExpandableContainerButtonXXX { used eg to show past/future repeat instances in ScreenRepeatRule 
     cn1-derive: StickyHeader;
-    /*text-align: left;*/
-}
+    text-align: left;
+}*/
 ExpandableContainer{ /*used eg to show past/future repeat instances in ScreenRepeatRule */
     cn1-derive: StickyHeader;
 }
@@ -271,7 +275,7 @@ Button {
     /*border: 1pt solid gray;*/
     text-align: center;
     color: #007AFF; /*dodgerblue;*/
-    /*background-color: transparent; /**/
+    background-color: transparent; 
 }
 
 /*Button.pressed {
@@ -283,29 +287,57 @@ MyButton {
     background-color: blue;
 }
 
-TextFieldXXX  {
+/*TextFieldXXX  {
     cn1-derive: Default;
-    font-family :  "native:MainRegular"; /*"native:MainRegular";*/
+    font-family :  "native:MainRegular"; "native:MainRegular";
     padding: 2mm;
     margin: 1mm;
     background-color: white;
-    border: 1pt solid lightgray; /* cn1-pill-border; /*cn1-round-border;*/
-    /*border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    border: 1pt solid lightgray;  cn1-pill-border; /*cn1-round-border;
+    border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;
     color: black;
-    /*font-size: 100%;*/
+    font-size: 100%;
     text-align: left; 
-}
+}*/
 
 TextField { 
     cn1-derive: Default; /*ListOfItemsTextBase;*/
     font-family :  "native:MainRegular"; /*"native:MainRegular";*/
-
+    /*font-family :  "native:MainRegular";/*"native:MainThin"; "native:MainRegular";*/
+    /*padding: 3mm;/**/
+    margin: 0mm; /*field goes to edge of screen*/
+    /*color: black; /*darkgrey;*/
     /*->font-family :  "native:MainLight"; /*"native:MainRegular";*/
     /*margin: 1mm;*/
-    padding: 5mm; /*var(--left-padding);/*2mm;*/
+    padding: 3mm; /*var(--left-padding);/*2mm;*/
     /*border: 1pt solid lightgray;  cn1-pill-border; /*cn1-round-border;*/
     color: black;
     text-align: left;
+}
+
+/****************** Dialog *******************/
+
+Dialog {
+    background-color: aqua;/**/
+    border: 1px solid #007AFF;
+    border-radius: 2mm ;
+}
+DialogTitle {
+    cn1-derive: Title;
+    color: white;
+    font: bold;
+    font-size: 140%;
+    background: darkgray;
+}
+DialogContentPane {
+    cn1-derive: Title;
+}
+DialogBody {
+    cn1-derive: Title;
+}
+DialogCommandArea {
+    cn1-derive: Title;
+    border-top: 1px solid darkgray;
 }
 
 /****************** Form Title / Titlebar + Tool icons *******************/
@@ -519,10 +551,10 @@ ScreenAlarmsSnoozeAll { /*icon for snoozing a single alarm*/
 
 ScreenItemTaskText {
     cn1-derive: TextField; 
-    font-family :  "native:MainRegular";/*"native:MainThin"; "native:MainRegular";*/
-    padding: 3mm;/**/
-    margin: 0mm; /*field goes to edge of screen*/
-    color: black; /*darkgrey;*/
+    /*font-family :  "native:MainRegular";/*"native:MainThin"; "native:MainRegular";*/
+    /*padding: 3mm;/**/ 
+    /*margin: 0mm; /*field goes to edge of screen*/
+    /*color: black; /*darkgrey;*/
     /*    padding: 3mm;
         margin: 2mm 0 0 0;
         background-color: white;
@@ -535,8 +567,8 @@ ScreenItemTaskText {
 
 ScreenItemTaskTextHint {
     cn1-derive: ScreenItemTaskText;
-    margin: 0mm;
-    padding: 0mm; 
+    /*    margin: 0mm;
+        padding: 0mm; */
     font-family:  "native:MainThin";
     color: lightgray;
     /*color: red;*/
@@ -554,13 +586,17 @@ ScreenItemTaskTextStarredInherited {
     /*color: indianred; /*blueviolet;*/
     background: lightyellow;
 }
-/*
-ScreenItemTaskText.selected {
+
+/*ScreenItemTaskText.selected {
     cn1-derive: ScreenItemTaskText;
+    padding: 3mm;
+    margin: 0mm;
 }
 
 ScreenItemTaskText.pressed {
     cn1-derive: ScreenItemTaskText;
+    padding: 3mm;
+    margin: 0mm;
 }*/
 
 /*Text { old UIID for task text
@@ -762,7 +798,7 @@ ClearFieldButton {
 }
 
 IconEdit {
-    cn1-derive: LabelFixed;
+    cn1-derive: Label;
     /*    cn1-derive: TextArea;
         padding: 1mm;
         margin: 1mm;
@@ -881,16 +917,20 @@ BigTimerForm {
 
 BigTimerListTitle {
     cn1-derive: Label; /**BigTimerBase;/**/
+    color: darkgrey;
     text-align: center;
+    padding: 0.5mm;
+    margin: 0; 
     /*color: red;
     background-color: grey;*/
 }
 BigTimerItemStatus {
     cn1-derive: Label;
+    background: transparent; 
     /*color: red; /**/
 }
 BigTimerItemText{
-    cn1-derive: ScreenItemTaskText;
+    cn1-derive: ScreenItemTaskText; 
     /*background-color: #e3fefe; /*whitesmoke;*/
     /*color: violet;
     background-color: grey;/**/
@@ -931,6 +971,7 @@ BigTimerTotalActual {
 }
 
 BigTimerTimer {
+    cn1-derive: Default;
     /*font-family :  "native:MainBold";*/
     /*font-family :  "System-Monospace"; doesn't seem to be monospace on iOS, but OK on simulator'*/
     /*font-family :  "largeBoldMonospaceFont";*/
@@ -938,12 +979,13 @@ BigTimerTimer {
     /*font-family :  "largeBoldMonospaceFont";*/
     /*https://stackoverflow.com/questions/60801160/how-to-select-a-native-monospace-font-in-theme-css/60931071#60931071*/
     font-family:  monospace; /*should now be valid*/
-    /*font-size: 200%;*/
+    /*font-size: 200%;*/ 
     font-size: large; /*use large as suggested here: https://stackoverflow.com/questions/62119533/how-to-set-a-specific-font-size-on-devices-using-css 15mm; /*34pt; 200%;/**56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
     border: 1mm solid gray;
     background-color: blue;
     text-align: center;
     color:white;
+    padding: 3mm; 
     margin-top: 2mm;
     margin-bottom: 2mm;
 }
@@ -962,7 +1004,7 @@ BigTimerCmdButton{
     text-align: center;
     margin: 1mm;
     padding: 1mm;
-    border-radius:  1mm;
+    border-radius: 1mm;
     background: lightskyblue; 
 }
 BigTimerExit { 
@@ -979,9 +1021,9 @@ BigTimerNext {
 }
 BigTimerCompleted {
     cn1-derive: BigTimerCmdButton;
-    margin-top: 4mm;
-    padding-top: 3mm;
-    padding-bottom: 3mm;
+    margin-top: 2mm; 
+    padding-top: 2mm;
+    padding-bottom: 2mm;
     /*padding: 2mm;*/
     /*border: 1pt darkgrey solid;*/ 
     /*background: lightskyblue;*/ 
@@ -995,11 +1037,11 @@ BigTimerCompleted {
 BigTimerNextItemWithText {
     cn1-derive: BigTimerCmdButton;
     /*color: limegreen;/**/
-    text-align: left;
+    text-align: center; /*left;*/
     background: lightblue; 
     /*margin-top: 2mm;*/
-    /*padding: 1mm;*/
-    margin-top: 2mm;
+    padding: 1mm;
+    margin-top: 0mm;
     /*    margin: 1mm;
         padding: 1mm;*/
     border: 1pt lightskyblue solid;
@@ -1063,7 +1105,7 @@ SmallTimerInterruptIcon{
 SmallTimerTimer {
     cn1-derive: BigTimerTimer;
     border: 5px solid gray;
-    font-size: xx-large; /*100%;*/
+    font-size: medium; /*small; /*xx-large; /*100%;*/
     padding: 1mm; /* 0mm 1mm 1mm;*/
     margin: 0mm;
     /*        margin-top: 1mm;
@@ -1145,12 +1187,12 @@ MainMenuCommand {
 }
 
 
-ScreenItemStarredXXX { /*style for starred icon task text in lists*/
+/*ScreenItemStarredXXX { style for starred icon task text in lists
     cn1-derive: Button;
-    /*color:red; /*blueviolet;/**/
-    padding:0 0.5mm 0 0; /*top+bottom right+left*/
+    color:red; /*blueviolet;/*
+    padding:0 0.5mm 0 0; top+bottom right+left
     margin:0mm;
-}
+}*/
 ScreenItemStarredActive { /*style for starred icon task text in lists*/
     cn1-derive: ScreenItemEditableValue;
     /*color:red; /*blueviolet;/**/
@@ -1193,7 +1235,7 @@ ListOfItemsTextBase { /*style for task text in lists*/
     padding-right:0.5mm;*/
 }
 
-ListOfItemsText { /*style for task text in lists*/
+ListOfItemsText { /*style for task text in lists    */
     cn1-derive: ListOfItemsTextBase; /**/
     /*font-family :  "native:MainLight"; "native:MainLight";*/
 }
@@ -1287,7 +1329,7 @@ ItemDetailsLabel { /*style for task details labels */
     cn1-derive: ItemListSmall;
 }
 
-ListOfItemsPrio {
+ListOfItemsPrioOLD {
     /*cn1-derive: ItemListSmall;/**/
     /*border: 1pt aquamarine cn1-round-border; /*cn1-pill-border;*/
     /*border: cn1-round-border; cn1-pill-border;*/
@@ -1301,6 +1343,11 @@ ListOfItemsPrio {
     /*margin: 0.1mm; 2pt;/**/
     margin-right: 1.25mm;
     padding: 0 0.6mm 0 0.6mm;
+    /*margin-right: 0mm;/**/
+}
+
+ListOfItemsPrio {
+    cn1-derive: ItemListSmall;
     /*margin-right: 0mm;/**/
 }
 
@@ -1382,7 +1429,7 @@ ListOfItemsShowSubtasks { /*expand subtasks*/
     background-color: lightgrey;/**/
     text-decoration: none;
     color:white;
-    padding: 0 0.5mm 0 0.5mm;
+    padding: 0 0.5mm 0 0.5mm; 
     margin: 0 1mm;
     /*border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
     /*border-radius: 8px; //TODO: this seems to make it crash - need to update CN1 source?! */
@@ -1391,6 +1438,26 @@ ListOfItemsShowSubtasks { /*expand subtasks*/
 ListOfItemsShowSubtasksExpanded { /*expand subtasks*/
     cn1-derive: ListOfItemsShowSubtasks;
     background-color: darkgray; /**/
+    /*color:white;
+    border: 1pt solid black; /* cn1-pill-border; /*cn1-round-border;*/
+    /*border-radius: 8px; //TODO: this seems to make it crash - need to update CN1 source?! */
+}
+ListOfWorkSlotsShowTasks { /*expand subtasks*/
+    cn1-derive: ItemListSmall;
+    /*background-color: lightgrey;/**/
+    background-color: darkgray;
+    text-decoration: none;
+    color:white;
+    padding: 0 0.5mm 0 0.5mm; 
+    margin: 1mm;
+    /*border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    /*border-radius: 8px; //TODO: this seems to make it crash - need to update CN1 source?! */
+}
+
+ListOfWorkSlotsShowTasksExpanded { /*expand subtasks*/
+    cn1-derive: ListOfWorkSlotsShowTasks;
+    /*background-color: darkgray; /**/
+    background-color: lightgrey; 
     /*color:white;
     border: 1pt solid black; /* cn1-pill-border; /*cn1-round-border;*/
     /*border-radius: 8px; //TODO: this seems to make it crash - need to update CN1 source?! */
@@ -1616,28 +1683,30 @@ StickyHeader {
     color:black;
     background-color:lightgrey;
     text-align: center;
-    padding: 1mm 0mm; /*was h=0.5mm*/
+    /*padding: 0mm 0mm; was h=0.5mm*/
+    padding-top: 1mm; /*was h=0.5mm*/
+    padding-bottom: 1mm; /*was h=0.5mm*/
     /*foreground-color: #268b04;*/
 }
 
-StickyHeaderLabel {
+/*StickyHeaderLabel {
     cn1-derive: ItemListSmall;
     text-align: center;
     background-color:transparent;
-    color:black; /*darkgray;/**/
-    /*background-color:darkgrey;/**/
+    color:black; darkgray;/*
+    background-color:darkgrey;/*
     padding: 1mm 0mm;
-    /*foreground-color: #268b04;*/
-}
+    foreground-color: #268b04;
+}*/
 
-StickyHeaderIconXXX {
+/*StickyHeaderIconXXX {
     cn1-derive: StickyHeaderLabel;
-    /*text-align: center;
+    text-align: center;
     color:black;
     background-color:darkgrey;
     padding: 0mm 0;
-    /*foreground-color: #268b04;*/
-}
+    /*foreground-color: #268b04;
+}*/
 
 TreeContainer {
     /*wraps item in ScreenListOfItems*/
@@ -1724,12 +1793,12 @@ SwipeButton{
     color:white;
 }
 
-SwipeButtonIconXXX{
+/*SwipeButtonIconXXX{
     font-size: 180%;
     margin: 0;
     padding: 1mm;
     color:white;
-}
+}*/
 
 SwipeButtonNewFromTemplate {
     cn1-derive: SwipeButtonCommonBase;
@@ -1765,15 +1834,17 @@ SwipeButtonTimer {
     /*color:cornflowerblue;*/
     background-color:cornflowerblue;
 }
-SwipeButtonInsertAbove {
+
+SwipeButtonInsertBelow{
     cn1-derive: SwipeButtonCommonBase;
     background-color:dodgerblue;
 }
 
-SwipeButtonInsertBelow{
+SwipeButtonInsertAbove {
     cn1-derive: SwipeButtonCommonBase;
-    background-color:darkgreen;
+    background-color:darkgrey;
 }
+
 
 
 /* INLINE INSERT ** ITEM ***/
@@ -1856,15 +1927,15 @@ ListPinchInsertTextCloseButton {
     margin: 0mm;
     padding: 0mm 2mm;
 }
-ListPinchInsertHintLabelXXX { 
+/*ListPinchInsertHintLabelXXX { 
     cn1-derive: Label;
     font-size: 80%;
     color: lightslategray;
     text-align: center;
-    /*background-color: #eee;*/
+    background-color: #eee;
     margin: 0mm;
     padding: 0mm;
-}
+}*/
 
 /* INLINE INSERT ** CATEGORY ***/
 
@@ -1894,15 +1965,15 @@ CatPinchInsertTextCloseButton {
     margin: 0mm;
     padding: 0mm 2mm;
 }
-CatPinchInsertHintLabelXXX { 
+/*CatPinchInsertHintLabelXXX { 
     cn1-derive: Label;
     font-size: 80%;
     color: lightslategray;
     text-align: center;
-    /*background-color: #eee;*/
+    background-color: #eee;
     margin: 0mm;
     padding: 0mm;
-}
+}*/
 
 /* INLINE INSERT ** WORKSLOT ***/
 
@@ -1932,15 +2003,15 @@ WorkSlotPinchInsertTextCloseButton {
     margin: 0mm;
     padding: 0mm 2mm;
 }
-WorkSlotPinchInsertHintLabelXXX { 
+/*WorkSlotPinchInsertHintLabelXXX { 
     cn1-derive: Label;
     font-size: 80%;
     color: lightslategray;
     text-align: center;
-    /*background-color: #eee;*/
+    background-color: #eee;
     margin: 0mm;
     padding: 0mm;
-}
+}*/
 
 
 /* STATISTICS */
@@ -1974,7 +2045,8 @@ WorkSlotContainer {
 }
 WorkSlotStartTime { /*style for task details - SOUTH */
     cn1-derive: ListOfItemsTextBase; 
-    margin-left: 2mm;
+    margin-left: 0mm;
+    margin-bottom: 0;
 }
 WorkSlotStartTimeNow { /*style for task details - SOUTH */
     cn1-derive: WorkSlotStartTime;
@@ -1989,6 +2061,11 @@ WorkSlotEndTime { /*style for task details - SOUTH */
 }
 WorkSlotDetails { /*style for task details - SOUTH */
     cn1-derive: ListOfItemsTextBase;
+    font-size: 90%;
+    margin-top: 0;
+    padding-top: 0; 
+    /*padding-left: 4mm;*/
+    color: darkgray;
 }
 
 ListOfItemsSelected { /*the size of the hidden(?) button below the checkbox)*/

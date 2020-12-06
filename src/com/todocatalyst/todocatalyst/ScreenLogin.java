@@ -74,6 +74,7 @@ public class ScreenLogin extends MyForm {
 
     private void startUp(boolean refreshDataInBackground) {
         EasyThread thread = EasyThread.start("cacheUpdate");
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (true) {
 //                thread.run(() -> {
 //                    DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
@@ -109,18 +110,20 @@ public class ScreenLogin extends MyForm {
 //            });
 //        } else {
 //            Dialog ip = new InfiniteProgress().showInfiniteBlocking(); //DONE in DAO.cacheLoadDataChangedOnServer
-        //TODO!!!! show waiting symbol "loading your tasks..."
+//TODO!!!! show waiting symbol "loading your tasks..."
 //            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            DAO.getInstance().cacheLoadDataChangedOnServer(true || MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),
 //                    false && MyPrefs.reloadChangedDataInBackground.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+//</editor-fold>
         DAO.getInstance().cacheLoadDataChangedOnServer(false); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            ip.dispose();
 //        }
         //ALARMS - initialize
 //        AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
         AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(); //TODO!!!! optimization: do in background
+//<editor-fold defaultstate="collapsed" desc="comment">
 
-        //TIMER - was running when app was moved to background? - now done with ReplayCommand
+//TIMER - was running when app was moved to background? - now done with ReplayCommand
 //            if (!ScreenTimer.getInstance().isTimerActive()) {
 //                new ScreenMain().show(); //go directly to main screen if user already has a session
 //            } else {
@@ -128,6 +131,7 @@ public class ScreenLogin extends MyForm {
 //                    new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
 //                }
 //            }
+//</editor-fold>
         new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
 
     }

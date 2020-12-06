@@ -28,6 +28,7 @@ import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.util.StringUtil;
+import com.diamonddevgroup.device.Device;
 import com.parse4cn1.ParseBatch;
 import com.parse4cn1.ParseException;
 import java.io.IOException;
@@ -55,7 +56,7 @@ public class ScreenRepair extends MyForm {
     ScreenRepair(MyForm mainScreen) { // throws ParseException, IOException {
         super(SCREEN_TITLE, null, () -> {
         });
-        this.previousForm = mainScreen;
+        this.parentForm = mainScreen;
         setLayout(new BoxLayout(BoxLayout.Y_AXIS));
         setScrollableY(true);
         addCommandsToToolbar();
@@ -237,7 +238,10 @@ public class ScreenRepair extends MyForm {
         TableLayout.Constraint right = new TableLayout.Constraint().horizontalAlign(Component.RIGHT);
         hi.setScrollableY(true);
 
-        hi.
+        hi. //using Diamond's device info library:
+                add(w40, new SpanLabel("Device name:")).add(right, new SpanLabel(Device.getName())).
+                add(w40, new SpanLabel("Device model:")).add(right, new SpanLabel(Device.getModel())).
+                add(w40, new SpanLabel("Device manufacturer:")).add(right, new SpanLabel(Device.getManufacturer())).
                 add(w40, new SpanLabel("Density:")).add(right, new SpanLabel(density)).
                 //                add(" ").
                 add(w40, new SpanLabel("Platform Name:")).add(right, new SpanLabel(d.getPlatformName())).
@@ -863,14 +867,37 @@ public class ScreenRepair extends MyForm {
         })));
 
         content.add(new Button(Command.create("Play all built-in sounds", null, (e9) -> {
-            Display.getInstance().isBuiltinSoundAvailable(SCREEN_TITLE);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_BUTTON_PRESS);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_CONFIRMATION);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ERROR);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_INFO);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_WARNING);
+            MyForm hi = new MyForm("Test built-in sounds", ScreenRepair.this, null);
+            
+            hi.setLayout(BoxLayout.y());
+
+//            hi.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenRepair.this.showBack()));
+            hi.getToolbar().addCommandToLeftBar(hi.makeDoneUpdateWithParseIdMapCommand());
+
+//            hi.add(new Button("", null, e->
+            Display d = Display.getInstance();
+            hi.add(new Button(Command.create("SOUND_TYPE_ALARM " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_ALARM), null, e -> d.playBuiltinSound(Display.SOUND_TYPE_ALARM))));
+            hi.add(new Button(Command.create("SOUND_TYPE_BUTTON_PRESS " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_BUTTON_PRESS), null, e -> d.playBuiltinSound(Display.SOUND_TYPE_BUTTON_PRESS))));
+            hi.add(new Button(Command.create("SOUND_TYPE_CONFIRMATION " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_CONFIRMATION), null, e -> d.playBuiltinSound(Display.SOUND_TYPE_CONFIRMATION))));
+            hi.add(new Button(Command.create("SOUND_TYPE_ERROR " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_ERROR), null, e -> d.playBuiltinSound(Display.SOUND_TYPE_ERROR))));
+            hi.add(new Button(Command.create("SOUND_TYPE_INFO " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_INFO), null, e -> d.playBuiltinSound(Display.SOUND_TYPE_INFO))));
+            hi.add(new Button(Command.create("SOUND_TYPE_WARNING " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_WARNING), null, e -> d.playBuiltinSound(Display.SOUND_TYPE_WARNING))));
+
+            hi.show();
+
         })));
+
+        {
+            content.add(new Button(Command.create("Buzz (200ms, ignored on iPhone)", null, (e9) -> {
+                Display.getInstance().vibrate(200);
+            })));
+            content.add(new Button(Command.create("Buzz (1s, ignored on iPhone)", null, (e9) -> {
+                Display.getInstance().vibrate(1000);
+            })));
+            content.add(new Button(Command.create("Buzz (6s, ignored on iPhone)", null, (e9) -> {
+                Display.getInstance().vibrate(6000);
+            })));
+        }
 
 //        content.add(new Button(MyCommand.create("Force current time", null, (e) -> {
         content.add(new Button(Command.create("Force current time", null, (e) -> {
@@ -935,45 +962,46 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
-        content.add(
-                new Button(new Command("Simulate notification", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
-                        if (false) {
-                            Date alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 14);
-                            Item item = new Item("TestAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
-                            item.setAlarmDate(alarm);
-//                            DAO.getInstance().saveNew(item, true);
-                            DAO.getInstance().saveNew(item);
-                            DAO.getInstance().saveNewExecuteUpdate();
-                            alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 12);
-                            item = new Item("TestWaitingAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
-                            item.setWaitingAlarmDate(alarm);
-//                            DAO.getInstance().saveNew(item, true);
-                            DAO.getInstance().saveNew(item);
-                            DAO.getInstance().saveNewExecuteUpdate();
-                        }
-                        switch (3) {
-                            case 1:
-                                AlarmHandler.getInstance().simulateNotificationReceived_TEST(15);
-                                break;
-                            case 2:
-                                //test alarm and waiting on same time
-                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test2", MyDate.makeDate(20), 15, 15);
-                                break;
-                            case 3:
-                                //test two alarms expiring on same time
-                                Date alarm = MyDate.makeDate(20);
-                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test1 in 30s", null, MyDate.makeDate(30), null);
-                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test2 in 30s", null, MyDate.makeDate(30), null);
-                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test3 in 60s", null, MyDate.makeDate(60), null);
-                                break;
-                        }
-//                        AlarmHandler.getInstance().simulateNotificationReceived_TEST(60);
-                    }
-                }
-                ));
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        content.add(
+//                new Button(new Command("Simulate notification", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
+//                    @Override
+//                    public void actionPerformed(ActionEvent evt) {
+//                        if (false) {
+//                            Date alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 14);
+//                            Item item = new Item("TestAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
+//                            item.setAlarmDate(alarm);
+////                            DAO.getInstance().saveNew(item, true);
+//                            DAO.getInstance().saveNew(item);
+//                            DAO.getInstance().saveNewTriggerUpdate();
+//                            alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 12);
+//                            item = new Item("TestWaitingAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
+//                            item.setWaitingAlarmDate(alarm);
+////                            DAO.getInstance().saveNew(item, true);
+//                            DAO.getInstance().saveNew(item);
+//                            DAO.getInstance().saveNewTriggerUpdate();
+//                        }
+//                        switch (3) {
+//                            case 1:
+//                                AlarmHandler.getInstance().simulateNotificationReceived_TEST(15);
+//                                break;
+//                            case 2:
+//                                //test alarm and waiting on same time
+//                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test2", MyDate.makeDate(20), 15, 15);
+//                                break;
+//                            case 3:
+//                                //test two alarms expiring on same time
+//                                Date alarm = MyDate.makeDate(20);
+//                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test1 in 30s", null, MyDate.makeDate(30), null);
+//                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test2 in 30s", null, MyDate.makeDate(30), null);
+//                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test3 in 60s", null, MyDate.makeDate(60), null);
+//                                break;
+//                        }
+////                        AlarmHandler.getInstance().simulateNotificationReceived_TEST(60);
+//                    }
+//                }
+//                ));
+//</editor-fold>
         content.add(
                 new Button(new Command("Simulate LocalNotif reception", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
                     @Override
@@ -1143,7 +1171,8 @@ public class ScreenRepair extends MyForm {
 //                    compList.animateLayout(ANIMATION_TIME_FAST);
 //                }, MyPrefs.defaultIconSizeInMM.getFloat());
 
-                logForm.getToolbar().addSearchCommand(new MySearchCommand(logForm.getContentPane(), (e) -> {
+//                logForm.getToolbar().addSearchCommand(new MySearchCommand(logForm.getContentPane(), (e) -> {
+                setSearchCmd(new MySearchCommand(logForm, (e) -> {
                     String txt = (String) e.getSource();
                     boolean searchOnLowerCaseOnly;
 //                    if (!txt.equals(txt.toLowerCase()))
@@ -1161,6 +1190,7 @@ public class ScreenRepair extends MyForm {
                     }
                     compList.animateLayout(ANIMATION_TIME_FAST);
                 }));
+                logForm.getToolbar().addSearchCommand(getSearchCmd());
 
                 Container c = null;
                 for (String s : list) {

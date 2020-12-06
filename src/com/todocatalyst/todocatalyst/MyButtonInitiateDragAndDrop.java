@@ -19,7 +19,7 @@ import com.codename1.ui.TextArea;
  * @author Thomas
  */
 //public class MyButtonInitiateDragAndDrop extends SpanButton {
-public class MyButtonInitiateDragAndDrop extends MySpanButton {
+public class MyButtonInitiateDragAndDrop extends SpanButton {
 
     private Component dragAndDropComponent;
     private MyForm.GetBoolean isDragAndDropEnabledFct;
@@ -29,6 +29,7 @@ public class MyButtonInitiateDragAndDrop extends MySpanButton {
         super(text);
         this.dragAndDropComponent = dragAndDropComponent;
         this.isDragAndDropEnabledFct = isDragAndDropEnabledFunction;
+//        setLeadComponent(dragAndDropComponent);
 //        getTextComponent().setVerticalAlignment(TextArea.CENTER);
 //        getTextComponent().setVerticalAlignment(TextArea.BOTTOM);
 //        getTextComponent().setVerticalAlignment(TextArea.CENTER); //https://stackoverflow.com/questions/36674632/multiple-line-textarea-alignment-in-table-layout-codenameone: can't position text area center
@@ -37,15 +38,17 @@ public class MyButtonInitiateDragAndDrop extends MySpanButton {
         setUIID("ListOfItemsTextCont");
         setTextUIID("ListOfItemsText");
         setAutoRelease(true); //"A bit of "black magic" to avoid that swipe triggers the button http://stackoverflow.com/questions/39558166/how-to-avoid-that-swiping-a-swipeablecontainer-also-creates-an-event-in-the-top
+        dragAndDropComponent.setBlockLead(true);
 //        actualButton.setAutoRelease(true); //"A bit of "black magic" to avoid that swipe triggers the button http://stackoverflow.com/questions/39558166/how-to-avoid-that-swiping-a-swipeablecontainer-also-creates-an-event-in-the-top
 //        setBlockLead(true);
         addLongPressListener((ev) -> {
             Form f = getComponentForm();
-            
+
             //prioritize pinch over drag&drop
-            if (f instanceof MyForm && ((MyForm)f).isPinchOngoing())
+            if (f instanceof MyForm && ((MyForm) f).isPinchOngoing()) {
                 return;
-            
+            }
+
             int x = ev.getX();
             int y = ev.getY();
             if (isDragAndDropEnabledFct.get()) {
@@ -56,8 +59,13 @@ public class MyButtonInitiateDragAndDrop extends MySpanButton {
                         }
                     }.run();
                 }
-                dragAndDropComponent.setDraggable(true);
-                dragAndDropComponent.setFocusable(true);
+                if (true) {
+                    dragAndDropComponent.setDraggable(true);
+                    dragAndDropComponent.setFocusable(true);
+                } else {
+                    setDraggable(true);
+                    setFocusable(true);
+                }
 //                Form f = getComponentForm();
                 f.pointerPressed(x, y);
                 Display.getInstance().callSerially(() -> {
