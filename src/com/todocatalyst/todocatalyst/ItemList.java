@@ -58,7 +58,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     final static String PARSE_OWNER = "owner";
     final static String PARSE_SOURCE_LISTS = "sourceLists"; //for meta-lists, not used yet
     final static String PARSE_META_LISTS = "metaLists";
-    final static String PARSE_FILTER_SORT_DEF = Item.PARSE_FILTER_SORT_DEF; //"filterSort";
+//    final static String PARSE_FILTER_SORT_DEF = Item.PARSE_FILTER_SORT_DEF; //"filterSort";
     final static String PARSE_WORKSLOTS = Item.PARSE_WORKSLOTS; //"filterSort";
 //    final static String PARSE_SYSTEM_LIST = "system";
     final static String PARSE_SYSTEM_NAME = "systemName"; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
@@ -271,7 +271,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter) {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //    }
-
     interface MySaveFunction {
 
         public boolean save();
@@ -602,6 +601,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 ////        return getItemAt(index);
 //        return getListFull().get(index);
 //    }
+    /**
+     * set the item in the filtered/sorted list
+     */
     @Override
     public Object set(int index, Object element) {
 //        return setItemAtIndex((E)element, index);
@@ -1684,17 +1686,20 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * set, save and apply filter (and resets the filtered/sorted list)
      *
      * @param filterSortDef
+     * @param saveEvenDefaultFilter
      */
     public void setFilterSortDef(FilterSortDef filterSortDef, boolean saveEvenDefaultFilter) {
 //        if (filterSortDef != null && filterSortDef != FilterSortDef.getDefaultFilter()) { //only save if not the default filter
 //        if ((filterSortDef != null && !filterSortDef.equals(FilterSortDef.getDefaultFilter())) || saveEvenDefaultFilter) { //only save if changed compared to the default filter
-        if ((filterSortDef != null && !filterSortDef.equals(getDefaultFilterSortDef())) || saveEvenDefaultFilter) { //only save if changed compared to the default filter
+        if ((filterSortDef == null
+                || filterSortDef.equals(getDefaultFilterSortDef()) //                || isFilterSortDefInherited(filterSortDef
+                ) && !saveEvenDefaultFilter) { //only save if changed compared to the default filter
 //            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved --> should be done in DAO now
 //                DAO.getInstance().saveInBackground(filterSortDef); //
 //            }
-            put(PARSE_FILTER_SORT_DEF, filterSortDef);
+            remove(Item.PARSE_FILTER_SORT_DEF);
         } else {
-            remove(PARSE_FILTER_SORT_DEF);
+            put(Item.PARSE_FILTER_SORT_DEF, filterSortDef);
         }
 //        filteredSortedList = null;
     }
@@ -1723,7 +1728,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     @Override
     public FilterSortDef getFilterSortDefN() {
-        FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
+        FilterSortDef filterSortDef = (FilterSortDef) getParseObject(Item.PARSE_FILTER_SORT_DEF);
         filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
         return filterSortDef;
     }
@@ -1799,7 +1804,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     /**
      * By default an ItemList does not delete the items in its list since they
      * are only references.Only the when an ItemList is used to store 'owned'
- items, like the sub-tasks of a task, should the sub-items be deleted.
+     * items, like the sub-tasks of a task, should the sub-items be deleted.
      *
      * @param deleteDate
      */
@@ -1929,9 +1934,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    }
 //</editor-fold>
     /**
-     * Adding an item to list at given index.OK to add to a position *after* the
-     * last element (at position getSize()).items will only be added if not
-     * already in list!
+     * Adding an item to full(!) list at given index. OK to add to a position
+     * *after* the last element (at position getSize()).items will only be added
+     * if not already in list!
      *
      * @param item - the item to add
      * @param index - the index position in the list
@@ -1991,6 +1996,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
                     ASSERT.that(listFull.indexOf(item) != -1, () -> "1.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
                 }
                 setList(listFull);
+                if (item instanceof Item) { //todo: instead make updateRepeatRule() a method on 
+                    ((Item) item).updateRepeatRule();
+                }
                 if (Config.TEST) {
                     ASSERT.that(listFull.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
                 }
@@ -2032,7 +2040,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        setList(listFull);
 //        fireDataChangedEvent(DataChangedListener.CHANGED, newPos);
 //    }
-    public ItemAndListCommonInterface setItemAtIndex(E item, int index) {
+    public ItemAndListCommonInterface setItemAtIndexOLD(E item, int index) {
 //        List<? extends ItemAndListCommonInterface> editedList = getListFull();
         List<E> listFull = getListFull();
         List<E> list = getList();
@@ -2071,6 +2079,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            fireDataChangedEvent(DataChangedListener.CHANGED, index);
 //            }
         }
+        return oldElement;
+    }
+
+    public ItemAndListCommonInterface setItemAtIndex(E item, int index) {
+        ItemAndListCommonInterface oldElement = removeItem(index);
+        addItemAtIndex(item, index);
         return oldElement;
     }
 
@@ -2309,7 +2323,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     /**
      * @inheritDoc
      */
-    public void removeItem(int indexFull) {
+    public ItemAndListCommonInterface removeItem(int indexFull) {
 
         E item = getItemAt(indexFull);
         Bag<E> itemBag = getItemBag();
@@ -2363,6 +2377,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //</editor-fold>
             }
         }
+        return item;
     }
 
     /**
@@ -4073,16 +4088,16 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public static FilterSortDef getSystemDefaultFilter(ScreenType screenType) {
         switch (screenType) {
             case NEXT:
-                return new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
+                return new FilterSortDef(screenType.name(), Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
                         + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false, false);
             case OVERDUE:
-                return new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
+                return new FilterSortDef(screenType.name(), Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
             case COMPLETION_LOG:
-                return new FilterSortDef(Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
+                return new FilterSortDef(screenType.name(), Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
             case CREATION_LOG:
-                return new FilterSortDef(Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
+                return new FilterSortDef(screenType.name(), Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
             case TOUCHED:
-                return new FilterSortDef(Item.PARSE_UPDATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false); //true => show most recent first
+                return new FilterSortDef(screenType.name(), Item.PARSE_UPDATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
         }
         return null;
     }

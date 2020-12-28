@@ -219,7 +219,8 @@ public class ScreenListOfItemLists extends MyForm {
 //                    DAO.getInstance().saveNew(true,(ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    DAO.getInstance().saveNew((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    DAO.getInstance().saveNewTriggerUpdate();
-                    DAO.getInstance().saveToParseNow((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                    DAO.getInstance().saveToParseNow((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                    DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    DAO.getInstance().saveInBackground((ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    previousForm.revalidate(); //refresh list to show new items(??)
 //                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
@@ -554,7 +555,8 @@ public class ScreenListOfItemLists extends MyForm {
 //            WorkSlotList workSlots = itemList.getWorkSlotListN();
 //         workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0;
             if (true || !statisticsMode) {
-                numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(false);
+//                numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(false);
+                numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean());
                 ASSERT.that(!statisticsMode || numberItems > 0, "the list should only exist in statistics mode if it is not empty");
                 if (true || numberItems > 0) { //UI: show '0' number of subtasks for empty lists
 //                Button subTasksButton = new Button();
@@ -614,7 +616,7 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
                 String effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
                         + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
-                if (workTimeSumMillis != 0) {
+                if (workTimeSumMillis != 0 && MyPrefs.listOfItemListsShowWorkTime.getBoolean()) {
                     effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
                 }
 //                east.addComponent(new Label((remainingEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
@@ -656,11 +658,11 @@ public class ScreenListOfItemLists extends MyForm {
                         Label estimateLabel = new Label(MyDate.formatDurationStd(estimatedEffort), "StatisticsDetail");
                         estimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
                         estimateLabel.setName("estimateLabel");
-                            estimateLabel.setGap(GAP_LABEL_ICON);
+                        estimateLabel.setGap(GAP_LABEL_ICON);
                         southDetailsContainer.addAll(estimateLabel);
 
 //                        if (itemBucket.hashValue != null) {
-                        if (false&&itemBucket.hashValue instanceof ItemAndListCommonInterface) {
+                        if (false && itemBucket.hashValue instanceof ItemAndListCommonInterface) {
                             List<WorkSlot> workslots = ((ItemAndListCommonInterface) itemBucket.hashValue).getWorkSlots(itemBucket.getStartTime(), itemBucket.getEndTime());
                             long workTimeMillis = 0;
                             for (WorkSlot w : workslots) {

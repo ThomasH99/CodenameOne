@@ -563,7 +563,7 @@ public class MyPrefs {
             = new PrefEntry("First statusbar doubletap scrolls to bottom of list instead of top",
                     "firstDoubleTapScrollsToBottomOfScreen", prod ? true : true, "First time the status bar of a scrolled task list is doubleHide the toolbar at top of the screen when scrolling a screen down");
 
-    //OTHER / SYSTEM-LEVEL
+    //OTHER //SYSTEM-LEVEL
     static PrefEntry enableCancelInAllScreens
             = new PrefEntry("**", "enableCancelInAllScreens", false, "temporarily used to disable Cancel everywhere due to problems eg with too complex to Cancel when inserting Templates with subtasks");
     static PrefEntry dateShowDatesInUSFormat
@@ -585,6 +585,10 @@ public class MyPrefs {
             = new PrefEntry("Do not allow content on top/bottom part of iPhone X type devices (safe area)", "enableSafeArea", prod ? true : true, "**");
     static PrefEntry hideStatusBar
             = new PrefEntry("Hide the status bar at the top of the screen", "hideStatusBar", prod ? false : false, "**");
+    static PrefEntry backgroundSave
+            = new PrefEntry("Enable more frequent saving to speed up the application responsiveness", "backgroundSave", prod ? false : false, "**");
+    static PrefEntry cacheDynamicLists
+            = new PrefEntry("Cache dynamic lists (pull to refresh) - NOT supported by app yet", "cacheDynamicLists", prod ? false : false, "**");
 
 //PINCH
     static PrefEntry pinchAdjustUpper //used to play with/tune the adjustment factor used if pinch fingers are far apart
@@ -758,9 +762,9 @@ public class MyPrefs {
             prod ? true : true, "**");
     static PrefEntry listOfItemListsShowNumberDoneTasks = new PrefEntry("Show number of completed tasks, e.g. 7/23", "listOfItemListsShowNumberDoneTasks",
             prod ? false : true, "**");
-    static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry("Show sum of Remaining estimates for tasks",
+    static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry("Show sum of Remaining estimates for remaining tasks",
             "listOfItemListsShowRemainingEstimate", prod ? true : true, "**"); //, "e.g. 3h20", Only shown if not-zero. NB. May make displaying the list slower for very large lists or slow devices
-    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry("Show sum of Total time for tasks",
+    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry( Format.f("Show sum of {0 estimate} for remaining tasks",Item.EFFORT_ESTIMATE),
             "listOfItemListsShowTotalTime", prod ? false : true, "**");
     static PrefEntry listOfItemListsShowWorkTime = new PrefEntry("Show sum of defined work time for the list",
             "listOfItemListsShowWorkTime", prod ? false : true, "**"); //"e.g. 1h10/23h12/[4h00]

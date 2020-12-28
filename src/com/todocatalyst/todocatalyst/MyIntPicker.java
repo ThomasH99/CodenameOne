@@ -13,56 +13,59 @@ import java.util.Map;
  *
  * @author thomashjelm
  */
-    class MyIntPicker extends Picker {
-        
-        int intMin = Integer.MIN_VALUE;
-        int intMax = Integer.MAX_VALUE;
+class MyIntPicker extends Picker {
+
+    int intMin = Integer.MIN_VALUE;
+    int intMax = Integer.MAX_VALUE;
 //        int intDefault = 0;
 
 //                MyStringPicker(String[] stringArray, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set) {
-        MyIntPicker(ParseIdMap2 parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue) {
-            this(parseIdMap, get, set, minValue, maxValue, 1);
+    MyIntPicker(ParseIdMap2 parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue) {
+        this(parseIdMap, get, set, minValue, maxValue, 1);
+    }
+
+    MyIntPicker(Integer value, Integer minValue, Integer maxValue) {
+        this(value, minValue, maxValue, 1);
+    }
+
+    MyIntPicker(Integer value, Integer minValue, Integer maxValue, Integer step) {
+        super();
+        if (minValue != null) {
+            this.intMin = minValue;
         }
-        
-        MyIntPicker(Integer value, Integer minValue, Integer maxValue) {
-            this(value, minValue, maxValue, 1);
+        if (maxValue != null) {
+            this.intMax = maxValue;
         }
-        
-        MyIntPicker(Integer value, Integer minValue, Integer maxValue, Integer step) {
-            super();
-            if (minValue != null) {
-                this.intMin = minValue;
-            }
-            if (maxValue != null) {
-                this.intMax = maxValue;
-            }
 //            int defaultSelectedValue = get.get();
-            ASSERT.that( minValue < maxValue && step != 0 && value >= minValue && value <= maxValue && (value - minValue) % step == 0,
-                    "wrong init values, minValue="+minValue+", maxValue="+maxValue+", value="+value+", step="+step);
-            this.setType(Display.PICKER_TYPE_STRINGS);
-            int i = minValue;
-            int count = 0;
-            String[] strings = new String[((maxValue - minValue) / step) + 1];
-            while (i <= maxValue) {
-                strings[count] = Integer.toString(i);
-                count++;
-                i += step;
-            }
-            
-            this.setStrings(strings);
-            this.setSelectedString(Integer.toString(value));
+        ASSERT.that(minValue < maxValue && step != 0 && value >= minValue && value <= maxValue && (value - minValue) % step == 0,
+                "wrong init values, minValue=" + minValue + ", maxValue=" + maxValue + ", value=" + value + ", step=" + step);
+        this.setType(Display.PICKER_TYPE_STRINGS);
+        int i = minValue;
+        int count = 0;
+        String[] strings = new String[((maxValue - minValue) / step) + 1];
+        while (i <= maxValue) {
+            strings[count] = Integer.toString(i);
+            count++;
+            i += step;
         }
-        
-        MyIntPicker(ParseIdMap2 parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue, int step) {
-            this(get.get(), minValue, maxValue, step);
-            if (parseIdMap != null) {
-                parseIdMap.put(this, () -> {
+
+        this.setStrings(strings);
+        this.setSelectedString(Integer.toString(value));
+    }
+
+    MyIntPicker(ParseIdMap2 parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue, int step) {
+        this(get.get(), minValue, maxValue, step);
+        if (parseIdMap != null) {
+            parseIdMap.put(this, () -> {
 //                    String str = this.getSelectedString();
 //                    set.accept(Integer.parseInt(str));
-                    set.accept(getValueInt());
-                });
-            }
+                set.accept(getValueInt());
+            });
         }
+        addActionListener(e -> {
+            set.accept(getValueInt());
+        });
+    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyIntPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt get, MyForm.PutInt set, int minValue, int maxValue, int step) {
@@ -90,7 +93,7 @@ import java.util.Map;
 //            }
 //        }
 //</editor-fold>
-        public int getValueInt() {
+    public int getValueInt() {
 //            String str = getSelectedString();
 //            int interval;
 //            if (str != null && str.length() > 0) {
@@ -99,6 +102,6 @@ import java.util.Map;
 //                    interval = intDefault;
 //                }
 //            }
-            return Integer.parseInt(getSelectedString());
-        }
+        return Integer.parseInt(getSelectedString());
     }
+}

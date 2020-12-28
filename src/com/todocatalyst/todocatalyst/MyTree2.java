@@ -588,8 +588,8 @@ public class MyTree2 extends ContainerScrollY {
                     if (expanded != null && expanded.equals("true")) {
                         Object nodeElement = subNodeCont.getClientProperty(KEY_OBJECT);
 //                        if (nodeElement != null && expandedObjects != null && expandedObjects.contains(nodeElement)) {
-                        if (nodeElement instanceof ItemAndListCommonInterface && expandedObjects != null && expandedObjects.contains((ItemAndListCommonInterface)nodeElement)) {
-                            expandedObjects.remove((ItemAndListCommonInterface)nodeElement);
+                        if (nodeElement instanceof ItemAndListCommonInterface && expandedObjects != null && expandedObjects.contains((ItemAndListCommonInterface) nodeElement)) {
+                            expandedObjects.remove((ItemAndListCommonInterface) nodeElement);
                         } else {
                             assert false : "if KEY_EXPANDED==true, there should be a KEY_OBJECT";
                         }
@@ -609,7 +609,7 @@ public class MyTree2 extends ContainerScrollY {
         itemNode.putClientProperty(KEY_EXPANDED, null);
 //        setNodeIcon(folder, c);
         if (expandedObjects != null) {
-            expandedObjects.remove((ItemAndListCommonInterface)itemNode.getClientProperty(KEY_OBJECT));
+            expandedObjects.remove((ItemAndListCommonInterface) itemNode.getClientProperty(KEY_OBJECT));
         }
         //Parent = {North: ItemNode; Center: expandedSubTasks}
         Container itemNodeParent = itemNode.getParent();
@@ -727,7 +727,8 @@ public class MyTree2 extends ContainerScrollY {
 //</editor-fold>
             nodeComponent.putClientProperty(KEY_DEPTH, depthVal);
 //            if (expandedObjects != null && expandedObjects.contains(current) || expandAllLevels) {
-            if (expandedObjects instanceof ItemAndListCommonInterface && expandedObjects.contains((ItemAndListCommonInterface)current) || expandAllLevels) {
+            if (expandedObjects != null && current instanceof ItemAndListCommonInterface
+                    && expandedObjects.contains((ItemAndListCommonInterface) current) || expandAllLevels) {
                 if (expandAllLevels) {
                     expandedObjects.add(current);
                 }

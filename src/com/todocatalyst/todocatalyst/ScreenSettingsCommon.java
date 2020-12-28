@@ -3,6 +3,7 @@ package com.todocatalyst.todocatalyst;
 //import com.codename1.io.Log;
 import com.codename1.components.SpanLabel;
 import com.codename1.components.Switch;
+import com.codename1.io.Preferences;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
@@ -295,7 +296,7 @@ public class ScreenSettingsCommon extends MyForm {
 //            }));
 //</editor-fold>
             MyDurationPicker durationPicker = new MyDurationPicker(prefEntry.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
-            durationPicker.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) durationPicker.getDuration() / MyDate.MINUTE_IN_MILLISECONDS)));
+            durationPicker.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) (durationPicker.getDuration() / MyDate.MINUTE_IN_MILLISECONDS))));
             cont.add(rightAdj, durationPicker);
 
             String helpText = prefEntry.getHelpText();
@@ -309,7 +310,7 @@ public class ScreenSettingsCommon extends MyForm {
 //                MyPrefs.setInt(prefEntry, i);
 //            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
             MyDurationPicker durationPicker2 = new MyDurationPicker(prefEntry.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
-            durationPicker2.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) durationPicker2.getDuration() / MyDate.MINUTE_IN_MILLISECONDS)));
+            durationPicker2.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) (durationPicker2.getDuration() / MyDate.MINUTE_IN_MILLISECONDS))));
             cont.add(layoutSetting(prefEntry.getFieldScription(), durationPicker2, prefEntry.getHelpText()));
         }
     }

@@ -10,6 +10,7 @@ import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.Item.PARSE_FILTER_SORT_DEF;
 import static com.todocatalyst.todocatalyst.ItemList.PARSE_WORKSLOTS;
 import static com.todocatalyst.todocatalyst.MyUtil.eql;
 import java.util.ArrayList;
@@ -446,16 +447,16 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     /**
      *
      * @param newElement new item
-     * @param refElement the reference item item inserted before/after this one
+     * @param refElementN the reference item item inserted before/after this one
      * @param addAfterRefEltOrEndOfList if true, add subItemOrList *after* the
      * position of item
      * @return
      */
-    public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElement, boolean addAfterRefEltOrEndOfList);
+    public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElementN, boolean addAfterRefEltOrEndOfList);
 
 //    public boolean addToList(ItemAndListCommonInterface newElement, int index, boolean addAfterRefEltOrEndOfList);
     /**
-     *
+     * Move item to the position where itemRef is currently
      * @param item
      * @param itemRef if null, item is inserted at the end of the list
      * @param insertAfterRefOrEndOfList if true, insert after itemRef. If
@@ -500,21 +501,21 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     /**
      * move item from its current position within the ItemList to after/before
-     * the refItem's position (or if refItem not found, to beginning/end of list
+     * the refItem's position (or if refItem is null or not found, to beginning/end of list
      * depending on addAfterRefEltOrEndOfList). If item not already in the list,
      * it will be inserted into the given position.
      *
      * @param item
-     * @param refItem
+     * @param refItemN
      * @param addCategoryToItem
      * @param addAfterRefEltOrEndOfList
      */
-    default public void moveOrAddItemInList(Item item, Item refItem, boolean addAfterRefEltOrEndOfList) {
+    default public void moveOrAddItemInList(Item item, Item refItemN, boolean addAfterRefEltOrEndOfList) {
 //        if (removeFromList(item, false)) { //only add if already there
 //            addToList(item, refItem, addAfterRefEltOrEndOfList);
 //        }
         removeFromList(item, false); //remove in case it is already ther (but it may no be)
-        addToList(item, refItem, addAfterRefEltOrEndOfList);
+        addToList(item, refItemN, addAfterRefEltOrEndOfList);
     }
 
     /**
@@ -1242,7 +1243,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default void setUseDefaultFilter(boolean useDefaultFilter) {
 
     }
-
+    
     /**
      *
      * @return

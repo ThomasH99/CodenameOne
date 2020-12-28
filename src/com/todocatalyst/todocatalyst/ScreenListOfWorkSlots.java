@@ -269,7 +269,8 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                        DAO.getInstance().saveNew(true, newWorkSlot, (ParseObject) workSlotListOwner);
 //                        DAO.getInstance().saveNew(newWorkSlot, (ParseObject) workSlotListOwner);
 //                        DAO.getInstance().saveNewTriggerUpdate();
-                        DAO.getInstance().saveToParseNow(newWorkSlot, (ParseObject) workSlotListOwner);
+//                        DAO.getInstance().saveToParseNow(newWorkSlot, (ParseObject) workSlotListOwner);
+                        DAO.getInstance().saveToParseNow(newWorkSlot);
 
                         if (false) {
                             refreshAfterEdit();

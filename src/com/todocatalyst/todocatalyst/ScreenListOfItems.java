@@ -10,25 +10,18 @@ import com.codename1.components.SpanLabel;
 import com.codename1.components.ToastBar;
 import com.codename1.io.Log;
 import com.codename1.l10n.L10NManager;
-import com.codename1.ui.CN;
 import com.codename1.ui.*;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.Component;
-import com.codename1.ui.animations.ComponentAnimation;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.FlowLayout;
-import com.codename1.ui.plaf.Style;
-import com.codename1.ui.plaf.UIManager;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyForm.ANIMATION_TIME_FAST;
 import static com.todocatalyst.todocatalyst.MyTree2.KEY_EXPANDED;
-import static com.todocatalyst.todocatalyst.MyTree2.KEY_OBJECT;
-import com.todocatalyst.todocatalyst.MyTree2.ListAndIndex;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 //import com.java4less.rchart.*;
 //import javax.microedition.io.ConnectionNotFoundException;
@@ -349,8 +342,8 @@ public class ScreenListOfItems extends MyForm {
         this(null, title, textIfListEmpty, itemListFct, previousForm, updateItemListOnDone, options, stickyHeaderGen);
     }
 
-    ScreenListOfItems(ScreenType screenType, String title, String textIfListEmpty, GetItemListFct itemListFct, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone,
-            int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
+    ScreenListOfItems(ScreenType screenType, String title, String textIfListEmpty, GetItemListFct itemListFct, MyForm previousForm,
+            UpdateItemListAfterEditing updateItemListOnDone, int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListOrg));
         super(screenType == null ? title : screenType.getTitle(), previousForm, null);
@@ -377,7 +370,7 @@ public class ScreenListOfItems extends MyForm {
 //        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + itemListOrg.getObjectIdP(), true);
 
 //        this.updateActionOnDone = () -> {
-        setUpdateActionOnDone(() -> {
+        addUpdateActionOnDone(() -> {
 //            this.itemListOrg = itemListFct.getUpdatedItemList(); //NO - WHY? Must set with edited subtask list
             updateItemListOnDone.update(itemListOrItemOrg);
             //always save edited element on exit
@@ -1001,7 +994,7 @@ public class ScreenListOfItems extends MyForm {
 //                        List newTemplateCopies = new ArrayList();
                         int maxTemplatesToSelect = MyPrefs.maxNbTemplatesAllowedToChoseForInsertion.getInt(); //TODO make this a setting (>1 a paid option?)
                         new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), null, selectedTemplates, ScreenListOfItems.this, () -> {
-                            for (Item templ : (List<Item>) selectedTemplates) {
+                            for (Item selectedTemplate : (List<Item>) selectedTemplates) { //UI: can select multiple templates to insert at once
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                Item newTemplateCopy = ((Item) templ).cloneMe(); //also sets source
 ////                                ((ItemAndListCommonInterface) itemListOrg).addToList(newTemplateCopy); //also sets source
@@ -1009,10 +1002,13 @@ public class ScreenListOfItems extends MyForm {
 ////                                newTemplateCopies.add(newTemplateCopy);
 //                                DAO.getInstance().saveNew(newTemplateCopy);
 //</editor-fold>
+                                if (false) {
 //                                Item newSubtask = templ.copyMeInto(new Item(false), Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
-                                Item newSubtask = templ.copyMeInto(new Item(false), Item.CopyMode.COPY_TO_COPY_PASTE, 0);
-                                itemListOrItemOrg.addToList(newSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
-//                                DAO.getInstance().saveNew(newSubtask); //save new subtasks (will be deleted again if Cancel
+                                    Item newSubtask = selectedTemplate.copyMeInto(new Item(false), Item.CopyMode.COPY_TO_COPY_PASTE, 0);
+                                    itemListOrItemOrg.addToList(newSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+                                } else {
+                                    itemListOrItemOrg.addToList(selectedTemplate.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE)); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+                                }//                                DAO.getInstance().saveNew(newSubtask); //save new subtasks (will be deleted again if Cancel
                             }
 //                            DAO.getInstance().saveNew(newTemplateCopies, false);
 //                            DAO.getInstance().saveNew(newTemplateCopies);
@@ -1361,7 +1357,7 @@ public class ScreenListOfItems extends MyForm {
                             MultipleSelection.performOnAllAndSave(selectedObjects.getSelected(), MultipleSelection.setAnything(itemWithNewValues));
 //                            DAO.getInstance().saveNew((List) selectedObjects.getSelected()); //save all update
 //                            DAO.getInstance().saveNewTriggerUpdate();
-                            DAO.getInstance().saveToParseNow((List) selectedObjects.getSelected()); //save all update
+                            DAO.getInstance().saveToParseNow((List) selectedObjects.getSelected()); //save all updated
                             refreshAfterEdit();
                         }, false, null);
                         scr.setCheckIfSaveOnExit(null); //don't do any checks on whether any 'key' data is not defined
@@ -1381,7 +1377,7 @@ public class ScreenListOfItems extends MyForm {
 //                        DAO.getInstance().deleteAll((List<ItemAndListCommonInterface>)selectedObjects.getSelected(),false,true);
 //                        DAO.getInstance().deleteAll(deleteList, false, true);
 //                        DAO.getInstance().saveNewTriggerUpdate();
-                        DAO.getInstance().deleteAllNow(deleteList, false);
+                        DAO.getInstance().deleteAllNow(deleteList, false); //will also remove deleted tasks from owner (and setList()
                         selectedObjects.clear(); //remove deleted items from the selection
 //                    setupList(); //TODO optimize the application of a filter?
                         refreshAfterEdit(); //TODO optimize the application of a filter?

@@ -247,6 +247,11 @@ public class FilterSortDef extends ParseObject {
 //    }
     public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortOn, boolean sortDescending, String filterName,
             String description, /*String definition,*/ String help) {
+        this(sortParseFieldId, filterOptions, sortOn, sortDescending, filterName, description, help, null);
+    }
+
+    public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortOn, boolean sortDescending, String filterName,
+            String description, /*String definition,*/ String help, String systemName) {
         this();
         setSortFieldId(sortParseFieldId);
 //        setSortOn(sortParseFieldId != null && !sortParseFieldId.equals(""));
@@ -268,6 +273,7 @@ public class FilterSortDef extends ParseObject {
         setDescription(description);
 //        setDefinition(definition);
         setHelp(help);
+        setSystemName(systemName);
     }
 
     public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortOn, boolean sortDescending, String description) {
@@ -281,6 +287,10 @@ public class FilterSortDef extends ParseObject {
 
     public FilterSortDef(String sortParseFieldId, String filterOptions, boolean sortOn, boolean sortDescending) {
         this(sortParseFieldId, filterOptions, sortOn, sortDescending, false);
+    }
+
+    public FilterSortDef(String systemName, String sortParseFieldId, String filterOptions, boolean sortOn, boolean sortDescending) {
+        this(sortParseFieldId, filterOptions, sortOn, sortDescending, "", "", "", systemName);
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public FilterSortDef(Comparator<Item> sorter, String filterOptions, String description) {

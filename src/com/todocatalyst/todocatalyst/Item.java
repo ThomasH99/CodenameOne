@@ -100,11 +100,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    public Item(List<Item> subtasks) {
-        this();
-        setList(subtasks);
-    }
-
+//    public Item(List<Item> subtasks) {
+//        this();
+//        setList(subtasks);
+//    }
 //    public Item(Item source) {
 //        this();
 //        source.copyMeInto(this);
@@ -1015,6 +1014,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_RESTART_TIMER = "restartTimer"; //should the Timer be re-started from first element if the currently timed is no longer in the list?
     final static String PARSE_INHERIT_ENABLED = "inherit"; //should this task inherit values from its owner?
     final static String PARSE_SUBTASKS_INHERIT = "subtasksInherit"; //should this project push inherited values subtasks? (used to block default inheritance)
+    final static String PARSE_EDITED_DATE = "edited"; //should this project push inherited values subtasks? (used to block default inheritance)
 //    final static String PARSE_FINISH_TIME = "finishTimexx"; //NOT a parse field, just used to store the field with
 //    final static String PARSE_ = "";
 
@@ -1495,44 +1495,44 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return (Category) getParseObject(PARSE_OWNER_CATEGORY);
 //    }
 //</editor-fold>
-    public void setOwner(ItemAndListCommonInterface owner, boolean updateInheritedValues) {
+    public void setOwner(ItemAndListCommonInterface newOwner, boolean updateInheritedValues) {
         if (false) {
-            ASSERT.that(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null), () -> "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
+            ASSERT.that(newOwner == null || (newOwner instanceof ParseObject && ((ParseObject) newOwner).getObjectIdP() != null), () -> "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + newOwner);
         }
         ItemAndListCommonInterface oldOwner = getOwner();
         if (Config.TEST) {// && !(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null))) {
             if (false) {
-                Log.p("Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
+                Log.p("Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + newOwner);
             } else {
 //                ASSERT.that(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null),
 //                        () -> "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
-                ASSERT.that(oldOwner == null || !Objects.equals(owner, oldOwner) || !Objects.equals(owner.getObjectIdP(), oldOwner.getObjectIdP()),
-                        () -> "overwriting non-null owner, oldOwner=" + oldOwner + ", newOwner=" + owner);
+                ASSERT.that(oldOwner == null || Objects.equals(newOwner, oldOwner) || Objects.equals(newOwner.getObjectIdP(), oldOwner.getObjectIdP()),
+                        () -> "overwriting non-null owner, oldOwner=" + oldOwner + ", newOwner=" + newOwner);
             }
         }
 //        ASSERT.that(!Objects.equals(owner, oldOwner) || !Objects.equals(owner.getObjectIdP(), oldOwner.getObjectIdP()));
-        if (!Objects.equals(owner, oldOwner)) { //        if (owner instanceof Category) {
+        if (!Objects.equals(newOwner, oldOwner)) { //        if (owner instanceof Category) {
             //            setOwnerCategory((Category) owner);
             //        } else 
-            if (owner instanceof TemplateList) {
-                ASSERT.that(owner == TemplateList.getInstance());
+            if (newOwner instanceof TemplateList) {
+                ASSERT.that(newOwner == TemplateList.getInstance());
                 setOwnerItemList(null);
                 setOwnerItem(null);
-                setOwnerTemplateList((TemplateList) owner);
-            } else if (owner instanceof ItemList) {
+                setOwnerTemplateList((TemplateList) newOwner);
+            } else if (newOwner instanceof ItemList) {
                 setOwnerItem(null);
                 setOwnerTemplateList(null);
-                setOwnerItemList((ItemList) owner);
-            } else if (owner instanceof Item) {
+                setOwnerItemList((ItemList) newOwner);
+            } else if (newOwner instanceof Item) {
                 setOwnerItemList(null);
                 setOwnerTemplateList(null);
-                setOwnerItem((Item) owner, updateInheritedValues);
-            } else if (owner == null) {
+                setOwnerItem((Item) newOwner, updateInheritedValues);
+            } else if (newOwner == null) {
                 setOwnerItemList(null);
                 setOwnerItem(null);
                 setOwnerTemplateList(null);
             } else {
-                ASSERT.that(false, () -> "unknown owner type for " + owner);
+                ASSERT.that(false, () -> "unknown owner type for " + newOwner);
             }
         }
     }
@@ -1722,7 +1722,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
          * creating an item by copying from a template (anything to leave out
          * here?)
          */
-        , COPY_FROM_TEMPLATE_TO_TASK;
+        , COPY_FROM_TEMPLATE_TO_INSTANCE;
     }
 
     /**
@@ -1813,7 +1813,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         /**
          * copy for Repeat Instances
          */
-        boolean defToRepeatOrTemplInst = (copyFieldDefinition == CopyMode.COPY_TO_REPEAT_INSTANCE) || (copyFieldDefinition == CopyMode.COPY_FROM_TEMPLATE_TO_TASK);
+        boolean defToRepeatInst = (copyFieldDefinition == CopyMode.COPY_TO_REPEAT_INSTANCE);
+        boolean defToTemplInst = (copyFieldDefinition == CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE);
         /**
          * copy for Templates
          */
@@ -1845,7 +1846,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //NOT copies of them,
 //        item.setCategories((ItemList) (getCategories().clone()));
 //        if (defAll || defToRepeatInst || defToTempl || defFromTemplToTask || defCopyPaste) {
-        if (defAll || defToRepeatOrTemplInst || defToTempl || defCopyPaste) {
+        if (defAll || defToRepeatInst || defToTemplInst || defToTempl || defCopyPaste) {
 
             //TEXT
 //            if ((copyExclusions & COPY_EXCLUDE_TEXT) == 0) { //UI: DOESN'T make sense to not copy task description (especially with projects)
@@ -1952,7 +1953,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
         //don't set owner here, should be done when adding the copy to its owner
-        if (false && (defAll || defToRepeatOrTemplInst)) { //repeat instances will always have same owner, and it needs to be set so that when creating multiple instances, they get inserted into the owner's list
+        if (false && (defAll || defToTempl || defToRepeatInst)) { //repeat instances will always have same owner, and it needs to be set so that when creating multiple instances, they get inserted into the owner's list
             destination.setOwner(getOwner());
         }
 
@@ -2013,7 +2014,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
         //HANDLE ESTIMATES
-        if (false && defAll) { //UI: normally neither Remaining, nor Actual should be copied since they updates individually for each instance
+        if (defAll) { //UI: normally neither Remaining, nor Actual should be copied since they updates individually for each instance
 //            destination.setRemaining(getRemaining(), false);
 //            destination.setRemaining(getRemainingForProjectTaskItself(false), false);
             destination.setRemainingForTask(getRemainingForTask(), false);
@@ -2031,7 +2032,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                boolean useActual = getActualTotal() > 0 && MyPrefs.useActualAsEstimateForTemplatesOrCopies.getBoolean();
 //                destination.setEstimate(useActual ? getActualTotal() : getEstimate(), defToRepeatInst || defCopyPaste); //auto-update Remaining if fromTempl || toRepeatInst to ensure that Remaining gets set
                 boolean useActual = getActualTotal() > 0 && MyPrefs.useActualAsEstimateForTemplatesOrCopies.getBoolean();
-                destination.setEstimateForTask(useActual ? getActualTotal() : getEstimateTotal(), defToRepeatOrTemplInst || defCopyPaste); //auto-update Remaining if fromTempl || toRepeatInst to ensure that Remaining gets set
+                destination.setEstimateForTask(useActual ? getActualTotal() : getEstimateTotal(), defToRepeatInst || defToTemplInst || defCopyPaste); //auto-update Remaining if fromTempl || toRepeatInst to ensure that Remaining gets set
             }
         }
 
@@ -2058,60 +2059,28 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                case COPY_TO_TEMPLATE:
 //            }
 //</editor-fold>
-            if (true || (defAll || defToRepeatOrTemplInst || defCopyPaste || defToTempl)) {
-                //                    || defCopyPaste // make an exact copy of everything or rather a copy like if the project had been turned into a template first? Probably the latter
-                //                    || defFromTemplToTask //only one instance of repeating tasks, repeatRule determines creation of repeatInstances
+            //copying subtasks to a template requires only *one* instance of a repeating tasks (+ the RR) copied
+            List<Item> orgSubtasks = getListFull();
+            for (Item orgSubtask : orgSubtasks) {
+                RepeatRuleParseObject repeatRule = orgSubtask.getRepeatRuleN();
+                if (defToTempl) {
+                    if (repeatRule == null) {
+                        destination.addToList(orgSubtask.cloneMe(copyFieldDefinition, copyExclusions));
+                    } else {
+                        if (repeatRule.getItemForTemplateN() == orgSubtask) { //when creating a template, only use one (this) subtask to copy (and ignore all other repeat instances)
+                            destination.addToList(orgSubtask.cloneMe(copyFieldDefinition, copyExclusions));
+                        }
+                    }
+                } else if ((defAll || defToRepeatInst || defToTemplInst || defCopyPaste)) {
+                    // defCopyPaste: make an exact copy of everything or rather a copy like if the project had been turned into a template first? Probably the latter
+                    // defFromTemplToTask: only one instance of repeating tasks, repeatRule determines creation of repeatInstances
 //only one instance of repeating tasks, repeatRule determines creation of repeatInstances
 //copy everything and instantiate all subtasks w repeating instances and all
 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                List<Item> subtaskCopy = new ArrayList();
-//                    List<Item> createdSubtasks;
-//                    if (defFromTemplToTask) {
-//                        //if copying from a template, *add* template subtasks to any existing subtasks! //full to include ALL tasks
-//                        createdSubtasks = destination.getListFull(); //keep any already defined subtasks
-//                    } else {
-//                        createdSubtasks = new ArrayList();
-//                    }
-//</editor-fold>
-                List<Item> orgSubtasks = getListFull();
-//                DAO.getInstance().fetchAllElementsInSublist(orgSubtasks, true);
-//                for (int i = 0, size = orgSubtasks.size(); i < size; i++) {
-                for (Item orgSubtask : orgSubtasks) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    Item copy = orgSubtasks.get(i).cloneMe(copyFieldDefintion, copyExclusions);
-//                        Item copy = new Item(false);
-//                        copy.setOwnerItem(destination, false); //set owner for subtask copy (MUST be done before to ensure repeatCopies are inserted in right place)
-//                    orgSubtasks.get(i).copyMeInto(copy, copyFieldDefintion, copyExclusions);
-//</editor-fold>
-                    RepeatRuleParseObject repeatRule = orgSubtask.getRepeatRuleN();
-//                    if (defToTempl) {
-//                    if (!defToTempl||(repeatRule != null && repeatRule.getItemForTemplateN() == orgSubtask)) { 
-//                    if (repeatRule == null || (repeatRule != null && repeatRule.getItemForTemplateN() == orgSubtask)) {
-                    if (repeatRule == null || repeatRule.getItemForTemplateN() == orgSubtask) {
-                        //if repeating task, only make one copy (add'l necessary instances are created on **)
-//if defToTemplate, make only one copy of repeating tasks
-//                            subtask.copyMeInto(copy, copyFieldDefintion, copyExclusions);
-                        if (false) {
-                            Item newSubtask = new Item(false);
-//                        orgSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_TO_TEMPLATE);
-//                        orgSubtask.copyMeInto(newSubtask, copyFieldDefinition, copyExclusions, setRepeatRuleWithoutUpdateXXX);
-                            //When copying to a repeatInstance, only the first (top-) level is treated differently, the lower levels are simple copyPaste
-                            CopyMode subtaskCopyMode = (copyFieldDefinition == CopyMode.COPY_TO_REPEAT_INSTANCE
-                                    ? CopyMode.COPY_TO_COPY_PASTE : copyFieldDefinition);
-                            orgSubtask.copyMeInto(newSubtask, subtaskCopyMode, copyExclusions);
-                            destination.addToList(newSubtask);
-                        } else {
-                            destination.addToList(orgSubtask.cloneMe(copyFieldDefinition, copyExclusions));
-                        }
-                        if (save) {
-//                            DAO.getInstance().saveNew(newSubtask);
-                        }
-                    }
-//                    } 
-//                else {
-//                        destination.addToList(orgSubtask.cloneMe(copyFieldDefinition, copyExclusions));
-//                    }
+                    destination.addToList(orgSubtask.cloneMe(copyFieldDefinition, copyExclusions));
+                }
+            }
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //TODO!!!!! how to avoid saving subtasks, so we can Cancel the creation of a template instance??? (it is not acceptable to accumulate dangling subtasks which would be visible to the user in some view)!
 //                    if (false) {
@@ -2119,7 +2088,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    }                    //Keep everything in memory and add a special lambda function to save everything created from the template *if* it is saved!
 //                        createdSubtasks.add(copy);
 //</editor-fold>
-                }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                destination.setList(subtaskCopy); //NO, OVERWRITES any existing subtasks!
 //                List updatedSubtaskList = destination.getList();
@@ -2134,8 +2102,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                        DAO.getInstance().saveList(createdSubtasks, null);
 //                    }
 //</editor-fold>
-            }
-        }
 
         //TODO support copying alarmDate/startByDate/showFromDate/expiresOnDate relative to a user-defined due date
         //REPEAT RULE - MUST be done after the entire Item AND subtask hierarchy have been cloned
@@ -2187,14 +2153,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
         if ((copyExclusions & COPY_EXCLUDE_REPEAT_RULE) == 0 && getRepeatRuleN() != null) {
-            if (defToRepeatOrTemplInst) {
-                destination.setRepeatRuleInParse(getRepeatRuleN()); //point to existing repeat rule (if any)
+            if (defToRepeatInst) {
+                destination.setRepeatRuleInParse(getRepeatRuleN()); //point to existing repeat rule *without* creating repeat instances!
             } else {
 //                ASSERT.that(defAll || defFromTemplToTask || defCopyPaste || defToTempl);
-                ASSERT.that(defAll || defCopyPaste || defToTempl);
+                ASSERT.that(defAll || defToTemplInst || defCopyPaste || defToTempl);
                 RepeatRuleParseObject newRepeatRule = getRepeatRuleN().cloneMe(); //create a new repeat rule
+                newRepeatRule.setUpdatePending(true); //ensure RR is updated once this new instance is inserted 
                 destination.setRepeatRule(newRepeatRule); //create a new repeat rule
-                if (save && newRepeatRule != null) {
+                if (false && save && newRepeatRule != null) {
                     DAO.getInstance().saveNew(newRepeatRule);
                 }
             }
@@ -2813,6 +2780,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
         setList(listFull);
+        ((Item) subtask).updateRepeatRule(); //update a RR with pending changes *after* the items is inserted 
         return status;
     }
 
@@ -2870,7 +2838,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        return true;
 //    }
     @Override
-    public boolean addToList(ItemAndListCommonInterface newItem, ItemAndListCommonInterface referenceItem, boolean addAfterItemOrEndOfList) {
+    public boolean addToList(ItemAndListCommonInterface newItem, ItemAndListCommonInterface referenceItemN, boolean addAfterItemOrEndOfList) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        List subtasks = getListFull();
 //        boolean status = true;
@@ -2887,7 +2855,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        int index = subtasks.indexOf(item);
 //</editor-fold>
         List listFull = getListFull();
-        int indexFull = referenceItem == null ? (addAfterItemOrEndOfList ? listFull.size() : 0) : listFull.indexOf(referenceItem) + (addAfterItemOrEndOfList ? 1 : 0);
+        int indexFull = referenceItemN == null ? (addAfterItemOrEndOfList ? listFull.size() : 0) : listFull.indexOf(referenceItemN) + (addAfterItemOrEndOfList ? 1 : 0);
 //        if (indexFull < 0) {
 //            ASSERT.that(false, "REFERENCE item not found in addToList(newItem,refItem), refItem=" + referenceItem + ", newItem=" + newItem);
 //            return addToList(newItem); //UI: else add to end of list //TODO! should this depend on a setting?
@@ -3019,6 +2987,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //            firstTimeAddOfSubtasks = get(PARSE_SUBTASKS) == null;
             put(PARSE_SUBTASKS, listOfSubtasks);
+            for (Item subtask : (List<Item>) listOfSubtasks) {
+//                RepeatRuleObjectInterface repeatRule = getRepeatRuleN();
+//                if (repeatRule!=null &&repeatRule.isUpdatePending())
+                subtask.updateRepeatRule(); //
+            }
         }
 //        updateAllValuesDerivedFromSubtasksWhenSubtaskListChange(firstTimeAddOfSubtasks); //update eg if added first subtasks, meaning ActualEffort must be updated
         updateAllValuesDerivedFromSubtasks(); //update eg if added first subtasks, meaning ActualEffort must be updated
@@ -5024,7 +4997,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        } else {
 //            return isDone() ? 0 : 1;
 //        }
-        if (isProject()) {
+        if (isProject() && countLeafTasks) {
             return ItemList.getNumberOfUndoneItems(getListFull(), countLeafTasks); //by default, only count direct subtasks (how many remaining subtasks *this* project has)
         } else {
             return isDone() ? 0 : 1;
@@ -6733,6 +6706,30 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             remove(PARSE_START_BY_DATE);
         }
+    }
+
+    /**
+     * date when item was last explicitly edited by user, excluding updates by
+     * inheritance, values aggregated from subtasks, updates by Timer. Includes
+     * edits in ScreenItem2, changing task status, adding/deleting subtasks,
+     *
+     * @param editedDate
+     */
+    public void setEditedDate(Date editedDate) {
+        Date oldVal = getStartByDateD();
+
+        if (editedDate != null && editedDate.getTime() != 0) {
+            if (!Objects.equals(oldVal, editedDate)) {
+                put(PARSE_EDITED_DATE, editedDate);
+            }
+        } else {
+            remove(PARSE_EDITED_DATE);
+        }
+    }
+
+    public Date getEditedDate() {
+        Date date = getDate(PARSE_EDITED_DATE);
+        return (date == null) ? new MyDate(0) : date;
     }
 
 //    public Date getSnoozeDateD() {
@@ -9469,7 +9466,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public String toString(boolean showSubtasks) {
 //        return getText();
 //        return getText().length() != 0 ? getText()+" ("+getObjectId()+")" : getObjectId();
-        return getText() + (isTemplate() ? "%" : "") + "[" + getObjectIdP() + "]"
+        return getText() + (isDirty() ? "§" : "") + (isTemplate() ? "%" : "") + "[" + getObjectIdP() + "]"
                 + (getCompletedDate().getTime() != 0 ? " Done" + MyDate.formatDateSmart(getCompletedDate()) : "")
                 + (getDueDate().getTime() != 0 ? " Due" + MyDate.formatDateSmart(getDueDate()) : "")
                 + (isDone() ? " [DONE]" : (getRemainingTotal() > 0 ? " " + MyDate.formatDurationShort(getRemainingTotal()) : ""))
@@ -9727,6 +9724,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         updateSubtaskOngoing = false;
     }
 
+    /**
+     * update (execute) the repeatRule, e.g. when a new created item is inserted
+     * into its owner
+     */
     public void updateRepeatRule() {
         //2. Once subtasks' inherited values or pushed values (eg Status) are updated, calculate the repeatRule
         if (false) {
@@ -9736,14 +9737,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 f.run();
             }
         } else {
-            RepeatRuleParseObject repeatRule = getRepeatRuleN();
-            if (repeatRule != null && repeatRule.isUpdatePending()) {
-                if (repeatRule.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
-                    repeatRule.updateItemsWhenRuleCreatedOrEdited(this); //will also save RR
+            RepeatRuleParseObject currentRepeatRule = getRepeatRuleN();
+            if (currentRepeatRule != null && currentRepeatRule.isUpdatePending()) {
+                if (currentRepeatRule.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+                    currentRepeatRule.updateItemsWhenRuleCreatedOrEdited(this); //will also save RR
                 } else {
-                    repeatRule.updateItemsWhenRuleCreatedOrEdited(this);
+                    currentRepeatRule.updateItemsWhenRuleCreatedOrEdited(this);
                 }
-                repeatRule.setUpdatePending(false);
+                currentRepeatRule.setUpdatePending(false);
             }
         }
     }
@@ -10239,6 +10240,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return getText().length() != 0
                 || getComment().length() != 0
                 || getDueDate().getTime() != 0
+                || getAlarmDate().getTime() != 0
                 || getActualForTaskItself() != 0
                 || getRemainingTotal() != 0
                 || getCategories().size() != 0
@@ -11720,8 +11722,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @param filterSortDef
      */
-    @Override
-    public void setFilterSortDef(FilterSortDef filterSortDef) {
+    public void setFilterSortDefOLD(FilterSortDef filterSortDef) {
 //        if (filterSortDef != null && !filterSortDef.equals(getDefaultFilterSortDef())) { //only save filter for subtasks if modified!
         if (filterSortDef != null //if filter is deleted 
                 && !filterSortDef.equals(getDefaultFilterSortDef()) //if new filter is 'just' default filter
@@ -11735,6 +11736,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         } else {
             remove(PARSE_FILTER_SORT_DEF);
+        }
+    }
+
+    @Override
+    public void setFilterSortDef(FilterSortDef filterSortDef) {
+//        if (filterSortDef != null && !filterSortDef.equals(getDefaultFilterSortDef())) { //only save filter for subtasks if modified!
+        if (filterSortDef == null //if filter is deleted 
+                || filterSortDef.equals(getDefaultFilterSortDef()) //if new filter is 'just' default filter
+                || isFilterSortDefInherited(filterSortDef)) { //or if filter is the same as the inherited filter (either edited back to same value or just not changed)
+//            if (!isNoSave())  //otherwise temporary filters for e.g. Overdue will be saved //NO, now Overdue will be a saved (temporarily) list, but other lists (Statistics?) may still be temporary
+//            if (filterSortDef.getObjectIdP() == null && !isNoSave()) {
+////                DAO.getInstance().saveInBackground(filterSortDef); //NOW done in DAO.save...
+//            }
+            remove(PARSE_FILTER_SORT_DEF);
+        } else {
+            put(PARSE_FILTER_SORT_DEF, filterSortDef);
         }
     }
 

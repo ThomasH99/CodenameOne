@@ -607,7 +607,8 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
                     closePinchContainer(false); //NO, keep iserting even when returning from editing details of new item
 //                }
 //                    DAO.getInstance().saveNewTriggerUpdate();
-                    DAO.getInstance().saveToParseNow(newItem,(ParseObject) category2,(ParseObject) itemOrItemListForNewElements); 
+//                    DAO.getInstance().saveToParseNow(newItem,(ParseObject) category2,(ParseObject) itemOrItemListForNewElements); 
+                    DAO.getInstance().saveToParseNow(newItem); 
                 }
             }, () -> myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE), newItem.isTemplate(), predefinedValues);
 
@@ -651,7 +652,8 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
 //                DAO.getInstance().saveNew(newItem);
 //                DAO.getInstance().saveNew(refItem);
 //                DAO.getInstance().saveNewTriggerUpdate();
-                DAO.getInstance().saveToParseNow(newItem,refItem);
+//                DAO.getInstance().saveToParseNow(newItem,refItem);
+                DAO.getInstance().saveToParseNow(newItem);
 
                 myForm.expandedObjects.add(refItem); //expand to show subtasks
                 saveKeys(newItem);
@@ -683,7 +685,8 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
 //                DAO.getInstance().saveNew(newItem); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
 //                DAO.getInstance().saveNew((ParseObject) category2); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
 //                DAO.getInstance().saveNewTriggerUpdate();
-                DAO.getInstance().saveToParseNow(newItem,(ParseObject) category2); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+//                DAO.getInstance().saveToParseNow(newItem,(ParseObject) category2); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                DAO.getInstance().saveToParseNow(newItem); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 saveKeys(newItem); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 //UI: if inserting tasks directly into a category, they will be added to the Inbox list
             } else if (true || insertLevel == 0) { //itrue=always insert below itemOrItemListForNewElements (may be the owner of a subtask) after refItem
@@ -714,7 +717,8 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
 //                    DAO.getInstance().saveNew(newItem); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
 //                    DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewElements); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
 //                    DAO.getInstance().saveNewTriggerUpdate();
-                    DAO.getInstance().saveToParseNow(newItem,(ParseObject) itemOrItemListForNewElements); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+//                    DAO.getInstance().saveToParseNow(newItem,(ParseObject) itemOrItemListForNewElements); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
+                    DAO.getInstance().saveToParseNow(newItem); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                     saveKeys(newItem); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                 } else {
                     ASSERT.that(false, "pinchInsert with no category and no itemList??!! Saving item in Inbox");

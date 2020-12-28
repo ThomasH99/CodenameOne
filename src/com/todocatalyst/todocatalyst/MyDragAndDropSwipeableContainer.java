@@ -215,7 +215,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             newOwner.addToList(itemOrItemList, refItem, insertAfterRefItemOrEndOfList);
 //            DAO.getInstance().saveNew(false, (ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
 //            DAO.getInstance().saveNew((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
-            DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
+//            DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
+            DAO.getInstance().saveToParseNow((ParseObject) oldOwner,  (ParseObject) itemOrItemList); //save triggered after drop operation
         }
     }
 
@@ -348,12 +349,14 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 oldCategory.removeItemFromCategory(item, true);
 //                newCategory.addItemToCategory(item, newPos, true);
                 newCategory.addItemToCategory(item, refItem, true, insertAfterOrEndOfList);
-                DAO.getInstance().saveToParseNow((ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
+//                DAO.getInstance().saveToParseNow((ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
+                DAO.getInstance().saveToParseNow((ParseObject) oldCategory, (ParseObject) item);
             } else if (newCategory != null) { //item was dragged into a category, but not from another category (e.g. a subtask of a project) (~not very intuitive since the dragged item will be added to the category, but also stay in place where it was before, but I guess OK - "what you do is what you get")
 //                newCategory.addItemToCategory(item, newPos, true);
                 newCategory.addItemToCategory(item, refItem, true, insertAfterOrEndOfList);
 //                DAO.getInstance().saveNew( (ParseObject) newCategory, (ParseObject) item);
-                DAO.getInstance().saveToParseNow((ParseObject) newCategory, (ParseObject) item);
+//                DAO.getInstance().saveToParseNow((ParseObject) newCategory, (ParseObject) item);
+                DAO.getInstance().saveToParseNow((ParseObject) item);
             } else if (false && oldCategory != null) { //item was eg dragged from category into a subtask of an expanded project (in an expanded category)
                 //should this case even be supported? Visible effect: drag from an expanded Category into a subtask, and it disappears from the Category
 //                oldCategory.removeItemFromCategory(item, true);

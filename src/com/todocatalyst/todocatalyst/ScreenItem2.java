@@ -210,7 +210,7 @@ public class ScreenItem2 extends MyForm {
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
 //        super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, cancelAction);
-        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, null); //cancelAction handled below
+        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, null, null); //cancelAction handled below
         increaseCallDepth();
         setUniqueFormId("ScreenEditItem");
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
@@ -242,6 +242,11 @@ public class ScreenItem2 extends MyForm {
 
         this.templateEditMode = itemOrg.isTemplate() || templateEditMode; //
         getTitleComponent().setEndsWith3Points(true);
+        addUpdateActionOnDone(() -> {
+            doneAction.run();
+            itemOrg.updateRepeatRule(); //only update RR on exit, after all fields are updated, templates added, ...
+        });
+
 //        ScreenItemP.item = item;
 //        initLocalSaveOfEditedValues(getUniqueFormId() + item.getObjectIdP());
 //        previousValues = new SaveEditedValuesLocally( getUniqueFormId() + item.getObjectIdP());
@@ -341,11 +346,12 @@ public class ScreenItem2 extends MyForm {
     }
 
     @Override
-    protected void saveOnExit() {
+    protected void updateOnExit() {
 //        if (triggerSaveOnExit) {
 //            DAO.getInstance().saveItem3(itemOrg);
 //            DAO.getInstance().triggerParseUpdate();
 //        }
+        super.updateOnExit();
         DAO.getInstance().saveToParseNow(itemOrg);
     }
 
@@ -586,6 +592,7 @@ public class ScreenItem2 extends MyForm {
                                 refreshAfterEdit();
                             } else {
                                 addTemplate(itemOrg, templateOrg);
+
                                 refreshAfterEdit();
 
                             }
@@ -1359,7 +1366,8 @@ public class ScreenItem2 extends MyForm {
      * categories) of the itemOrg and
      */
     private void addTemplate(Item itemOrg, final Item templateOrg) {
-        Item templateCopy = templateOrg.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK);
+//        Item templateCopy = templateOrg.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK);
+        Item templateCopy = templateOrg;
         //if the user has not yet set a due date and the template has fields depending on due date, ask for a due date
         if (templateCopy.getDueDate().getTime() != 0) {
 
@@ -1371,7 +1379,9 @@ public class ScreenItem2 extends MyForm {
                 if (itemOrg.getDueDate().getTime() == 0) {
 //                Dialog.show(SUBTASK_KEY, this, cmds);
                     newDueDate = showDialogSetDueDate(newDueDate);
-//                assert false; 
+                    if (newDueDate.getTime() != 0) {
+                        itemOrg.setDueDate(newDueDate); //if new date entered, save it!
+                    }//                assert false; 
                 } else {
 //                    newDueDate.setTime(dueDate.getDate().getTime());
                     newDueDate = itemOrg.getDueDate();
@@ -1385,8 +1395,8 @@ public class ScreenItem2 extends MyForm {
                     long templDueDateAdj = newDueDate.getTime() - templateCopy.getDueDate().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
                     //CERTAIN DATES are set RELATIVE to the DUE DATE:
                     if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as 
-                        if (itemOrg.getDueDate().getTime() == 0 && templateCopy.getAlarmDate().getTime() != 0) {
-                            itemOrg.setDueDate(new MyDate(templateCopy.getAlarmDate().getTime() + templDueDateAdj));
+                        if (itemOrg.getAlarmDate().getTime() == 0 && templateCopy.getAlarmDate().getTime() != 0) {
+                            itemOrg.setAlarmDate(new MyDate(templateCopy.getAlarmDate().getTime() + templDueDateAdj));
                         }
                         if (itemOrg.getStartByDateD().getTime() == 0 && templateCopy.getStartByDateD().getTime() != 0) {
                             itemOrg.setStartByDate(new MyDate(templateCopy.getStartByDateD().getTime() + templDueDateAdj));
@@ -1453,17 +1463,27 @@ public class ScreenItem2 extends MyForm {
         itemOrg.setComment(itemOrg.getComment().isEmpty() ? templateCopy.getComment()
                 : itemOrg.getComment() + "\n" + templateCopy.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
 
-        //Templates Categories are merged (only new categories in template are added - no cuplicates!)
-        for (Category c : templateCopy.getCategories()) {
-            c.removeItemFromCategory(templateCopy, true); //doesn't matter if categories are removed from templateCopy since it's never used
+        //Templates Categories are merged (only new categories in template are added - no duplicates!)
+        if (false) {
+            for (Category c : templateCopy.getCategories()) {
+                c.removeItemFromCategory(templateCopy, true); //doesn't matter if categories are removed from templateCopy since it's never used
+            }
         }
         itemOrg.addCategories(templateCopy.getCategories());
 //                         
         //Template Subtasks are merged
-        List<Item> templateSubtasksCopy = templateCopy.getListFull();
-        for (Item templateSubtaskCopy : templateSubtasksCopy) { //full list, filter has no meaning for a template
+//        List<Item> templateSubtasks = templateCopy.getListFull();
+        List<ParseObject> newTemplSubtaskList = new ArrayList<>();
+
+        for (Item templateSubtaskCopy : (List<Item>) templateCopy.getListFull()) { //full list, filter has no meaning for a template
             //optimization: adding many subtasks individually will update inhiertance etc multiple times
-            itemOrg.addToList(templateSubtaskCopy); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+//            templateSubtaskCopy.setOwner(null); //remove old owner (top-level template)
+            Item newTemplSubtask = templateSubtaskCopy.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+            itemOrg.addToList(newTemplSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+            newTemplSubtaskList.add(newTemplSubtask);
+        }
+        if (MyPrefs.backgroundSave.getBoolean()) {
+            DAO.getInstance().saveToParseNow(newTemplSubtaskList);
         }
 
         //SOME fields are NOT AFFECTED by a template:
@@ -1748,7 +1768,7 @@ public class ScreenItem2 extends MyForm {
 //            }
 //        });
 //</editor-fold>
-        if (!description.getText().isEmpty()) {
+        if (description.getText().isEmpty()) {
             setEditOnShow(description); //UI: start editing this field, only if empty (to avoid keyboard popping up)
         }
 
@@ -2498,7 +2518,7 @@ public class ScreenItem2 extends MyForm {
 //                    DAO.getInstance().saveNew(itemOrg); //DONE in ScreenListOfItems
 //                    DAO.getInstance().saveNewTriggerUpdate();
 //                    updateSubtaskButton.run(); //update button lable
-                    itemOrg.setList(subtasks);
+                    itemOrg.setList(subtasks); //possible to edit the subtasks directly inside ScreenListOfItems with add/removeItem only (so ?!
                 }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
                 ).show();
             }
@@ -3558,7 +3578,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                         ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
                         newOwner.addToList(itemOrg);
 //                    DAO.getInstance().saveNew(itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
-                        DAO.getInstance().saveToParseNow(itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
+//                        DAO.getInstance().saveToParseNow(itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
+                        DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) newOwner);
                     } else { //previousValues.getOwner()==null meaning either no owner was selected or a prevoious owner was unselected (and should be removed)
                         ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
                         DAO.getInstance().saveToParseNow((ParseObject) oldOwner);

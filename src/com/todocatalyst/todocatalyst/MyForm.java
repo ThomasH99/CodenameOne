@@ -47,6 +47,7 @@ import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.plaf.UIManager;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.spinner.PickerDialog;
+import static com.codename1.ui.spinner.PickerDialog.CANCEL_BUTTON_TEXT;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.ui.util.UITimer;
 import com.parse4cn1.ParseObject;
@@ -573,7 +574,7 @@ public class MyForm extends Form {
 //        }
 //        this.previousForm = previousForm;
 //        this.previousForm = getComponentForm();
-        setUpdateActionOnDone(updateActionOnDone);
+        addUpdateActionOnDone(updateActionOnDone);
         setUpdateActionOnCancel(updateActionOnCancel);
         setTransitionInAnimator(CommonTransitions.createSlide(CommonTransitions.SLIDE_HORIZONTAL, false, 200));
 //        setTransitionOutAnimator( CommonTransitions.createSlide(CommonTransitions.SLIDE_HORIZONTAL, false, 200));
@@ -1426,7 +1427,7 @@ public class MyForm extends Form {
         assert dueDate != null;
 
         PickerDialog dia = new PickerDialog(Format.f("Set {0 due date}", Item.DUE_DATE),
-                Format.f("This template has dates relative to {0 due date}, enter a {0} ", Item.DUE_DATE),
+                Format.f("This template has dates defined relative to {0 due date}, enter a {0} to use them or {1 Cancel}", Item.DUE_DATE, PickerDialog.CANCEL_BUTTON_TEXT),
                 dueDate);
         return (Date) dia.show();
     }
@@ -1906,12 +1907,26 @@ public class MyForm extends Form {
 //        putEditedValues2(parseIdMap2);
 //    }
 //</editor-fold>
-    void setUpdateActionOnDone(Runnable updateActionOnDone) {
+    /**
+     *
+     * @param updateActionOnDone Runnable to add to actions when exiting Screen
+     * with Done (Back), if null, no effect
+     */
+    void addUpdateActionOnDone(Runnable updateActionOnDone) {
         if (Config.TEST) {
             ASSERT.that(updateActionOnDone == null || this.updateActionOnDone == null, "Setting updateActionOnDone twice, old="
                     + this.updateActionOnDone + "; new=" + updateActionOnDone);
         }
-        this.updateActionOnDone = updateActionOnDone;
+        if (updateActionOnDone != null) {
+            if (this.updateActionOnDone == null) {
+                this.updateActionOnDone = updateActionOnDone;
+            } else {
+                this.updateActionOnDone = () -> {
+                    this.updateActionOnDone.run();
+                    updateActionOnDone.run();
+                };
+            }
+        }
     }
 
     Runnable getUpdateActionOnDone() {
@@ -2158,7 +2173,9 @@ public class MyForm extends Form {
 
     public String makeUniqueIdForExpandedObjects(ItemAndListCommonInterface elt, String defaultString) {
 //        String s = "";
-        if (elt.getObjectIdP() != null) {
+        if (elt.getGuid() != null) {
+            return elt.getGuid();
+        } else if (elt.getObjectIdP() != null) {
             ASSERT.that(!elt.isNoSave());
             return elt.getObjectIdP();
         } else if (elt instanceof ItemList) {
@@ -2255,15 +2272,14 @@ public class MyForm extends Form {
 //    void updateEditedValues() {
 //        parseIdMap2.update();
 //    }
-    void updateEditedValuesOnExit() {
-//        updateEditedValues();
-        parseIdMap2.update(true);
-        if (getUpdateActionOnDone() != null) {
-            getUpdateActionOnDone().run();
-
-        }
-    }
-
+//    void updateEditedValuesOnExitXXX() {
+////        updateEditedValues();
+//        parseIdMap2.update(true);
+//        if (getUpdateActionOnDone() != null) {
+//            getUpdateActionOnDone().run();
+//
+//        }
+//    }
 //    void saveOnExit() {
 ////        DAO.getInstance().saveInBackground((Item)this);
 //        assert false;
@@ -2450,8 +2466,11 @@ public class MyForm extends Form {
     /**
      * override in forms to do actual save of edited value
      */
-    protected void saveOnExit() {
-
+    protected void updateOnExit() {
+        parseIdMap2.update(true);
+        if (getUpdateActionOnDone() != null) {
+            getUpdateActionOnDone().run();
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2504,10 +2523,10 @@ public class MyForm extends Form {
 //                    if (false&&getPinchInsertContainer() != null) {//false since too smart! //if an insertContainer is left when pushing Back, then save the new element if some text was entered
 //                        getPinchInsertContainer().done();
 //                    }
-                    updateEditedValuesOnExit();
+//                    updateEditedValuesOnExit();
 //                    if (triggerSaveOnExit) {
 //                        DAO.getInstance().saveNewTriggerUpdate3();
-                    saveOnExit();
+                    updateOnExit();
 //                    }
                     showPreviousScreen(callRefreshAfterEdit);
                 }
@@ -2806,7 +2825,7 @@ public class MyForm extends Form {
             Item newItem = new Item(true);
             //first insert owner / category into Item before editing
             if (itemListOrg instanceof Category) {
-                newItem.setOwner(Inbox.getInstance());
+                newItem.setOwner(Inbox.getInstance()); //only set owner here
                 newItem.addCategoryToItem((Category) itemListOrg, false); //don't add to category until saving, MyPrefs.insertNewCategoriesForItemsInStartOfIList.getBoolean());
             } else {
                 newItem.setOwner(itemListOrg); //also updates inherited values!! (but ow are they set when owner is a new project not yet saved?!
@@ -2830,23 +2849,27 @@ public class MyForm extends Form {
 //                    DAO.getInstance().saveNew(true, newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNew(newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNewTriggerUpdate();
-                        DAO.getInstance().saveToParseNow(newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+//                        DAO.getInstance().saveToParseNow(newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                        DAO.getInstance().saveToParseNow(newItem); //must save item since adding it to itemListOrg changes its owner
                     } else if (itemListOrg instanceof ItemList) {
                         itemListOrg.addToList(newItem, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
 //                    DAO.getInstance().saveNew(true, newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNew(newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNewTriggerUpdate();
-                        DAO.getInstance().saveToParseNow(newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+//                        DAO.getInstance().saveToParseNow(newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                        DAO.getInstance().saveToParseNow(newItem); //must save item since adding it to itemListOrg changes its owner
                     } else if (itemListOrg instanceof Item) {
                         itemListOrg.addToList(newItem, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
 //                    DAO.getInstance().saveNew(true, newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNew(newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNewTriggerUpdate();
-                        DAO.getInstance().saveToParseNow(newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+//                        DAO.getInstance().saveToParseNow(newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
+                        DAO.getInstance().saveToParseNow(newItem); //must save item since adding it to itemListOrg changes its owner
                     } else {
                         ASSERT.that(false);
                     }
                 }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                    DAO.getInstance().saveInBackground(item, itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                if (false) {
 //                    refreshAfterEdit(); //TODO!!! scroll to where the new item was added (either beginning or end of list)
@@ -2854,9 +2877,10 @@ public class MyForm extends Form {
 //                    }
 //                } else {
 //                    //if no saveable data, do nothing
-////                        itemListOrg.removeFromList(item); //if no saveable data, undo the 
+////                        itemListOrg.removeFromList(item); //if no saveable data, undo the
 //                    //TODO!!!! how to remove from eg Categories if finally the task is not saved??
 //                }
+//</editor-fold>
             }, false, null).show(); //false=optionTemplateEditMode
         });
         return cmd;
@@ -2905,7 +2929,7 @@ public class MyForm extends Form {
 //        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), cmdText);
 //    }
 //</editor-fold>
-    public Command makeCommandNewItemSaveToInbox(boolean useStdCmdText) {
+    public Command makeCommandNewItemSaveToInboxXXX(boolean useStdCmdText) {
         return makeCommandNewItemSaveToItemList(Inbox.getInstance(), useStdCmdText ? "Add task to Inbox" : "");
     }
 
@@ -2948,18 +2972,18 @@ public class MyForm extends Form {
 //</editor-fold>
 //                if ((itemListOrItem.getFilterSortDefN() == null && !filterSortDef.equals(itemListOrItem.getFilterSortDef(true))) //if new default filter was edited
 //                        || (itemListOrItem.getFilterSortDefN() != null && filterSortDef.isDirty())) { //or if existing filter was edited
-                if (!filterSortDef.equals(filterOwnerItemListOrItem.getFilterSortDef(true))) {//if original or default filter was edited
+                if (true || !filterSortDef.equals(filterOwnerItemListOrItem.getFilterSortDef(true))) {//if original or default filter was edited
 //                        ) { //or if existing filter was edited
                     filterOwnerItemListOrItem.setFilterSortDef(filterSortDef); //update with edited filter
                 }
 //                DAO.getInstance().saveNew(filterSortDef); //save updates
 //                DAO.getInstance().saveNew((ParseObject) filterOwnerItemListOrItem);
 //                DAO.getInstance().saveNewTriggerUpdate();
-                DAO.getInstance().saveToParseNow((ParseObject) filterOwnerItemListOrItem); //saving owner of filter will also save the new filter
-                //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not!
-//                if (false) {
-//                    refreshAfterEdit(); //TODO optimize the application of a filter? 
-//                }
+                if (false) {
+                    DAO.getInstance().saveToParseNow((ParseObject) filterOwnerItemListOrItem); //saving owner of filter will also save the new filter
+                } else {
+                    DAO.getInstance().saveToParseNow(filterSortDef); //save possibly edited filter explicitly
+                }                //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not! Or: scroll to any previously visible task? Or scroll down 'as much' as before (if possible)?
             }).show();
         }
         );

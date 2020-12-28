@@ -280,6 +280,10 @@ class MyComponentGroup extends ComponentGroup {
             String selectedStr = (String) this.getSelectedValue();
             set.accept(selectedStr);
         });
+        addActionListener(e -> {
+            set.accept((String) this.getSelectedValue());
+        });
+
     }
 
 //    boolean ignoreNextActionEvent = false;
@@ -421,7 +425,7 @@ class MyComponentGroup extends ComponentGroup {
                 buttonGroup.add(radioButton);
                 buttonsArray[i] = radioButton;
             }
-            if (Config.TEST&&names!=null) {
+            if (Config.TEST && names != null) {
                 buttonsArray[i].setName(this.names[i]);
             }
             this.add(buttonsArray[i]);

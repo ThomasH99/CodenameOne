@@ -120,6 +120,7 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
             }
             return s;
         } else {
+            ASSERT.that(element.getGuid() instanceof String,()->"no guid defined for element="+element);
             return element.getGuid();
         }
     }
@@ -159,7 +160,7 @@ class ExpandedObjects {//implements Externalizable {//extends HashSet {
             } else {
                 result = expandedObjects.add(uniqueStr); //a hashset so no need to check if already added
             }
-            if (result) {
+            if (true||result) { //true=> always save even if unnecessary, to reduce risk of inconsistencies
                 save(); //only save if modified
             }
         }

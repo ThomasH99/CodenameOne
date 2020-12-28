@@ -73,15 +73,17 @@ public class MultipleSelection {
 //            list.remove(item);
 //            list.add(0, item);
 //            newItemList.setList(list);
-            newItemList.removeFromList(item); //first remove, since addToList below doesn't do anything if item is already in list
-            newItemList.addToList(item, false);
+//            newItemList.removeFromList(item, false); //first remove, since addToList below doesn't do anything if item is already in list
+//            newItemList.addToList(item, false);
+            newItemList.moveOrAddItemInList(item, null, false); //first remove, since addToList below doesn't do anything if item is already in list
         };
     }
 
     static ItemOperation moveToEndOfList(ItemAndListCommonInterface newItemList) {
         return (item) -> {
-            newItemList.removeFromList(item); //first remove, since addToList below doesn't do anything if item is already in list
-            newItemList.addToList(item, true);
+//            newItemList.removeFromList(item); //first remove, since addToList below doesn't do anything if item is already in list
+//            newItemList.addToList(item, true);
+            newItemList.moveOrAddItemInList(item, null, true); //first remove, since addToList below doesn't do anything if item is already in list
         };
     }
 
@@ -144,7 +146,7 @@ public class MultipleSelection {
             if (ref.getRemainingTotal() != 0) {
                 item.setRemainingForTask(ref.getRemainingTotal());
             }
-            if (ref.getActualForTaskItself()!= 0) {
+            if (ref.getActualForTaskItself() != 0) {
                 item.setActualForTaskItself(ref.getActualForTaskItself(), false);
             }
             if (ref.getHideUntilDateD().getTime() != 0) {
@@ -217,7 +219,7 @@ public class MultipleSelection {
 //            DAO.getInstance().saveNew(item); //don't save until all are updated. appropriate here (or triggered where this method is called)
         }
 //        DAO.getInstance().saveNewTriggerUpdate();
-            DAO.getInstance().saveToParseNow((List)items); //don't save until all are updated. appropriate here (or triggered where this method is called)
+        DAO.getInstance().saveToParseNow((List) items); //don't save until all are updated. appropriate here (or triggered where this method is called)
     }
 
 }
