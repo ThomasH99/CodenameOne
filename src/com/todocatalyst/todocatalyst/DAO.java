@@ -4517,7 +4517,7 @@ public class DAO {
                 () -> "p is noSave = " + p);
         ASSERT.that(p.isDirty(),
                 () -> "p is NOT dirty, =" + p);
-        ASSERT.that(!saveList.contains(p),
+        ASSERT.that(!noCheck||!saveList.contains(p),
                 () -> "saveList already contains itemList=" + p + ", saveList=" + saveList);
 
         if (noCheck || !saveList.contains(p)) {
@@ -6504,6 +6504,7 @@ public class DAO {
                     if (p instanceof ItemAndListCommonInterface) {
                         ((ItemAndListCommonInterface) p).updateAfterSave(); //set eg alarms for items (need a objectId to work)
                     }
+                    cachePut(p); //update cache once the element is finally saved!
                 }
             }
         };
@@ -6527,6 +6528,7 @@ public class DAO {
                     if (p instanceof ItemAndListCommonInterface) {
                         ((ItemAndListCommonInterface) p).updateAfterSave(); //set eg alarms for items (need a objectId to work)
                     }
+                    cachePut(p); //update cache once the element is finally saved!
                 }
             }
             //now the complete save-cycle has been completed, remove successfully saved parseObjects from toSaveList and save the cleaned up version

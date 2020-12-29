@@ -1106,7 +1106,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        FilterSortDef filterSortDef = getFilterSortDef(true);
         FilterSortDef filterSortDef = getFilterSortDef();
         if (false && Config.TEST) {
-            Log.p("Calling getList() for list=" + this.getText() + (filterSortDef != null ? (" Filter defined, options=" + filterSortDef.getFilterOptions()) : "Filter NOT defined"));// + "; filter=" + getFilterSortDef());
+//            Log.p("Calling getList() for list=" + this.getText() + (filterSortDef != null ? (" Filter defined, options=" + filterSortDef.getFilterOptionsFromParse()) : "Filter NOT defined"));// + "; filter=" + getFilterSortDef());
+            Log.p("Calling getList() for list=" + this.getText() + (filterSortDef != null ? (" Filter defined, options=" + filterSortDef) : "Filter NOT defined"));// + "; filter=" + getFilterSortDef());
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (filterSortDef != null && filteredSortedList == null) { //buffer the sorted list
@@ -1933,6 +1934,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //    }
 //</editor-fold>
+    
+        public boolean doAfterInsertionXXX(ItemAndListCommonInterface item){
+             if (item instanceof Item) { //todo: instead make updateRepeatRule() a method on 
+                    ((Item) item).updateRepeatRule();
+                    return true;
+                }
+             return false;
+        }
+
     /**
      * Adding an item to full(!) list at given index. OK to add to a position
      * *after* the last element (at position getSize()).items will only be added
@@ -1996,9 +2006,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
                     ASSERT.that(listFull.indexOf(item) != -1, () -> "1.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
                 }
                 setList(listFull);
-                if (item instanceof Item) { //todo: instead make updateRepeatRule() a method on 
-                    ((Item) item).updateRepeatRule();
-                }
+                if(false)
+                doAfterInsertionXXX(item);
                 if (Config.TEST) {
                     ASSERT.that(listFull.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
                 }

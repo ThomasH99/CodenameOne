@@ -693,7 +693,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      * to exlude fields from copy. Applied recursively
      */
     void copyMeInto(WorkSlot destination) {
-        copyMeInto(destination, CopyMode.COPY_ALL_FIELDSXXX);
+        copyMeInto(destination, CopyMode.COPY_ALL_FIELDS);
     }
 
     void copyMeInto(WorkSlot destination, CopyMode copyFieldDefinition) {

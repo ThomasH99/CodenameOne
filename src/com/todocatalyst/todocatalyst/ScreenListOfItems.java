@@ -364,7 +364,7 @@ public class ScreenListOfItems extends MyForm {
 //        MyDragAndDropSwipeableContainer.dragEnabled = false; //always disable before setting up a new screen
 //        this.itemListOrg = itemList;
         getItemListFct = itemListFct;
-        itemListOrItemOrg = getItemListFct.getUpdatedItemList(); //TODO!!!! Optimization: double call - also called in refreshAfterEdit first time screen is shown!!!
+        itemListOrItemOrg = getItemListFct.getUpdatedItemList(); //TODO!!!! Optimization: double call - also called in refreshAfterEdit first time screen is shown!!! But needed before below call to SaveEditedValuesLocally!
 //        initLocalSaveOfEditedValues(getUniqueFormId() + itemListOrg.getObjectIdP());
 //        previousValues = new SaveEditedValuesLocally(getUniqueFormId() + itemListOrg.getObjectIdP());
 //        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + itemListOrg.getObjectIdP(), true);
@@ -591,7 +591,7 @@ public class ScreenListOfItems extends MyForm {
         if (false) {
             getContentPane().removeAll(); //NOT necessary since getContentPane().add() will remove the previous content. AND it will remove components that are added later...
         }
-        this.itemListOrItemOrg = getItemListFct.getUpdatedItemList();
+        itemListOrItemOrg = getItemListFct.getUpdatedItemList();
         itemListOrItemOrg.resetWorkTimeDefinition(); //TODO!!!!! find a way to automatically reset wtd each time a list or its elements have been modified -> itemList.save(), or items call update/refresh on owner (and categories!)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        getContentPane().scrollComponentToVisible(this);

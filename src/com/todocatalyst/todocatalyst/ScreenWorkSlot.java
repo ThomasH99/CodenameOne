@@ -295,7 +295,7 @@ public class ScreenWorkSlot extends MyForm {
 //        }
 //</editor-fold>
 
-        boolean hide = MyPrefs.hideIconsInEditTaskScreen.getBoolean();
+        boolean hideIcons = MyPrefs.hideIconsInEditTaskScreen.getBoolean();
 
         //OWNER
         ItemAndListCommonInterface ownerObj = workSlot.getOwner();
@@ -319,7 +319,7 @@ public class ScreenWorkSlot extends MyForm {
 
 //        statusCont.add(new Label(Item.BELONGS_TO)).add(owner); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //        content.add(layout(Item.BELONGS_TO, owner, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-        content.add(layoutN(ownerLabelTxt, ownerLabel, Item.BELONGS_TO_HELP, true, hide ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+        content.add(layoutN(ownerLabelTxt, ownerLabel, Item.BELONGS_TO_HELP, true, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //        owner.setConstraint(TextArea.UNEDITABLE); //DOESN'T WORK        
 
         long now = MyDate.currentTimeMillis();
@@ -346,7 +346,7 @@ public class ScreenWorkSlot extends MyForm {
                 makeDefaultWorkSlotStartDate);
 //        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
-        content.add(layoutN(WorkSlot.START_TIME, startByDatePicker, WorkSlot.START_TIME_HELP, hide ? null : Icons.iconWorkSlotStartTime));
+        content.add(layoutN(WorkSlot.START_TIME, startByDatePicker, WorkSlot.START_TIME_HELP, hideIcons ? null : Icons.iconWorkSlotStartTime));
 //        content.add(new SwipeableContainer(null, new Button(Command.create("Tst", null, (e) -> Log.p("Test"))), new Label("TestSwipe"))); //, true, false, false));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -381,7 +381,7 @@ public class ScreenWorkSlot extends MyForm {
                 (l) -> durationPicker.setDuration((long) l),
                 new Long(0),
                 makeDefaultDuration);
-        content.add(layoutN(WorkSlot.DURATION, durationPicker, WorkSlot.DURATION_HELP, hide ? null : Icons.iconWorkSlotDuration));
+        content.add(layoutN(WorkSlot.DURATION, durationPicker, WorkSlot.DURATION_HELP, hideIcons ? null : Icons.iconWorkSlotDuration));
 
         //END TIME
         MyDateAndTimePicker endByDatePicker = new MyDateAndTimePicker();
@@ -411,7 +411,7 @@ public class ScreenWorkSlot extends MyForm {
             endByDatePicker.setDate(new MyDate(0)); //simply set to start+duration pickers (even when zero or have locally stored values)
         }//        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
-        content.add(layoutN(WorkSlot.END_TIME, endByDatePicker, WorkSlot.END_TIME_HELP, hide ? null : Icons.iconWorkSlotEndTime));
+        content.add(layoutN(WorkSlot.END_TIME, endByDatePicker, WorkSlot.END_TIME_HELP, hideIcons ? null : Icons.iconWorkSlotEndTime));
 
         //ACTION LISTENERS to ensure consistence between start time, duration and end time
         durationPicker.addActionListener(e -> {
@@ -628,7 +628,7 @@ public class ScreenWorkSlot extends MyForm {
         repeatRuleButton.getTextComponent().setName("RepeatBut");
 
         //set text for edit-RR button
-        ActionListener refreshRepeatRuleButton = e -> {
+        ActionListener refreshRepeatRuleButtonXXX = e -> {
             RepeatRuleParseObject locallyEditedRepeatRule1 = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
             String repeatRuleButtonStr;
             if (locallyEditedRepeatRule1 == null) { //no edits
@@ -646,13 +646,15 @@ public class ScreenWorkSlot extends MyForm {
             }
             repeatRuleButton.setText(repeatRuleButtonStr);
         };
+        repeatRuleButton.setText(workSlot.getRepeatRuleN() != null ? workSlot.getRepeatRuleN().getText() : "");
 
         Command repeatRuleEditCmd = MyReplayCommand.create("EditRepeatRule-ScreenWorkSlot", "", null, (e) -> {
-
-            if (workSlot.getRepeatRuleN() != null && !workSlot.getRepeatRuleN().canRepeatRuleBeEdited(workSlot)) {
-                Dialog.show("INFO", Format.f("Once a repeating task has been set {0 DONE} or {1 CANCELLED} the {2 REPEAT_RULE} definition cannot be edited from this task anymore",
-                        ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
-                return;
+            if (false) {
+                if (workSlot.getRepeatRuleN() != null && !workSlot.getRepeatRuleN().canRepeatRuleBeEdited(workSlot)) {
+                    Dialog.show("INFO", Format.f("Once a repeating task has been set {0 DONE} or {1 CANCELLED} the {2 REPEAT_RULE} definition cannot be edited from this task anymore",
+                            ItemStatus.DONE.toString(), ItemStatus.CANCELLED.toString(), Item.REPEAT_RULE), "OK", null);
+                    return;
+                }
             }
             //only allow editing RR if startDate is set
 //            if (workSlot.getStartTimeD().getTime() == 0) {
@@ -661,35 +663,46 @@ public class ScreenWorkSlot extends MyForm {
                         WorkSlot.START_TIME, Item.REPEAT_RULE), "OK", null);
                 return;
             }
+            if (false) {
+                RepeatRuleParseObject locallyEditedRepeatRuleCopy;
+                RepeatRuleParseObject localRR = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
 
-            RepeatRuleParseObject locallyEditedRepeatRuleCopy;
-            RepeatRuleParseObject localRR = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
-
-            if (localRR != null) {// || previousValues.get(Item.PARSE_REPEAT_RULE).equals(REPEAT_RULE_DELETED_MARKER)) {
-                locallyEditedRepeatRuleCopy = localRR;
-            } else {
-//                locallyEditedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE); //fetch previously edited instance/copy of the repeat Rule
-                if (workSlot.getRepeatRuleN() == null) {
-                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(); //create a fresh RR
-//                    locallyEditedRepeatRuleCopy.addOriginatorToRule(workSlot); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
+                if (localRR != null) {// || previousValues.get(Item.PARSE_REPEAT_RULE).equals(REPEAT_RULE_DELETED_MARKER)) {
+                    locallyEditedRepeatRuleCopy = localRR;
                 } else {
-                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(workSlot.getRepeatRuleN()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
-                    ASSERT.that(workSlot.getRepeatRuleN() == null || (workSlot.getRepeatRuleN().equals(locallyEditedRepeatRuleCopy) && locallyEditedRepeatRuleCopy.equals(workSlot.getRepeatRuleN())), "problem in cloning repeatRule");
+//                locallyEditedRepeatRule = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE); //fetch previously edited instance/copy of the repeat Rule
+                    if (workSlot.getRepeatRuleN() == null) {
+                        locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(); //create a fresh RR
+//                    locallyEditedRepeatRuleCopy.addOriginatorToRule(workSlot); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
+                    } else {
+                        locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(workSlot.getRepeatRuleN()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
+                        ASSERT.that(workSlot.getRepeatRuleN() == null || (workSlot.getRepeatRuleN().equals(locallyEditedRepeatRuleCopy) && locallyEditedRepeatRuleCopy.equals(workSlot.getRepeatRuleN())), "problem in cloning repeatRule");
+                    }
+                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy);
                 }
-                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy);
             }
+            RepeatRuleParseObject locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(workSlot.getRepeatRuleN()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
 
             new ScreenRepeatRule(Item.REPEAT_RULE + " " + WorkSlot.WORKSLOT, locallyEditedRepeatRuleCopy, workSlot, ScreenWorkSlot.this, () -> {
-                if (false) {
-                    if (locallyEditedRepeatRuleCopy.equals(workSlot.getRepeatRuleN())) {
-                        previousValues.remove(Item.PARSE_REPEAT_RULE);
-                    } else if (locallyEditedRepeatRuleCopy.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
-                        previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
-                    } else {
-                        previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy);
-                    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                if (false) {
+//                    if (locallyEditedRepeatRuleCopy.equals(workSlot.getRepeatRuleN())) {
+//                        previousValues.remove(Item.PARSE_REPEAT_RULE);
+//                    } else if (locallyEditedRepeatRuleCopy.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+//                        previousValues.put(Item.PARSE_REPEAT_RULE, REPEAT_RULE_DELETED_MARKER);
+//                    } else {
+//                        previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy);
+//                    }
+//                }
+//</editor-fold>
+//                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //store edited rule (otherwise not persisted in local memory)
+
+                if (workSlot.getStartTimeD().getTime() == 0) {
+                    workSlot.setStartTime(locallyEditedRepeatRuleCopy.getFirstRepeatDateAfterTodayForWhenEditingRuleWithoutPredefinedDueDateN()); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
                 }
-                previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //store edited rule (otherwise not persisted in local memory)
+                workSlot.setRepeatRule(locallyEditedRepeatRuleCopy);
+                DAO.getInstance().saveToParseAndWait(locallyEditedRepeatRuleCopy); //MUST save here to itemOrg can be saved locally without ref's to unsaved objects
+                previousValues.saveElementToSaveLocally();//update locally stored element to include RR
 
             }, false, startByDatePicker.getDate(), makeDefaultWorkSlotStartDate, true).show(); //TODO false<=>editing startdate not allowed - correct???
         }
@@ -697,24 +710,27 @@ public class ScreenWorkSlot extends MyForm {
 
         repeatRuleButton.setCommand(repeatRuleEditCmd);
 
-        refreshRepeatRuleButton.actionPerformed(
-                null);
+        if(false)refreshRepeatRuleButtonXXX.actionPerformed(null);
 
-        parseIdMap2.put(REPEAT_RULE_KEY,
-                () -> {
-                    Object editedRule = previousValues.get(Item.PARSE_REPEAT_RULE);
-                    if (editedRule instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
-                        if(false)((RepeatRuleParseObject) editedRule).addOriginatorToRule(workSlot); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
-                        workSlot.setRepeatRule((RepeatRuleParseObject) editedRule);
-                    } else {//if RR was NOT edited, but workslot (potentially) was, updated already generated instances
-                        RepeatRuleParseObject repeatRule = workSlot.getRepeatRuleN();
-                        if (repeatRule != null) {
-                            repeatRule.updateWorkslotInstancesWhenWorkSlotModified(workSlot);
+        if (false) {
+            parseIdMap2.put(REPEAT_RULE_KEY,
+                    () -> {
+                        Object editedRule = previousValues.get(Item.PARSE_REPEAT_RULE);
+                        if (editedRule instanceof RepeatRuleParseObject) { //only defined if the RR has really been edited
+                            if (false) {
+                                ((RepeatRuleParseObject) editedRule).addOriginatorToRule(workSlot); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
+                            }
+                            workSlot.setRepeatRule((RepeatRuleParseObject) editedRule);
+                        } else {//if RR was NOT edited, but workslot (potentially) was, updated already generated instances
+                            RepeatRuleParseObject repeatRule = workSlot.getRepeatRuleN();
+                            if (repeatRule != null) {
+                                repeatRule.updateWorkslotInstancesWhenWorkSlotModified(workSlot);
+                            }
                         }
-                    }
 
-                }
-        );
+                    }
+            );
+        }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
@@ -740,7 +756,7 @@ public class ScreenWorkSlot extends MyForm {
 //</editor-fold>
 //        repeatRuleButton.setUIID("TextField");
 //        content.add(layoutN(true, WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, true, false, true, hide ? null : Icons.iconRepeat));//, true, false, false));
-        content.add(layoutN(true, WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, hide ? null : Icons.iconRepeat));//, true, false, false));
+        content.add(layoutN(true, WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, hideIcons ? null : Icons.iconRepeat));//, true, false, false));
 //        checkDataIsCompleteBeforeExit = () -> {
 //        setCheckOnExit( () -> {
 //            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
@@ -806,7 +822,7 @@ public class ScreenWorkSlot extends MyForm {
             ));
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
 //            content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
-            content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", hide ? null : Icons.iconWorkSlotTasks));
+            content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", hideIcons ? null : Icons.iconWorkSlotTasks));
         }
 
         //ORIGINAL SOURCE
@@ -827,24 +843,24 @@ public class ScreenWorkSlot extends MyForm {
 //            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //                content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //                content.add(layoutN(true, Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true, true, false)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-                content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, null, true, true, false, false, true, hide ? null : Icons.iconSource)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+                content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, null, true, true, false, false, true, hideIcons ? null : Icons.iconSource)); //.add(new SpanLabel("Click to move task to other projects or lists"));
             }
         }
 
         //CREATED
         Label createdDate = new Label(workSlot.getCreatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getCreatedAt().getTime())); //NOT use itemLS since CreatedDate is not saved locally
-        content.add(layoutN(Item.CREATED_DATE, createdDate, "**", true, hide ? null : Icons.iconCreatedDate));
+        content.add(layoutN(Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDate));
 
         //MODIFIED
         Label lastModifiedDate = new Label(workSlot.getUpdatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getUpdatedAt()));
-        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, hide ? null : Icons.iconModifiedDate));
+        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, hideIcons ? null : Icons.iconModifiedDate));
 
         //OBJECT-ID
         if ((Config.TEST
                 || (MyPrefs.enableShowingSystemInfo.getBoolean()
                 && MyPrefs.showObjectIdsInEditScreens.getBoolean())) && workSlot.getObjectIdP() != null) {
             Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "ScreenItemValueUneditable");
-            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hide ? null : Icons.iconObjectId));
+            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hideIcons ? null : Icons.iconObjectId));
         }
 
         //WORKTIME ALLOCATOR

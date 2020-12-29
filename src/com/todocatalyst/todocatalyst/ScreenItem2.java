@@ -210,7 +210,7 @@ public class ScreenItem2 extends MyForm {
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
 //        super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, cancelAction);
-        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, null, null); //cancelAction handled below
+        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, cancelAction); //cancelAction handled below
         increaseCallDepth();
         setUniqueFormId("ScreenEditItem");
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
@@ -238,12 +238,17 @@ public class ScreenItem2 extends MyForm {
 //        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + item.getObjectIdP());
         this.previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + prevValId);
         this.previousValues.addAndOverwrite(previousValuesN);
-        this.previousValues.setElementToSaveLocally(itemOrg);
+        //if a new element was previously edited, and itemOrg is a new, not yet saved, item, then restore locally saved values
+        if (itemOrg.getObjectIdP() == null && previousValues.getElementToSaveLocally() instanceof Item) {
+            Item previouslyEditedItem = (Item) previousValues.getElementToSaveLocally();
+            previouslyEditedItem.copyMeInto(itemOrg, Item.CopyMode.COPY_LOCALLY_EDITED_FIELDS);
+        }
+        this.previousValues.setElementToSaveLocally(itemOrg); //overwrites any previous element
 
         this.templateEditMode = itemOrg.isTemplate() || templateEditMode; //
         getTitleComponent().setEndsWith3Points(true);
         addUpdateActionOnDone(() -> {
-            doneAction.run();
+//            doneAction.run(); //launched via call to super() above
             itemOrg.updateRepeatRule(); //only update RR on exit, after all fields are updated, templates added, ...
         });
 
@@ -281,7 +286,7 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
         if (false) {
             itemCopy = new Item(false); //create a coppy to allow changing the owner to update inherited values
-            itemOrg.copyMeInto(itemCopy, Item.CopyMode.COPY_ALL_FIELDSXXX, COPY_EXCLUDE_CATEGORIES | Item.COPY_EXCLUDE_SUBTASKS | Item.COPY_EXCLUDE_REPEAT_RULE); //don't copy categories since that will add the itemCopy to the categories and create ObjId reference errors when saving categories
+            itemOrg.copyMeInto(itemCopy, Item.CopyMode.COPY_ALL_FIELDS, COPY_EXCLUDE_CATEGORIES | Item.COPY_EXCLUDE_SUBTASKS | Item.COPY_EXCLUDE_REPEAT_RULE); //don't copy categories since that will add the itemCopy to the categories and create ObjId reference errors when saving categories
         } else {
             itemCopy = item;
         }
@@ -305,42 +310,44 @@ public class ScreenItem2 extends MyForm {
 //        setToolbar(new Toolbar());
 //        addCommandsToToolbar(getToolbar());//, theme);
 //        buildContentPane(getContentPane());
-        setUpdateActionOnCancel(() -> {
+        if (false) { //set via call to super() above
+            setUpdateActionOnCancel(() -> {
 //            List<Item> editedSubtasks = previousValues.getSubtasks();
 
-            //on cancel, delete any added elements
+                //on cancel, delete any added elements
 //            List addedSubtasks = null;
 //            if (editedSubtasks != null) {
-            if (false) {
-                List<Item> editedSubtasks = previousValues.getSubtaskListN();
-                //TODO!!!! for now, edits to subtasks, including added template subtasks, are not cancelled (for simplicity)
-                if (editedSubtasks != null) { //if null, means no change was made!
-                    String errorTxt;
-                    Dialog.show("Info", "Be aware that cancelling the edits of a project also cancels all added or removed subtasks", "OK", null);
-                    if (true) {//|| ((errorTxt = cancellableSubtaskEditsExist(editedSubtasks, null)) != null && showDialog())) {
+                if (false) {
+                    List<Item> editedSubtasks = previousValues.getSubtaskListN();
+                    //TODO!!!! for now, edits to subtasks, including added template subtasks, are not cancelled (for simplicity)
+                    if (editedSubtasks != null) { //if null, means no change was made!
+                        String errorTxt;
+                        Dialog.show("Info", "Be aware that cancelling the edits of a project also cancels all added or removed subtasks", "OK", null);
+                        if (true) {//|| ((errorTxt = cancellableSubtaskEditsExist(editedSubtasks, null)) != null && showDialog())) {
 
-                        List<Item> addedSubtasks = new ArrayList(editedSubtasks);
-                        addedSubtasks.removeAll(itemOrg.getListFull());
-                        DAO.getInstance().deleteAll((List) addedSubtasks, false, false); //false=soft-delete, could hard-delete, but better to soft-delete to make recoverable (avoid losing work)?!
+                            List<Item> addedSubtasks = new ArrayList(editedSubtasks);
+                            addedSubtasks.removeAll(itemOrg.getListFull());
+                            DAO.getInstance().deleteAll((List) addedSubtasks, false, false); //false=soft-delete, could hard-delete, but better to soft-delete to make recoverable (avoid losing work)?!
 
-                        //deleted subtasks are those which were in the subtask list before the editing and no longer are there
-                        List<Item> deletedSubtasks = new ArrayList(itemOrg.getListFull());
-                        deletedSubtasks.removeAll(editedSubtasks);
-                        //on cancel, UN-delete any deleted subtasks/subprojects
-                        //using softDeleted date is not enough, but if capturing date when ScreenItem2 is launched and then undeleting any deleted *after* that might work?!
-                        Date editSessionStartTime = previousValues.getEditSessionStartTime(); //on Cancel, use this as reference date for subtasks to delete/undelete
-                        for (Item i : deletedSubtasks) {
+                            //deleted subtasks are those which were in the subtask list before the editing and no longer are there
+                            List<Item> deletedSubtasks = new ArrayList(itemOrg.getListFull());
+                            deletedSubtasks.removeAll(editedSubtasks);
+                            //on cancel, UN-delete any deleted subtasks/subprojects
+                            //using softDeleted date is not enough, but if capturing date when ScreenItem2 is launched and then undeleting any deleted *after* that might work?!
+                            Date editSessionStartTime = previousValues.getEditSessionStartTime(); //on Cancel, use this as reference date for subtasks to delete/undelete
+                            for (Item i : deletedSubtasks) {
 //                if (i.getSoftDeletedDateN().getTime() > undeleteAfter.getTime()) { //checked in undelete()
 //                        i.undelete(null, undeleteAfter);
-                            i.undeleteZZZ(null, null); //null,null since we ABSOLUTELY need to undelete these subtasks since they're in the original subtask list
+                                i.undeleteZZZ(null, null); //null,null since we ABSOLUTELY need to undelete these subtasks since they're in the original subtask list
+                            }
                         }
                     }
                 }
-            }
-            if (cancelAction != null) {
-                cancelAction.run();
-            }
-        });
+                if (cancelAction != null) {
+                    cancelAction.run();
+                }
+            });
+        }
         addCommandsToToolbar(getToolbar());
         refreshAfterEdit();
     }
@@ -1486,6 +1493,8 @@ public class ScreenItem2 extends MyForm {
             DAO.getInstance().saveToParseNow(newTemplSubtaskList);
         }
 
+        previousValues.saveElementToSaveLocally(); //ensure template changes are saved locally
+
         //SOME fields are NOT AFFECTED by a template:
         //Actual effort
         //Owner
@@ -1869,7 +1878,7 @@ public class ScreenItem2 extends MyForm {
 
         mainCont.add(makeSpacerThin());
 
-        boolean hide = MyPrefs.hideIconsInEditTaskScreen.getBoolean();
+        boolean hideIcons = MyPrefs.hideIconsInEditTaskScreen.getBoolean();
 
         //STATUS
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1885,7 +1894,7 @@ public class ScreenItem2 extends MyForm {
                 () -> status.getStatus().toString(), //status.getStatus(), 
                 (enumStr) -> status.setStatus(ItemStatus.valueOf((String) enumStr)));
 //        mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP, null, false, false, false, true));
-        mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP, null, false, false, false, true, false, hide ? null : Icons.iconItemStatusIcon));
+        mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP, null, false, false, false, true, false, hideIcons ? null : Icons.iconItemStatusIcon));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        parseIdMap2.put(status, () -> {
@@ -2052,7 +2061,7 @@ public class ScreenItem2 extends MyForm {
 //                ()->makeDefaultAlarmDate(dueDate.getDate()));
 //        mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, () -> alarmDate.setDate(new Date(0)))); //, true, false, false));
 //        mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP)); //, true, false, false));
-        mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, hide ? null : Icons.iconAlarmDate)); //, true, false, false));
+        mainCont.add(layoutN(Item.ALARM_DATE, alarmDate, Item.ALARM_DATE_HELP, hideIcons ? null : Icons.iconAlarmDate)); //, true, false, false));
 //        int remainingIndex = mainCont.getComponentCount() - 1; //store the index at which to insert remainingEffort
 
 //        mainCont.add(makeSpacerThin());
@@ -2064,7 +2073,7 @@ public class ScreenItem2 extends MyForm {
                 () -> startByDate.getDate(),
                 (d) -> startByDate.setDate((Date) d),
                 () -> itemCopy.isStartByDateInherited(startByDate.getDate()));
-        mainCont.add(layoutN(Item.START_BY_TIME, startByDate, Item.START_BY_TIME_HELP, hide ? null : Icons.iconStartByDate));
+        mainCont.add(layoutN(Item.START_BY_TIME, startByDate, Item.START_BY_TIME_HELP, hideIcons ? null : Icons.iconStartByDate));
 //        updateUIIDForInherited(startByDate, itemCopy.isStartByDateInherited(startByDate.getDate()));
 
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(addDatePickerWithClearButton(startByDate));
@@ -2095,7 +2104,7 @@ public class ScreenItem2 extends MyForm {
                 () -> itemCopy.isDueDateInherited(dueDate.getDate()));
 //                new Date(0),
 //                ()->makeDefaultDueDate());
-        mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP, hide ? null : Icons.iconSetDueDateToTodayFontImageMaterial));
+        mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP, hideIcons ? null : Icons.iconSetDueDateToTodayFontImageMaterial));
 //        updateUIIDForInherited(dueDate, itemCopy.isDueDateInherited(dueDate.getDate())); //NB! MUST do *after* layoutN() which sets the UIID
 
 //        hi.add(LayeredLayout.encloseIn(settingsLabel, FlowLayout.encloseRight(close))) //https://github.com/codenameone/CodenameOne/wiki/Basics---Themes,-Styles,-Components-&-Layouts#layered-layout
@@ -2111,7 +2120,7 @@ public class ScreenItem2 extends MyForm {
                     new ScreenListOfWorkTime(itemOrg, itemOrg.getAllocatedWorkTimeN(), ScreenItem2.this).show();
                 }));
 //                mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true));
-                mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true, hide ? null : Icons.iconFinishDate));
+                mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true, hideIcons ? null : Icons.iconFinishDate));
 
 //                mainCont.add(initField(Item.FINISH_WORK_TIME, Item.FINISH_WORK_TIME_HELP, showWorkTimeDetails, "finishTime", () -> item.getFinishTime(), null,
                 initField("finishTime", showWorkTimeDetails,
@@ -2274,7 +2283,7 @@ public class ScreenItem2 extends MyForm {
 //        mainCont.add(layout(Item.CATEGORIES, categoriesButton, "**", false, false, false));
 //</editor-fold>
 //        mainCont.add(layoutN(Item.CATEGORIES, categoriesButton, "**", null, true, false, true));
-        mainCont.add(layoutN(true, Item.CATEGORIES, categoriesButton, Item.CATEGORIES, hide ? null : Icons.iconCategory));
+        mainCont.add(layoutN(true, Item.CATEGORIES, categoriesButton, Item.CATEGORIES, hideIcons ? null : Icons.iconCategory));
 
 //        mainCont.add(makeSpacerThin());
         //TODO deleting should not delete in item but delete editcopy and when saving via parseIdMap
@@ -2425,7 +2434,7 @@ public class ScreenItem2 extends MyForm {
             ));
             updateSubtaskButton.run(); //update button lable
 
-            mainCont.add(layoutN(Item.SUBTASKS, editSubtasks, Item.SUBTASKS_HELP, false, hide ? null : Icons.iconEditSubTasks));
+            mainCont.add(layoutN(Item.SUBTASKS, editSubtasks, Item.SUBTASKS_HELP, false, hideIcons ? null : Icons.iconEditSubTasks));
 
             parseIdMap2.put(SUBTASK_KEY, () -> {
 //                itemOrg.setList(previousValues.getItemsN());
@@ -2526,7 +2535,7 @@ public class ScreenItem2 extends MyForm {
             editSubtasks.setText(totalNumberSubtasks == 0 ? "" : "" + numberUndoneSubtasks + "/" + totalNumberSubtasks); //set *after* adding command
 //            updateSubtaskButton.run(); //update button label - NB *after* setCommand above, otherwise [3/3] not shown
 
-            mainCont.add(layoutN(Item.SUBTASKS, editSubtasks, Item.SUBTASKS_HELP, false, hide ? null : Icons.iconEditSubTasks));
+            mainCont.add(layoutN(Item.SUBTASKS, editSubtasks, Item.SUBTASKS_HELP, false, hideIcons ? null : Icons.iconEditSubTasks));
         }
 
 //        mainCont.add(makeSpacerThin());
@@ -2564,20 +2573,20 @@ public class ScreenItem2 extends MyForm {
                 }
 
                 RepeatRuleParseObject locallyEditedRepeatRuleCopy; //NB - must set locallyEditedRepeatRule like it's done to allow use in lambda fct below
-                RepeatRuleParseObject localRR = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
+//                RepeatRuleParseObject localRR = (RepeatRuleParseObject) previousValues.get(Item.PARSE_REPEAT_RULE);
 
-                if (localRR != null) {
-                    locallyEditedRepeatRuleCopy = localRR;
-                } else {
-                    if (itemOrg.getRepeatRuleN() == null) {
-                        locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(); //create a fresh RR
+//                if (localRR != null) {
+//                    locallyEditedRepeatRuleCopy = localRR;
+//                } else {
+                if (itemOrg.getRepeatRuleN() == null) {
+                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(); //create a fresh RR
 //                    locallyEditedRepeatRuleCopy.addOriginatorToRule(item); //NB! item could possibly be done (marked as Done when edited, or editing a Done item to make it repeat from now on)
-                    } else {
-                        locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(itemOrg.getRepeatRuleN()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
-                    }
-                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //save new value locally
+                } else {
+                    locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(itemOrg.getRepeatRuleN()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
                 }
+//                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //save new value locally
             }
+//            }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRuleCopy, itemOrg, ScreenItem2.this, () -> {
@@ -2590,21 +2599,25 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
             RepeatRuleParseObject locallyEditedRepeatRuleCopy = new RepeatRuleParseObject(itemOrg.getRepeatRuleN()); //create a copy if getRepeatRule returns a rule, if getRepeatRule() returns null, creates a fresh RR
             new ScreenRepeatRule(Item.REPEAT_RULE, locallyEditedRepeatRuleCopy, itemOrg, ScreenItem2.this, () -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
                 //if a startDate was set in the RR, and none is set for the item, use RR startDate as due date. *unless* the dueDate was reset to 0 (hence the test on item.getDueDateD())
-                if (false && dueDate.getDate().getTime() == 0 && locallyEditedRepeatRuleCopy.getSpecifiedStartDateZZZ().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
-                    previousValues.put(Item.PARSE_DUE_DATE, new MyDate(locallyEditedRepeatRuleCopy.getSpecifiedStartDateZZZ().getTime())); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
-                }
-                if (false) {
-                    //if no due date is already set, automatically set the duePicker to the first repeatdate generated
-                    if (dueDate.getDate().getTime() == 0) {
-                        previousValues.put(Item.PARSE_DUE_DATE, locallyEditedRepeatRuleCopy.getFirstRepeatDateAfterTodayForWhenEditingRuleWithoutPredefinedDueDateN()); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
-                    }
-                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //store edited rule (otherwise not persisted in local memory)
-                }
+//                if (false && dueDate.getDate().getTime() == 0 && locallyEditedRepeatRuleCopy.getSpecifiedStartDateZZZ().getTime() != 0) { //NO, always use repeatRule startDate as dueDate and vice-versa (necessary when editing a rule with existing instances)
+//                    previousValues.put(Item.PARSE_DUE_DATE, new MyDate(locallyEditedRepeatRuleCopy.getSpecifiedStartDateZZZ().getTime())); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
+//                }
+//                if (false) {
+//                    //if no due date is already set, automatically set the duePicker to the first repeatdate generated
+//                    if (dueDate.getDate().getTime() == 0) {
+//                        previousValues.put(Item.PARSE_DUE_DATE, locallyEditedRepeatRuleCopy.getFirstRepeatDateAfterTodayForWhenEditingRuleWithoutPredefinedDueDateN()); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
+//                    }
+//                    previousValues.put(Item.PARSE_REPEAT_RULE, locallyEditedRepeatRuleCopy); //store edited rule (otherwise not persisted in local memory)
+//                }
+//</editor-fold>
                 if (itemOrg.getDueDate().getTime() == 0) {
                     itemOrg.setDueDate(locallyEditedRepeatRuleCopy.getFirstRepeatDateAfterTodayForWhenEditingRuleWithoutPredefinedDueDateN()); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
                 }
                 itemOrg.setRepeatRule(locallyEditedRepeatRuleCopy);
+                DAO.getInstance().saveToParseAndWait(locallyEditedRepeatRuleCopy); //MUST save here to itemOrg can be saved locally without ref's to unsaved objects
+                previousValues.saveElementToSaveLocally();//update locally stored element to include RR
             }, true, dueDate.getDate().getTime() != 0 ? dueDate.getDate() : null, () -> makeDefaultDueDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
         }
         );
@@ -2633,7 +2646,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         }
 
 //        Component repeatRuleContainer = layoutN(true, Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP);
-        Component repeatRuleContainer = layoutN(true, Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, hide ? null : Icons.iconRepeat);
+        Component repeatRuleContainer = layoutN(true, Item.REPEAT_RULE, repeatRuleButton, Item.REPEAT_RULE_HELP, hideIcons ? null : Icons.iconRepeat);
 //        if (false && (editedRepeatRule == null || editedRepeatRule.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT)) {
 //            repeatRuleContainer.setHidden(true); //hide as long as no due date is set (like Apple Reminders)
 //        }
@@ -2740,12 +2753,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (isProject) {
 //            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
             timeCont.addComponent(layoutN(Item.EFFORT_REMAINING_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getRemainingForSubtasks()), "ScreenItemValueUneditable"),
-                    Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false, hide ? null : Icons.iconRemainingEffort)); //hack to insert after alarmDate field
+                    Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconRemainingEffort)); //hack to insert after alarmDate field
         }
 //TODO: makes no sense to show remaining for project itself, just confusing??
         String remainingTxt = isProject ? Item.EFFORT_REMAINING_PROJECT : Item.EFFORT_REMAINING;
         String remainingHelpTxt = isProject ? Item.EFFORT_REMAINING_PROJECT_HELP : Item.EFFORT_REMAINING_HELP;
-        timeCont.add(layoutN(remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hide ? null : (isProject ? Icons.iconEffortProject : Icons.iconRemainingEffort)));
+        timeCont.add(layoutN(remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconRemainingEffort)));
         updateUIIDForInherited(remainingEffort, Item.isRemainingDefaultValue(remainingEffort.getDuration()));
 //                MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean());
 //                && remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //NB! MUST do *after* layoutN() which sets the UIID
@@ -2754,7 +2767,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //if project, show actual for subtasks
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
             timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getActualForSubtasks()), "ScreenItemValueUneditable"),
-                    Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false, hide ? null : Icons.iconActualEffort));
+                    Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconActualEffort));
         }
 
         //if single task, show picker with text for single task, if project show picker w text for ProjectTaskItself
@@ -2813,7 +2826,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> actualEffortTask.getDuration(),
                 (ms) -> actualEffortTask.setDuration((long) ms));
 
-        timeCont.add(layoutN(actualTxt, isTemplate ? null : actualEffortTask, actualHelpTxt, hide ? null : (isProject ? Icons.iconEffortProject : Icons.iconActualEffort)));
+        timeCont.add(layoutN(actualTxt, isTemplate ? null : actualEffortTask, actualHelpTxt, hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconActualEffort)));
 
         //ESTIMATE************
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
@@ -2823,7 +2836,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         }
         String estimateTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT : Item.EFFORT_ESTIMATE;
         String estimateHelpTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT_HELP : Item.EFFORT_ESTIMATE_HELP;
-        timeCont.add(layoutN(estimateTxt, effortEstimate, estimateHelpTxt, hide ? null : (isProject ? Icons.iconEffortProject : Icons.iconEstimateMaterial)));
+        timeCont.add(layoutN(estimateTxt, effortEstimate, estimateHelpTxt, hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconEstimateMaterial)));
 
         timeCont.add(makeSpacerThin());
 
@@ -2891,7 +2904,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> waitingTill.getDate(),
                 (d) -> waitingTill.setDate((Date) d),
                 () -> itemCopy.isWaitingTillInherited(waitingTill.getDate()));
-        timeCont.add(layoutN(Item.WAIT_UNTIL_DATE, waitingTill, Item.WAIT_UNTIL_DATE_HELP, hide ? null : Icons.iconWaitingDateMaterial));
+        timeCont.add(layoutN(Item.WAIT_UNTIL_DATE, waitingTill, Item.WAIT_UNTIL_DATE_HELP, hideIcons ? null : Icons.iconWaitingDateMaterial));
 //        updateUIIDForInherited(waitingTill, itemCopy.isWaitingTillInherited(waitingTill.getDate()));
 
 //        MyDateAndTimePicker waitingAlarm = new MyDateAndTimePicker(parseIdMap2, () -> itemLS.getWaitingAlarmDateD(), (d) -> item.setWaitingAlarmDate(d)); //"<waiting reminder this date>", 
@@ -2905,7 +2918,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        timeCont.add(new Label(Item.WAITING_ALARM_DATE)).add(addDatePickerWithClearButton(waitingAlarm));
 //        timeCont.add(new Label(Item.WAITING_ALARM_DATE)).add(waitingAlarm.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.WAITING_ALARM_DATE, waitingAlarm.makeContainerWithClearButton(), "**"));
-        timeCont.add(layoutN(Item.WAITING_ALARM_DATE, waitingAlarm, Item.WAITING_ALARM_DATE_HELP, hide ? null : Icons.iconWaitingAlarm));
+        timeCont.add(layoutN(Item.WAITING_ALARM_DATE, waitingAlarm, Item.WAITING_ALARM_DATE_HELP, hideIcons ? null : Icons.iconWaitingAlarm));
 
 //        MyDateAndTimePicker dateSetWaitingDate = new MyDateAndTimePicker("<set date>", parseIdMap2, () -> item.getDateWhenSetWaitingD(), (d) -> item.setDateWhenSetWaiting(d));
 //        MyDateAndTimePicker dateSetWaitingDate = new MyDateAndTimePicker("", parseIdMap2, () -> itemLS.getDateWhenSetWaitingD(), (d) -> item.setDateWhenSetWaiting(d));
@@ -2922,7 +2935,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> dateSetWaitingDate.getDate(),
                 (s) -> dateSetWaitingDate.setDate((Date) s));
 
-        timeCont.add(layoutN(Item.DATE_WHEN_SET_WAITING, dateSetWaitingDate, Item.DATE_WHEN_SET_WAITING_HELP, hide ? null : Icons.iconSetWaitingDateMaterial));
+        timeCont.add(layoutN(Item.DATE_WHEN_SET_WAITING, dateSetWaitingDate, Item.DATE_WHEN_SET_WAITING_HELP, hideIcons ? null : Icons.iconSetWaitingDateMaterial));
 
         if (false) { //not meaningful to change status when changing this date
             dateSetWaitingDate.addActionListener((e) -> {
@@ -2974,7 +2987,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        timeCont.add(new Label(Item.HIDE_UNTIL)).add(addDatePickerWithClearButton(hideUntil));
 //        timeCont.add(new Label(Item.HIDE_UNTIL)).add(hideUntil.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.HIDE_UNTIL, hideUntil.makeContainerWithClearButton(), "**"));
-        timeCont.add(layoutN(Item.HIDE_UNTIL, hideUntil, Item.HIDE_UNTIL_HELP, hide ? null : Icons.iconHideUntilDate));
+        timeCont.add(layoutN(Item.HIDE_UNTIL, hideUntil, Item.HIDE_UNTIL_HELP, hideIcons ? null : Icons.iconHideUntilDate));
 
         if (true) {
 //            MyDatePicker expireByDate = new MyDatePicker(parseIdMap2, () -> itemLS.getExpiresOnDateD(), (d) -> item.setExpiresOnDateD(d)); // "<auto-cancel on date>", 
@@ -2986,7 +2999,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            timeCont.add(new Label(Item.AUTOCANCEL_BY)).add(expireByDate.makeContainerWithClearButton());
 //            timeCont.add(layout(Item.AUTOCANCEL_BY, expireByDate.makeContainerWithClearButton(), "**"));
 //            timeCont.add(layoutN(Item.AUTOCANCEL_BY, expiresOnDate, Item.AUTOCANCEL_BY_HELP, hide ? null : Icons.iconAutoCancelByDate));
-            timeCont.add(layoutN(Item.EXPIRES_ON_DATE, expiresOnDate, Item.EXPIRES_ON_DATE_HELP, hide ? null : Icons.iconAutoCancelByDate));
+            timeCont.add(layoutN(Item.EXPIRES_ON_DATE, expiresOnDate, Item.EXPIRES_ON_DATE_HELP, hideIcons ? null : Icons.iconAutoCancelByDate));
         }
 
         //TAB PRIO
@@ -3018,7 +3031,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> itemCopy.isPriorityInherited(priority.getSelectedIndex() + 1)
         );
 //        prioCont.add(layoutN(Item.PRIORITY, priority, Item.PRIORITY_HELP));//, null, true, false, false, true));
-        prioCont.add(layoutN(Item.PRIORITY, priority, Item.PRIORITY_HELP, hide ? null : Icons.iconPriority));//, null, true, false, false, true));
+        prioCont.add(layoutN(Item.PRIORITY, priority, Item.PRIORITY_HELP, hideIcons ? null : Icons.iconPriority));//, null, true, false, false, true));
         updateUIIDForInherited(priority, itemCopy.isPriorityInherited(priority.getSelectedIndex()));
 //        prioCont.add(layout(Item.PRIORITY, priority, Item.PRIORITY_HELP, true, false, true));
 
@@ -3057,7 +3070,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(Item.IMPORTANCE).add(FlowLayout.encloseCenterMiddle(importance));
 //        prioCont.add(layout(Item.IMPORTANCE, FlowLayout.encloseCenterMiddle(importance), "**"));
 //        prioCont.add(layout(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP, true, false, true));
-        prioCont.add(layoutN(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP, hide ? null : Icons.iconImportance));//, null, false, false, true, true));
+        prioCont.add(layoutN(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP, hideIcons ? null : Icons.iconImportance));//, null, false, false, true, true));
 //        updateUIIDForInherited(importance, itemCopy.isImportanceInherited(importance.getSelectedString() != null ? HighMediumLow.getValue(importance.getSelectedString()) : null));
         updateUIIDForInherited(importance, itemCopy.isImportanceInherited(importance.getSelectedValue() != null ? HighMediumLow.valueOf((String) importance.getSelectedValue()) : null));
 
@@ -3085,7 +3098,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 (enumName) -> urgency.selectValue(enumName),
                 () -> itemCopy.isUrgencyInherited(urgency.getSelectedValue() != null ? HighMediumLow.valueOf((String) urgency.getSelectedValue()) : null)
         );
-        prioCont.add(layoutN(Item.URGENCY, urgency, Item.URGENCY_HELP, hide ? null : Icons.iconUrgency));//, null, false, false, true, true));
+        prioCont.add(layoutN(Item.URGENCY, urgency, Item.URGENCY_HELP, hideIcons ? null : Icons.iconUrgency));//, null, false, false, true, true));
         updateUIIDForInherited(urgency, itemCopy.isUrgencyInherited(urgency.getSelectedValue() != null ? HighMediumLow.valueOf((String) urgency.getSelectedValue()) : null));
 
         prioCont.add(makeSpacerThin());
@@ -3122,7 +3135,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(layout(Item.CHALLENGE, FlowLayout.encloseCenterMiddle(challenge), "**", true));
 //        prioCont.add(layout(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP, true, false, true));
 //</editor-fold>
-        prioCont.add(layoutN(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP, hide ? null : Icons.iconChallengeHard));//, null, false, false, true, true));
+        prioCont.add(layoutN(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP, hideIcons ? null : Icons.iconChallengeHard));//, null, false, false, true, true));
         updateUIIDForInherited(challenge, itemCopy.isChallengeInherited(challenge.getSelectedValue() != null ? Challenge.valueOf((String) challenge.getSelectedValue()) : null));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3150,7 +3163,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                (enumStr) -> dreadFun.select(enumStr != null ? DreadFunValue.valueOf((String) enumStr).getDescription() : null),
 //                () -> item.isDreadFunInherited((dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()) : null))
 //        );
-        prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, hide ? null : Icons.iconFun));//, null, false, false, true, true));
+        prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, hideIcons ? null : Icons.iconFun));//, null, false, false, true, true));
         updateUIIDForInherited(dreadFun, itemCopy.isDreadFunInherited(dreadFun.getSelectedValue() != null ? DreadFunValue.valueOf((String) dreadFun.getSelectedValue()) : null));
 
         prioCont.add(makeSpacerThin());
@@ -3170,7 +3183,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> earnedValue.getText(),
                 (s) -> earnedValue.setText((String) s)); //TODO!!! localize number of decimal points (2)??
 //        prioCont.add(layoutN(Item.EARNED_VALUE, earnedValue, Item.EARNED_VALUE_HELP, null, false, true, false, false));
-        prioCont.add(layoutN(Item.EARNED_VALUE, earnedValue, Item.EARNED_VALUE_HELP, null, false, true, false, false, false, hide ? null : Icons.iconEarnedValue));
+        prioCont.add(layoutN(Item.EARNED_VALUE, earnedValue, Item.EARNED_VALUE_HELP, null, false, true, false, false, false, hideIcons ? null : Icons.iconEarnedValue));
 
 //        MyNumericTextField earnedValuePerHour = new MyNumericTextField("<set>", parseIdMap2, () -> item.getEarnedValuePerHour(), (d) -> {
 //        MyNumericTextField earnedValuePerHour = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValuePerHour(), (d) -> {
@@ -3183,7 +3196,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                add(new SpanLabel(Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_VALUE + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."));
 //        prioCont.add(layout(Item.EARNED_POINTS_PER_HOUR, earnedValuePerHour, Item.EARNED_POINTS_PER_HOUR_HELP, true, true, true));
 //        prioCont.add(layoutN(Item.EARNED_VALUE_PER_HOUR, earnedValuePerHour, Item.EARNED_VALUE_PER_HOUR_HELP, true, true, false));
-        prioCont.add(layoutN(Item.EARNED_VALUE_PER_HOUR, earnedValuePerHour, Item.EARNED_VALUE_PER_HOUR_HELP, true, true, false, hide ? null : Icons.iconEarnedValuePerHour));
+        prioCont.add(layoutN(Item.EARNED_VALUE_PER_HOUR, earnedValuePerHour, Item.EARNED_VALUE_PER_HOUR_HELP, true, true, false, hideIcons ? null : Icons.iconEarnedValuePerHour));
 
         //Update earnedValuePerHour by listening to actions from any of the four fields that affect it
         MyActionListener earnedValuePerHourUpdater = new MyActionListener() {
@@ -3497,43 +3510,48 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //OWNER
 //        MySpanButton editOwnerButton = new MySpanButton();
 //        SpanButton editOwnerButton = new SpanButton();
-        SpanButton editOwnerButton = new SpanButton();
+        if (Objects.equals(itemOrg.getOwner(), TemplateList.getInstance())) {
+            SpanLabel editOwnerLabel = new SpanLabel(TemplateList.getInstance().getText());
+            statusCont.add(layoutN(Item.BELONGS_TO, editOwnerLabel, Item.BELONGS_TO_HELP, false, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 
-        ActionListener<ActionEvent> refreshOwnerButtonXXX = (e) -> {
-            String ownerStr
-                    = (previousValues != null && previousValues.getOwnersN() != null)
-                    ? (previousValues.getOwnersN().size() > 0 ? previousValues.getOwnersN().get(0).getText() : "")
-                    : (itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
-            editOwnerButton.setText(ownerStr);
-        };
-        editOwnerButton.setText(itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
+        } else {
+            SpanButton editOwnerButton = new SpanButton();
+
+            ActionListener<ActionEvent> refreshOwnerButtonXXX = (e) -> {
+                String ownerStr
+                        = (previousValues != null && previousValues.getOwnersN() != null)
+                        ? (previousValues.getOwnersN().size() > 0 ? previousValues.getOwnersN().get(0).getText() : "")
+                        : (itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
+                editOwnerButton.setText(ownerStr);
+            };
+            editOwnerButton.setText(itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            final Command editOwnerCmd = Command.create(item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = new Command(item.getOwner() == null ? "<no owner>" : item.getOwner().getText()) {
 //        Command editOwnerCmd = MyReplayCommand.create("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = Command.create(item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
 //</editor-fold>
-        Command editOwnerCmd = MyReplayCommand.create("EditOwner", null, null, (e) -> {
-            List projects = DAO.getInstance().getAllProjects(false); //TODO optimization: slow to fetch all projects each time!
-            projects.remove(itemOrg); //Must not be possible to select the item itself as its own owner. NB to modify the list since not used elsewhere (new created in DAO)
+            Command editOwnerCmd = MyReplayCommand.create("EditOwner", null, null, (e) -> {
+                List projects = DAO.getInstance().getAllProjects(false); //TODO optimization: slow to fetch all projects each time!
+                projects.remove(itemOrg); //Must not be possible to select the item itself as its own owner. NB to modify the list since not used elsewhere (new created in DAO)
 
-            //cconvert list of ObjectId to list of actual owners (well, 0 or 1 owner)
+                //cconvert list of ObjectId to list of actual owners (well, 0 or 1 owner)
 //            List<ItemAndListCommonInterface> locallyEditedOwner
 //                    = (previousValues != null && previousValues.getOwnersN() != null)
 //                    ? previousValues.getOwnersN() //use previous selection (either new owner or previous owner was unselected
 //                    : new ArrayList(Arrays.asList(itemOrg.getOwner())); //fetch the actual owner 
-            List<ItemAndListCommonInterface> locallyEditedOwner = new ArrayList(Arrays.asList(itemOrg.getOwner())); //fetch the actual owner 
+                List<ItemAndListCommonInterface> locallyEditedOwner = new ArrayList(Arrays.asList(itemOrg.getOwner())); //fetch the actual owner 
 
 //            ItemAndListCommonInterface previousOwner = locallyEditedOwner.get(0);
-            ScreenObjectPicker ownerPicker = new ScreenObjectPicker("Select " + Item.OWNER /*+ " for " + item.getText()*/,
-                    ItemListList.getInstance(),
-                    projects,
-                    //                    itemOrg.getOwner(), 
-                    locallyEditedOwner,
-                    ScreenItem2.this,
-                    () -> {
-                        if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
-                            ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
+                ScreenObjectPicker ownerPicker = new ScreenObjectPicker("Select " + Item.OWNER /*+ " for " + item.getText()*/,
+                        ItemListList.getInstance(),
+                        projects,
+                        //                    itemOrg.getOwner(), 
+                        locallyEditedOwner,
+                        ScreenItem2.this,
+                        () -> {
+                            if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
+                                ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                            if (false) {
 //                                if (selectedOwner.equals(itemOrg.getOwner())) {
@@ -3551,44 +3569,44 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                                }
 //                            }
 //</editor-fold>
-                            itemOrg.setOwner(selectedOwner);
-                        } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
-                            //SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected
-                            ASSERT.that("SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected");
-                            if (itemOrg.getOwner() == null) {
-                                previousValues.removeOwners(); //remove previousValue, e.g. no owner before, none selected now
-                            } else {
-                                previousValues.putOwners(locallyEditedOwner); //store empty list (e.g. if previous owner was deselected)
+                                itemOrg.setOwner(selectedOwner);
+                            } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
+                                //SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected
+                                ASSERT.that("SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected");
+                                if (itemOrg.getOwner() == null) {
+                                    previousValues.removeOwners(); //remove previousValue, e.g. no owner before, none selected now
+                                } else {
+                                    previousValues.putOwners(locallyEditedOwner); //store empty list (e.g. if previous owner was deselected)
+                                }
                             }
-                        }
-                        editOwnerButton.setText(itemOrg.getOwner().getText());
-                    }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
-            ownerPicker.show();
-        }
-        );
-        editOwnerButton.setCommand(editOwnerCmd);
+                            editOwnerButton.setText(itemOrg.getOwner().getText());
+                        }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
+                ownerPicker.show();
+            }
+            );
+            editOwnerButton.setCommand(editOwnerCmd);
 //        refreshOwnerButton.actionPerformed(null); //set button text *after* setting command
-        if (false) {
-            parseIdMap2.put(Item.PARSE_OWNER_ITEM, () -> {
-                assert false; //not used anymore?!
-                List<ItemAndListCommonInterface> newOwnersN = previousValues.getOwnersN();
-                if (newOwnersN != null) { //a new owner is selected (or previous owner unselected
-                    if (newOwnersN.size() > 0) { //a new owner is selected
-                        ItemAndListCommonInterface newOwner = newOwnersN.get(0);
-                        ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
-                        newOwner.addToList(itemOrg);
+            if (false) {
+                parseIdMap2.put(Item.PARSE_OWNER_ITEM, () -> {
+                    assert false; //not used anymore?!
+                    List<ItemAndListCommonInterface> newOwnersN = previousValues.getOwnersN();
+                    if (newOwnersN != null) { //a new owner is selected (or previous owner unselected
+                        if (newOwnersN.size() > 0) { //a new owner is selected
+                            ItemAndListCommonInterface newOwner = newOwnersN.get(0);
+                            ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
+                            newOwner.addToList(itemOrg);
 //                    DAO.getInstance().saveNew(itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
 //                        DAO.getInstance().saveToParseNow(itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
-                        DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) newOwner);
-                    } else { //previousValues.getOwner()==null meaning either no owner was selected or a prevoious owner was unselected (and should be removed)
-                        ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
-                        DAO.getInstance().saveToParseNow((ParseObject) oldOwner);
-                    }
-                } //else: no change made to original owner so nothing to do!
-            });
-        }
-        //previousValues stores the ObjectId of the owner, not the owner itself!
-        //NB! Item.PARSE_OWNER_ITEM is used to index previousValues, but owner can also be Item.PARSE_OWNER_LIST, but not Item.PARSE_OWNER_TEMPLATE_LIST
+                            DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) newOwner);
+                        } else { //previousValues.getOwner()==null meaning either no owner was selected or a prevoious owner was unselected (and should be removed)
+                            ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
+                            DAO.getInstance().saveToParseNow((ParseObject) oldOwner);
+                        }
+                    } //else: no change made to original owner so nothing to do!
+                });
+            }
+            //previousValues stores the ObjectId of the owner, not the owner itself!
+            //NB! Item.PARSE_OWNER_ITEM is used to index previousValues, but owner can also be Item.PARSE_OWNER_LIST, but not Item.PARSE_OWNER_TEMPLATE_LIST
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        initField(Item.PARSE_OWNER_ITEM, editOwnerButton, () -> item.getOwner(), (o) -> item.setOwner((ItemAndListCommonInterface) o),
 //                () -> {
@@ -3608,14 +3626,14 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                });
 //        statusCont.add(layout(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, true, false, false)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //</editor-fold>
-        statusCont.add(layoutN(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, false, hide ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-
+            statusCont.add(layoutN(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, false, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+        }
         statusCont.add(makeSpacerThin());
 
         Label createdDate = new Label(itemOrg.getCreatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getCreatedAt().getTime())); //NOT use itemLS since CreatedDate is not saved locally
 //        statusCont.add(new Label(Item.CREATED_DATE)).add(createdDate);
 //        statusCont.add(layout(Item.CREATED_DATE, createdDate, "**", true, true, true));
-        statusCont.add(layoutN(Item.CREATED_DATE, createdDate, "**", true, hide ? null : Icons.iconCreatedDate));
+        statusCont.add(layoutN(Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDate));
 
         if (itemOrg.isProject()) {
             long lastModifiedSubtasks = itemOrg.getLastModifiedDateProjectOrSubtasks().getTime();
@@ -3625,7 +3643,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            statusCont.add(layout(Item.UPDATED_DATE_SUBTASKS, lastModifiedDateSubtasks, "**", true, true, true));
 //            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true, true, true));
 //</editor-fold>
-            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true, hide ? null : Icons.iconModifiedDate));
+            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true, hideIcons ? null : Icons.iconModifiedDate));
         } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "<date when modified>" : L10NManager.getInstance().formatDateShortStyle(new Date(item.getLastModifiedDate())));
@@ -3636,7 +3654,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             Label lastModifiedDate = new Label(itemOrg.getLastModifiedDate() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getLastModifiedDate()));
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
 //            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**", true, true, true));
-            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, hide ? null : Icons.iconModifiedDate));
+            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, hideIcons ? null : Icons.iconModifiedDate));
         }
 
         statusCont.add(makeSpacerThin());
@@ -3653,12 +3671,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (true || !isTemplate) {
             if (itemOrg.isProject()) {
                 Label startedOnDateLabel = new Label(itemOrg.getStartedOnDateD().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getStartedOnDateD()));
-                statusCont.add(layoutN(Item.STARTED_ON_DATE_SUBTASKS, startedOnDateLabel, Item.STARTED_ON_DATE_HELP, true, hide ? null : Icons.iconStartedOnDate));
+                statusCont.add(layoutN(Item.STARTED_ON_DATE_SUBTASKS, startedOnDateLabel, Item.STARTED_ON_DATE_HELP, true, hideIcons ? null : Icons.iconStartedOnDate));
             } else {
                 initField(Item.PARSE_STARTED_ON_DATE, startedOnDate, () -> itemOrg.getStartedOnDateD(), (s) -> itemOrg.setStartedOnDate((Date) s, true),
                         () -> startedOnDate.getDate(), (s) -> startedOnDate.setDate((Date) s));
 //            statusCont.add(layoutN(Item.STARTED_ON_DATE, isTemplate?new Label(""):startedOnDate, Item.STARTED_ON_DATE_HELP, hide ? null : Icons.iconStartedOnDate)); //"click to set date when started"
-                statusCont.add(layoutN(Item.STARTED_ON_DATE, isTemplate ? null : startedOnDate, Item.STARTED_ON_DATE_HELP, hide ? null : Icons.iconStartedOnDate)); //"click to set date when started"
+                statusCont.add(layoutN(Item.STARTED_ON_DATE, isTemplate ? null : startedOnDate, Item.STARTED_ON_DATE_HELP, hideIcons ? null : Icons.iconStartedOnDate)); //"click to set date when started"
             }
         }
 //        statusCont.add(new Label(Item.STARTED_ON_DATE)).add(startedOnDate.)).add(new SpanLabel("Set automatically when using the timer"));
@@ -3677,7 +3695,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> completedDate.getDate(), (s) -> completedDate.setDate((Date) s));
 
         statusCont.add(layoutN(Item.COMPLETED_DATE, isTemplate ? null : completedDate, Item.COMPLETED_DATE_HELP,
-                hide ? null : (status.getStatus() == ItemStatus.CANCELLED ? Icons.iconCancelledDate : Icons.iconCompletedDate))); //"click to set a completed date"
+                hideIcons ? null : (status.getStatus() == ItemStatus.CANCELLED ? Icons.iconCancelledDate : Icons.iconCompletedDate))); //"click to set a completed date"
 
         if (false) {
             status.setStatusChangeHandler((oldStatus, newStatus) -> {
@@ -4029,7 +4047,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            statusCont.add(new Label(Item.SOURCE)).add(source); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            statusCont.add(layout(Item.SOURCE, source, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-            statusCont.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true, hide ? null : Icons.iconSource)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+            statusCont.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true, hideIcons ? null : Icons.iconSource)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //            sourceLabel.setUIID();
         }
 
@@ -4041,7 +4059,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         initField(Item.PARSE_INTERRUPT_OR_INSTANT_TASK, interruptTask, () -> itemCopy.isInteruptOrInstantTask(), (b) -> itemOrg.setInteruptOrInstantTask((boolean) b),
                 () -> interruptTask.isValue(), (b) -> interruptTask.setValue((boolean) b));
 //        statusCont.add(layoutN(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task", true));
-        statusCont.add(layoutN(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task", true, hide ? null : Icons.iconInterrupt));
+        statusCont.add(layoutN(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task", true, hideIcons ? null : Icons.iconInterrupt));
 //        if (item.isInteruptOrInstantTask()) {
 //            MyOnOffSwitch interruptTask = new MyOnOffSwitch(parseIdMap2, () -> item.isInteruptOrInstantTask(), (b) -> item.setInteruptOrInstantTask(b));
         //INTERRUPTED TASK
@@ -4063,7 +4081,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             Label itemObjectId = new Label(itemOrg.getObjectIdP() == null ? "<set on save>" : itemOrg.getObjectIdP(), "ScreenItemValueUneditable");
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
 //        statusCont.add(layout(Item.OBJECT_ID, itemObjectId, "**", true, true, true));
-            statusCont.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hide ? null : Icons.iconObjectId));
+            statusCont.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hideIcons ? null : Icons.iconObjectId));
         }
 
         if (false && Config.TEST) {

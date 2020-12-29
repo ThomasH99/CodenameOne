@@ -1921,8 +1921,9 @@ public class MyForm extends Form {
             if (this.updateActionOnDone == null) {
                 this.updateActionOnDone = updateActionOnDone;
             } else {
+                Runnable oldUpdateAction = this.updateActionOnDone;
                 this.updateActionOnDone = () -> {
-                    this.updateActionOnDone.run();
+                    oldUpdateAction.run();
                     updateActionOnDone.run();
                 };
             }

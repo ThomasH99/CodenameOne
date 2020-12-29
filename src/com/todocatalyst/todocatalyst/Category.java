@@ -1094,6 +1094,14 @@ public class Category<E extends ItemAndListCommonInterface> extends ItemList imp
 
 //        return modified;
     }
+//    /**
+//     * must be added to Category to prevent the RepeatRule update
+//     * @param item
+//     * @return 
+//     */
+//        public boolean doAfterInsertion(ItemAndListCommonInterface item){
+//             return false;
+//        }
 
 } // end Category
 

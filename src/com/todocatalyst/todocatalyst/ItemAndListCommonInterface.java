@@ -413,6 +413,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
+     * do this just after insertion of the element into the list
+     * @param subItemOrList
+     * @return 
+     */
+//    default public boolean doAfterInsertion(ItemAndListCommonInterface subItemOrList) {
+//        return false;
+//    };
+    /**
      * adds subitem to the beginning or end of the list according to the setting
      * . Makes this Item/ItemList the owner of the inserted element (except for
      * Categories!). Checks that owner must be null before insert to catch any

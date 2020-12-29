@@ -40,7 +40,7 @@ import java.util.Objects;
  * @author Thomas
  */
 public class Item /* extends BaseItemOrList */ extends ParseObject implements
-        MyTreeModel, ItemAndListCommonInterface, IComparable,
+        MyTreeModel, ItemAndListCommonInterface, //IComparable,
         RepeatRuleObjectInterface, Externalizable { //Externalizable, AlarmObject, SumField,  {
     //          ItemListChangeListener,
     //        FilterableObject, 
@@ -936,7 +936,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String FUN_DREAD_HELP = "Is this a task you'd love to work on or not? Helps pick tasks on a low-energy day";
     final static String CHALLENGE = "Difficulty"; //"Challenge";
     final static String CHALLENGE_HELP = "Indicates how difficult or challenging the task is and what level of mental energu it requires"; //"Challenge";
-    final static String BELONGS_TO = "List/Category/Project"; //"Owner List/Project" "Belongs to";
+    final static String BELONGS_TO = "In List/Project"; //"Owner List/Project" "Belongs to";
     final static String BELONGS_TO_PROJECT = "For Project"; //"Owner List/Project" "Belongs to";
     final static String BELONGS_TO_LIST = "For List"; //"Owner List/Project" "Belongs to";
     final static String BELONGS_TO_CATEGORY = "For Category"; //"Owner List/Project" "Belongs to";
@@ -1535,6 +1535,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 ASSERT.that(false, () -> "unknown owner type for " + newOwner);
             }
         }
+        //if an owner has been set, then execute the repeatRule if necessary
+        if (newOwner != null) {
+            updateRepeatRule();
+        }
     }
 
     @Override
@@ -1703,7 +1707,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         /**
          * full copy
          */
-        COPY_ALL_FIELDSXXX, //NB: no clear use case for this, so not clear if copied fields are appropriate
+        COPY_ALL_FIELDS, //NB: no clear use case for this, so not clear if copied fields are appropriate. NO, used to copy a locally saved versiono in ScreenItem2 into a new (just created) item
+        COPY_LOCALLY_EDITED_FIELDS, //NB: no clear use case for this, so not clear if copied fields are appropriate. NO, used to copy a locally saved versiono in ScreenItem2 into a new (just created) item
         /**
          * copy a project (or a template) into a template, keeping only what
          * makes sense for a template. Notably, no task instance historic data
@@ -1781,7 +1786,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     @Override
     public void copyMeInto(ItemAndListCommonInterface destiny) {
-        copyMeInto((Item) destiny, CopyMode.COPY_ALL_FIELDSXXX);
+        copyMeInto((Item) destiny, CopyMode.COPY_ALL_FIELDS);
     }
 
     Item copyMeInto(Item destination, CopyMode copyFieldDefintion) {
@@ -1809,7 +1814,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         /**
          * copy for all types of copies
          */
-        boolean defAll = (copyFieldDefinition == CopyMode.COPY_ALL_FIELDSXXX);
+        boolean defAll = (copyFieldDefinition == CopyMode.COPY_ALL_FIELDS);
+        boolean defRestoreLocallySavedValues = (copyFieldDefinition == CopyMode.COPY_LOCALLY_EDITED_FIELDS);
         /**
          * copy for Repeat Instances
          */
@@ -1831,11 +1837,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         if (defToTempl) {
             destination.setTemplate(true); //set template first since it may impact eg repeatRules
-        } else {
+        } else if (defToTemplInst) {
 //        if (defFromTemplToTask) {
             destination.setTemplate(false); //remove template flag when creating template copies
+        } else {
+            ASSERT.that(!isTemplate(), () -> "copy of template?! destination=" + destination + "; org=" + this);
+            destination.setTemplate(isTemplate()); //otherwise keep template flag (but ever used?!)
         }
-
 //        super.copyMeInto(destination, !fromTempl || (fromTempl && destination.getText().equals(""))); //don't overwrite destination with template dreadFunNames, unless destination dreadFunNames is empty
 //        destiny.storedFormatVersion = storedFormatVersion;
 //        destiny.setTypeId(getTypeId());
@@ -1846,7 +1854,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //NOT copies of them,
 //        item.setCategories((ItemList) (getCategories().clone()));
 //        if (defAll || defToRepeatInst || defToTempl || defFromTemplToTask || defCopyPaste) {
-        if (defAll || defToRepeatInst || defToTemplInst || defToTempl || defCopyPaste) {
+        if (defAll || defToRepeatInst || defToTemplInst || defToTempl || defCopyPaste || defRestoreLocallySavedValues) {
 
             //TEXT
 //            if ((copyExclusions & COPY_EXCLUDE_TEXT) == 0) { //UI: DOESN'T make sense to not copy task description (especially with projects)
@@ -1929,10 +1937,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
 
             //SOURCE OF COPY
-            if (true) { //since this is the originator of the values in the copy, link to that instead (possible to trace back to very first originator if needed, but actual originator would be lost if using the original originator)
+            if (false&&!defRestoreLocallySavedValues) { //since this is the originator of the values in the copy, link to that instead (possible to trace back to very first originator if needed, but actual originator would be lost if using the original originator)
                 destination.setSource(this);
             } else {
-                if (getSource() != null) {
+                if (defRestoreLocallySavedValues) {
                     destination.setSource(getSource()); //link to the very first originator/source if available
                 } else {
                     destination.setSource(this); //otherwise (this is first copy) use this
@@ -1953,13 +1961,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
         //don't set owner here, should be done when adding the copy to its owner
-        if (false && (defAll || defToTempl || defToRepeatInst)) { //repeat instances will always have same owner, and it needs to be set so that when creating multiple instances, they get inserted into the owner's list
+//        if (false && (defAll || defToTempl || defToRepeatInst)) { //repeat instances will always have same owner, and it needs to be set so that when creating multiple instances, they get inserted into the owner's list
+        if (defRestoreLocallySavedValues) { //repeat instances will always have same owner, and it needs to be set so that when creating multiple instances, they get inserted into the owner's list
             destination.setOwner(getOwner());
         }
 
         //optimization: bundle all 'all' copies together in a single if statement
 //        if (defAll || defCopyPaste) {
-        if (defAll) {
+        if (defAll || defRestoreLocallySavedValues) {
             //None of these fields are normally copied
             destination.setStatus(getStatus(), false, false, false, new MyDate(0));
             destination.setStartedOnDate(getStartedOnDateD());
@@ -2014,7 +2023,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
         //HANDLE ESTIMATES
-        if (defAll) { //UI: normally neither Remaining, nor Actual should be copied since they updates individually for each instance
+        //UI: set default Remaining, unless creating a new template in which case the default Remaining is set
+//        if (defAll || defCopyPaste || defFromTemplToTask || defToRepeatInst) {//||defToTempl) { //
+//        if (defAll || defToRepeatInst || defCopyPaste) {//||defToTempl) { //
+        if (false && defAll) {//||defToTempl) { //DONE BELOW
+            if (getRemainingForTask() == 0) {
+                destination.setRemainingForTask(getRemainingDefaultValue(), false); //getRemainingDefaultValue is only defined if setting already active
+            }
+        }
+        if (defAll || defRestoreLocallySavedValues) { //UI: normally neither Remaining, nor Actual should be copied since they updates individually for each instance
 //            destination.setRemaining(getRemaining(), false);
 //            destination.setRemaining(getRemainingForProjectTaskItself(false), false);
             destination.setRemainingForTask(getRemainingForTask(), false);
@@ -2033,15 +2050,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                destination.setEstimate(useActual ? getActualTotal() : getEstimate(), defToRepeatInst || defCopyPaste); //auto-update Remaining if fromTempl || toRepeatInst to ensure that Remaining gets set
                 boolean useActual = getActualTotal() > 0 && MyPrefs.useActualAsEstimateForTemplatesOrCopies.getBoolean();
                 destination.setEstimateForTask(useActual ? getActualTotal() : getEstimateTotal(), defToRepeatInst || defToTemplInst || defCopyPaste); //auto-update Remaining if fromTempl || toRepeatInst to ensure that Remaining gets set
-            }
-        }
-
-        //UI: set default Remaining, unless creating a new template in which case the default Remaining is set
-//        if (defAll || defCopyPaste || defFromTemplToTask || defToRepeatInst) {//||defToTempl) { //
-//        if (defAll || defToRepeatInst || defCopyPaste) {//||defToTempl) { //
-        if (false && defAll) {//||defToTempl) { //
-            if (getRemainingForTask() == 0) {
-                destination.setRemainingForTask(getRemainingDefaultValue(), false); //getRemainingDefaultValue is only defined if setting already active
             }
         }
 
@@ -2071,7 +2079,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                             destination.addToList(orgSubtask.cloneMe(copyFieldDefinition, copyExclusions));
                         }
                     }
-                } else if ((defAll || defToRepeatInst || defToTemplInst || defCopyPaste)) {
+                } else if ((defAll || defToRepeatInst || defToTemplInst || defCopyPaste || defRestoreLocallySavedValues)) {
                     // defCopyPaste: make an exact copy of everything or rather a copy like if the project had been turned into a template first? Probably the latter
                     // defFromTemplToTask: only one instance of repeating tasks, repeatRule determines creation of repeatInstances
 //only one instance of repeating tasks, repeatRule determines creation of repeatInstances
@@ -2153,9 +2161,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
         if ((copyExclusions & COPY_EXCLUDE_REPEAT_RULE) == 0 && getRepeatRuleN() != null) {
-            if (defToRepeatInst) {
+            if (defToRepeatInst || defRestoreLocallySavedValues) {
                 destination.setRepeatRuleInParse(getRepeatRuleN()); //point to existing repeat rule *without* creating repeat instances!
             } else {
+                //create a copy of RR when creating a template, instantiating a template, or copy/pasting a task
 //                ASSERT.that(defAll || defFromTemplToTask || defCopyPaste || defToTempl);
                 ASSERT.that(defAll || defToTemplInst || defCopyPaste || defToTempl);
                 RepeatRuleParseObject newRepeatRule = getRepeatRuleN().cloneMe(); //create a new repeat rule
@@ -2314,8 +2323,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return 0;
     }
 
-    @Override
-    public int compareTo(IComparable ic, int compareOn) {
+//    @Override
+    public int compareToXXX(IComparable ic, int compareOn) {
 //    public int compareTox(IComparable ic, Vector compareOnVector) {
 //        int compareOn = (byte)((Integer)compareOnVector.elementAt(0)).intValue();
         if (ic instanceof Item) {
@@ -2769,6 +2778,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         listFull.add(index, subtask);
         ASSERT.that(subtask.getOwner() == null || this == subtask.getOwner(), "subItemOrList owner not null when adding to list, SUBTASK=" + subtask + ", OLD OWNER=" + subtask.getOwner() + ", NEW OWNER=" + this);
         ItemAndListCommonInterface oldOwner = subtask.getOwner();
+        setList(listFull);
         if (addAsOwner && !isNoSave()) {
             subtask.setOwner(this);
         }
@@ -2779,8 +2789,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            ((Item) subtask).updateValuesInheritedFromOwner(this);
 //        }
 //</editor-fold>
-        setList(listFull);
-        ((Item) subtask).updateRepeatRule(); //update a RR with pending changes *after* the items is inserted 
+        if (false) {
+            ((Item) subtask).updateRepeatRule(); //update a RR with pending changes *after* the items is inserted 
+        }
         return status;
     }
 
@@ -9739,12 +9750,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             RepeatRuleParseObject currentRepeatRule = getRepeatRuleN();
             if (currentRepeatRule != null && currentRepeatRule.isUpdatePending()) {
-                if (currentRepeatRule.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
-                    currentRepeatRule.updateItemsWhenRuleCreatedOrEdited(this); //will also save RR
-                } else {
-                    currentRepeatRule.updateItemsWhenRuleCreatedOrEdited(this);
-                }
-                currentRepeatRule.setUpdatePending(false);
+                currentRepeatRule.setUpdatePending(false); //MUST set false before updating to avoid recursion when new RR instances 
+//                if (currentRepeatRule.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+//                    currentRepeatRule.updateItemsWhenRuleCreatedOrEdited(this); //will also save RR
+//                } else {
+                currentRepeatRule.updateItemsWhenRuleCreatedOrEdited(this);
+//                }
             }
         }
     }

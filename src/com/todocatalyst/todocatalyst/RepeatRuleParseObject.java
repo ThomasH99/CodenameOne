@@ -2972,6 +2972,7 @@ public class RepeatRuleParseObject
                         }
 //                        instanceToCreateCopiesFrom =;
                     }
+                    if(Config.TEST)ASSERT.that(startRepeatFromDate!=null&&startRepeatFromDate.getTime()!=0, "no startRepeatFromDate="+startRepeatFromDate);
 //                    if (startRepeatFromDate == null || startRepeatFromDate.getTime() == 0) {
 //                        startRepeatFromDate = now;
 //                    }
