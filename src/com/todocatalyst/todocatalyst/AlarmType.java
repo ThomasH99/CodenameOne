@@ -101,7 +101,7 @@ enum AlarmType {
         }
     }
 
-    static String getObjectIdStrWithoutTypeStr(String str, AlarmType type) {
+    static String getGuidStrWithoutTypeStr(String str, AlarmType type) {
         int index = -1;
         if ((index = str.indexOf(type.text)) != -1) {
 //                return str.substring(0, index - 1);
@@ -137,7 +137,7 @@ enum AlarmType {
         return -1;
     }
 
-    static String getObjectIdStrWithoutTypeStr(String notifId) {
+    static String getGuidStrWithoutTypeStr(String notifId) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            int index = -1;
 //            int temp;

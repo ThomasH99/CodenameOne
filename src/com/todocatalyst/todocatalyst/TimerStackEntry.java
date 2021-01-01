@@ -355,17 +355,17 @@ public class TimerStackEntry implements Externalizable {
         }
 
 //        out.writeBoolean(timedItem != null && timedItem.getObjectId() != null);
-        if (timedItem != null && timedItem.getObjectIdP() != null) {
+        if (timedItem != null && timedItem.getGuid() != null) {
             out.writeBoolean(true);
-            Util.writeUTF(timedItem.getObjectIdP(), out);
+            Util.writeUTF(timedItem.getGuid(), out);
         } else {
             out.writeBoolean(false);
         }
 
 //        out.writeBoolean(timedItem != null && timedItem.getObjectId() != null);
-        if (nextItem != null && nextItem.getObjectIdP() != null) {
+        if (nextItem != null && nextItem.getGuid() != null) {
             out.writeBoolean(true);
-            Util.writeUTF(nextItem.getObjectIdP(), out);
+            Util.writeUTF(nextItem.getGuid(), out);
         } else {
             out.writeBoolean(false);
         }
@@ -375,9 +375,9 @@ public class TimerStackEntry implements Externalizable {
 //            Util.writeObject(item.getObjectId(), out);
 //        }
 //</editor-fold>
-        if (sourceItemOrProject != null && sourceItemOrProject.getObjectIdP() != null) {
+        if (sourceItemOrProject != null && sourceItemOrProject.getGuid() != null) {
             out.writeBoolean(true);
-            Util.writeUTF(sourceItemOrProject.getObjectIdP(), out);
+            Util.writeUTF(sourceItemOrProject.getGuid(), out);
         } else {
             out.writeBoolean(false);
         }
@@ -388,10 +388,10 @@ public class TimerStackEntry implements Externalizable {
 //        }
 //</editor-fold>
 //        if (orgItemList != null && orgItemList.getObjectId() != null) {
-        if (itemList != null && itemList.getObjectIdP() != null) {
+        if (itemList != null && itemList.getGuid() != null) {
             out.writeBoolean(true);
 //            Util.writeUTF(orgItemList.getObjectId(), out);
-            Util.writeUTF(itemList.getObjectIdP(), out);
+            Util.writeUTF(itemList.getGuid(), out);
         } else {
             out.writeBoolean(false);
         }

@@ -366,7 +366,8 @@ public class Icons {
     
 //    final static char iconEstimateMaterial = FontImage.MATERIAL_RESTORE;
 //    final static Image iconActualEffort = FontImage.createMaterial(FontImage.MATERIAL_TIMELAPSE, labelStyle);
-    final static char iconActualEffort = FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
+//    final static char iconActualEffort = FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
+    final static char iconActualEffort = '('; //FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
     final static char iconActualCurrentCust = ',';
     final static char iconActualCurrentPrjCust = '-';
     final static char iconActualFinalCust = '.';

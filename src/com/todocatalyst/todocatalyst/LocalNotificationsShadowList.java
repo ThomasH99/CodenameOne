@@ -64,7 +64,7 @@ public class LocalNotificationsShadowList implements Externalizable {
     
     void setAlarmHandler (AlarmHandler alarmHandler) {
         this.alarmHandler=alarmHandler;
-        maxNumberLocalNotifications=alarmHandler.MAX_NUMBER_LOCAL_NOTIFICATIONS;
+        maxNumberLocalNotifications=AlarmHandler.MAX_NUMBER_LOCAL_NOTIFICATIONS;
     }
 
     public String toString() {
@@ -115,10 +115,10 @@ public class LocalNotificationsShadowList implements Externalizable {
         insertIndex = insertIndex < 0 ? -(insertIndex + 1) : insertIndex;
         localNotifsActiveSorted.add(insertIndex, notif); //returns -1 for empty list
 //        AlarmHandler.getInstance().scheduleLocalNotification(notif.notificationId, titleText, bodyText, notif.alarmTime);
-        alarmHandler.scheduleLocalNotification(notif.notificationId, titleText, bodyText, notif.alarmTime);
+        AlarmHandler.scheduleLocalNotification(notif.notificationId, titleText, bodyText, notif.alarmTime);
         //if there are too many local notifications set now, then remove exces ones (removing the last = the latest in time)
         while (localNotifsActiveSorted.size() > maxNumberLocalNotifications) {
-            this.removeAlarmAndRepeatAlarm(localNotifsActiveSorted.get(localNotifsActiveSorted.size() - 1).getObjectIdStr(),
+            this.removeAlarmAndRepeatAlarm(localNotifsActiveSorted.get(localNotifsActiveSorted.size() - 1).getGuidStr(),
                     localNotifsActiveSorted.get(localNotifsActiveSorted.size() - 1).type);
         }
     }
@@ -234,7 +234,7 @@ public class LocalNotificationsShadowList implements Externalizable {
 //                removeAlarmAndCancelLocalNotificationImpl(i);
 //                Display.getInstance().cancelLocalNotification(notif.notificationId);
 //                AlarmHandler.getInstance().cancelLocalNotification(notif.notificationId);
-                alarmHandler.cancelLocalNotification(notif.notificationId);
+                AlarmHandler.cancelLocalNotification(notif.notificationId);
                 it.remove();
             }
             break;
@@ -251,8 +251,8 @@ public class LocalNotificationsShadowList implements Externalizable {
      */
     void removeAlarmAndRepeatAlarm(String notificationId) {
         AlarmType type = AlarmType.getTypeContainedInStr(notificationId);
-        String objId = AlarmType.getObjectIdStrWithoutTypeStr(notificationId, type);
-        this.removeAlarmAndRepeatAlarm(objId, type);
+        String guid = AlarmType.getGuidStrWithoutTypeStr(notificationId, type);
+        this.removeAlarmAndRepeatAlarm(guid, type);
     }
 
     /**
@@ -262,17 +262,17 @@ public class LocalNotificationsShadowList implements Externalizable {
      * when updating an alarm, snooze alarms are removed???)???. Called when
      * user cancels an alarm
      *
-     * @param objectId
+     * @param guid
      * @param mainType
      */
-    void removeAlarmAndRepeatAlarm(String objectId, AlarmType mainType) {
+    void removeAlarmAndRepeatAlarm(String guid, AlarmType mainType) {
 //        for (int i = 0, size = list.size(); i < size; i++) {
         NotificationShadow notif;
         Iterator<NotificationShadow> it = localNotifsActiveSorted.iterator();
         while (it.hasNext()) {
             notif = it.next();
 //            notif = list.get(i);
-            if (objectId != null && notif.notificationId.startsWith(objectId)) { //on very first save objectId may be null, so no previous alarm to remove
+            if (guid != null && notif.notificationId.startsWith(guid)) { //on very first save objectId may be null, so no previous alarm to remove
 
                 if (notif.type == mainType
                         || (mainType == notification && notif.type == notificationRepeat)
@@ -285,7 +285,7 @@ public class LocalNotificationsShadowList implements Externalizable {
 //                    removeAlarmAndCancelLocalNotification(objectId);
 //                    removeAlarmAndCancelLocalNotificationImpl(i);
 //                    AlarmHandler.alarmLog("Local notification cancelled: \"" + notif.notificationId + "\"");
-                    alarmHandler.alarmLog("Local notification cancelled: \"" + notif.notificationId + "\"");
+                    AlarmHandler.alarmLog("Local notification cancelled: \"" + notif.notificationId + "\"");
 
                     Display.getInstance().cancelLocalNotification(notif.notificationId);
                     it.remove();
@@ -422,7 +422,7 @@ public class LocalNotificationsShadowList implements Externalizable {
      */
     void snoozeAlarm(String notificationId, Date snoozeExpireTime, String snoozeTitleText, String snoozeBodyText) {
 //        removeAlarmAndCancelLocalNotification(notificationId); //remove previous (now snoozed) alarm, can be an already snoozed alarm!
-        String objId = AlarmType.getObjectIdStrWithoutTypeStr(notificationId);
+        String objId = AlarmType.getGuidStrWithoutTypeStr(notificationId);
         AlarmType type = AlarmType.getTypeContainedInStr(notificationId);
 //        NotificationShadow notif;
 //        //run through list and remove 
@@ -436,7 +436,7 @@ public class LocalNotificationsShadowList implements Externalizable {
 //                removeAlarmAndCancelLocalNotificationImpl(i); //remove alarm itself (could be a snooze)
 //                Display.getInstance().cancelLocalNotification(notif.notificationId);
 //                AlarmHandler.getInstance().cancelLocalNotification(notif.notificationId);
-                alarmHandler.cancelLocalNotification(notif.notificationId);
+                AlarmHandler.cancelLocalNotification(notif.notificationId);
                 it.remove();
             } else if (notif.notificationId.startsWith(objId)
                     //remove any repeat but only of same type as alarm itself (if alarm is re-snoozed, the snoze is remove above) 
@@ -448,7 +448,7 @@ public class LocalNotificationsShadowList implements Externalizable {
 //                removeAlarmAndCancelLocalNotificationImpl(i);
 //                Display.getInstance().cancelLocalNotification(notif.notificationId);
 //                AlarmHandler.getInstance().cancelLocalNotification(notif.notificationId);
-                alarmHandler.cancelLocalNotification(notif.notificationId);
+                AlarmHandler.cancelLocalNotification(notif.notificationId);
                 it.remove();
             } //else nothing
         }
@@ -815,7 +815,7 @@ public class LocalNotificationsShadowList implements Externalizable {
         for (int i = 0, size = localNotifsActiveSorted.size(); i < size; i++) {
 //            Display.getInstance().cancelLocalNotification(list.get(i).notificationId);
 //            AlarmHandler.getInstance().cancelLocalNotification(localNotifsActiveSorted.get(i).notificationId);
-            alarmHandler.cancelLocalNotification(localNotifsActiveSorted.get(i).notificationId);
+            AlarmHandler.cancelLocalNotification(localNotifsActiveSorted.get(i).notificationId);
         }
         localNotifsActiveSorted.clear();
     }

@@ -738,6 +738,7 @@ public class ScreenRepair extends MyForm {
         Label labelCoord = new Label("LabelCoord");
         SpanLabel labelInfo = new SpanLabel("LabelInfo\nline2\nline3\nline4\nLine5\nLine6\nLine7");
 
+        if(false)
         content.add(new Button(new Command("Test Pinch") {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -1024,6 +1025,7 @@ public class ScreenRepair extends MyForm {
                 }
                 ));
 
+        if(false)
         content.add(
                 new Button(new Command("Refresh first alarms", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
                     @Override
@@ -1295,6 +1297,7 @@ public class ScreenRepair extends MyForm {
                 }
                 ));
 
+        if(false)
         content.add(
                 new Button(new Command("Test Done/Next button on virtual keyboard", Icons.iconSettings) {
                     @Override

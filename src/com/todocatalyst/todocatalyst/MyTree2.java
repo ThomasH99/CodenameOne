@@ -993,7 +993,7 @@ public class MyTree2 extends ContainerScrollY {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            Component c = (Component) evt.getComponent(); //THJ: fix for type cast error when source is a command
+            Component c =  evt.getComponent(); //THJ: fix for type cast error when source is a command
             if (c.getClientProperty(KEY_LONG_PRESS) != null) {
                 c.putClientProperty(KEY_LONG_PRESS, null); //is set in ScreenItemListofItems.subtask
                 return;

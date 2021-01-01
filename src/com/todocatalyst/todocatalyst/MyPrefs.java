@@ -660,7 +660,7 @@ public class MyPrefs {
     static PrefEntry itemListShowRemainingEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_REMAINING), "itemListShowRemainingEvenIfZero",
             prod ? false : false, "**");
     static PrefEntry itemListHideRemainingWhenDefaultValue = new PrefEntry(Format.f("Hide {0} with default value", Item.EFFORT_REMAINING), "itemListHideRemainingWhenDefaultValue",
-            prod ? false : true, "**");
+            prod ? true : true, "**");
     static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry(Format.f("Show {0} for tasks not {1}", Item.EFFORT_ACTUAL, ItemStatus.DONE.getName()),
             "itemListShowActualIfNonZeroEvenIfNotDone", prod ? false : true, "**");
     static PrefEntry itemListEffortEstimate = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ESTIMATE), "itemListEffortEstimate",

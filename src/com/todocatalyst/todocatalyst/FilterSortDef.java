@@ -41,16 +41,16 @@ public class FilterSortDef extends ParseObject {
     //TODO introduce default FilterSortDef (definable by end-user) so that every new filter (e.g. a new list of tasks) get the desired settings
 //<editor-fold defaultstate="collapsed" desc="static strings">
     public static String CLASS_NAME = "FilterSortDef";
-    private static String PARSE_SORT_FIELD = "sortField";
-    private static String PARSE_SORT_DESCENDING = "sortDescending";
-    private static String PARSE_SORT_ON = "sortActive";
-    private static String PARSE_FILTER_OPTIONS = "filterOptions"; //the specific definition of the filter
+     static String PARSE_SORT_FIELD = "sortField";
+     static String PARSE_SORT_DESCENDING = "sortDescending";
+     static String PARSE_SORT_ON = "sortActive";
+     static String PARSE_FILTER_OPTIONS = "filterOptions"; //the specific definition of the filter
 //    private static String PARSE_SCREEN_ID = "ScreenId";
 //    private static String PARSE_FILTERED_OBJECT_ID = "filteredObjectId";
 //    private static String PARSE_FILTERED_OBJECT = "filteredObject";
-    private static String PARSE_FILTER_NAME = "name"; //name of filter
-    private static String PARSE_FILTER_DESCRIPTION = "description"; //longer text description the *purpose*/*benefit* of the filter
-    private static String PARSE_FILTER_HELP = "help"; //help text
+     static String PARSE_FILTER_NAME = "name"; //name of filter
+     static String PARSE_FILTER_DESCRIPTION = "description"; //longer text description the *purpose*/*benefit* of the filter
+     static String PARSE_FILTER_HELP = "help"; //help text
 //    private static String PARSE_FILTER_DEFINITION = "definition"; //short *definition* (how exactly is it calculate) of the filter
     static String PARSE_SYSTEM_NAME = ItemList.PARSE_SYSTEM_NAME; //systemname for filters for e.g. Next, Inbox, Alltasks, ...
 //    private static String PARSE_FILTER_PREDEFINED = "predefined";

@@ -21,23 +21,23 @@ public class ExpiredAlarm implements Externalizable {
 
     final static String CLASS_NAME_EXPIRED_ALARM = "expiredAlarm";
 
-    String objectId;
+    String guid;
     Date alarmTime;
 //        Date repeatTime;
 //        Date snoozeTime;
     AlarmType type;
 
-    ExpiredAlarm(String objectId, Date alarmTime, AlarmType type) {
-        ASSERT.that(objectId!=null, "trying to set alarm with objectId==null");
-        this.objectId = objectId;
-        ASSERT.that(type==AlarmType.notification||type==AlarmType.waiting);
-        this.alarmTime = alarmTime;
-        this.type = type;
-    }
+//    ExpiredAlarm(String objectId, Date alarmTime, AlarmType type) {
+//        ASSERT.that(objectId!=null, "trying to set alarm with objectId==null");
+//        this.guid = objectId;
+//        ASSERT.that(type==AlarmType.notification||type==AlarmType.waiting);
+//        this.alarmTime = alarmTime;
+//        this.type = type;
+//    }
 
     ExpiredAlarm(NotificationShadow notif) {
-        ASSERT.that(notif.getObjectIdStr()!=null, "trying to set alarm with objectId==null, notif="+notif);
-        this.objectId = notif.getObjectIdStr();
+        ASSERT.that(notif.getGuidStr()!=null, "trying to set alarm with objectId==null, notif="+notif);
+        this.guid = notif.getGuidStr();
         this.alarmTime = notif.alarmTime;
         this.type = notif.type;
     }
@@ -47,7 +47,7 @@ public class ExpiredAlarm implements Externalizable {
     
     @Override
     public String toString() {
-        return type+"/"+MyDate.formatDateTimeNew(alarmTime)+"/"+((Item)DAO.getInstance().fetchItem(objectId)).getText()+"/"+objectId ;
+        return type+"/"+MyDate.formatDateTimeNew(alarmTime)+"/"+(DAO.getInstance().fetchItem(guid)).getText()+"/"+guid ;
     }
 
     @Override
@@ -57,14 +57,14 @@ public class ExpiredAlarm implements Externalizable {
 
     @Override
     public void externalize(DataOutputStream out) throws IOException {
-        writeObject(objectId, out);
+        writeObject(guid, out);
         writeObject(alarmTime, out);
         out.writeInt(type.ordinal());
     }
 
     @Override
     public void internalize(int version, DataInputStream in) throws IOException {
-        objectId = (String) readObject(in);
+        guid = (String) readObject(in);
         alarmTime = (Date) readObject(in);
         type = AlarmType.values()[in.readInt()];
     }

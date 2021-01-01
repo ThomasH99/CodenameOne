@@ -469,9 +469,9 @@ public class ScreenListOfCategories extends MyForm {
 //                new ScreenCategory(category, ScreenListOfCategories.this, 
 //                ()-> {}
 //                ).show();
-            if (false) {
-                DAO.getInstance().getAllItemsInCategory(category);
-            }
+//            if (false) {
+//                DAO.getInstance().getAllItemsInCategory(category);
+//            }
             ASSERT.that(category.isDataAvailable(), "Category \"" + category + "\" data not available");
 
 //                new ScreenListOfItems(category, ScreenListOfCategories.this,

@@ -29,7 +29,8 @@ import java.util.Date;
 
         public String toString() {
 //            return "Type:"+type+" alarm:"+MyDate.formatDateTimeNew(alarmTime)+" NotifId:"+notificationId;
-            return type+"/"+MyDate.formatDateTimeNew(alarmTime)+"/ ["+DAO.getInstance().fetchFromCacheOnly(AlarmType.getObjectIdStrWithoutTypeStr(notificationId))+"]";
+//            return type+"/"+MyDate.formatDateTimeNew(alarmTime)+"/ ["+DAO.getInstance().fetchFromCacheOnly(AlarmType.getObjectIdStrWithoutTypeStr(notificationId))+"]";
+            return type+"/"+MyDate.formatDateTimeNew(alarmTime)+"/ ["+AlarmType.getGuidStrWithoutTypeStr(notificationId)+"]";
         }
         
         public String toStringXX() {
@@ -60,8 +61,8 @@ import java.util.Date;
         }
         
 
-        String getObjectIdStr() {
-            return AlarmType.getObjectIdStrWithoutTypeStr(notificationId);
+        String getGuidStr() {
+            return AlarmType.getGuidStrWithoutTypeStr(notificationId);
         }
         
         AlarmType getAlarmType() {

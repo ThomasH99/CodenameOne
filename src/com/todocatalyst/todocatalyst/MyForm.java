@@ -1913,7 +1913,7 @@ public class MyForm extends Form {
      * with Done (Back), if null, no effect
      */
     void addUpdateActionOnDone(Runnable updateActionOnDone) {
-        if (Config.TEST) {
+        if (false&&Config.TEST) {
             ASSERT.that(updateActionOnDone == null || this.updateActionOnDone == null, "Setting updateActionOnDone twice, old="
                     + this.updateActionOnDone + "; new=" + updateActionOnDone);
         }
@@ -2930,9 +2930,9 @@ public class MyForm extends Form {
 //        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), cmdText);
 //    }
 //</editor-fold>
-    public Command makeCommandNewItemSaveToInboxXXX(boolean useStdCmdText) {
-        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), useStdCmdText ? "Add task to Inbox" : "");
-    }
+//    public Command makeCommandNewItemSaveToInboxXXX(boolean useStdCmdText) {
+//        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), useStdCmdText ? "Add task to Inbox" : "");
+//    }
 
     public Command makeCommandNewItemSaveToInbox() {
 //        return makeCommandNewItemSaveToInbox(true);
@@ -4329,158 +4329,159 @@ public class MyForm extends Form {
      * @param previousValues
      * @param parseIdMap2
      */
-    static void initFieldOLD(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField, Object undefinedValue,
-            GetVal getDefaultValue, GetBool isInherited, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//         initField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null, null);
-//    }
+//    static void initFieldOLD(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField, Object undefinedValue,
+//            GetVal getDefaultValue, GetBool isInherited, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////         initField(fieldLabel, fieldHelp, field, fieldIdentifier, getVal, putVal, getField, putField, isInherited, null, null);
+////    }
+////
+////    private void initField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField,
+////            GetBool isInherited, ActionListener actionListener, Container componentCont) {
+////                if (previousValues.get(Item.PARSE_EFFORT_ESTIMATE) != null) {
+////</editor-fold>
+//        //check if a previous or default value exists, and if yes, use that to initialize the editable field with (//UI: don't autosave default value, it may also (need to) be updated if replayed later)
+////            if (putField != null && getOrg != null) { //if putField==null => not an editable field
+//        if (putField != null) { //if putField==null => not an editable field
+//            if (previousValues != null) {
+//                if (previousValues.get(fieldIdentifier) != null) {
+//                    if (!Objects.equals(previousValues.get(fieldIdentifier), getOrg.getVal())) { //            effortEstimate.setDurationInMillis((long) previousValues.get(Item.PARSE_EFFORT_ESTIMATE)); //use a previously edited value
+//                        putField.setVal(previousValues.get(fieldIdentifier)); //use a previously edited value
+//                    } else {
+//                        putField.setVal(getOrg.getVal()); //use a previously edited value
+//                        previousValues.remove(fieldIdentifier); //if previous value is (now) the same as current, remove the previous (may for example happen after editing subtasks)
+//                    }
+////            } else if (isInherited != null && isInherited.getVal()) {
+//                    //handle inheritance when appropriate
+//                } else { //no previous value
+//                    if (undefinedValue != null && MyUtil.eql(getOrg.getVal(), undefinedValue)) { //if org value==undefinedValue, then set field with default value
+//                        putField.setVal(getDefaultValue.getVal()); //set editable field (will be stored in previousValues *if* it is modified later on
+//                    } else {
+////                effortEstimate.setDurationInMillis(item.getEffortEstimate());
+//                        putField.setVal(getOrg.getVal()); //set editable field (will be stored in previousValues *if* it is modified later on
+//                    }
+//                }
+//            }
+//        }
 //
-//    private void initField(String fieldLabel, String fieldHelp, Object field, String fieldIdentifier, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField,
-//            GetBool isInherited, ActionListener actionListener, Container componentCont) {
-//                if (previousValues.get(Item.PARSE_EFFORT_ESTIMATE) != null) {
-//</editor-fold>
-        //check if a previous or default value exists, and if yes, use that to initialize the editable field with (//UI: don't autosave default value, it may also (need to) be updated if replayed later)
-//            if (putField != null && getOrg != null) { //if putField==null => not an editable field
-        if (putField != null) { //if putField==null => not an editable field
-            if (previousValues != null) {
-                if (previousValues.get(fieldIdentifier) != null) {
-                    if (!Objects.equals(previousValues.get(fieldIdentifier), getOrg.getVal())) { //            effortEstimate.setDurationInMillis((long) previousValues.get(Item.PARSE_EFFORT_ESTIMATE)); //use a previously edited value
-                        putField.setVal(previousValues.get(fieldIdentifier)); //use a previously edited value
-                    } else {
-                        putField.setVal(getOrg.getVal()); //use a previously edited value
-                        previousValues.remove(fieldIdentifier); //if previous value is (now) the same as current, remove the previous (may for example happen after editing subtasks)
-                    }
-//            } else if (isInherited != null && isInherited.getVal()) {
-                    //handle inheritance when appropriate
-                } else { //no previous value
-                    if (undefinedValue != null && MyUtil.eql(getOrg.getVal(), undefinedValue)) { //if org value==undefinedValue, then set field with default value
-                        putField.setVal(getDefaultValue.getVal()); //set editable field (will be stored in previousValues *if* it is modified later on
-                    } else {
-//                effortEstimate.setDurationInMillis(item.getEffortEstimate());
-                        putField.setVal(getOrg.getVal()); //set editable field (will be stored in previousValues *if* it is modified later on
-                    }
-                }
-            }
-        }
-
-        //set actionListener on edited field, to store edited values (only if different from the original one)
-        if (getField != null && getOrg != null) {
-//            MyActionListener storeEditedValueLocallyAL = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
-            ActionListener storeEditedValueLocallyAL = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                if (actionListener != null) {
-//                    actionListener.actionPerformed(e);
-//                }
-//            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
-//                if (false) { //OK now that values can be null
-//                    ASSERT.that(getField.getVal() != null, "getField.getVal()==null, for field=" + fieldIdentifier);
-//                    ASSERT.that(getOrg.getVal() != null, "getOrg.getVal()==null, for field=" + fieldIdentifier);
-//                }
-//</editor-fold>
-                if (previousValues != null) {
-//                    if (!getField.getVal().equals(getOrg.getVal())) {
-                    //(a == null) ? (a == b) : a.equals(b) <=> (a == null) ? b == null : a.equals(b)  -->> https://stackoverflow.com/questions/1402030/compare-two-objects-with-a-check-for-null
-//                    if (getField.getVal() == null ? getOrg.getVal() == null : getField.getVal().equals(getOrg.getVal())) { //values are the same
-                    if (MyUtil.eql(getField.getVal(), getOrg.getVal())) { //values are the same
-                        previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
-                    } else { //value's been edited
-                        previousValues.put(fieldIdentifier, getField.getVal());
-                    }
-//                    if (isInherited.getVal()) {
-//                        if (((Component) field).getUIID().equals("LabelValue"))
-//                            ((Component) field).setUIID("LabelValueInherited");
-//                    } else if (((Component) field).getUIID().equals("LabelValueInherited"))
-//                        ((Component) field).setUIID("LabelValue");
-                }
-                if (isInherited != null) {
-                    updateUIIDForInherited((Component) field, isInherited.getVal());
-                }
-            };
-
-            //add change listenerlisten to changes an update+save if edited to different value than item.orgValue
-            if (field instanceof Picker) {
-                ((Picker) field).addActionListener(storeEditedValueLocallyAL);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            if (field instanceof MyDurationPicker) {
-//                ((MyDurationPicker) field).addActionListener(al);
-//            ((MyDurationPicker) field).addActionListener((e) -> {
+//        //set actionListener on edited field, to store edited values (only if different from the original one)
+//        if (getField != null && getOrg != null) {
+////            MyActionListener storeEditedValueLocallyAL = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
+//            ActionListener storeEditedValueLocallyAL = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                if (actionListener != null) {
+////                    actionListener.actionPerformed(e);
+////                }
 ////            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
-//                if (!getField.getVal().equals(getVal.getVal())) {
-////                previousValues.put(Item.PARSE_EFFORT_ESTIMATE, effortEstimate.getDuration());
-//                    previousValues.put(fieldIdentifier, getField.getVal());
-//                } else {
-//                    previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
+////                if (false) { //OK now that values can be null
+////                    ASSERT.that(getField.getVal() != null, "getField.getVal()==null, for field=" + fieldIdentifier);
+////                    ASSERT.that(getOrg.getVal() != null, "getOrg.getVal()==null, for field=" + fieldIdentifier);
+////                }
+////</editor-fold>
+//                if (previousValues != null) {
+////                    if (!getField.getVal().equals(getOrg.getVal())) {
+//                    //(a == null) ? (a == b) : a.equals(b) <=> (a == null) ? b == null : a.equals(b)  -->> https://stackoverflow.com/questions/1402030/compare-two-objects-with-a-check-for-null
+////                    if (getField.getVal() == null ? getOrg.getVal() == null : getField.getVal().equals(getOrg.getVal())) { //values are the same
+//                    if (MyUtil.eql(getField.getVal(), getOrg.getVal())) { //values are the same
+//                        previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
+//                    } else { //value's been edited
+//                        previousValues.put(fieldIdentifier, getField.getVal());
+//                    }
+////                    if (isInherited.getVal()) {
+////                        if (((Component) field).getUIID().equals("LabelValue"))
+////                            ((Component) field).setUIID("LabelValueInherited");
+////                    } else if (((Component) field).getUIID().equals("LabelValueInherited"))
+////                        ((Component) field).setUIID("LabelValue");
 //                }
-//            });
-//            } else if (field instanceof MyTextArea) {
-//</editor-fold>
-            } else if (field instanceof TextArea) {
-                if (false) {
-                    ((TextArea) field).addActionListener(storeEditedValueLocallyAL); //doesn't seem to trigger if entering text and then clicking directly in another field
-                }
-                ((TextArea) field).addDataChangedListener((type, index) -> storeEditedValueLocallyAL.actionPerformed(null));
-                if (false) {
-                    ((TextArea) field).setDoneListener(storeEditedValueLocallyAL);
-                }
-            } else if (field instanceof Button) {
-                ((Button) field).addActionListener(storeEditedValueLocallyAL);
-            } else if (field instanceof SpanButton) {
-                ((SpanButton) field).addActionListener(storeEditedValueLocallyAL);
-            } else if (field instanceof Switch) {
-                ((Switch) field).addActionListener(storeEditedValueLocallyAL);
-            } else if (field instanceof MyComponentGroup) {
-                ((MyComponentGroup) field).addActionListener(storeEditedValueLocallyAL);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            ((MyTextArea) field).addActionListener((e) -> {
-////            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
-//                if (!getField.getVal().equals(getVal.getVal())) {
-////                previousValues.put(Item.PARSE_EFFORT_ESTIMATE, effortEstimate.getDuration());
-//                    previousValues.put(fieldIdentifier, getField.getVal());
-//                } else {
-//                    previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
+//                if (isInherited != null) {
+//                    updateUIIDForInherited((Component) field, isInherited.getVal());
 //                }
-//            });
-//</editor-fold>
-            } else {
-                assert false;
-            }
-
-        }
-
-        //set edited value on exit 
-        if (putOrg != null && getField != null && parseIdMap2 != null) {
-            //        parseIdMap2.put(Item.PARSE_EFFORT_ESTIMATE,()->{
-            parseIdMap2.put(fieldIdentifier, () -> {
-//        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
-                ASSERT.that(true || getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                ASSERT.that(getOrg.getVal() != null, "saving: getOrg.getVal()==null, for field=" + fieldIdentifier);
-//                if (getField.getVal() != null && !getField.getVal().equals(getOrg.getVal())) {
-//https://stackoverflow.com/questions/11271554/compare-two-objects-in-java-with-possible-null-values/11271611: (str1 == null ? str2 == null : str1.equals(str2)) <=>
-//!(str1 == null ? str2 == null : str1.equals(str2)) <=> (
-//                if (!(getField.getVal() == null
-//                        ? getOrg.getVal() == null
-//                        : getField.getVal().equals(getOrg.getVal()))) {
+//            };
+//
+//            //add change listenerlisten to changes an update+save if edited to different value than item.orgValue
+//            if (field instanceof Picker) {
+//                ((Picker) field).addActionListener(storeEditedValueLocallyAL);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            if (field instanceof MyDurationPicker) {
+////                ((MyDurationPicker) field).addActionListener(al);
+////            ((MyDurationPicker) field).addActionListener((e) -> {
+//////            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
+////                if (!getField.getVal().equals(getVal.getVal())) {
+//////                previousValues.put(Item.PARSE_EFFORT_ESTIMATE, effortEstimate.getDuration());
+////                    previousValues.put(fieldIdentifier, getField.getVal());
+////                } else {
+////                    previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
+////                }
+////            });
+////            } else if (field instanceof MyTextArea) {
+////</editor-fold>
+//            } else if (field instanceof TextArea) {
+//                if (false) {
+//                    ((TextArea) field).addActionListener(storeEditedValueLocallyAL); //doesn't seem to trigger if entering text and then clicking directly in another field
+//                }
+//                ((TextArea) field).addDataChangedListener((type, index) -> storeEditedValueLocallyAL.actionPerformed(null));
+//                if (false) {
+//                    ((TextArea) field).setDoneListener(storeEditedValueLocallyAL);
+//                }
+//            } else if (field instanceof Button) {
+//                ((Button) field).addActionListener(storeEditedValueLocallyAL);
+//            } else if (field instanceof SpanButton) {
+//                ((SpanButton) field).addActionListener(storeEditedValueLocallyAL);
+//            } else if (field instanceof Switch) {
+//                ((Switch) field).addActionListener(storeEditedValueLocallyAL);
+//            } else if (field instanceof MyComponentGroup) {
+//                ((MyComponentGroup) field).addActionListener(storeEditedValueLocallyAL);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            ((MyTextArea) field).addActionListener((e) -> {
+//////            if (effortEstimate.getDuration() != item.getEffortEstimate()) {
+////                if (!getField.getVal().equals(getVal.getVal())) {
+//////                previousValues.put(Item.PARSE_EFFORT_ESTIMATE, effortEstimate.getDuration());
+////                    previousValues.put(fieldIdentifier, getField.getVal());
+////                } else {
+////                    previousValues.remove(fieldIdentifier); //remove any old value if edited back to same value as Item has already
+////                }
+////            });
+////</editor-fold>
+//            } else {
+//                assert false;
+//            }
+//
+//        }
+//
+//        //set edited value on exit
+//        if (putOrg != null && getField != null && parseIdMap2 != null) {
+//            //        parseIdMap2.put(Item.PARSE_EFFORT_ESTIMATE,()->{
+//            parseIdMap2.put(fieldIdentifier, () -> {
+////        if (effortEstimate.getDuration() != item.getEffortEstimate()) {
+//                ASSERT.that(true || getField.getVal() != null, "saving: getField.getVal()==null, for field=" + fieldIdentifier);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                ASSERT.that(getOrg.getVal() != null, "saving: getOrg.getVal()==null, for field=" + fieldIdentifier);
+////                if (getField.getVal() != null && !getField.getVal().equals(getOrg.getVal())) {
+////https://stackoverflow.com/questions/11271554/compare-two-objects-in-java-with-possible-null-values/11271611: (str1 == null ? str2 == null : str1.equals(str2)) <=>
+////!(str1 == null ? str2 == null : str1.equals(str2)) <=> (
+////                if (!(getField.getVal() == null
+////                        ? getOrg.getVal() == null
+////                        : getField.getVal().equals(getOrg.getVal()))) {
+//////            item.setEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
+////                    putOrg.setVal(getField.getVal()); //if value has been changed, update item
+////                }
+////                if (!(getField.getVal() == null && (getOrg.getVal() == null || getField.getVal().equals(getOrg.getVal())))) {
+////</editor-fold>
+//                if (MyUtil.neql(getField.getVal(), getOrg.getVal())) {
 ////            item.setEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
 //                    putOrg.setVal(getField.getVal()); //if value has been changed, update item
 //                }
-//                if (!(getField.getVal() == null && (getOrg.getVal() == null || getField.getVal().equals(getOrg.getVal())))) {
-//</editor-fold>
-                if (MyUtil.neql(getField.getVal(), getOrg.getVal())) {
-//            item.setEstimate((long) effortEstimate.getDuration()); //if value has been changed, update item
-                    putOrg.setVal(getField.getVal()); //if value has been changed, update item
-                }
-            });
-        }
-//else assert false:"should never happen";
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (componentCont == null) { //if a container is already defined use that, e.g. for comment field
-//            return componentCont;
+//            });
 //        }
-//        return layoutN(fieldLabel, (Component) field, fieldHelp);
+////else assert false:"should never happen";
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (componentCont == null) { //if a container is already defined use that, e.g. for comment field
+////            return componentCont;
+////        }
+////        return layoutN(fieldLabel, (Component) field, fieldHelp);
+////</editor-fold>
+//    }
 //</editor-fold>
-    }
-
     static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField, Object undefinedValue,
             GetVal getDefaultValue, GetBool isInherited, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2) {
         //initialize 
@@ -4571,9 +4572,9 @@ public class MyForm extends Form {
             } else if (previousValues != null) {
                 if (previousValues.get(ListSelector.CLASS_NAME) != null) {
                     selectedObjects = new ListSelector(
-                            DAO.getInstance().fetchListOfItemsFromListOfObjectIds((List<String>) previousValues.get(ListSelector.CLASS_NAME)),
+                            DAO.getInstance().fetchListOfItemsFromListOfGuids((List<String>) previousValues.get(ListSelector.CLASS_NAME)),
                             true, Integer.MAX_VALUE, true,
-                            (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedObjIds()), true, referenceSet); //put: save selected values locally
+                            (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedGuids()), true, referenceSet); //put: save selected values locally
 //                    selectedObjects = (ListSelector) previousValues.get(ListSelector.CLASS_NAME); //reuse locally saved selected values if any
 //                    List<String> objIds = (List<String>) previousValues.get(ListSelector.CLASS_NAME); //reuse locally saved selected values if any
 //                    for (String objId : objIds) {
@@ -4582,7 +4583,7 @@ public class MyForm extends Form {
                 } else {
                     assert (selectedObjects == null);
                     selectedObjects = new ListSelector(null, true, Integer.MAX_VALUE, true,
-                            (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedObjIds()), true, referenceSet); //put: save selected values locally
+                            (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedGuids()), true, referenceSet); //put: save selected values locally
                 }
             }
         } else {

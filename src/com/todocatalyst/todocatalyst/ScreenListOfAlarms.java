@@ -122,23 +122,23 @@ public class ScreenListOfAlarms extends MyForm {
     }
 
 //    @Override
-    public void showBackXXX(boolean popCommand) {
-        if (false) {
-            if (AlarmHandler.getInstance().getExpiredAlarms().size() == 0 && exitOnEmptyAlarmList) {
-                exitOnEmptyAlarmList = false;
-                ReplayLog.getInstance().popCmd(); //pop the replay command for show alarm screen
-                showPreviousScreen(true); //exit if the there are no more alarms
-//        Form form = getCurrentFormAfterClosingDialogOrMenu();
-//        exitOnEmptyAlarmList = true;
-            } else {
-                exitOnEmptyAlarmList = false;
-//                super.showBack(popCommand);
-            }
-        }
-        exitOnEmptyAlarmList = false;
-//        backCommand.actionPerformed(null);
-//        super.showBack(popCommand);
-    }
+//    public void showBackXXX(boolean popCommand) {
+//        if (false) {
+//            if (AlarmHandler.getInstance().getExpiredAlarms().size() == 0 && exitOnEmptyAlarmList) {
+//                exitOnEmptyAlarmList = false;
+//                ReplayLog.getInstance().popCmd(); //pop the replay command for show alarm screen
+//                showPreviousScreen(true); //exit if the there are no more alarms
+////        Form form = getCurrentFormAfterClosingDialogOrMenu();
+////        exitOnEmptyAlarmList = true;
+//            } else {
+//                exitOnEmptyAlarmList = false;
+////                super.showBack(popCommand);
+//            }
+//        }
+//        exitOnEmptyAlarmList = false;
+////        backCommand.actionPerformed(null);
+////        super.showBack(popCommand);
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
@@ -553,7 +553,7 @@ public class ScreenListOfAlarms extends MyForm {
                 for (ExpiredAlarm notif : expiredAlarms) {
 //            ExpiredAlarm notif = expiredAlarms.get(i);
                     if (notif.alarmTime.getTime() <= now) {
-                        Item item = DAO.getInstance().fetchItem(notif.objectId);
+                        Item item = DAO.getInstance().fetchItem(notif.guid);
                         expiredFiltered.add(notif);
                     }
                 }
@@ -577,7 +577,7 @@ public class ScreenListOfAlarms extends MyForm {
                 @Override
                 protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
                     ExpiredAlarm notif = (ExpiredAlarm) node;
-                    Item item = DAO.getInstance().fetchItem(notif.objectId);
+                    Item item = DAO.getInstance().fetchItem(notif.guid);
                     showDetails.add(item); //hack to always show alarmTime even if normally hidden in details
                     Component cmp = buildItemAlarmContainer(ScreenListOfAlarms.this, item, notif, expiredAlarms, () -> refreshAfterEdit(),
                             keepPos, previousForm, expandedObjects);

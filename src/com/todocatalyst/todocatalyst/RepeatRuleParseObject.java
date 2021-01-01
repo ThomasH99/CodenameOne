@@ -68,28 +68,28 @@ public class RepeatRuleParseObject
     final static int REPEAT_TYPE_FROM_DUE_DATE = 2;// 33;
 //    final static int REPEAT_TYPE_FROM_SPECIFIED_DATE = 3; //7; //TODO: implement as additional option?
 
-    private final static String PARSE_SPECIFIED_START_DATE = "specifiedStartDate";
-    private final static String PARSE_REPEAT_TYPE = "repeatType";
-    private final static String PARSE_FREQUENCY = "frequency";
-    private final static String PARSE_INTERVAL = "interval";
+     final static String PARSE_SPECIFIED_START_DATE = "specifiedStartDate";
+     final static String PARSE_REPEAT_TYPE = "repeatType";
+     final static String PARSE_FREQUENCY = "frequency";
+     final static String PARSE_INTERVAL = "interval";
 
-    private final static String PARSE_END_DATE = "endDate";
-    private final static String PARSE_COUNT = "count";
+     final static String PARSE_END_DATE = "endDate";
+     final static String PARSE_COUNT = "count";
 
-    private final static String PARSE_DAYS_IN_WEEK = "daysInWeek";
-    private final static String PARSE_WEEKS_IN_MONTH = "weeksInMonth";
-    private final static String PARSE_WEEKDAYS_IN_MONTH = "weekdaysInMonth";
+     final static String PARSE_DAYS_IN_WEEK = "daysInWeek";
+     final static String PARSE_WEEKS_IN_MONTH = "weeksInMonth";
+     final static String PARSE_WEEKDAYS_IN_MONTH = "weekdaysInMonth";
 
-    private final static String PARSE_MONTHS_IN_YEAR = "monthsInYear";
-    private final static String PARSE_DAY_IN_MONTH = "dayInMonth";
-    private final static String PARSE_DAY_IN_YEAR = "dayInYear";
+     final static String PARSE_MONTHS_IN_YEAR = "monthsInYear";
+     final static String PARSE_DAY_IN_MONTH = "dayInMonth";
+     final static String PARSE_DAY_IN_YEAR = "dayInYear";
 
-    private final static String PARSE_NUMBER_SIMULTANEOUS_REPEATS_TO_GENERATE_AHEAD = "numberFutureRepeatsToGenerateAhead";
-    private final static String PARSE_NUMBER_OF_DAYS_TO_GENERATE_AHEAD = "numberOfDaysRepeatsAreGeneratedAhead";
+     final static String PARSE_NUMBER_SIMULTANEOUS_REPEATS_TO_GENERATE_AHEAD = "numberFutureRepeatsToGenerateAhead";
+     final static String PARSE_NUMBER_OF_DAYS_TO_GENERATE_AHEAD = "numberOfDaysRepeatsAreGeneratedAhead";
 
 //    private final static String PARSE_REPEAT_INSTANCE_ITEMLIST = "repeatInstanceItemList";
-    private final static String PARSE_REPEAT_INSTANCE_ITEMLIST = "undoneInstances";
-    private final static String PARSE_REPEAT_COMPLETED_INSTANCES = "doneInstances";
+     final static String PARSE_UNDONE_INSTANCES = "undoneInstances";
+     final static String PARSE_DONE_INSTANCES = "doneInstances";
 //    private final static String PARSE_DATES_LIST = "datesList";
 //    final static String LAST_DATE_GENERATED_FOR = "lastDateGeneratedFor";
 //    private final static String PARSE_LAST_DATE_GENERATED = "lastGeneratedDate";
@@ -329,9 +329,9 @@ public class RepeatRuleParseObject
 //</editor-fold>
     public void setListOfUndoneInstances(List list) {
         if (list != null && !list.isEmpty()) {
-            put(PARSE_REPEAT_INSTANCE_ITEMLIST, list);
+            put(PARSE_UNDONE_INSTANCES, list);
         } else {
-            remove(PARSE_REPEAT_INSTANCE_ITEMLIST);
+            remove(PARSE_UNDONE_INSTANCES);
         }
         cachedUndoneInstances = null;
     }
@@ -350,7 +350,7 @@ public class RepeatRuleParseObject
 //    public List<ItemAndListCommonInterface> getListOfUndoneRepeatInstances() {
     public List<RepeatRuleObjectInterface> getListOfUndoneInstances() {
         //TODO!!!! used for WorkSlots? (is externalized as if WorkSlots could be in list)
-        List list = getList(PARSE_REPEAT_INSTANCE_ITEMLIST);
+        List list = getList(PARSE_UNDONE_INSTANCES);
         if (Config.TEST && list != null) {
             Log.p("RepeatRuleObject.getListOfUndoneInstances() called with list size=" + list.size());
         }
@@ -369,9 +369,9 @@ public class RepeatRuleParseObject
 
     public void setListOfDoneInstances(List list) {
         if (list != null && !list.isEmpty()) {
-            put(PARSE_REPEAT_COMPLETED_INSTANCES, list);
+            put(PARSE_DONE_INSTANCES, list);
         } else {
-            remove(PARSE_REPEAT_COMPLETED_INSTANCES);
+            remove(PARSE_DONE_INSTANCES);
         }
         cachedDoneInstances = null;
     }
@@ -387,7 +387,7 @@ public class RepeatRuleParseObject
      */
     public List<RepeatRuleObjectInterface> getListOfDoneInstances() {
         //TODO!!!! used for WorkSlots? (is externalized as if WorkSlots could be in list)
-        List list = getList(PARSE_REPEAT_COMPLETED_INSTANCES);
+        List list = getList(PARSE_DONE_INSTANCES);
         if (false && Config.TEST && list != null) {
             Log.p("RepeatRuleObject.getListOfDoneInstances() called with list size=" + list.size());
         }
@@ -4275,7 +4275,7 @@ public class RepeatRuleParseObject
                         Item newRepeatInstance = (Item) completedItem.createRepeatCopy(nextRepeatTime); //the createRepeatCopy knows what to do with the repeat date (e.g. use as Due date
                         ItemAndListCommonInterface owner = insertIntoList2(completedItem, newRepeatInstance); //insert new created instance in appropriate list and save it
                         Log.p("**new1 repeat instance generated with repeat date=" + nextRepeatTime + ", instance=" + newRepeatInstance);
-                        addNewRepeatInstance(newRepeatInstance);
+                        addNewRepeatInstanceToUndone(newRepeatInstance);
 //                        DAO.getInstance().saveNew(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
 //                        DAO.getInstance().saveNewTriggerUpdate();
 //                        DAO.getInstance().saveToParseNow(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
@@ -4292,7 +4292,7 @@ public class RepeatRuleParseObject
                     Item newRepeatInstance = (Item) completedItem.cloneMe(Item.CopyMode.COPY_TO_REPEAT_INSTANCE, COPY_EXCLUDE_DUE_DATE); //copy RR w/o update
                     ItemAndListCommonInterface owner = insertIntoList2(completedItem, newRepeatInstance); //insert new created instance in appropriate list and save it
                     Log.p("**new repeat on completion instance generated *without* repeat date, instance=" + newRepeatInstance);
-                    addNewRepeatInstance(newRepeatInstance);
+                    addNewRepeatInstanceToUndone(newRepeatInstance);
 //                DAO.getInstance().saveNew(true, newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
 //                    DAO.getInstance().saveNew(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
 //                    DAO.getInstance().saveNewTriggerUpdate();
@@ -4350,17 +4350,17 @@ public class RepeatRuleParseObject
                     Item newRepeatInstance = (Item) completedItem.createRepeatCopy(nextRepeatTime); //the createRepeatCopy knows what to do with the repeat date (e.g. use as Due date
                     ItemAndListCommonInterface owner = insertIntoList2(completedItem, newRepeatInstance); //insert new created instance in appropriate list and save it
                     Log.p("**new2 repeat instance generated with repeat date=" + nextRepeatTime + ", instance=" + newRepeatInstance);
-                    addNewRepeatInstance(newRepeatInstance);
+                    addNewRepeatInstanceToUndone(newRepeatInstance);
 //                    DAO.getInstance().saveNew(true, newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
 //                    DAO.getInstance().saveNew(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
 //                    DAO.getInstance().saveNewTriggerUpdate();
 //                    DAO.getInstance().saveToParseNow(newRepeatInstance, this, (ParseObject) owner); //OK if repeatInstance or owner are null
-                    DAO.getInstance().saveToParseNow(newRepeatInstance); //OK if repeatInstance or owner are null
+                    if(false)DAO.getInstance().saveToParseNow(newRepeatInstance); //OK if repeatInstance or owner are null //DON'T save here, always part of another change that will trigger save
                 } else {
 //                    DAO.getInstance().saveNew(true, this); //OK if repeatInstance or owner are null
 //                    DAO.getInstance().saveNew(this); //OK if repeatInstance or owner are null
 //                    DAO.getInstance().saveNewTriggerUpdate();
-                    DAO.getInstance().saveToParseNow(this); //OK if repeatInstance or owner are null
+                    if(false)DAO.getInstance().saveToParseNow(this); //OK if repeatInstance or owner are null //DON'T save here, always part of another change that will trigger save
                 }
             }
         }
@@ -7816,7 +7816,7 @@ public class RepeatRuleParseObject
         if (false) {
             setLatestDateCompletedOrCancelledIfGreaterThanLast(completedItem.getRepeatStartTime(getRepeatType() == REPEAT_TYPE_FROM_COMPLETED_DATE));
         }
-
+ASSERT.that(completedItem.isDone(),"update called with item which is NOT completed/done");
         List repeatInstanceItemList = getListOfUndoneInstances();
         repeatInstanceItemList.remove(completedItem);
         setListOfUndoneInstances(repeatInstanceItemList);
@@ -7848,7 +7848,7 @@ public class RepeatRuleParseObject
 //        return nextRepeatTime;
 //    }
 //</editor-fold>
-    private void addNewRepeatInstance(Item newRepeatInstance) {
+    private void addNewRepeatInstanceToUndone(Item newRepeatInstance) {
         List repeatInstanceItemList = getListOfUndoneInstances();
         repeatInstanceItemList.add(newRepeatInstance); //only keep track of instances when Due
         setListOfUndoneInstances(repeatInstanceItemList);

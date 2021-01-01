@@ -52,13 +52,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    private List<E> itemList; // = new ArrayList(); // initialized in constructors //STORED
     final static String PARSE_TEXT = Item.PARSE_TEXT; //"description";
     final static String PARSE_COMMENT = Item.PARSE_COMMENT; //"comment";
-    final static String PARSE_ITEMLIST = "itemList"; //subtasks
+    final static String PARSE_ITEMS = "itemList"; //subtasks
     final static String PARSE_ITEM_BAG = "itemBag"; //??
 //    final static String PARSE_WORKTIME_DEFINITION = "workTimeDef";
     final static String PARSE_OWNER = "owner";
     final static String PARSE_SOURCE_LISTS = "sourceLists"; //for meta-lists, not used yet
     final static String PARSE_META_LISTS = "metaLists";
-//    final static String PARSE_FILTER_SORT_DEF = Item.PARSE_FILTER_SORT_DEF; //"filterSort";
+    final static String PARSE_FILTER_SORT_DEF = Item.PARSE_FILTER_SORT_DEF; //"filterSort";
     final static String PARSE_WORKSLOTS = Item.PARSE_WORKSLOTS; //"filterSort";
 //    final static String PARSE_SYSTEM_LIST = "system";
     final static String PARSE_SYSTEM_NAME = "systemName"; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
@@ -1052,10 +1052,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 ////        } else if (has(PARSE_ITEMLIST) || (itemList != null && !itemList.isEmpty())) {
 //        } else 
         if (itemList != null && !itemList.isEmpty()) {
-            put(PARSE_ITEMLIST, itemList);
+            put(PARSE_ITEMS, itemList);
 //            filteredSortedList = null; //reset to use and re-sort new list
         } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
-            remove(PARSE_ITEMLIST); //if setting a list to null or setting an empty list, then simply delete the field
+            remove(PARSE_ITEMS); //if setting a list to null or setting an empty list, then simply delete the field
         }
 //        cachedList = null; //reset
 //        filteredSortedList = null; //reset
@@ -1144,7 +1144,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             Log.p("Calling getListFull() for list=" + this.getText());// + "; filter=" + getFilterSortDef());
         }
 
-        List<E> cachedList = getList(PARSE_ITEMLIST);
+        List<E> cachedList = getList(PARSE_ITEMS);
 
 //            List<E> list = getList(PARSE_ITEMLIST);
 //            if (list != null) {
@@ -1934,15 +1934,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        }
 //    }
 //</editor-fold>
-    
-        public boolean doAfterInsertionXXX(ItemAndListCommonInterface item){
-             if (item instanceof Item) { //todo: instead make updateRepeatRule() a method on 
-                    ((Item) item).updateRepeatRule();
-                    return true;
-                }
-             return false;
-        }
-
+//        public boolean doAfterInsertionXXX(ItemAndListCommonInterface item){
+//             if (item instanceof Item) { //todo: instead make updateRepeatRule() a method on 
+//                    ((Item) item).updateRepeatRule();
+//                    return true;
+//                }
+//             return false;
+//        }
     /**
      * Adding an item to full(!) list at given index. OK to add to a position
      * *after* the last element (at position getSize()).items will only be added
@@ -2006,8 +2004,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
                     ASSERT.that(listFull.indexOf(item) != -1, () -> "1.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
                 }
                 setList(listFull);
-                if(false)
-                doAfterInsertionXXX(item);
+//                if(false)
+//                    doAfterInsertionXXX(item);
                 if (Config.TEST) {
                     ASSERT.that(listFull.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
                 }
@@ -2049,48 +2047,49 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        setList(listFull);
 //        fireDataChangedEvent(DataChangedListener.CHANGED, newPos);
 //    }
-    public ItemAndListCommonInterface setItemAtIndexOLD(E item, int index) {
-//        List<? extends ItemAndListCommonInterface> editedList = getListFull();
-        List<E> listFull = getListFull();
-        List<E> list = getList();
-        ItemAndListCommonInterface oldElement = list.get(index);
-        Bag bag = getItemBag();
-//        if (hasSubLists() && bag != null && bag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
-        if (hasSubListsZZZ() && bag != null) { //if there are sublists and item has already been added at least once (so appears in list)
-            bag.remove(oldElement); //no need to test if oldElt is already in list, in either case remove will give right result( item added several timet: count-=1, only once added to list: count=0 (0-1)
-//            itemBag.add(item); //then don't add to list, but just add to bag to keep track of how many times added
-            if (bag.getCount(item) > 0) {
-                bag.add(item); //only add to bag if *already* in the list only use bag when an element is added more than once)!
-            }
-            setItemBag(bag); //then don't add to list, but just add to bag to keep track of how many times added
-        } else {//not previously in bag, setif (!getListFull().contains(item)) {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//else add normally
-//only add items if either storeOnlySingleInstanceOfItems OR if the item is not already in the list
-//            if (!storeOnlySingleInstanceOfItems || getItemIndex(item) == -1) {
-//            assert getItemIndex(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
-//            if (index <= getSize()) { // shouldn't make this check since it might make us miss some errors
-//                itemList.insertElementAt(item, index);
-//                itemList.add(index, item);
-//</editor-fold>
-            listFull.set(index, item);
-            setList(listFull);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
-//                    selectedIndex++;
-//                }
-//            int selIdx = getSelectedIndex();
-//            if (selIdx >= index && selIdx < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
-//                setSelectedIndex(selIdx + 1);
+//    public ItemAndListCommonInterface setItemAtIndexOLD(E item, int index) {
+////        List<? extends ItemAndListCommonInterface> editedList = getListFull();
+//        List<E> listFull = getListFull();
+//        List<E> list = getList();
+//        ItemAndListCommonInterface oldElement = list.get(index);
+//        Bag bag = getItemBag();
+////        if (hasSubLists() && bag != null && bag.getCount(item) > 0) { //if there are sublists and item has already been added at least once (so appears in list)
+//        if (hasSubListsZZZ() && bag != null) { //if there are sublists and item has already been added at least once (so appears in list)
+//            bag.remove(oldElement); //no need to test if oldElt is already in list, in either case remove will give right result( item added several timet: count-=1, only once added to list: count=0 (0-1)
+////            itemBag.add(item); //then don't add to list, but just add to bag to keep track of how many times added
+//            if (bag.getCount(item) > 0) {
+//                bag.add(item); //only add to bag if *already* in the list only use bag when an element is added more than once)!
 //            }
-//            int selIdx = index;
+//            setItemBag(bag); //then don't add to list, but just add to bag to keep track of how many times added
+//        } else {//not previously in bag, setif (!getListFull().contains(item)) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////else add normally
+////only add items if either storeOnlySingleInstanceOfItems OR if the item is not already in the list
+////            if (!storeOnlySingleInstanceOfItems || getItemIndex(item) == -1) {
+////            assert getItemIndex(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
+////            if (index <= getSize()) { // shouldn't make this check since it might make us miss some errors
+////                itemList.insertElementAt(item, index);
+////                itemList.add(index, item);
+////</editor-fold>
+//            listFull.set(index, item);
+//            setList(listFull);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
+////                    selectedIndex++;
+////                }
+////            int selIdx = getSelectedIndex();
+////            if (selIdx >= index && selIdx < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
+////                setSelectedIndex(selIdx + 1);
+////            }
+////            int selIdx = index;
+////</editor-fold>
+////            fireDataChangedEvent(DataChangedListener.CHANGED, index);
+////            }
+//        }
+//        return oldElement;
+//    }
 //</editor-fold>
-//            fireDataChangedEvent(DataChangedListener.CHANGED, index);
-//            }
-        }
-        return oldElement;
-    }
-
     public ItemAndListCommonInterface setItemAtIndex(E item, int index) {
         ItemAndListCommonInterface oldElement = removeItem(index);
         addItemAtIndex(item, index);

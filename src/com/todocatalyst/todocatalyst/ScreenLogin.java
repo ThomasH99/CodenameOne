@@ -6,15 +6,13 @@ import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
 import com.codename1.messaging.Message;
-import com.codename1.nui.NTextField;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
-import com.codename1.ui.Form;
 import com.codename1.ui.TextArea;
-import com.codename1.ui.TextComponentPassword;
+import com.codename1.ui.TextField;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.validation.Constraint;
 import com.codename1.ui.validation.RegexConstraint;
@@ -66,10 +64,6 @@ public class ScreenLogin extends MyForm {
 
 //        AdMobManager ad;
 //        NTextField n;
-    }
-
-    public void go() {
-        go(false);
     }
 
     private void startUp(boolean refreshDataInBackground) {
@@ -134,6 +128,10 @@ public class ScreenLogin extends MyForm {
 //</editor-fold>
         new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
 
+    }
+
+    public void go() {
+        go(false);
     }
 
     public void go(boolean forceLaunchForTest) {
@@ -214,7 +212,6 @@ public class ScreenLogin extends MyForm {
 //            new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
             show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
         }
-
     }
 
     private void setupLoginScreen() {
@@ -230,17 +227,19 @@ public class ScreenLogin extends MyForm {
         //hide titlebar: http://stackoverflow.com/questions/42871223/how-do-i-hide-get-rid-the-title-bar-on-a-form-codename-one
 //        getToolbar().setUIID("Container");
 //        getToolbar().hideToolbar();
-//        TextField email = new TextField("", "Email", 20, TextArea.EMAILADDR);
-        NTextField email = new NTextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
+        TextField email = new TextField("", "Email", 20, TextArea.EMAILADDR);
+//        NTextField email = new NTextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
+//        TextField email = new TextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
         if (MyPrefs.loginStoreEmail.getBoolean()) {
             email.setText(MyPrefs.loginEmail.getString());
         }
 
-//        TextField password = new TextField("", "Password", 20, TextArea.PASSWORD);
+        TextField password = new TextField("", "Password", 20, TextArea.PASSWORD);
 //        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        TextComponentPassword password = new TextComponentPassword(); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        password.constraint(TextArea.PASSWORD);
-        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+//        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+//        TextField password = new TextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
         if (false) {
             password.setUIID("TextField");
         }
@@ -368,7 +367,7 @@ public class ScreenLogin extends MyForm {
         }));
 
         revalidate(); //ensure correct size of all components
-        email.startEditingAsync(); //always start editing email field
+//        email.startEditingAsync(); //always start editing email field
 
     }
 

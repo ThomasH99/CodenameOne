@@ -73,7 +73,6 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
      * previously created item
      */
 //    private boolean continueAddingNewItems = true;
-
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * create a new Container and a new Item
@@ -542,16 +541,23 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
 //                myForm.setKeepPos(new KeepInSameScreenPosition(refItem, this)); //if Cancel, keep the current item in place 
 //            }            //DONE!!!! How to support that Cancel in ScreenItem2 will delete/remove the just inserted new task??!!
 //</editor-fold>
-            SaveEditedValuesLocally predefinedValues = new SaveEditedValuesLocally();
-            if (this.category2 != null) {
-//                predefinedValues = new SaveEditedValuesLocally();
-//                predefinedValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(new ArrayList(Arrays.asList(this.category2))));
-                predefinedValues.putCategories(new ArrayList(Arrays.asList(category2)));
+//            SaveEditedValuesLocally predefinedValues = new SaveEditedValuesLocally();
+//            if (this.category2 != null) {
+////                predefinedValues = new SaveEditedValuesLocally();
+////                predefinedValues.put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(new ArrayList(Arrays.asList(this.category2))));
+//                predefinedValues.putCategories(new ArrayList(Arrays.asList(category2)));
+//            }
+////            predefinedValues.put(Item.PARSE_OWNER_ITEM, new ArrayList(Arrays.asList(
+////                    (insertAsSubt ? refItem : ((ItemAndListCommonInterface) itemOrItemListForNewElements)).getObjectIdP()))); //store objectId of new owner
+//            predefinedValues.putOwner(insertAsSubt ? refItem : itemOrItemListForNewElements);
+            if (insertAsSubt) {
+                refItem.addToList(newItem,true);
+            } else {
+                itemOrItemListForNewElements.addToList(newItem,refItem,true);
             }
-//            predefinedValues.put(Item.PARSE_OWNER_ITEM, new ArrayList(Arrays.asList(
-//                    (insertAsSubt ? refItem : ((ItemAndListCommonInterface) itemOrItemListForNewElements)).getObjectIdP()))); //store objectId of new owner
-            predefinedValues.putOwner(insertAsSubt ? refItem : itemOrItemListForNewElements);
-
+            if (this.category2 != null)
+                category2.addItemToCategory(newItem, refItem, true,false);
+            
             myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
 //            if (false) {
 //                myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //NO, text string will now be locally saved/stored in ScreenItem2 so we can remove it here
@@ -569,7 +575,7 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
 //                    DAO.getInstance().saveNewTriggerUpdate(); //need to save synchrnouesly to get objId to store for recreating new pinchinsert on exit
                     saveKeys(newItem);
 
-                    if (category2 != null && newItem.getCategories().contains(category2)) {//contains(): only move item within category if the user has not removed the category during manual editing
+                    if (false&&category2 != null && newItem.getCategories().contains(category2)) {//contains(): only move item within category if the user has not removed the category during manual editing
                         category2.moveItemInCategory(newItem, refItem, false, this.insertBeforeElement); //if category was not removed during manual editing, then move the item to the right position wrt refItem
 //                        DAO.getInstance().saveNew((ParseObject) category2); //need to save both since newItem has gotten its owner set to itemOrItemListForNewElements
                     }
@@ -608,9 +614,10 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
 //                }
 //                    DAO.getInstance().saveNewTriggerUpdate();
 //                    DAO.getInstance().saveToParseNow(newItem,(ParseObject) category2,(ParseObject) itemOrItemListForNewElements); 
-                    DAO.getInstance().saveToParseNow(newItem); 
+                    DAO.getInstance().saveToParseNow(newItem);
                 }
-            }, () -> myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE), newItem.isTemplate(), predefinedValues);
+//            }, () -> myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE), newItem.isTemplate(), predefinedValues);
+            }, () -> myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE), newItem.isTemplate(), null);
 
             screenItem2.show();
 
@@ -738,7 +745,7 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
     }
 
     private Item makeNewItemN(boolean createEvenIfTextEmpty) {
-        if ((textEntryField.getText() != null && !textEntryField.getText().isEmpty())||createEvenIfTextEmpty) {
+        if ((textEntryField.getText() != null && !textEntryField.getText().isEmpty()) || createEvenIfTextEmpty) {
             Item newItem = new Item(textEntryField.getText(), true); //true: interpret textual values, ok to create item even if no text entered (user just wants to create task here, but enter text+details in full sreen edit)
             newItem.setRemainingDefaultValueIfNone();
             //must set owner here to display correctly if going to full screen edit of item (and if there is a repeatRule)

@@ -267,10 +267,11 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
      *
      * @return
      */
-    public List<String> getSelectedObjIds() {
+    public List<String> getSelectedGuids() {
         List objIds = new ArrayList();
         for (Object o : selectedObjects) {
-            objIds.add(((ParseObject) o).getObjectIdP());
+//            objIds.add(((ParseObject) o).getObjectIdP());
+            objIds.add(((ParseObject) o).getGuid());
         }
         return objIds;
     }

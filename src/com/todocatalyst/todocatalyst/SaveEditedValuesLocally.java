@@ -406,23 +406,23 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //        saveFile(); //saved in put above
     }
     
-    public void putCategories(List<Category> categories) {
-//        Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
-        if (categories == null || categories.size() == 0) {
-            remove(Item.PARSE_CATEGORIES);
-        }
-//        put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(categories));
-        put(Item.PARSE_CATEGORIES, ItemAndListCommonInterface.convListToObjectIdList((List) categories));
-    }
-    
-    public List<Category> getCategories() {
-        if (get(Item.PARSE_CATEGORIES) != null) {
-//            return Item.convCatObjectIdsListToCategoryList((List<String>) get(Item.PARSE_CATEGORIES));
-            return DAO.getInstance().convCatObjectIdsListToCategoryListN((List<String>) get(Item.PARSE_CATEGORIES));
-        } else {
-            return new ArrayList();
-        }
-    }
+//    public void putCategories(List<Category> categories) {
+////        Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
+//        if (categories == null || categories.size() == 0) {
+//            remove(Item.PARSE_CATEGORIES);
+//        }
+////        put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(categories));
+//        put(Item.PARSE_CATEGORIES, ItemAndListCommonInterface.convListToObjectIdList((List) categories));
+//    }
+//    
+//    public List<Category> getCategories() {
+//        if (get(Item.PARSE_CATEGORIES) != null) {
+////            return Item.convCatObjectIdsListToCategoryList((List<String>) get(Item.PARSE_CATEGORIES));
+//            return DAO.getInstance().convCatObjectIdsListToCategoryListN((List<String>) get(Item.PARSE_CATEGORIES));
+//        } else {
+//            return new ArrayList();
+//        }
+//    }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void putOwnerXXX(ItemAndListCommonInterface owner) {
@@ -438,37 +438,37 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //        }
 //    }
 //</editor-fold>
-    private void putListOfElements(String key, List<ItemAndListCommonInterface> list) {
-        if (list == null) {
-            remove(key);
-        } else {
-            List<String> objIdList = new ArrayList();
-            for (ItemAndListCommonInterface e : list) {
-//                objIdList.add(e.getObjectIdP());
-                objIdList.add(e.getGuid());
-            }
-            put(key, objIdList);
-        }
-    }
-    
-    public void putOwners(List<ItemAndListCommonInterface> owners) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (owners == null) {
-//            remove(Item.PARSE_OWNER_ITEM);
+//    private void putListOfElements(String key, List<ItemAndListCommonInterface> list) {
+//        if (list == null) {
+//            remove(key);
 //        } else {
-//            List ids = new ArrayList();
-//            for (ItemAndListCommonInterface e : owners) {
-//                ids.add(e.getObjectIdP());
+//            List<String> objIdList = new ArrayList();
+//            for (ItemAndListCommonInterface e : list) {
+////                objIdList.add(e.getObjectIdP());
+//                objIdList.add(e.getGuid());
 //            }
-//            put(Item.PARSE_OWNER_ITEM, ids);
+//            put(key, objIdList);
 //        }
-//</editor-fold>
-        putListOfElements(Item.PARSE_OWNER_ITEM, owners);
-    }
+//    }
     
-    public void putOwner(ItemAndListCommonInterface owner) {
-        putOwners(Arrays.asList(owner));
-    }
+//    public void putOwners(List<ItemAndListCommonInterface> owners) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (owners == null) {
+////            remove(Item.PARSE_OWNER_ITEM);
+////        } else {
+////            List ids = new ArrayList();
+////            for (ItemAndListCommonInterface e : owners) {
+////                ids.add(e.getObjectIdP());
+////            }
+////            put(Item.PARSE_OWNER_ITEM, ids);
+////        }
+////</editor-fold>
+//        putListOfElements(Item.PARSE_OWNER_ITEM, owners);
+//    }
+    
+//    public void putOwner(ItemAndListCommonInterface owner) {
+//        putOwners(Arrays.asList(owner));
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public ItemAndListCommonInterface getOwnerXXX() {
 ////        if (previousValues.get(Item.PARSE_CATEGORIES) != null)
@@ -549,39 +549,13 @@ public class SaveEditedValuesLocally {//extends HashMap {
         }
     }
     
-    public void putSubtaskObjdIdsListxxx(List<String> subtasksObjIds) {
-        if (subtasksObjIds == null) {
-            remove(Item.PARSE_SUBTASKS);
-        } else {
-            put(Item.PARSE_SUBTASKS, subtasksObjIds);
-        }
-    }
-
-    /**
-     * returns null if no edits were done, and empty list if all subtasks were
-     * deleted!!
-     *
-     * @return
-     */
-    public List<Item> getSubtaskListN() {
-//        List<Item> subtasks = (List<Item>) get(Item.PARSE_SUBTASKS);
-//        return subtasks;
-        List<String> subtasksObjIds = (List<String>) get(Item.PARSE_SUBTASKS);
-        return DAO.getInstance().convItemObjectIdsListToItemListN(subtasksObjIds);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (ids != null) {
-//            List<Item> items = new ArrayList();
-//            for (String id : ids) {
-//                Item item = DAO.getInstance().fetchItem(id);
-//                items.add(item);
-//            }
-//            return items;
+//    public void putSubtaskObjdIdsListxxx(List<String> subtasksObjIds) {
+//        if (subtasksObjIds == null) {
+//            remove(Item.PARSE_SUBTASKS);
 //        } else {
-//            return null;
+//            put(Item.PARSE_SUBTASKS, subtasksObjIds);
 //        }
-//        return getListOfElementsN(Item.PARSE_SUBTASKS);
-//</editor-fold>
-    }
+//    }
 
     /**
      * returns null if no edits were done, and empty list if all subtasks were
@@ -589,11 +563,37 @@ public class SaveEditedValuesLocally {//extends HashMap {
      *
      * @return
      */
-    public List<String> getSubtaskObjIdsListNxxx() {
-        List<String> ids = (List) get(Item.PARSE_SUBTASKS);
-//        return ids != null ? ids : new ArrayList();
-        return ids;
-    }
+//    public List<Item> getSubtaskListN() {
+////        List<Item> subtasks = (List<Item>) get(Item.PARSE_SUBTASKS);
+////        return subtasks;
+//        List<String> subtasksObjIds = (List<String>) get(Item.PARSE_SUBTASKS);
+//        return DAO.getInstance().convItemObjectIdsListToItemListN(subtasksObjIds);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (ids != null) {
+////            List<Item> items = new ArrayList();
+////            for (String id : ids) {
+////                Item item = DAO.getInstance().fetchItem(id);
+////                items.add(item);
+////            }
+////            return items;
+////        } else {
+////            return null;
+////        }
+////        return getListOfElementsN(Item.PARSE_SUBTASKS);
+////</editor-fold>
+//    }
+
+    /**
+     * returns null if no edits were done, and empty list if all subtasks were
+     * deleted!!
+     *
+     * @return
+     */
+//    public List<String> getSubtaskObjIdsListNxxx() {
+//        List<String> ids = (List) get(Item.PARSE_SUBTASKS);
+////        return ids != null ? ids : new ArrayList();
+//        return ids;
+//    }
 
 //    public void removeOwnerXXX() {
 //        remove(Item.PARSE_OWNER_ITEM);

@@ -49,6 +49,7 @@ public class InspirationalLists {
 
     public static FilterSortDef makeFilter(PredefinedFilters predefinedFilter, String description, String helpTxt) {
         FilterSortDef filter = null;
+        if(false){//false to reduce jar size
         switch (predefinedFilter) {
             case ROIoverRemaining_X:
                 filter = new FilterSortDef() {
@@ -152,6 +153,7 @@ public class InspirationalLists {
                 filter.setHelp("**the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
 //                filter.setDefinition("What never gets done: Important, not Urgent and Challenging or time consuming");
                 break;
+        }
         }
         return filter;
     }

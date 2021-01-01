@@ -412,7 +412,8 @@ public class ScreenListOfItems extends MyForm {
 //        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-"
 //                + (itemListOrg.getObjectIdP() != null ? itemListOrg.getObjectIdP() : "$NewItem$"), true); //use text for unsaved lists like Log/Diary
         previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-"
-                + (itemListOrItemOrg.getObjectIdP() != null ? itemListOrItemOrg.getObjectIdP() : "$NewItem$"), true); //use text for unsaved lists like Log/Diary
+//                + (itemListOrItemOrg.getObjectIdP() != null ? itemListOrItemOrg.getObjectIdP() : "$NewItem$"), true); //use text for unsaved lists like Log/Diary
+                +  itemListOrItemOrg.getGuid(), true); //use text for unsaved lists like Log/Diary
         String expandedObjectsFileName = makeUniqueIdForExpandedObjects(itemListOrItemOrg, "$NoListName");
 //        String expandedObjectsFileName = itemListOrg.isNoSave() ? "" : (getUniqueFormId() + (itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
         if (expandedObjectsFileName != null) {
@@ -732,6 +733,23 @@ public class ScreenListOfItems extends MyForm {
 //        addShowListener(startAsyncListener); //do *after* show (will this make the async editing work?!)
 //        setTitleAnimation(scrollableContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
 //</editor-fold>
+    }
+    
+//    private void addAndSaveSubtask(ItemAndListCommonInterface itemListOrItemOrg, ItemAndListCommonInterface newTask) {
+    private void addAndSaveSubtaskXXX( Item newTask) {
+        ItemAndListCommonInterface itemListOrItemOrg=newTask.getOwner();
+        if(itemListOrItemOrg.isUnsaved()) {
+            newTask.setOwner(null,false); //remove ref to unsaved 
+            DAO.getInstance().saveToParseNow( newTask); //must save item since adding it to itemListOrg changes its owner
+            newTask.setOwner(itemListOrItemOrg,false);
+        } else {
+            itemListOrItemOrg.addToList(newTask, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+            DAO.getInstance().saveToParseNow((ParseObject) newTask); //must save item since adding it to itemListOrg changes its owner
+        }
+//                        DAO.getInstance().saveToParseNow((ParseObject) newTemplate); //must save item since adding it to itemListOrg changes its owner
+//.addToList(newTemplate, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+//                        DAO.getInstance().saveToParseNow((ParseObject) newTemplate); //must save item since adding it to itemListOrg changes its owner
+
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2466,8 +2484,9 @@ public class ScreenListOfItems extends MyForm {
                 item.getText()
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getObjectIdP() == null ? "-ID" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getOwner() == null ? "-OWN" : "")
-                + (((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRuleN() != null)
-                ? (item.getRepeatRuleN().getListOfUndoneInstances().contains(item) ? "*" : "(*)") : "")
+                + (((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRuleN() == null) ? ""
+                : (item.getRepeatRuleN().getListOfUndoneInstances().contains(item) 
+                        ? "*" : (item.getRepeatRuleN().getListOfDoneInstances().contains(item) ? "(*-)" : "(*?!!)")))
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isInteruptOrInstantTask() ? "<" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && TimerStack.getInstance().getCurrentlyTimedItemN() == item ? " [Timed]" : "")
@@ -2650,6 +2669,7 @@ public class ScreenListOfItems extends MyForm {
 //                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
 //                myForm.setKeepPos(); //keepPos since may be filtered after status change
                 item.setStatus(newStatus);
+                item.setStatus(newStatus, true, true, true, new MyDate(), true);
 //                        if (refreshOnItemEdits != null) {
 //                            refreshOnItemEdits.launchAction();
 //                        }
@@ -2732,7 +2752,9 @@ public class ScreenListOfItems extends MyForm {
 //                actualEffortLabel.setText(MyDate.formatDurationShort(actualEffort));
 //</editor-fold>
                 actualEffortLabel = new Label(MyDate.formatDurationShort(actualTotal, true).toString());
-                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
+//                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
+                actualEffortLabel.setFontIcon(Icons.myIconFont, Icons.iconActualFinalCust);
+
                 actualEffortLabel.setUIID("ListOfItemsActualEffort");
                 actualEffortLabel.setGap(GAP_LABEL_ICON);
 
@@ -2746,7 +2768,8 @@ public class ScreenListOfItems extends MyForm {
         } else { //if task not done, show Actual in details
             if (actualTotal != 0 && showInDetails) {
                 actualEffortLabel = new Label(MyDate.formatDurationShort(actualTotal, true).toString());
-                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
+//                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
+                actualEffortLabel.setFontIcon(Icons.myIconFont, Icons.iconActualCurrentCust);
                 actualEffortLabel.setUIID("ListOfItemsActualEffort");
                 actualEffortLabel.setGap(GAP_LABEL_ICON);
                 southDetailsContainer.add(actualEffortLabel);
@@ -2809,7 +2832,8 @@ public class ScreenListOfItems extends MyForm {
                     && !(remainingEffort == Item.getRemainingDefaultValue() && MyPrefs.itemListHideRemainingWhenDefaultValue.getBoolean())) {
 //                    east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
                 remainingEffortLabel = new Label(MyDate.formatDurationShort(remainingEffort, true), "ListOfItemsRemaining");
-                remainingEffortLabel.setMaterialIcon(Icons.iconRemainingEffort);
+//                remainingEffortLabel.setMaterialIcon(Icons.iconRemainingEffort);
+                remainingEffortLabel.setFontIcon(Icons.myIconFont, Icons.iconRemainingCust);
                 remainingEffortLabel.setGap(GAP_LABEL_ICON - 3);
                 if (Config.TEST) {
                     remainingEffortLabel.setName("Remaining");
@@ -3198,7 +3222,8 @@ public class ScreenListOfItems extends MyForm {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            effortEstimateLabel = new Label("E:" + MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
             effortEstimateLabel = new Label("E" + MyDate.formatDurationShort(item.getEstimateTotal()), "ItemEffortEstimateLabel");
-            effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+//            effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+            effortEstimateLabel.setFontIcon(Icons.myIconFont, Icons.iconEstimateCust);
             effortEstimateLabel.setGap(GAP_LABEL_ICON);
             if (false) { //TODO!!! show once there is a decent Estimate symbol
                 effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);

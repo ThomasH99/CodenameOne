@@ -380,12 +380,12 @@ public class AlarmHandler {
     public void snoozeAlarm(ExpiredAlarm expiredAlarm, Date snoozeExpireTime) {
 //        AlarmType type = AlarmType.getTypeContainedInStr(notificationId);
 //        String objId = AlarmType.getObjectIdStrWithoutTypeStr(notificationId, type);
-        Item item = DAO.getInstance().fetchItem(expiredAlarm.objectId);
+        Item item = DAO.getInstance().fetchItem(expiredAlarm.guid);
         expiredAlarms.remove(expiredAlarm);
         expiredAlarmSave();
-        notificationList.removeAlarmAndRepeatAlarm(expiredAlarm.objectId, expiredAlarm.type); //on snooze, remove any still active alarms of the same type as the snoozed one
+        notificationList.removeAlarmAndRepeatAlarm(expiredAlarm.guid, expiredAlarm.type); //on snooze, remove any still active alarms of the same type as the snoozed one
 //        notificationList.snoozeAlarm(notificationId, snoozeExpireTime, item.makeNotificationTitleText(type), item.makeNotificationBodyText(type));
-        notificationList.addAlarmAndRepeat(expiredAlarm.objectId, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type), item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
+        notificationList.addAlarmAndRepeat(expiredAlarm.guid, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type), item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
 //        notificationList.save();
         refreshInAppTimerAndSaveNotificationList();
         //save snooze time
@@ -454,7 +454,7 @@ public class AlarmHandler {
         while (it.hasNext()) {
             ExpiredAlarm expiredAlarm = it.next();
 //            if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
-            if (item.getGuid().equals(expiredAlarm.objectId)) {
+            if (item.getGuid().equals(expiredAlarm.guid)) {
 //                expiredAlarms.remove(expiredAlarm);
                 it.remove();
             }
@@ -473,7 +473,7 @@ public class AlarmHandler {
             while (it.hasNext()) {
                 ExpiredAlarm expiredAlarm = it.next();
 //                if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
-                if (item.getGuid().equals(expiredAlarm.objectId)) {
+                if (item.getGuid().equals(expiredAlarm.guid)) {
                     if (((expiredAlarm.type == AlarmType.notification || expiredAlarm.type == AlarmType.snoozedNotif) && normalAlarmUpdatedToFuture)
                             || ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.snoozedWaiting) && waitingAlarmUpdatedToFuture)) {
                         it.remove();

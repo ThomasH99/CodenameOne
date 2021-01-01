@@ -156,13 +156,13 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
     }
 
 //    @Override
-    public Object getValueXXX() {
-        if (inputValidated) {
-            return super.getValue();
-        } else {
-            return null;
-        }
-    }
+//    public Object getValueXXX() {
+//        if (inputValidated) {
+//            return super.getValue();
+//        } else {
+//            return null;
+//        }
+//    }
 
     @Override
     public Date getDate() {

@@ -947,6 +947,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String SOURCE_HELP = "Shows the task was copied from. E.g. for tasks created using templates, automatically repeating tasks or copy/paste. Can be useful for example to find all instances of a given template. "; //Template or Task that this one is a copy of, "Task copy of"
     final static String OBJECT_ID = "Task Id"; //"Reference"; //"Id"; //"Unique id"
     final static String OBJECT_ID_HELP = "An internal unique identifier. This may be useful if contacting support"; //"Unique id"
+    final static String OBJECT_GUID = "Task Guid"; //"Reference"; //"Id"; //"Unique id"
+    final static String OBJECT_GUID_HELP = "An internal unique identifier. This may be useful if contacting support"; //"Unique id"
     final static String STARRED = "Starred"; //"Unique id"
     final static String STARRED_HELP = "Tasks can be marked with a Star to emphasize them**"; //"Unique id"
     final static String TEMPLATE = "Template";
@@ -995,7 +997,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_OWNER_LIST = "ownerList";
     final static String PARSE_OWNER_ITEM = "ownerItem";
     final static String PARSE_OWNER_TEMPLATE_LIST = "templateList"; //TODO!!!!! change to ownerTemplate (before production version)
-    final static String PARSE_OWNER_CATEGORY = "ownerCategory";
+//    final static String PARSE_OWNER_CATEGORY = "ownerCategory";
     final static String PARSE_TIMER_STARTED = "timerStart";
     final static String PARSE_TIMER_PAUSED = "timerPaused";
     final static String PARSE_INTERRUPTED_TASK = "taskInterrupted"; //for an interrupt task: which task was interrupted (taken from Timer)
@@ -1013,7 +1015,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_WORKSLOTS = "workslots";
     final static String PARSE_RESTART_TIMER = "restartTimer"; //should the Timer be re-started from first element if the currently timed is no longer in the list?
     final static String PARSE_INHERIT_ENABLED = "inherit"; //should this task inherit values from its owner?
-    final static String PARSE_SUBTASKS_INHERIT = "subtasksInherit"; //should this project push inherited values subtasks? (used to block default inheritance)
+//    final static String PARSE_SUBTASKS_INHERIT = "subtasksInherit"; //should this project push inherited values subtasks? (used to block default inheritance)
     final static String PARSE_EDITED_DATE = "edited"; //should this project push inherited values subtasks? (used to block default inheritance)
 //    final static String PARSE_FINISH_TIME = "finishTimexx"; //NOT a parse field, just used to store the field with
 //    final static String PARSE_ = "";
@@ -1937,7 +1939,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
 
             //SOURCE OF COPY
-            if (false&&!defRestoreLocallySavedValues) { //since this is the originator of the values in the copy, link to that instead (possible to trace back to very first originator if needed, but actual originator would be lost if using the original originator)
+            if (false && !defRestoreLocallySavedValues) { //since this is the originator of the values in the copy, link to that instead (possible to trace back to very first originator if needed, but actual originator would be lost if using the original originator)
                 destination.setSource(this);
             } else {
                 if (defRestoreLocallySavedValues) {
@@ -2324,44 +2326,45 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
 //    @Override
-    public int compareToXXX(IComparable ic, int compareOn) {
-//    public int compareTox(IComparable ic, Vector compareOnVector) {
-//        int compareOn = (byte)((Integer)compareOnVector.elementAt(0)).intValue();
-        if (ic instanceof Item) {
-            Item c = (Item) ic;
-            switch (compareOn) {
-                case Item.COMPARE_DESCRIPTION:
-                    //TOTO: comparing on multiple fields is same as comparing on a single, bigger, key
-                    //TODO: implement comparing mulitple fields, e.g. if compare for left field is EQUAL, then return compare value on right field
-//                    return getDescription().compareTo(c.getDescription());
-                    return getText().compareTo(c.getText());
-                case Item.COMPARE_COMPLETED:
-                    return isDone() ? (c.isDone() ? 0 : 1) : (c.isDone() ? -1 : 0); // done < not done
-                case Item.COMPARE_COMPLETED_DATE:
-//                    return compareLong(getCompletedDate(), c.getCompletedDate());
-                    return compareDate(getCompletedDate(), c.getCompletedDate());
-                case Item.COMPARE_CREATED_DATE:
-                    return compareLong(getCreatedAt().getTime(), c.getCreatedAt().getTime());
-                case Item.COMPARE_DUE_DATE:
-                    return compareDate(getDueDate(), c.getDueDate());
-                case Item.COMPARE_HIDE_UNTIL_DATE:
-                    return compareLong(getHideUntilDateD().getTime(), c.getHideUntilDateD().getTime());
-                case Item.COMPARE_ALARM_DATE:
-                    return compareLong(getAlarmDate().getTime(), c.getAlarmDate().getTime());
-                case Item.COMPARE_EFFORTESTIMATE:
-                    return compareLong(getRemainingTotal(), c.getRemainingTotal());
-                case Item.COMPARE_ACTUALEFFORT:
-                    return compareLong(getActualTotal(), c.getActualTotal());
-                case Item.COMPARE_LASTMOD_DATE:
-                    return compareLong(getLastModifiedDate(), c.getLastModifiedDate());
-                case Item.COMPARE_PRIORITY:
-                    return compareInt(getPriority(), c.getPriority());
-                default:
-            }
-        }
-        return 0;
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public int compareToXXX(IComparable ic, int compareOn) {
+////    public int compareTox(IComparable ic, Vector compareOnVector) {
+////        int compareOn = (byte)((Integer)compareOnVector.elementAt(0)).intValue();
+//        if (ic instanceof Item) {
+//            Item c = (Item) ic;
+//            switch (compareOn) {
+//                case Item.COMPARE_DESCRIPTION:
+//                    //TOTO: comparing on multiple fields is same as comparing on a single, bigger, key
+//                    //TODO: implement comparing mulitple fields, e.g. if compare for left field is EQUAL, then return compare value on right field
+////                    return getDescription().compareTo(c.getDescription());
+//                    return getText().compareTo(c.getText());
+//                case Item.COMPARE_COMPLETED:
+//                    return isDone() ? (c.isDone() ? 0 : 1) : (c.isDone() ? -1 : 0); // done < not done
+//                case Item.COMPARE_COMPLETED_DATE:
+////                    return compareLong(getCompletedDate(), c.getCompletedDate());
+//                    return compareDate(getCompletedDate(), c.getCompletedDate());
+//                case Item.COMPARE_CREATED_DATE:
+//                    return compareLong(getCreatedAt().getTime(), c.getCreatedAt().getTime());
+//                case Item.COMPARE_DUE_DATE:
+//                    return compareDate(getDueDate(), c.getDueDate());
+//                case Item.COMPARE_HIDE_UNTIL_DATE:
+//                    return compareLong(getHideUntilDateD().getTime(), c.getHideUntilDateD().getTime());
+//                case Item.COMPARE_ALARM_DATE:
+//                    return compareLong(getAlarmDate().getTime(), c.getAlarmDate().getTime());
+//                case Item.COMPARE_EFFORTESTIMATE:
+//                    return compareLong(getRemainingTotal(), c.getRemainingTotal());
+//                case Item.COMPARE_ACTUALEFFORT:
+//                    return compareLong(getActualTotal(), c.getActualTotal());
+//                case Item.COMPARE_LASTMOD_DATE:
+//                    return compareLong(getLastModifiedDate(), c.getLastModifiedDate());
+//                case Item.COMPARE_PRIORITY:
+//                    return compareInt(getPriority(), c.getPriority());
+//                default:
+//            }
+//        }
+//        return 0;
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public String typeString() {
 //        return BaseItemTypes.toString(typeId);
@@ -5488,13 +5491,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
 //</editor-fold>
 //    protected void updateStatusOnSubtaskStatusChange(Item subtask, ItemStatus oldStatus, ItemStatus newStatus, Date now) {
-    protected void updateStatusOnSubtaskStatusChange(Date now) {
-        ItemStatus subtaskStatus = getStatusFromSubtasksN();
-        setStatus(subtaskStatus, false, true, true, now);
-    }
+//    protected void updateStatusOnSubtaskStatusChangeXXX(Date now) {
+//        ItemStatus subtaskStatus = getStatusFromSubtasksN();
+//        setStatus(subtaskStatus, false, true, true, now);
+//    }
 
     protected void updateStatusOnSubtaskStatusChange() {
-        updateStatusOnSubtaskStatusChange(new MyDate(MyDate.currentTimeMillis()));
+        ItemStatus subtaskStatus = getStatusFromSubtasksN();
+        setStatus(subtaskStatus, false, true, true, new MyDate(), true);
+//        updateStatusOnSubtaskStatusChangeXXX(new MyDate(MyDate.currentTimeMillis()));
     }
 
     /**
@@ -5506,11 +5511,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     @Override
     public void setStatus(ItemStatus newStatus) {
-        setStatus(newStatus, true, true, true, new MyDate());
+        setStatus(newStatus, true, true, true, new MyDate(), true);
     }
 
     public void setStatus(ItemStatus newStatus, boolean updateDependentFields) {
-        setStatus(newStatus, true, true, updateDependentFields, new MyDate());
+        setStatus(newStatus, true, true, updateDependentFields, new MyDate(), false);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -5632,6 +5637,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public void setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now) {
+        setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, now, false);
+    }
+
+    public void setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now,
+            boolean executeRepeat) {
         ItemStatus oldStatus = getStatusFromParse();
 
         ItemStatus newStatus = (status == ItemStatus.CREATED && getActualTotal() > 0) ? ItemStatus.ONGOING : status; //convert CREATED to ONGOING if actual effort is recorded
@@ -5687,14 +5697,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             updateFieldsDependingOnStatus(this, oldStatus, newStatus, now);
         }
 
-        if (getRepeatRuleN() != null && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.CANCELLED)
+        if (getRepeatRuleN() != null
+                && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.CANCELLED)
                 && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED)) {
 //            getRepeatRule().updateItemsOnDoneCancelOrDelete(this);
             Log.p("line 5177: opsUpdateRepeatRule.add(() -> getRepeatRuleN().updateItemsOnDoneCancelOrDelete(this));");
             if (false) {
                 opsUpdateRepeatRule.add(() -> getRepeatRuleN().updateItemsOnDoneCancelOrDelete(this));
             } else {
-                getRepeatRuleN().setUpdatePending(true);
+                if (executeRepeat) {
+                    getRepeatRuleN().updateItemsOnDoneCancelOrDelete(this);
+                } else {
+                    getRepeatRuleN().setUpdatePending(true);
+                }
             }
         }
 
@@ -6389,12 +6404,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //
 //    }
 //</editor-fold>
-    public long getDueDateXXX() {
-//        return dueDate;
-//        Date date = getDate(PARSE_DUE_DATE);
-//        return (date == null) ? 0L : date.getTime();
-        return getDueDate().getTime();
-    }
+//    public long getDueDateXXX() {
+////        return dueDate;
+////        Date date = getDate(PARSE_DUE_DATE);
+////        return (date == null) ? 0L : date.getTime();
+//        return getDueDate().getTime();
+//    }
 
     private Date getDueDateDFromParse() {
         Date date = getDate(PARSE_DUE_DATE);
@@ -8451,53 +8466,54 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return all modified categories (for which Item was added or removed) for
      * example to save them all
      */
-    public List<Category> updateCategoriesOLD(List<Category> categories, boolean onlyAddNewCatsDontRemoveAny) {
-//        if (locallyEditedCategories == null || locallyEditedCategories.size() == 0) {
-        if (categories == null) {// || locallyEditedCategories.isEmpty()) {
-            return new ArrayList();
-        }
-//        Item item = this;
-        if (isTemplate()) { //for a template, we don't add it to any categories, just save the final set of categories
-            setCategoriesInParse(categories); //set the item's categories as the old ones + newly added ones
-            return new ArrayList();
-        } else {
-//        Set<Category> addedCats = new HashSet(locallyEditedCategories);//make a copy of the edited set of categories
-            List<Category> addedCats = new ArrayList(categories);//make a copy of the edited set of categories
-            addedCats.removeAll(getCategories()); //remove all that were already set of the item to get only the newly added categories
-            for (Category cat : addedCats) {
-//            cat.addItemAtIndex(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : cat.getSize());
-                cat.addItemToCategory(this, false);
-//            DAO.getInstance().saveInBackground((ParseObject) cat);
-            }
-
-            List<Category> unSelectedCats = new ArrayList();
-            if (!onlyAddNewCatsDontRemoveAny) {
-//            Set<Category> unSelectedCats = new HashSet(item.getCategories());
-//            unSelectedCats = new ArrayList(Arrays.asList(item.getCategories()));
-                unSelectedCats.addAll(getCategories());
-                unSelectedCats.removeAll(categories); //remove the categories that are still selected after editing. Those remaining in unSelectedCats have been unselected by user and should be removed
-                for (Category cat : unSelectedCats) {
-//                cat.remove(item);
-                    cat.removeItemFromCategory(this, false);
-//                DAO.getInstance().saveInBackground((ParseObject) cat);
-                }
-                setCategoriesInParse(new ArrayList(categories)); //set the item's categories as the locally edited ones
-            } else { //onlyAddNewCatsDontRemoveAny
-                //only set the item's categories to the old ones + the newly added
-                ArrayList<Category> existingCatsPlusAdded = new ArrayList(getCategories());
-//            existingCatsPlusAdded.addAll(addedCats);
-                for (Category cat : addedCats) {
-                    if (!existingCatsPlusAdded.contains(cat)) {
-                        existingCatsPlusAdded.add(cat);
-                    }
-                }
-                setCategoriesInParse(existingCatsPlusAdded); //set the item's categories as the old ones + newly added ones
-            }
-            addedCats.addAll(unSelectedCats);
-            return addedCats;
-        }
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public List<Category> updateCategoriesOLD(List<Category> categories, boolean onlyAddNewCatsDontRemoveAny) {
+////        if (locallyEditedCategories == null || locallyEditedCategories.size() == 0) {
+//        if (categories == null) {// || locallyEditedCategories.isEmpty()) {
+//            return new ArrayList();
+//        }
+////        Item item = this;
+//        if (isTemplate()) { //for a template, we don't add it to any categories, just save the final set of categories
+//            setCategoriesInParse(categories); //set the item's categories as the old ones + newly added ones
+//            return new ArrayList();
+//        } else {
+////        Set<Category> addedCats = new HashSet(locallyEditedCategories);//make a copy of the edited set of categories
+//            List<Category> addedCats = new ArrayList(categories);//make a copy of the edited set of categories
+//            addedCats.removeAll(getCategories()); //remove all that were already set of the item to get only the newly added categories
+//            for (Category cat : addedCats) {
+////            cat.addItemAtIndex(item, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : cat.getSize());
+//                cat.addItemToCategory(this, false);
+////            DAO.getInstance().saveInBackground((ParseObject) cat);
+//            }
+//
+//            List<Category> unSelectedCats = new ArrayList();
+//            if (!onlyAddNewCatsDontRemoveAny) {
+////            Set<Category> unSelectedCats = new HashSet(item.getCategories());
+////            unSelectedCats = new ArrayList(Arrays.asList(item.getCategories()));
+//                unSelectedCats.addAll(getCategories());
+//                unSelectedCats.removeAll(categories); //remove the categories that are still selected after editing. Those remaining in unSelectedCats have been unselected by user and should be removed
+//                for (Category cat : unSelectedCats) {
+////                cat.remove(item);
+//                    cat.removeItemFromCategory(this, false);
+////                DAO.getInstance().saveInBackground((ParseObject) cat);
+//                }
+//                setCategoriesInParse(new ArrayList(categories)); //set the item's categories as the locally edited ones
+//            } else { //onlyAddNewCatsDontRemoveAny
+//                //only set the item's categories to the old ones + the newly added
+//                ArrayList<Category> existingCatsPlusAdded = new ArrayList(getCategories());
+////            existingCatsPlusAdded.addAll(addedCats);
+//                for (Category cat : addedCats) {
+//                    if (!existingCatsPlusAdded.contains(cat)) {
+//                        existingCatsPlusAdded.add(cat);
+//                    }
+//                }
+//                setCategoriesInParse(existingCatsPlusAdded); //set the item's categories as the old ones + newly added ones
+//            }
+//            addedCats.addAll(unSelectedCats);
+//            return addedCats;
+//        }
+//    }
+//</editor-fold>
     public List<Category> updateCategories(List<Category> categories, boolean onlyAddNewCatsDontRemoveAny) {
         if (categories == null) {
             return new ArrayList();
@@ -9760,13 +9776,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    public void updateOwnerWithValuesDerivedFromSubtasksXXX() {
-        //3. Once inherited values are pushed to subtasks and repeatRules are updated, update derived values upwards in the ownerItem hierarchy
-        Item ownerItem = getOwnerItem();
-        if (ownerItem != null) {
-            ownerItem.updateAllValuesDerivedFromSubtasks();
-        }
-    }
+//    public void updateOwnerWithValuesDerivedFromSubtasksXXX() {
+//        //3. Once inherited values are pushed to subtasks and repeatRules are updated, update derived values upwards in the ownerItem hierarchy
+//        Item ownerItem = getOwnerItem();
+//        if (ownerItem != null) {
+//            ownerItem.updateAllValuesDerivedFromSubtasks();
+//        }
+//    }
 
 //    public void updateBeforeEditSubtasks() {
 //        updateSubtasks();
@@ -9778,7 +9794,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (false) {
 //            updateSubtasks();
 //        }
-        updateRepeatRule();
+        if(false)updateRepeatRule();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        updateOwnerWithValuesDerivedFromSubtasks();
 //        if (false) {
@@ -11669,55 +11685,56 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
 //public void setNewFieldValue(Item newItem, String field, Item itemBefore, Item itemAfter) {
-    public void setNewFieldValueXXX(String fieldParseId, Object objectBefore, Object objectAfter) {
-        Item newItem = (Item) this;
-        Item itemBefore = (Item) objectBefore;
-        Item itemAfter = (Item) objectAfter;
-        switch (fieldParseId) {
-            case Item.PARSE_CHALLENGE:
-                newItem.setChallenge(itemBefore.getChallengeN()); //UI: same prio as item just before
-                break;
-            case Item.PARSE_PRIORITY:
-//            int diffPrio = itemAfter.getPriority() -itemBefore.getPriority() ;
-//            newItem.setPriority(itemBefore.getPriority()+diffPrio/2);
-                newItem.setPriority(itemBefore.getPriority()); //UI: same prio as item just before
-                break;
-            case Item.PARSE_DREAD_FUN_VALUE:
-                newItem.setDreadFunValue(itemBefore.getDreadFunValueN()); //UI: same prio as item just before
-                break;
-            case Item.PARSE_IMPORTANCE:
-                newItem.setImportance(itemBefore.getImportanceN()); //UI: same prio as item just before
-                break;
-            case Item.PARSE_URGENCY:
-                newItem.setUrgency(itemBefore.getUrgencyN()); //UI: same prio as item just before
-                break;
-            case Item.PARSE_EARNED_VALUE:
-                newItem.setEarnedValue(itemBefore.getEarnedValue()); //UI: same prio as item just before
-                break;
-            case Item.PARSE_EFFORT_ESTIMATE:
-                newItem.setEstimateForTask(itemBefore.getEstimateTotal()); //UI: same prio as item just before
-                break;
-            case Item.PARSE_ACTUAL_EFFORT:
-                newItem.setActualForTaskItself(itemBefore.getActualTotal(), false); //UI: same prio as item just before
-                break;
-            case Item.PARSE_REMAINING_EFFORT_TOTAL:
-                newItem.setRemainingForTask(itemBefore.getRemainingTotal(), false); //UI: same prio as item just before
-                break;
-            case Item.PARSE_INTERRUPTED_TASK:
-                newItem.setInteruptOrInstantTask(itemBefore.isInteruptOrInstantTask()); //UI: same prio as item just before
-                break;
-            case Item.PARSE_STARRED:
-                newItem.setStarred(itemBefore.isStarred()); //UI: same prio as item just before
-                break;
-            case Item.PARSE_STATUS:
-                newItem.setStatus(itemBefore.getStatus()); //UI: same prio as item just before
-                break;
-            case Item.PARSE_ALARM_DATE: //TODO!!! do same for all date fields
-                newItem.setAlarmDate(itemBefore.getAlarmDate()); //UI: same prio as item just before
-                break;
-        }
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void setNewFieldValueXXX(String fieldParseId, Object objectBefore, Object objectAfter) {
+//        Item newItem = (Item) this;
+//        Item itemBefore = (Item) objectBefore;
+//        Item itemAfter = (Item) objectAfter;
+//        switch (fieldParseId) {
+//            case Item.PARSE_CHALLENGE:
+//                newItem.setChallenge(itemBefore.getChallengeN()); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_PRIORITY:
+////            int diffPrio = itemAfter.getPriority() -itemBefore.getPriority() ;
+////            newItem.setPriority(itemBefore.getPriority()+diffPrio/2);
+//                newItem.setPriority(itemBefore.getPriority()); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_DREAD_FUN_VALUE:
+//                newItem.setDreadFunValue(itemBefore.getDreadFunValueN()); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_IMPORTANCE:
+//                newItem.setImportance(itemBefore.getImportanceN()); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_URGENCY:
+//                newItem.setUrgency(itemBefore.getUrgencyN()); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_EARNED_VALUE:
+//                newItem.setEarnedValue(itemBefore.getEarnedValue()); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_EFFORT_ESTIMATE:
+//                newItem.setEstimateForTask(itemBefore.getEstimateTotal()); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_ACTUAL_EFFORT:
+//                newItem.setActualForTaskItself(itemBefore.getActualTotal(), false); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_REMAINING_EFFORT_TOTAL:
+//                newItem.setRemainingForTask(itemBefore.getRemainingTotal(), false); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_INTERRUPTED_TASK:
+//                newItem.setInteruptOrInstantTask(itemBefore.isInteruptOrInstantTask()); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_STARRED:
+//                newItem.setStarred(itemBefore.isStarred()); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_STATUS:
+//                newItem.setStatus(itemBefore.getStatus()); //UI: same prio as item just before
+//                break;
+//            case Item.PARSE_ALARM_DATE: //TODO!!! do same for all date fields
+//                newItem.setAlarmDate(itemBefore.getAlarmDate()); //UI: same prio as item just before
+//                break;
+//        }
+//    }
+//</editor-fold>
     /**
      * NB! default filter will not have inherited true
      *
@@ -11733,22 +11750,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @param filterSortDef
      */
-    public void setFilterSortDefOLD(FilterSortDef filterSortDef) {
-//        if (filterSortDef != null && !filterSortDef.equals(getDefaultFilterSortDef())) { //only save filter for subtasks if modified!
-        if (filterSortDef != null //if filter is deleted 
-                && !filterSortDef.equals(getDefaultFilterSortDef()) //if new filter is 'just' default filter
-                && !isFilterSortDefInherited(filterSortDef)) { //or if filter is the same as the inherited filter (either edited back to same value or just not changed)
-//            if (!isNoSave())  //otherwise temporary filters for e.g. Overdue will be saved //NO, now Overdue will be a saved (temporarily) list, but other lists (Statistics?) may still be temporary
-//            if (filterSortDef.getObjectIdP() == null && !isNoSave()) {
-////                DAO.getInstance().saveInBackground(filterSortDef); //NOW done in DAO.save...
+//    public void setFilterSortDefOLD(FilterSortDef filterSortDef) {
+////        if (filterSortDef != null && !filterSortDef.equals(getDefaultFilterSortDef())) { //only save filter for subtasks if modified!
+//        if (filterSortDef != null //if filter is deleted 
+//                && !filterSortDef.equals(getDefaultFilterSortDef()) //if new filter is 'just' default filter
+//                && !isFilterSortDefInherited(filterSortDef)) { //or if filter is the same as the inherited filter (either edited back to same value or just not changed)
+////            if (!isNoSave())  //otherwise temporary filters for e.g. Overdue will be saved //NO, now Overdue will be a saved (temporarily) list, but other lists (Statistics?) may still be temporary
+////            if (filterSortDef.getObjectIdP() == null && !isNoSave()) {
+//////                DAO.getInstance().saveInBackground(filterSortDef); //NOW done in DAO.save...
+////            }
+//            if (!Objects.equals(getFilterSortDefN(), filterSortDef)) {
+//                put(PARSE_FILTER_SORT_DEF, filterSortDef);
 //            }
-            if (!Objects.equals(getFilterSortDefN(), filterSortDef)) {
-                put(PARSE_FILTER_SORT_DEF, filterSortDef);
-            }
-        } else {
-            remove(PARSE_FILTER_SORT_DEF);
-        }
-    }
+//        } else {
+//            remove(PARSE_FILTER_SORT_DEF);
+//        }
+//    }
 
     @Override
     public void setFilterSortDef(FilterSortDef filterSortDef) {
