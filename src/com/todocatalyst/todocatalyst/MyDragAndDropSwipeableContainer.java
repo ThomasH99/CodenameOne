@@ -216,7 +216,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //            DAO.getInstance().saveNew(false, (ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
 //            DAO.getInstance().saveNew((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
 //            DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
-            DAO.getInstance().saveToParseNow((ParseObject) oldOwner,  (ParseObject) itemOrItemList); //save triggered after drop operation
+            DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
         }
     }
 
@@ -913,13 +913,11 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //        }
 //    }
 //</editor-fold>
-
     protected static MyDragAndDropSwipeableContainer findMyDDContAboveHoldingCategory(MyDragAndDropSwipeableContainer comp) {
         Component c = comp;
         while (c != null) {
             if (c instanceof MyDragAndDropSwipeableContainer
-                    && ((((MyDragAndDropSwipeableContainer) c).getDragAndDropObject() instanceof Category)
-//                    || (((MyDragAndDropSwipeableContainer) c).getDragAndDropCategory() instanceof Category) //this would wrongfully return the MyDDCont of an expanded Item belonging to the Category
+                    && ((((MyDragAndDropSwipeableContainer) c).getDragAndDropObject() instanceof Category) //                    || (((MyDragAndDropSwipeableContainer) c).getDragAndDropCategory() instanceof Category) //this would wrongfully return the MyDDCont of an expanded Item belonging to the Category
                     )) {
                 return ((MyDragAndDropSwipeableContainer) c);
             } else {
@@ -3998,10 +3996,15 @@ before getting to here, we've already covered the following cases where both bef
 //                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //doesn't work since newDrop may not have been initiazed
 //                        }
 //</editor-fold>
-                        ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //doesn't work since newDrop may not have been initiazed
+                        Form form = getComponentForm();
+                        if (form instanceof MyForm) { //error where form may be null - done to reduce risk of crashing on device
+                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //doesn't work since newDrop may not have been initiazed
 //                            super.drop(draggedMyDDCont, x, y); //Container.drop implements the first quick move of the container itself
-                        super.drop(this, x, y); //Container.drop implements the first quick move of the container itself
-                        ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
+                            super.drop(this, x, y); //Container.drop implements the first quick move of the container itself
+                            ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
+                        } else {
+                            super.drop(this, x, y); //Container.drop implements the first quick move of the container itself
+                        }
                     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    protected Image getDragImageXXX() {
@@ -4306,7 +4309,6 @@ before getting to here, we've already covered the following cases where both bef
 //        ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private boolean dropItemInCategoryViewXXX(ItemAndListCommonInterface before, ItemAndListCommonInterface after, ItemAndListCommonInterface dragged,

@@ -213,8 +213,7 @@ public class ScreenMain extends MyForm {
                             //                            () -> DAO.getInstance().getNamedItemList(DAO.OVERDUE, SCREEN_OVERDUE_TITLE, filterSort),
                             () -> DAO.getInstance().getNamedItemList(DAO.OVERDUE, SCREEN_OVERDUE_TITLE,
                                     DAO.getInstance().getSystemFilterSortFromParse(OVERDUE.name(), ItemList.getSystemDefaultFilter(OVERDUE))),
-                            ScreenMain.this, (i) -> {
-                            },
+                            ScreenMain.this, null,
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_WORK_TIME
                     ).show();
                     //                        | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
@@ -231,9 +230,8 @@ public class ScreenMain extends MyForm {
                             //                            () -> new ItemList(SCREEN_TODAY_TITLE, DAO.getInstance().getToday(), filterSort, true),
                             //                            () -> new ItemList(SCREEN_TODAY_TITLE, DAO.getInstance().getNamedItemList(DAO.TODAY, SCREEN_TODAY_TITLE), filterSort, true),
                             () -> DAO.getInstance().getNamedItemList(DAO.TODAY, SCREEN_TODAY_TITLE, null),
-                            ScreenMain.this, (i) -> {
+                            ScreenMain.this, null,
 //                new ScreenListOfItems(SCREEN_TODAY_TITLE, new ItemList(DAO.getInstance().getTodayDueAndOrWaitingOrWorkSlotsItems(false, false), true), ScreenMain.this, (i) -> {
-                            },
                             //                        ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP
                             //                        new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS, false), //FilterSortDef.FILTER_SHOW_DONE_TASKS
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON
@@ -257,8 +255,7 @@ public class ScreenMain extends MyForm {
                             //                            () -> DAO.getInstance().getNamedItemList(DAO.NEXT, SCREEN_NEXT_TITLE, filterSort),
                             () -> DAO.getInstance().getNamedItemList(DAO.NEXT, SCREEN_NEXT_TITLE,
                                     DAO.getInstance().getSystemFilterSortFromParse(NEXT.name(), ItemList.getSystemDefaultFilter(NEXT))),
-                            ScreenMain.this, (i) -> {
-                            },
+                            ScreenMain.this, null,
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                             //                        | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
                             | ScreenListOfItems.OPTION_NO_WORK_TIME
@@ -276,9 +273,8 @@ public class ScreenMain extends MyForm {
 //        );
         Command inbox = MyReplayCommand.create(SCREEN_INBOX_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainInbox, (e) -> {
 //                    new ScreenListOfItems(SCREEN_INBOX_TITLE, () -> new ItemList(SCREEN_INBOX_TITLE, Inbox.getInstance(), true), ScreenMain.this, (i) -> {
-                    MyForm myForm = new ScreenListOfItems(INBOX, "No tasks in your inbox", () -> Inbox.getInstance(), ScreenMain.this, (i) -> {
-//                    }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
-                    }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES);
+                    MyForm myForm = new ScreenListOfItems(INBOX, "No tasks in your inbox", () -> Inbox.getInstance(), ScreenMain.this, null,
+                            ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES);
 //                    myForm.setShowIfEmptyList("Your Inbox is empty. Add tasks using (+)"); //NO, show inline cont in Inbox
                     myForm.show();
                 }
@@ -290,8 +286,7 @@ public class ScreenMain extends MyForm {
 //                new ScreenListOfItemLists("Lists", new ItemList(DAO.getInstance().getAllItemLists()), ScreenMain.this, (i)->{}).show();                     //null: do nothing, lists are saved if edited
 //                new ScreenListOfItemLists(SCREEN_LISTS_TITLE, DAO.getInstance().getAllItemLists(), ScreenMain.this, (i) -> {
 //                    new ScreenListOfItemLists(SCREEN_LISTS_TITLE, DAO.getInstance().getItemListList(), ScreenMain.this, (i) -> {
-                    new ScreenListOfItemLists(SCREEN_LISTS_TITLE, ItemListList.getInstance(), ScreenMain.this, (i) -> {
-                    }).show();                     //null: do nothing, lists are saved if edited
+                    new ScreenListOfItemLists(SCREEN_LISTS_TITLE, ItemListList.getInstance(), ScreenMain.this, null).show();                     //null: do nothing, lists are saved if edited
                 }
         );
         makeAndAddButtons(lists, toolbar, cont, SCREEN_LISTS_HELP);
@@ -300,8 +295,7 @@ public class ScreenMain extends MyForm {
                 Icons.iconMainCategories, (e) -> {
 //                new ScreenListOfCategories("Categories", new ItemList(DAO.getInstance().getAllCategories()), ScreenMain.this, (i)->{}).show();
 //                new ScreenListOfCategories(DAO.getInstance().getAllCategories(), ScreenMain.this, (i)->{}).show();
-                    new ScreenListOfCategories(CategoryList.getInstance(), ScreenMain.this, (i) -> {
-                    }).show();
+                    new ScreenListOfCategories(CategoryList.getInstance(), ScreenMain.this, null).show();
                 }
         );
         makeAndAddButtons(categories, toolbar, cont, ScreenListOfCategories.SCREEN_HELP);
@@ -311,8 +305,7 @@ public class ScreenMain extends MyForm {
                         FilterSortDef allTasksSystemFilter = DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString(), FilterSortDef.getDefaultFilter());
                         new ScreenListOfItems(ALL_TASKS,
                                 () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(false, false, true, false, false), allTasksSystemFilter, true),
-                                ScreenMain.this, (i) -> {
-                                }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
+                                ScreenMain.this, null, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
                     }
             );
             makeAndAddButtons(allTasks, toolbar, cont, SCREEN_ALL_TASKS_HELP);
@@ -320,8 +313,7 @@ public class ScreenMain extends MyForm {
 
         Command projects = MyReplayCommand.create(SCREEN_PROJECTS_TITLE, Icons.iconMainProjects, (e) -> {
             MyForm myForm = new ScreenListOfItems(SCREEN_PROJECTS_TITLE, "No projects", () -> new ItemList(DAO.getInstance().getAllProjects()),
-                    ScreenMain.this, (i) -> {
-                    },
+                    ScreenMain.this, null,
                     ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES //| ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER //ScreenListOfItems.OPTION_NO_TIMER | 
                     | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
             );
@@ -359,8 +351,7 @@ public class ScreenMain extends MyForm {
         Command templates = MyReplayCommand.create(SCREEN_TEMPLATES_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainTemplates, (e) -> {
 //                new ScreenListOfItems("Templates", new ItemList(DAO.getInstance().getAllTemplates()), ScreenMain.this, (i) -> {}, null, false, true).show();
 //                    new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, DAO.getInstance().getTemplateList(), ScreenMain.this, (i) -> {
-                    new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, "No templates defined", () -> TemplateList.getInstance(), ScreenMain.this, (i) -> {
-                    }, ScreenListOfItems.OPTION_TEMPLATE_EDIT // | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
+                    new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, "No templates defined", () -> TemplateList.getInstance(), ScreenMain.this, null, ScreenListOfItems.OPTION_TEMPLATE_EDIT // | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
                     ).show();
 //                new ScreenListOfItems("Templates", new ItemList(DAO.getInstance().getAllTemplates()), ScreenMain.this, (i) -> {
 //                }).show();
@@ -403,8 +394,7 @@ public class ScreenMain extends MyForm {
             MyForm myForm = new ScreenListOfItems(COMPLETION_LOG, "No tasks completed the last " + MyPrefs.completionLogInterval.getInt() + " days",
                     //                    () -> DAO.getInstance().getNamedItemList(DAO.LOG, SCREEN_COMPLETION_LOG_TITLE, filterSort),
                     () -> DAO.getInstance().getNamedItemList(DAO.LOG, SCREEN_COMPLETION_LOG_TITLE, ItemList.getSystemDefaultFilter(COMPLETION_LOG)),
-                    ScreenMain.this, (i) -> {
-                    },
+                    ScreenMain.this, null,
                     ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                     | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
             );
@@ -422,8 +412,7 @@ public class ScreenMain extends MyForm {
             MyForm myForm = new ScreenListOfItems(CREATION_LOG, "No tasks created the last " + MyPrefs.creationLogInterval.getInt() + " days",
                     //                    () -> DAO.getInstance().getNamedItemList(DAO.DIARY, SCREEN_CREATION_LOG_TITLE, filterSort),
                     () -> DAO.getInstance().getNamedItemList(DAO.DIARY, SCREEN_CREATION_LOG_TITLE, ItemList.getSystemDefaultFilter(CREATION_LOG)),
-                    ScreenMain.this, (i) -> {
-                    },
+                    ScreenMain.this, null,
                     ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                     | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
             );
@@ -441,8 +430,7 @@ public class ScreenMain extends MyForm {
                             //                            () -> new ItemList(SCREEN_TOUCHED, DAO.getInstance().getNamedItemList(DAO.TOUCHED, SCREEN_TOUCHED), filterSort, true), 
                             //                            () -> DAO.getInstance().getNamedItemList(DAO.TOUCHED, SCREEN_TOUCHED, filterSort),
                             () -> DAO.getInstance().getNamedItemList(DAO.TOUCHED, SCREEN_TOUCHED, ItemList.getSystemDefaultFilter(TOUCHED)),
-                            ScreenMain.this, (i) -> {
-                            },
+                            ScreenMain.this, null,
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                             | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
                     );
@@ -456,8 +444,7 @@ public class ScreenMain extends MyForm {
             Command touched24h = MyReplayCommand.create(SCREEN_TOUCHED_24H/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainTouched, (e) -> {
                         FilterSortDef filterSort = new FilterSortDef(Item.PARSE_UPDATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false); //true => show most recent first
                         new ScreenListOfItems(SCREEN_TOUCHED_24H, "No tasks changed the last 24 hours", () -> new ItemList(SCREEN_TOUCHED_24H,
-                        DAO.getInstance().getTouched24hLog(), filterSort, true), ScreenMain.this, (i) -> {
-                        },
+                        DAO.getInstance().getTouched24hLog(), filterSort, true), ScreenMain.this, null,
                                 ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                                 | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
                         ).show();
@@ -470,16 +457,15 @@ public class ScreenMain extends MyForm {
             Command allTasksWithoutOwner = MyReplayCommand.create("Tasks without owner**"/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                         new ScreenListOfItems("Tasks without owner**",
                                 () -> new ItemList("Tasks without owner", DAO.getInstance().getAllItems(false, false, true, false), true),
-                                ScreenMain.this, (i) -> {
-                                }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
+                                ScreenMain.this, null, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
                     }
             );
             makeAndAddButtons(allTasksWithoutOwner, toolbar, cont, "**");
         }
 
         Command tutorial = MyReplayCommand.create(SCREEN_TUTORIAL/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainTutorial, (e) -> {
-                    new ScreenListOfItems(SCREEN_TUTORIAL, () -> new ItemList(SCREEN_TUTORIAL, DAO.getInstance().getAllItems(), true), ScreenMain.this, (i) -> {
-                    }, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
+                    new ScreenListOfItems(SCREEN_TUTORIAL, () -> new ItemList(SCREEN_TUTORIAL, DAO.getInstance().getAllItems(), true), ScreenMain.this, null, 
+                            ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
                 }
         );
         makeAndAddButtons(tutorial, toolbar, cont, SCREEN_TUTORIAL_HELP);

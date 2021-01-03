@@ -372,7 +372,9 @@ public class ScreenListOfItems extends MyForm {
 //        this.updateActionOnDone = () -> {
         addUpdateActionOnDone(() -> {
 //            this.itemListOrg = itemListFct.getUpdatedItemList(); //NO - WHY? Must set with edited subtask list
-            updateItemListOnDone.update(itemListOrItemOrg);
+            if (updateItemListOnDone != null) {
+                updateItemListOnDone.update2(itemListOrItemOrg);
+            }
             //always save edited element on exit
 //            DAO.getInstance().saveNew((ParseObject) itemListOrItemOrg);
 //            DAO.getInstance().saveNewTriggerUpdate();
@@ -412,8 +414,8 @@ public class ScreenListOfItems extends MyForm {
 //        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-"
 //                + (itemListOrg.getObjectIdP() != null ? itemListOrg.getObjectIdP() : "$NewItem$"), true); //use text for unsaved lists like Log/Diary
         previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-"
-//                + (itemListOrItemOrg.getObjectIdP() != null ? itemListOrItemOrg.getObjectIdP() : "$NewItem$"), true); //use text for unsaved lists like Log/Diary
-                +  itemListOrItemOrg.getGuid(), true); //use text for unsaved lists like Log/Diary
+                //                + (itemListOrItemOrg.getObjectIdP() != null ? itemListOrItemOrg.getObjectIdP() : "$NewItem$"), true); //use text for unsaved lists like Log/Diary
+                + itemListOrItemOrg.getGuid(), true); //use text for unsaved lists like Log/Diary
         String expandedObjectsFileName = makeUniqueIdForExpandedObjects(itemListOrItemOrg, "$NoListName");
 //        String expandedObjectsFileName = itemListOrg.isNoSave() ? "" : (getUniqueFormId() + (itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
         if (expandedObjectsFileName != null) {
@@ -734,24 +736,24 @@ public class ScreenListOfItems extends MyForm {
 //        setTitleAnimation(scrollableContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
 //</editor-fold>
     }
-    
-//    private void addAndSaveSubtask(ItemAndListCommonInterface itemListOrItemOrg, ItemAndListCommonInterface newTask) {
-    private void addAndSaveSubtaskXXX( Item newTask) {
-        ItemAndListCommonInterface itemListOrItemOrg=newTask.getOwner();
-        if(itemListOrItemOrg.isUnsaved()) {
-            newTask.setOwner(null,false); //remove ref to unsaved 
-            DAO.getInstance().saveToParseNow( newTask); //must save item since adding it to itemListOrg changes its owner
-            newTask.setOwner(itemListOrItemOrg,false);
-        } else {
-            itemListOrItemOrg.addToList(newTask, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-            DAO.getInstance().saveToParseNow((ParseObject) newTask); //must save item since adding it to itemListOrg changes its owner
-        }
-//                        DAO.getInstance().saveToParseNow((ParseObject) newTemplate); //must save item since adding it to itemListOrg changes its owner
-//.addToList(newTemplate, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
-//                        DAO.getInstance().saveToParseNow((ParseObject) newTemplate); //must save item since adding it to itemListOrg changes its owner
 
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+////    private void addAndSaveSubtask(ItemAndListCommonInterface itemListOrItemOrg, ItemAndListCommonInterface newTask) {
+//    private void addAndSaveSubtaskXXX(Item newTask) {
+//        ItemAndListCommonInterface itemListOrItemOrg = newTask.getOwner();
+//        if (itemListOrItemOrg.isUnsaved()) {
+//            newTask.setOwner(null, false); //remove ref to unsaved
+//            DAO.getInstance().saveToParseNow(newTask); //must save item since adding it to itemListOrg changes its owner
+//            newTask.setOwner(itemListOrItemOrg, false);
+//        } else {
+//            itemListOrItemOrg.addToList(newTask, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+//            DAO.getInstance().saveToParseNow((ParseObject) newTask); //must save item since adding it to itemListOrg changes its owner
+//        }
+////                        DAO.getInstance().saveToParseNow((ParseObject) newTemplate); //must save item since adding it to itemListOrg changes its owner
+////.addToList(newTemplate, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
+////                        DAO.getInstance().saveToParseNow((ParseObject) newTemplate); //must save item since adding it to itemListOrg changes its owner
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private static void addNewTaskXXX(Item item, int pos, ItemList itemListOrg, boolean optionTemplateEditMode) {
 //        item.setTemplate(optionTemplateEditMode); //template or not
@@ -2485,8 +2487,8 @@ public class ScreenListOfItems extends MyForm {
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getObjectIdP() == null ? "-ID" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getOwner() == null ? "-OWN" : "")
                 + (((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRuleN() == null) ? ""
-                : (item.getRepeatRuleN().getListOfUndoneInstances().contains(item) 
-                        ? "*" : (item.getRepeatRuleN().getListOfDoneInstances().contains(item) ? "(*-)" : "(*?!!)")))
+                : (item.getRepeatRuleN().getListOfUndoneInstances().contains(item)
+                ? "*" : (item.getRepeatRuleN().getListOfDoneInstances().contains(item) ? "(*-)" : "(*?!!)")))
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.isInteruptOrInstantTask() ? "<" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && wSlots != null && wSlots.size() > 0 ? "[W]" : "")
                 + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && TimerStack.getInstance().getCurrentlyTimedItemN() == item ? " [Timed]" : "")
@@ -2742,8 +2744,9 @@ public class ScreenListOfItems extends MyForm {
 //        Label remainingEffortLabel = null;
 
         long actualTotal = item.getActualTotal();
-        if (isDone) {
-            if (actualTotal != 0 || MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean()) {
+        if (false) {
+            if (isDone) {
+                if (actualTotal != 0 || MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (actualEffort != 0||MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean()) {
 //                east.addComponent(actualEffortLabel = new Label(MyDate.formatTimeDuration(actualEffort)));
@@ -2751,30 +2754,40 @@ public class ScreenListOfItems extends MyForm {
 //                actualEffortLabel.setText("A:" + MyDate.formatTimeDuration(actualEffort));
 //                actualEffortLabel.setText(MyDate.formatDurationShort(actualEffort));
 //</editor-fold>
-                actualEffortLabel = new Label(MyDate.formatDurationShort(actualTotal, true).toString());
+                    actualEffortLabel = new Label(MyDate.formatDurationShort(actualTotal, true).toString());
 //                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
-                actualEffortLabel.setFontIcon(Icons.myIconFont, Icons.iconActualFinalCust);
+                    actualEffortLabel.setFontIcon(Icons.myIconFont, Icons.iconActualFinalCust);
 
-                actualEffortLabel.setUIID("ListOfItemsActualEffort");
-                actualEffortLabel.setGap(GAP_LABEL_ICON);
+                    actualEffortLabel.setUIID("ListOfItemsActualEffort");
+                    actualEffortLabel.setGap(GAP_LABEL_ICON);
 
-                if (Config.TEST) {
-                    status.setName("ActualEffort");
+                    if (Config.TEST) {
+                        status.setName("ActualEffort");
+                    }
+                    if (oldFormat) {
+                        east.addComponent(actualEffortLabel);
+                    }
                 }
-                if (oldFormat) {
-                    east.addComponent(actualEffortLabel);
-                }
-            }
-        } else { //if task not done, show Actual in details
-            if (actualTotal != 0 && showInDetails) {
-                actualEffortLabel = new Label(MyDate.formatDurationShort(actualTotal, true).toString());
+            } else { //if task not done, show Actual in details
+                if (actualTotal != 0) {
+                    actualEffortLabel = new Label(MyDate.formatDurationShort(actualTotal, true).toString());
 //                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
-                actualEffortLabel.setFontIcon(Icons.myIconFont, Icons.iconActualCurrentCust);
-                actualEffortLabel.setUIID("ListOfItemsActualEffort");
-                actualEffortLabel.setGap(GAP_LABEL_ICON);
-                southDetailsContainer.add(actualEffortLabel);
-            }
+                    actualEffortLabel.setFontIcon(Icons.myIconFont, Icons.iconActualCurrentCust);
+                    actualEffortLabel.setUIID("ListOfItemsActualEffort");
+                    actualEffortLabel.setGap(GAP_LABEL_ICON);
+                    southDetailsContainer.add(actualEffortLabel);
+                }
 
+            }
+        }
+        //
+        if ((actualTotal != 0 || MyPrefs.itemListShowActualEvenIfZero.getBoolean())
+                && (isDone || MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean())) {
+            actualEffortLabel = new Label(MyDate.formatDurationShort(actualTotal, true).toString());
+//                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
+            actualEffortLabel.setFontIcon(Icons.myIconFont, isDone?Icons.iconActualFinalCust:Icons.iconActualCurrentCust);
+            actualEffortLabel.setUIID("ListOfItemsActualEffort");
+            actualEffortLabel.setGap(GAP_LABEL_ICON);
         }
 
         if (isDone) {
@@ -2829,7 +2842,7 @@ public class ScreenListOfItems extends MyForm {
 
             long remainingEffort = item.getRemainingTotal();
             if ((remainingEffort != 0 || MyPrefs.itemListShowRemainingEvenIfZero.getBoolean())
-                    && !(remainingEffort == Item.getRemainingDefaultValue() && MyPrefs.itemListHideRemainingWhenDefaultValue.getBoolean())) {
+                    && (remainingEffort != Item.getRemainingDefaultValue() || !MyPrefs.itemListHideRemainingWhenDefaultValue.getBoolean())) {
 //                    east.addComponent(remainingEffortLabel = new Label(MyDate.formatTimeDuration(remainingEffort), "ListOfItemsRemaining"));
                 remainingEffortLabel = new Label(MyDate.formatDurationShort(remainingEffort, true), "ListOfItemsRemaining");
 //                remainingEffortLabel.setMaterialIcon(Icons.iconRemainingEffort);
@@ -3309,7 +3322,8 @@ public class ScreenListOfItems extends MyForm {
         if (isDone && effortEstimateLabel != null) {
             westCont.add(effortEstimateLabel);
         }
-        if (isDone && actualEffortLabel != null) {
+//        if (isDone && actualEffortLabel != null) {
+        if (actualEffortLabel != null) {
             westCont.add(actualEffortLabel);
         }
 //        if (dateCont != null) westCont.add(dateCont);

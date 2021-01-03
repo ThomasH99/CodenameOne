@@ -810,11 +810,7 @@ public class ScreenWorkSlot extends MyForm {
             Button editSubtasksFullScreen = new Button();
             editSubtasksFullScreen.setCommand(MyReplayCommand.create("ShowTasksInWorkSlot", items.size() + " tasks", null, (e) -> {
 //                new ScreenListOfItems("Tasks in WorkSlot", itemList, ScreenWorkSlot.this, (iList) -> {
-                new ScreenListOfItems("Tasks in WorkSlot", () -> new ItemList(workSlot.getItemsInWorkSlot()), ScreenWorkSlot.this, (iList) -> {
-//                        item.setItemList(subtaskList);
-//                        DAO.getInstance().save(item); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//                        myForm.refreshAfterEdit(); //necessary to update sum of subtask effort
-                }, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
+                new ScreenListOfItems("Tasks in WorkSlot", () -> new ItemList(workSlot.getItemsInWorkSlot()), ScreenWorkSlot.this, null, ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
                         | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_INTERRUPT | ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP
                         | ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_SELECTION_MODE
                 ).show();

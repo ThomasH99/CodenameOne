@@ -22,6 +22,7 @@ import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
+import com.codename1.ui.Font;
 import com.codename1.ui.Form;
 //import com.codename1.ui.Form;
 import com.codename1.ui.Image;
@@ -1143,7 +1144,7 @@ public class MyForm extends Form {
          * @param itemList
          */
 //        void update(ItemList itemList);
-        void update(ItemAndListCommonInterface itemList);
+        boolean update2(ItemAndListCommonInterface itemList); //renamed '2' to see if it fixes lambda backport compilation error for ios
     }
 
 //    interface GetWorkSlotList {
@@ -1913,7 +1914,7 @@ public class MyForm extends Form {
      * with Done (Back), if null, no effect
      */
     void addUpdateActionOnDone(Runnable updateActionOnDone) {
-        if (false&&Config.TEST) {
+        if (false && Config.TEST) {
             ASSERT.that(updateActionOnDone == null || this.updateActionOnDone == null, "Setting updateActionOnDone twice, old="
                     + this.updateActionOnDone + "; new=" + updateActionOnDone);
         }
@@ -2933,7 +2934,6 @@ public class MyForm extends Form {
 //    public Command makeCommandNewItemSaveToInboxXXX(boolean useStdCmdText) {
 //        return makeCommandNewItemSaveToItemList(Inbox.getInstance(), useStdCmdText ? "Add task to Inbox" : "");
 //    }
-
     public Command makeCommandNewItemSaveToInbox() {
 //        return makeCommandNewItemSaveToInbox(true);
         return makeCommandNewItemSaveToItemList(Inbox.getInstance(), "CreateNewItemInInbox", "Add task to Inbox", Icons.iconNewTaskToInbox);
@@ -3145,10 +3145,10 @@ public class MyForm extends Form {
     }
 
     protected static Component makeHelpButton(String label, String helpText, boolean makeSpanButton) {
-        return makeHelpButton(label, helpText, makeSpanButton, null);
+        return makeHelpButton(label, helpText, makeSpanButton, null, null);
     }
 
-    protected static Component makeHelpButton(String label, String helpText, boolean makeSpanButton, Character materialIcon) {
+    protected static Component makeHelpButton(String label, String helpText, boolean makeSpanButton, Character materialIcon, Font iconFont) {
         if (label == null) {
             return null;
         }
@@ -3157,7 +3157,11 @@ public class MyForm extends Form {
             SpanButton spanButton = new SpanButton(label, "ScreenItemFieldLabel");
             spanButton.setTextPosition(Component.RIGHT); //put icon on the left
             if (materialIcon != null) {
-                spanButton.setMaterialIcon(materialIcon);
+                if (iconFont != null) {
+                    spanButton.setFontIcon(iconFont, materialIcon);
+                } else {
+                    spanButton.setMaterialIcon(materialIcon);
+                }
             }
             spanButton.setUIID("Container"); //avoid adding additional white space by setting the Container UIID to LabelField
             spanButton.setName("FieldContHlpSpanBut-" + label); //avoid adding additional white space by setting the Container UIID to LabelField
@@ -3168,7 +3172,11 @@ public class MyForm extends Form {
             button.setName("FieldContHlpBut-" + label); //avoid adding additional white space by setting the Container UIID to LabelField
             button.setTextPosition(Component.RIGHT); //put icon on the left
             if (materialIcon != null) {
-                button.setMaterialIcon(materialIcon);
+                if (iconFont != null) {
+                    button.setFontIcon(iconFont, materialIcon);
+                } else {
+                    button.setMaterialIcon(materialIcon);
+                }
             }
             spanB = button;
         }
@@ -3364,18 +3372,27 @@ public class MyForm extends Form {
                 true, false, false, false);
     }
 
+    protected static Component layoutN(String fieldLabelTxt, Picker field, String help, Character materialIcon, Font iconFont) {
+        return new EditFieldContainer(fieldLabelTxt, field, help,
+                (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null),
+                true, false, false, false, false, materialIcon,iconFont);
+    }
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help, Character materialIcon) {
         return new EditFieldContainer(fieldLabelTxt, field, help,
+//<editor-fold defaultstate="collapsed" desc="comment">
                 //                field instanceof MyDurationPicker
                 //                        ? (() -> ((MyDurationPicker) field).swipeClear())
                 //                        : (field instanceof MyDatePicker
                 //                                ? () -> ((MyDatePicker) field).swipeClear()
                 //                                : () -> ((MyDateAndTimePicker) field).swipeClear()),
+//</editor-fold>
                 (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null),
                 true, false, false, false, false, materialIcon);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        return EditFieldContainer(fieldLabelTxt, field, help, field instanceof MyDurationPicker ? (() -> ((MyDurationPicker) field).swipeClear())
 //                : (field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear() : () -> ((MyDateAndTimePicker) field).swipeClear()),
 //                true, false, false, false, false,materialIcon);
+//</editor-fold>
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3441,6 +3458,12 @@ public class MyForm extends Form {
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, Character materialIcon) {
 //        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
         return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, Character materialIcon, Font iconFont) {
+//        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
+        return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon,iconFont);
     }
 
     protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help,

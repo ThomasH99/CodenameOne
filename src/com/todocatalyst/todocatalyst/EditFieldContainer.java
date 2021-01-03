@@ -14,6 +14,7 @@ import com.codename1.ui.Component;
 import com.codename1.ui.ComponentGroup;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
+import com.codename1.ui.Font;
 import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
@@ -60,6 +61,12 @@ public class EditFieldContainer extends Container {
      */
     public EditFieldContainer(String fieldLabelTxt, Component fieldN, String helpText, SwipeClear swipeClearFct,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, boolean sizeWestBeforeEast, Character materialIcon) {
+        this(fieldLabelTxt, fieldN, helpText, swipeClearFct, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, sizeWestBeforeEast, materialIcon, null);
+    }
+
+    public EditFieldContainer(String fieldLabelTxt, Component fieldN, String helpText, SwipeClear swipeClearFct,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, boolean sizeWestBeforeEast,
+            Character materialIcon, Font iconFont) {
 //        super(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
         super(); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
         if (Config.TEST) {
@@ -73,9 +80,10 @@ public class EditFieldContainer extends Container {
         setLayout(layout);
 
 //        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
+        Component fieldLabel = makeHelpButton(fieldLabelTxt, helpText, wrapText, materialIcon, iconFont);
         if (fieldN == null) {
 //FIELD LABEL
-            Component fieldLabel = makeHelpButton(fieldLabelTxt, helpText, wrapText, materialIcon);
+//            Component fieldLabel = makeHelpButton(fieldLabelTxt, helpText, wrapText, materialIcon);
             add(MyBorderLayout.WEST, fieldLabel);
         } else {
             if (fieldN instanceof TextField) {
@@ -151,7 +159,7 @@ public class EditFieldContainer extends Container {
             }
 
             //FIELD LABEL
-            Component fieldLabel = makeHelpButton(fieldLabelTxt, helpText, wrapText, materialIcon);
+//            Component fieldLabel = makeHelpButton(fieldLabelTxt, helpText, wrapText, materialIcon);
 //        if (true) {
 //            fieldContainer.add(MyBorderLayout.WEST, fieldLabel);
 //            fieldContainer.add(MyBorderLayout.EAST, visibleField);

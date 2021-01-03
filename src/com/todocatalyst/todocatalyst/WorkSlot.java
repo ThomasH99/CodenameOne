@@ -275,6 +275,11 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         } else {
             assert false : "owner should never be set to this type:" + owner;
         }
+        //if an owner has been set, then execute the repeatRule if necessary
+        //        if (oldOwner == null && newOwner != null) {
+        if (owner != null) {
+            updateRepeatRule(); //NO, changing owner is not the right place since owner may change for other reasons than inserting into a new owner list (e.g. if moving
+        }
     }
 
     @Override
@@ -452,10 +457,48 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         setRepeatRuleInParse(repeatRule);
     }
 
-    public final void setRepeatRule(RepeatRuleParseObject newRepeatRuleN) {
+    public final void setRepeatRuleOLD(RepeatRuleParseObject newRepeatRuleN) {
         RepeatRuleParseObject oldRepeatRule = getRepeatRuleN();
         if (oldRepeatRule == null) { //setting a RR for the first time
             if (newRepeatRuleN != null) {
+//                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null) { //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+//                    DAO.getInstance().saveInBackground(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+//                }
+                newRepeatRuleN.addOriginatorToRule(this); //if new RepeatRule, add WorkSlot as originator
+                setRepeatRuleInParse(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+//                newRepeatRule.updateWorkslotsForNewRepeatRule(this);
+//                newRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this, true);
+//                opsAfterSubtaskUpdates.add(() -> newRepeatRule.updateItemsWhenRuleCreatedOrEdited(this, true)); //will also save RR
+                opsAfterSubtaskUpdates.add(() -> newRepeatRuleN.updateWorkSlotsWhenRuleCreatedOrEdited(this, true)); //will also save RR
+            } else {
+                //setting null when already null - do nothing
+            }
+        } else { //oldRepeatRule != null
+            if (newRepeatRuleN == null || newRepeatRuleN.getRepeatType() == REPEAT_TYPE_NO_REPEAT) { //deleting the existing RR
+//                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)) {
+//                    setRepeatRuleInParse(null);
+//                }
+                setRepeatRuleInParse(null);
+//                opsAfterSubtaskUpdates.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)); //will also save RR
+                opsAfterSubtaskUpdates.add(() -> oldRepeatRule.delete(new MyDate())); //will also save RR
+
+            } else { //possibly modified
+                if (!newRepeatRuleN.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
+                    oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRuleN); //update existing rule with updated values
+//                oldRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this); //
+//                oldRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this, false); //will also save RR
+                    setRepeatRuleInParse(oldRepeatRule);
+//                        opsAfterSubtaskUpdates.add(() -> oldRepeatRule.updateItemsWhenRuleCreatedOrEdited(this, false)); //will also save RR
+                    opsAfterSubtaskUpdates.add(() -> oldRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this, false)); //will also save RR
+                }
+            }
+        }
+    }
+
+    public final void setRepeatRule(RepeatRuleParseObject newRepeatRuleN) {
+        RepeatRuleParseObject oldRepeatRule = getRepeatRuleN();
+        if (oldRepeatRule == null) { //setting a RR for the first time
+            if (newRepeatRuleN != null&& newRepeatRuleN.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
 //                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null) { //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
 //                    DAO.getInstance().saveInBackground(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
 //                }
@@ -709,7 +752,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         }
         if (copyFieldDefinition == CopyMode.COPY_TO_REPEAT_INSTANCE) {
             RepeatRuleParseObject repeatRule = getRepeatRuleN();
-            if (false&&Config.TEST && repeatRule != null) {
+            if (false && Config.TEST && repeatRule != null) {
                 boolean notSaved = false;
                 notSaved = repeatRule.getObjectIdP() == null || repeatRule.getObjectIdP().isEmpty(); //repeatRule.isDirty() ||
             }
@@ -2314,6 +2357,33 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             }
         }
         return sum;
+    }
+
+    /**
+     * @return The first time this object was saved on the server.
+     */
+    @Override
+    public Date getCreatedAt() {
+        Date date = super.getCreatedAt();
+        return date != null ? date : new MyDate(0); //ensure never to return null (like ParseObject.getCreatedAt() does!)
+    }
+
+    @Override
+    public Date getUpdatedAt() {
+        Date date = super.getUpdatedAt();
+        return date != null ? date : new MyDate(0); //ensure never to return null (like ParseObject.getCreatedAt() does!)
+    }
+
+    /**
+     * update (execute) the repeatRule, e.g. when a new created item is inserted
+     * into its owner
+     */
+    public void updateRepeatRule() {
+        RepeatRuleParseObject currentRepeatRule = getRepeatRuleN();
+        if (currentRepeatRule != null && currentRepeatRule.isUpdatePending()) {
+            currentRepeatRule.setUpdatePending(false); //MUST set false before updating to avoid recursion when new RR instances 
+            currentRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this,true);
+        }
     }
 
 }

@@ -556,8 +556,7 @@ public class ScreenItem2 extends MyForm {
 //                }
 //                new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, DAO.getInstance().getTemplateList(), ScreenItem.this, (i) -> {
                 if (MyPrefs.showTemplateListAfterCreatingNewTemplateFromExistingProject.getBoolean()) {
-                    new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, () -> TemplateList.getInstance(), ScreenItem2.this, i -> {
-                    }, ScreenListOfItems.OPTION_TEMPLATE_EDIT// | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
+                    new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, () -> TemplateList.getInstance(), ScreenItem2.this, null, ScreenListOfItems.OPTION_TEMPLATE_EDIT// | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
                     ).show();
                 }
             }, "SaveAsTemplate"));
@@ -593,15 +592,13 @@ public class ScreenItem2 extends MyForm {
                             Item templateOrg = (Item) selectedTemplates.get(0);
 //                            Dialog ip = new InfiniteProgress().showInfiniteBlocking();
 //                            template.copyMeInto(item, Item.CopyMode.COPY_FROM_TEMPLATE);
-                            if (false) {
-                                addTemplateToPickers(itemOrg, templateOrg);
-                                refreshAfterEdit();
-                            } else {
-                                addTemplate(itemOrg, templateOrg);
-
-                                refreshAfterEdit();
-
-                            }
+//                            if (false) {
+//                                addTemplateToPickers(itemOrg, templateOrg);
+//                                refreshAfterEdit();
+//                            } else {
+                            addTemplate(itemOrg, templateOrg);
+                            refreshAfterEdit();
+//                            }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                            else {
 ////                                templateOrg.copyMeInto(itemCopy, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK,
@@ -1184,186 +1181,187 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
     }
 
-    private void addTemplateToPickers(Item itemOrg, final Item templateOrg) {
-        //if the user has not yet set a due date and the template has fields depending on due date, ask for a due date
-        if (templateOrg.getDueDate().getTime() != 0) {
-
-            boolean templFieldsDependOnDue = templateOrg.getAlarmDate().getTime() != 0 || templateOrg.getStartByDateD().getTime() != 0
-                    || templateOrg.getExpiresOnDate().getTime() != 0 || templateOrg.getHideUntilDateD().getTime() != 0;
-            if (templFieldsDependOnDue) { //only if there are any fields in the template that depend on due date:
-                Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //TODO setting to pich a f
-                if (dueDate.getDate().getTime() == 0) {
-//                Dialog.show(SUBTASK_KEY, this, cmds);
-                    newDueDate = showDialogSetDueDate(newDueDate);
-//                assert false; 
-                } else {
-                    newDueDate.setTime(dueDate.getDate().getTime());
-                }
-                if (newDueDate.getTime() != 0) { //if we now have a dueDate, set the relative fields
-                    //MOST FIELDS are only set if not defined (or if user deleted the value in the input field (Pickers etc)
-                    if (false && dueDate.getDate().getTime() == 0) { //NB. Due date NEVER set based on due date in template
-                        //TODO: make a setting for how far ahead a default due date should be set
-                        dueDate.setDate(templateOrg.getDueDate());
-                    }
-                    previousValues.put(Item.PARSE_DUE_DATE, newDueDate); //store due Date locally
-//                long templDueDateAdj = dueDate.getDate().getTime() - template.getDueDateD().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
-                    long templDueDateAdj = newDueDate.getTime() - templateOrg.getDueDate().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
-                    //CERTAIN DATES are set RELATIVE to the DUE DATE:
-                    if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as 
-                        if ((alarmDate.getDate() == null || alarmDate.getDate().getTime() == 0) && templateOrg.getAlarmDate().getTime() != 0) {
-//                    alarmDate.setDate(new MyDate(template.getAlarmDate().getTime() + templDueDateAdj));
-                            previousValues.put(Item.PARSE_ALARM_DATE, new MyDate(templateOrg.getAlarmDate().getTime() + templDueDateAdj));
-                        }
-                        if ((startByDate.getDate() == null || startByDate.getDate().getTime() == 0) && templateOrg.getStartByDateD().getTime() != 0) {
-//                    startByDate.setDate(new MyDate(template.getStartByDateD().getTime() + templDueDateAdj));
-                            previousValues.put(Item.PARSE_START_BY_DATE, new MyDate(templateOrg.getStartByDateD().getTime() + templDueDateAdj));
-                        }
-                        if ((expiresOnDate.getDate() == null || expiresOnDate.getDate().getTime() == 0) && templateOrg.getExpiresOnDate().getTime() != 0) {
-//                    expiresOnDate.setDate(new MyDate(template.getExpiresOnDate().getTime() + templDueDateAdj));
-                            previousValues.put(Item.PARSE_EXPIRES_ON_DATE, new MyDate(templateOrg.getExpiresOnDate().getTime() + templDueDateAdj));
-                        }
-                        if ((hideUntil.getDate() == null || hideUntil.getDate().getTime() == 0) && templateOrg.getHideUntilDateD().getTime() != 0) {
-//                    hideUntil.setDate(new MyDate(template.getHideUntilDateD().getTime() + templDueDateAdj));
-                            previousValues.put(Item.PARSE_HIDE_UNTIL_DATE, new MyDate(templateOrg.getHideUntilDateD().getTime() + templDueDateAdj));
-                        }
-                    }
-                }
-            }
-        }
-
-        if (!isStarredSelected()) {
-            setStarredSelected(templateOrg.isStarred());
-            previousValues.put(Item.PARSE_STARRED, templateOrg.isStarred());
-        }
-
-        if (priority.getSelectedIndex() == -1 && templateOrg.getPriority() > 0) {
-//            importance.selectIndex(template.getPriority() - 1);
-            previousValues.put(Item.PARSE_PRIORITY, templateOrg.getPriority());//NB. We store the actual value of Priority locally and adjust when setting the picker
-        }
-
-        if (importance.getSelectedValue() == null && templateOrg.getImportanceN() != null) {
-//            importance.selectValue(template.getImportanceN() != null ? template.getImportanceN().name() : null);
-            previousValues.put(Item.PARSE_IMPORTANCE, templateOrg.getImportanceN().name());
-        }
-        if (urgency.getSelectedValue() == null && templateOrg.getUrgencyN() != null) {
-//            urgency.selectValue(template.getUrgencyN() != null ? template.getUrgencyN().name() : null);
-            previousValues.put(Item.PARSE_URGENCY, templateOrg.getUrgencyN().name());
-        }
-        if (challenge.getSelectedValue() == null && templateOrg.getChallengeN() != null) {
-//            challenge.selectValue(template.getChallengeN() != null ? template.getChallengeN().name() : null);
-            previousValues.put(Item.PARSE_CHALLENGE, templateOrg.getChallengeN().name());
-        }
-        if (dreadFun.getSelectedValue() == null && templateOrg.getDreadFunValueN() != null) {
-//            dreadFun.selectValue(template.getDreadFunValueN().name());
-            previousValues.put(Item.PARSE_DREAD_FUN_VALUE, templateOrg.getDreadFunValueN().name());
-        }
-
-        if (getEarnedValueAsDouble(earnedValue.getText()) == 0 && templateOrg.getEarnedValue() > 0) {
-//            earnedValue.setText(setEarnedValueAsString(template.getEarnedValue()));
-            previousValues.put(Item.PARSE_EARNED_VALUE, setEarnedValueAsString(templateOrg.getEarnedValue()));
-        }
-
-        if (!templateOrg.isProject() && ((remainingEffort.getDuration() == 0 || Item.isRemainingDefaultValue(remainingEffort.getDuration()))) && templateOrg.getRemainingTotal() > 0) { //UI: adding a template will overwrite the default Remaining
-//            remainingEffort.setDuration(template.getRemaining());
-            previousValues.put(Item.PARSE_REMAINING_EFFORT_TOTAL, templateOrg.getRemainingTotal());
-        }
-
-        if (!templateOrg.isProject() && ((effortEstimate.getDuration() == 0 || Item.isRemainingDefaultValue(effortEstimate.getDuration()))) && templateOrg.getEstimateTotal() > 0) {
-//            effortEstimate.setDuration(template.getEstimate());
-            previousValues.put(Item.PARSE_EFFORT_ESTIMATE, templateOrg.getEstimateTotal());
-        }
-        //SOME FIELDS DO NOT HAVE A SIMPLE INPUT FIELD EDITOR
-        //RepeatRule
-        if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && templateOrg.getRepeatRuleN() != null) {
-//            previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(template.getRepeatRuleN()));
-            previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(templateOrg.getRepeatRuleN()));
-        }
-
-        //SPECIAL CASES
-        if ((description.getText().length() == 0 || MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()) && !templateOrg.getText().isEmpty()) {
-//            description.setText(description.getText().length() == 0 || MyPrefs.addTemplateTaskTextToExistingTaskText.getBoolean()
-//                    ? description.getText() + template.getText() : template.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
-            previousValues.put(Item.PARSE_TEXT, description.getText().length() == 0 ? templateOrg.getText()
-                    : description.getText() + " " + templateOrg.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
-        }
-        //Template Comments are ??
-//        comment.setText(comment.getText().length() > 0 ? comment.getText() + "\n" + template.getComment() : template.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
-        previousValues.put(Item.PARSE_COMMENT, comment.getText().length() == 0 ? templateOrg.getComment()
-                : comment.getText() + "\n" + templateOrg.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
-
-        //Templates Categories are merged (only new categories in template are added - no cuplicates!)
-//        Item.addCatObjectIdsListToCategoryList(((List<String>) previousValues.get(Item.PARSE_CATEGORIES)), template.getCategories()); //*add* any additional categories in the template
-//        List templateCategories = new ArrayList(templateOrg.getCategories());
-//        templateCategories.removeAll(previousValues.getCategories());
-//        templateCategories.addAll(previousValues.getCategories());
-//        previousValues.putCategories(templateCategories);
-//                         
-        //Template Subtasks are merged
-        List<Item> templateSubtasksOrg = templateOrg.getListFull();
-////<editor-fold defaultstate="collapsed" desc="comment">
-//        if (false && !templateSubtasksOrg.isEmpty()) {
-//            List<Item> previousSubtasks = previousValues.getSubtaskListN();
-//            if (previousSubtasks == null) { //if no previous edits to subtasks, create a new list w current subtasks(!)
-//                previousSubtasks = new ArrayList(itemOrg.getListFull());
-//            }
-//            List<Item> newSubtasksToSave = new ArrayList();
-////        List<Item> templateSubtasks = template.getListFull();
-////        for (Item tempSubtask : (List<Item>) template.getListFull()) { //full list, filter has no meaning for a template
-//            for (Item tempSubtask : templateSubtasksOrg) { //full list, filter has no meaning for a template
-//                Item newSubtask = new Item(false);
-////                tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
-//                tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_TO_COPY_PASTE, 0);
-////            itemOrg.addToList(subtaskCopy); //UI: template subtasks are permanently (no Cancel possible) added to item
-//                previousSubtasks.add(newSubtask); //UI: template subtasks are permanently (no Cancel possible) added to item
-//                newSubtask.setOwner(item);
-//                newSubtasksToSave.add(newSubtask);//save each new templateCopy in a list and save them
-//            }
-//            DAO.getInstance().saveNew((List) newSubtasksToSave); //save new subtasks (will be deleted again if Cancel
-//
-//            if (itemOrg.getObjectIdP() != null) { //only trigger saving subtasks if their owner is already saved, otherwise subtasks will be saved once the owner save is triggered
-//                DAO.getInstance().saveNewTriggerUpdate(); //save new subtasks (will be deleted again if Cancel
-//            }
-//            previousValues.putSubtaskList(previousSubtasks);
-//        } else 
-////</editor-fold>
-        if (!templateSubtasksOrg.isEmpty()) {
-            ASSERT.that(itemOrg.getObjectIdP() != null, "itemOrg should always have been saved before editing, itemOrg=" + itemOrg); //only trigger saving subtasks if their owner is already saved, otherwise subtasks will be saved once the owner save is triggered
-            List<Item> previousSubtasks = itemOrg.getListFull();
-            List<Item> newSubtasksToSave = new ArrayList();
-            for (Item templateSubtaskOrg : templateSubtasksOrg) { //full list, filter has no meaning for a template
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                Item newSubtask = new Item(false);
-//                tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
-//                previousSubtasks.add(newSubtask); //UI: template subtasks are permanently (no Cancel possible) added to item
-//                templateSubtask.setOwner(itemOrg);
-//                newSubtasksToSave.add(newSubtask);//save each new templateCopy in a list and save them
-//                itemOrg.addToList(templateSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+//    private void addTemplateToPickersXXX(Item itemOrg, final Item templateOrg) {
+//        //if the user has not yet set a due date and the template has fields depending on due date, ask for a due date
+//        if (templateOrg.getDueDate().getTime() != 0) {
+//
+//            boolean templFieldsDependOnDue = templateOrg.getAlarmDate().getTime() != 0 || templateOrg.getStartByDateD().getTime() != 0
+//                    || templateOrg.getExpiresOnDate().getTime() != 0 || templateOrg.getHideUntilDateD().getTime() != 0;
+//            if (templFieldsDependOnDue) { //only if there are any fields in the template that depend on due date:
+//                Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //TODO setting to pich a f
+//                if (dueDate.getDate().getTime() == 0) {
+////                Dialog.show(SUBTASK_KEY, this, cmds);
+//                    newDueDate = showDialogSetDueDate(newDueDate);
+////                assert false;
+//                } else {
+//                    newDueDate.setTime(dueDate.getDate().getTime());
+//                }
+//                if (newDueDate.getTime() != 0) { //if we now have a dueDate, set the relative fields
+//                    //MOST FIELDS are only set if not defined (or if user deleted the value in the input field (Pickers etc)
+//                    if (false && dueDate.getDate().getTime() == 0) { //NB. Due date NEVER set based on due date in template
+//                        //TODO: make a setting for how far ahead a default due date should be set
+//                        dueDate.setDate(templateOrg.getDueDate());
+//                    }
+//                    previousValues.put(Item.PARSE_DUE_DATE, newDueDate); //store due Date locally
+////                long templDueDateAdj = dueDate.getDate().getTime() - template.getDueDateD().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
+//                    long templDueDateAdj = newDueDate.getTime() - templateOrg.getDueDate().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
+//                    //CERTAIN DATES are set RELATIVE to the DUE DATE:
+//                    if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as
+//                        if ((alarmDate.getDate() == null || alarmDate.getDate().getTime() == 0) && templateOrg.getAlarmDate().getTime() != 0) {
+////                    alarmDate.setDate(new MyDate(template.getAlarmDate().getTime() + templDueDateAdj));
+//                            previousValues.put(Item.PARSE_ALARM_DATE, new MyDate(templateOrg.getAlarmDate().getTime() + templDueDateAdj));
+//                        }
+//                        if ((startByDate.getDate() == null || startByDate.getDate().getTime() == 0) && templateOrg.getStartByDateD().getTime() != 0) {
+////                    startByDate.setDate(new MyDate(template.getStartByDateD().getTime() + templDueDateAdj));
+//                            previousValues.put(Item.PARSE_START_BY_DATE, new MyDate(templateOrg.getStartByDateD().getTime() + templDueDateAdj));
+//                        }
+//                        if ((expiresOnDate.getDate() == null || expiresOnDate.getDate().getTime() == 0) && templateOrg.getExpiresOnDate().getTime() != 0) {
+////                    expiresOnDate.setDate(new MyDate(template.getExpiresOnDate().getTime() + templDueDateAdj));
+//                            previousValues.put(Item.PARSE_EXPIRES_ON_DATE, new MyDate(templateOrg.getExpiresOnDate().getTime() + templDueDateAdj));
+//                        }
+//                        if ((hideUntil.getDate() == null || hideUntil.getDate().getTime() == 0) && templateOrg.getHideUntilDateD().getTime() != 0) {
+////                    hideUntil.setDate(new MyDate(template.getHideUntilDateD().getTime() + templDueDateAdj));
+//                            previousValues.put(Item.PARSE_HIDE_UNTIL_DATE, new MyDate(templateOrg.getHideUntilDateD().getTime() + templDueDateAdj));
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        if (!isStarredSelected()) {
+//            setStarredSelected(templateOrg.isStarred());
+//            previousValues.put(Item.PARSE_STARRED, templateOrg.isStarred());
+//        }
+//
+//        if (priority.getSelectedIndex() == -1 && templateOrg.getPriority() > 0) {
+////            importance.selectIndex(template.getPriority() - 1);
+//            previousValues.put(Item.PARSE_PRIORITY, templateOrg.getPriority());//NB. We store the actual value of Priority locally and adjust when setting the picker
+//        }
+//
+//        if (importance.getSelectedValue() == null && templateOrg.getImportanceN() != null) {
+////            importance.selectValue(template.getImportanceN() != null ? template.getImportanceN().name() : null);
+//            previousValues.put(Item.PARSE_IMPORTANCE, templateOrg.getImportanceN().name());
+//        }
+//        if (urgency.getSelectedValue() == null && templateOrg.getUrgencyN() != null) {
+////            urgency.selectValue(template.getUrgencyN() != null ? template.getUrgencyN().name() : null);
+//            previousValues.put(Item.PARSE_URGENCY, templateOrg.getUrgencyN().name());
+//        }
+//        if (challenge.getSelectedValue() == null && templateOrg.getChallengeN() != null) {
+////            challenge.selectValue(template.getChallengeN() != null ? template.getChallengeN().name() : null);
+//            previousValues.put(Item.PARSE_CHALLENGE, templateOrg.getChallengeN().name());
+//        }
+//        if (dreadFun.getSelectedValue() == null && templateOrg.getDreadFunValueN() != null) {
+////            dreadFun.selectValue(template.getDreadFunValueN().name());
+//            previousValues.put(Item.PARSE_DREAD_FUN_VALUE, templateOrg.getDreadFunValueN().name());
+//        }
+//
+//        if (getEarnedValueAsDouble(earnedValue.getText()) == 0 && templateOrg.getEarnedValue() > 0) {
+////            earnedValue.setText(setEarnedValueAsString(template.getEarnedValue()));
+//            previousValues.put(Item.PARSE_EARNED_VALUE, setEarnedValueAsString(templateOrg.getEarnedValue()));
+//        }
+//
+//        if (!templateOrg.isProject() && ((remainingEffort.getDuration() == 0 || Item.isRemainingDefaultValue(remainingEffort.getDuration()))) && templateOrg.getRemainingTotal() > 0) { //UI: adding a template will overwrite the default Remaining
+////            remainingEffort.setDuration(template.getRemaining());
+//            previousValues.put(Item.PARSE_REMAINING_EFFORT_TOTAL, templateOrg.getRemainingTotal());
+//        }
+//
+//        if (!templateOrg.isProject() && ((effortEstimate.getDuration() == 0 || Item.isRemainingDefaultValue(effortEstimate.getDuration()))) && templateOrg.getEstimateTotal() > 0) {
+////            effortEstimate.setDuration(template.getEstimate());
+//            previousValues.put(Item.PARSE_EFFORT_ESTIMATE, templateOrg.getEstimateTotal());
+//        }
+//        //SOME FIELDS DO NOT HAVE A SIMPLE INPUT FIELD EDITOR
+//        //RepeatRule
+//        if (previousValues.get(Item.PARSE_REPEAT_RULE) == null && templateOrg.getRepeatRuleN() != null) {
+////            previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(template.getRepeatRuleN()));
+//            previousValues.put(Item.PARSE_REPEAT_RULE, new RepeatRuleParseObject(templateOrg.getRepeatRuleN()));
+//        }
+//
+//        //SPECIAL CASES
+//        if ((description.getText().length() == 0 || MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()) && !templateOrg.getText().isEmpty()) {
+////            description.setText(description.getText().length() == 0 || MyPrefs.addTemplateTaskTextToExistingTaskText.getBoolean()
+////                    ? description.getText() + template.getText() : template.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
+//            previousValues.put(Item.PARSE_TEXT, description.getText().length() == 0 ? templateOrg.getText()
+//                    : description.getText() + " " + templateOrg.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
+//        }
+//        //Template Comments are ??
+////        comment.setText(comment.getText().length() > 0 ? comment.getText() + "\n" + template.getComment() : template.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
+//        previousValues.put(Item.PARSE_COMMENT, comment.getText().length() == 0 ? templateOrg.getComment()
+//                : comment.getText() + "\n" + templateOrg.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
+//
+//        //Templates Categories are merged (only new categories in template are added - no cuplicates!)
+////        Item.addCatObjectIdsListToCategoryList(((List<String>) previousValues.get(Item.PARSE_CATEGORIES)), template.getCategories()); //*add* any additional categories in the template
+////        List templateCategories = new ArrayList(templateOrg.getCategories());
+////        templateCategories.removeAll(previousValues.getCategories());
+////        templateCategories.addAll(previousValues.getCategories());
+////        previousValues.putCategories(templateCategories);
+////
+//        //Template Subtasks are merged
+//        List<Item> templateSubtasksOrg = templateOrg.getListFull();
+//////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (false && !templateSubtasksOrg.isEmpty()) {
+////            List<Item> previousSubtasks = previousValues.getSubtaskListN();
+////            if (previousSubtasks == null) { //if no previous edits to subtasks, create a new list w current subtasks(!)
+////                previousSubtasks = new ArrayList(itemOrg.getListFull());
+////            }
+////            List<Item> newSubtasksToSave = new ArrayList();
+//////        List<Item> templateSubtasks = template.getListFull();
+//////        for (Item tempSubtask : (List<Item>) template.getListFull()) { //full list, filter has no meaning for a template
+////            for (Item tempSubtask : templateSubtasksOrg) { //full list, filter has no meaning for a template
+////                Item newSubtask = new Item(false);
+//////                tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
+////                tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_TO_COPY_PASTE, 0);
+//////            itemOrg.addToList(subtaskCopy); //UI: template subtasks are permanently (no Cancel possible) added to item
+////                previousSubtasks.add(newSubtask); //UI: template subtasks are permanently (no Cancel possible) added to item
+////                newSubtask.setOwner(item);
+////                newSubtasksToSave.add(newSubtask);//save each new templateCopy in a list and save them
+////            }
+////            DAO.getInstance().saveNew((List) newSubtasksToSave); //save new subtasks (will be deleted again if Cancel
+////
+////            if (itemOrg.getObjectIdP() != null) { //only trigger saving subtasks if their owner is already saved, otherwise subtasks will be saved once the owner save is triggered
+////                DAO.getInstance().saveNewTriggerUpdate(); //save new subtasks (will be deleted again if Cancel
+////            }
+////            previousValues.putSubtaskList(previousSubtasks);
+////        } else
+//////</editor-fold>
+//        if (!templateSubtasksOrg.isEmpty()) {
+//            ASSERT.that(itemOrg.getObjectIdP() != null, "itemOrg should always have been saved before editing, itemOrg=" + itemOrg); //only trigger saving subtasks if their owner is already saved, otherwise subtasks will be saved once the owner save is triggered
+//            List<Item> previousSubtasks = itemOrg.getListFull();
+//            List<Item> newSubtasksToSave = new ArrayList();
+//            for (Item templateSubtaskOrg : templateSubtasksOrg) { //full list, filter has no meaning for a template
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                Item newSubtask = new Item(false);
+////                tempSubtask.copyMeInto(newSubtask, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
+////                previousSubtasks.add(newSubtask); //UI: template subtasks are permanently (no Cancel possible) added to item
+////                templateSubtask.setOwner(itemOrg);
+////                newSubtasksToSave.add(newSubtask);//save each new templateCopy in a list and save them
+////                itemOrg.addToList(templateSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+////</editor-fold>
+////                Item newSubtask = templateSubtaskOrg.copyMeInto(new Item(false), Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
+//                Item newSubtask = templateSubtaskOrg.copyMeInto(new Item(false), Item.CopyMode.COPY_TO_COPY_PASTE, 0);
+//                itemOrg.addToList(newSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+////                DAO.getInstance().saveNew(newSubtask); //save new subtasks (will be deleted again if Cancel)
+//            }
+////            previousSubtasks.addAll(templateSubtasks);
+////            DAO.getInstance().saveNew((List) newSubtasksToSave); //save new subtasks (will be deleted again if Cancel
+////            itemOrg.setList(previousSubtasks); ///doe in itemOrg.addToList above
+////            DAO.getInstance().saveNew(itemOrg); //save org item with added subtasks (otherwise lost on Replay)
+//            if (false) {
+////                DAO.getInstance().saveNew(itemOrg); //NOT necessary to save itemOrg with added subtasks at this point (?!)
+//            }
+////            DAO.getInstance().saveNewTriggerUpdate(); //save new subtasks (will be deleted again if Cancel
+//            previousValues.putSubtaskList(previousSubtasks);
+//        }
+//
+//        //SOME fields are NOT AFFECTED by a template:
+//        //Actual effort
+//        //Owner
+//        //CreatedOn
+//        //Wait until
+//        //Waiting reminder
+//        //Waiting since date
+//    }
 //</editor-fold>
-//                Item newSubtask = templateSubtaskOrg.copyMeInto(new Item(false), Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
-                Item newSubtask = templateSubtaskOrg.copyMeInto(new Item(false), Item.CopyMode.COPY_TO_COPY_PASTE, 0);
-                itemOrg.addToList(newSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
-//                DAO.getInstance().saveNew(newSubtask); //save new subtasks (will be deleted again if Cancel)
-            }
-//            previousSubtasks.addAll(templateSubtasks);
-//            DAO.getInstance().saveNew((List) newSubtasksToSave); //save new subtasks (will be deleted again if Cancel
-//            itemOrg.setList(previousSubtasks); ///doe in itemOrg.addToList above
-//            DAO.getInstance().saveNew(itemOrg); //save org item with added subtasks (otherwise lost on Replay)
-            if (false) {
-//                DAO.getInstance().saveNew(itemOrg); //NOT necessary to save itemOrg with added subtasks at this point (?!)
-            }
-//            DAO.getInstance().saveNewTriggerUpdate(); //save new subtasks (will be deleted again if Cancel
-            previousValues.putSubtaskList(previousSubtasks);
-        }
-
-        //SOME fields are NOT AFFECTED by a template:
-        //Actual effort
-        //Owner
-        //CreatedOn
-        //Wait until
-        //Waiting reminder
-        //Waiting since date
-    }
-
     /**
      *
      * @param item
@@ -1617,10 +1615,12 @@ public class ScreenItem2 extends MyForm {
 //    }
 //</editor-fold>
 
-    private void setStarredSelected(boolean selected) {
-        boolean setStarActive = starred.getMaterialIcon() == Icons.iconStarUnselected; //icon is used to store state of starred changes in screen
+    private void setStarredSelected(boolean setStarActive) {
+//        boolean setStarActive = starred.getMaterialIcon() == Icons.iconStarUnselected; //icon is used to store state of starred changes in screen
         starred.setUIID(setStarActive ? "ScreenItemStarredActive" : "ScreenItemStarredNotActive");
         starred.setMaterialIcon(setStarActive ? Icons.iconStarSelected : Icons.iconStarUnselected);
+        description.setUIID(setStarActive ? "ScreenItemTaskTextStarred" : "ScreenItemTaskText");
+            description.repaint();
     }
 
     private boolean isStarredSelected() {
@@ -1922,15 +1922,21 @@ public class ScreenItem2 extends MyForm {
 //            boolean setStarActive = starred.getMaterialIcon() == Icons.iconStarUnselected; //icon is used to store state of starred changes in screen
 //            starred.setUIID(setStarActive ? "ScreenItemStarredActive" : "ScreenItemStarredNotActive");
 //            starred.setMaterialIcon(setStarActive ? Icons.iconStarSelected : Icons.iconStarUnselected);
-            setStarredSelected(!isStarredSelected());
+//            setStarredSelected(!isStarredSelected());
+            itemCopy.setStarred(!itemCopy.isStarred()); //flip state
+            setStarredSelected(itemCopy.isStarred());
 
 //            description.setUIID(setStarActive ? "ScreenItemTaskTextStarred" : "ScreenItemTaskText");
-            description.setUIID(isStarredSelected() ? "ScreenItemTaskTextStarred" : "ScreenItemTaskText");
-            description.repaint();
+//            description.setUIID(isStarredSelected() ? "ScreenItemTaskTextStarred" : "ScreenItemTaskText");
+//            description.setUIID(itemCopy.isStarred() ? "ScreenItemTaskTextStarred" : "ScreenItemTaskText");
+//            description.repaint();
 //            }
 //            updateUIIDForInherited(starred, itemCopy.isStarInheritedFrom(starred.getMaterialIcon() == Icons.iconStarSelected));
-            updateUIIDForInherited(starred, itemCopy.isStarInheritedFrom(isStarredSelected()));
+//            updateUIIDForInherited(starred, itemCopy.isStarInheritedFrom(isStarredSelected()));
         };
+//        ActionListener flipStarredIconsAndUIID = (e) -> {
+//            itemCopy.setStarred(!itemCopy.isStarred());
+//        };
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        starred.setUIID(itemCopy.isStarInheritedFrom(starred.getMaterialIcon() == Icons.iconStarUnselected) ? "ScreenItemStarredInherited" : "ScreenItemStarred");
 //        starred.addActionListener((e) -> starred?setIcon(starred.getIcon() == Icons.iconStarUnselectedLabelStyle
@@ -1949,8 +1955,9 @@ public class ScreenItem2 extends MyForm {
 //            starred.setUIID(itemCopy.isStarInheritedFrom(setStarActive) ? "ScreenItemStarredInherited" : "ScreenItemStarred");
 //        });
 //</editor-fold>
-        if (false) {
+        if (true) {
             starred.addActionListener(flipStarredIconsAndUIID);
+//            starred.addActionListener(updateStarredIconsAndUIID);
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        starred.setToggle(true);
@@ -1977,14 +1984,17 @@ public class ScreenItem2 extends MyForm {
                 //                (b) -> starred.setIcon((boolean) b ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle),
                 () -> isStarredSelected(), //starred.getMaterialIcon() == Icons.iconStarSelected,
                 (b) -> setStarredSelected((boolean) b), //starred.setMaterialIcon((boolean) b ? Icons.iconStarSelected : Icons.iconStarUnselected),
-                () -> itemCopy.isStarInheritedFrom(isStarredSelected()) //starred.getMaterialIcon() == Icons.iconStarSelected)
+                null//() -> itemCopy.isStarInheritedFrom(isStarredSelected()) //starred.getMaterialIcon() == Icons.iconStarSelected)
         //                (b) -> starred.setIcon((boolean) b ?  Icons.iconStarUnselectedLabelStyle:Icons.iconStarSelectedLabelStyle )
         //                    starred.repaint();
         ); //add taskCont just to avoid creating an unnecessary field container
 //        updateStarredUIID.actionPerformed(null); //update starred icon
 //        if (false)taskCont.add(MyBorderLayout.CENTER, description);
         mainCont.add(layoutN(Item.STARRED, starred, Item.STARRED_HELP, null, false, false, false, true, true, Icons.iconStarLabel));
-        starred.setUIID(itemCopy.isStarred() ? "ScreenItemStarredActive" : "ScreenItemStarredNotActive");
+//        starred.setUIID(itemCopy.isStarred() ? "ScreenItemStarredActive" : "ScreenItemStarredNotActive");
+//        setStarredSelected(isStarredSelected());
+//        updateStarredIconsAndUIID.actionPerformed(null);
+        setStarredSelected(itemCopy.isStarred()); //init state
 //        updateUIIDForInherited(starred, itemCopy.isStarInheritedFrom(starred.getMaterialIcon() == Icons.iconStarSelected));
 //        updateUIIDForInherited(starred, itemCopy.isStarInheritedFrom(isStarredSelected()));
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2522,13 +2532,13 @@ public class ScreenItem2 extends MyForm {
 //                    DAO.getInstance().saveNew(itemOrg); //save new items before adding subtasks
 //                    DAO.getInstance().saveNewTriggerUpdate(); //save new items before adding subtasks
                 }
-                new ScreenListOfItems(description.getText() + " subtasks", itemOrg, ScreenItem2.this, (item2) -> {
-//                    itemOrg.setList(listOfSubtasks); //done in ScreenListOfItems on Back/exit
-//                    DAO.getInstance().saveNew(itemOrg); //DONE in ScreenListOfItems
-//                    DAO.getInstance().saveNewTriggerUpdate();
-//                    updateSubtaskButton.run(); //update button lable
-//                    itemOrg.setList(subtasks); //possible to edit the subtasks directly inside ScreenListOfItems with add/removeItem only (so ?!
-                }, ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
+                new ScreenListOfItems(description.getText() + " subtasks", itemOrg, ScreenItem2.this, null //                    itemOrg.setList(listOfSubtasks); //done in ScreenListOfItems on Back/exit
+                        //                    DAO.getInstance().saveNew(itemOrg); //DONE in ScreenListOfItems
+                        //                    DAO.getInstance().saveNewTriggerUpdate();
+                        //                    updateSubtaskButton.run(); //update button lable
+                        //                    itemOrg.setList(subtasks); //possible to edit the subtasks directly inside ScreenListOfItems with add/removeItem only (so ?!
+                        ,
+                         ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
                 ).show();
             }
             ));
@@ -2826,17 +2836,21 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> actualEffortTask.getDuration(),
                 (ms) -> actualEffortTask.setDuration((long) ms));
 
-        timeCont.add(layoutN(actualTxt, isTemplate ? null : actualEffortTask, actualHelpTxt, hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconActualEffort)));
+        timeCont.add(layoutN(actualTxt, isTemplate ? null : actualEffortTask, actualHelpTxt,
+                //                hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconActualEffort),Icons.myIconFont));
+                hideIcons ? null : (isProject ? Icons.iconActualCurrentPrjCust : Icons.iconActualCurrentCust), Icons.myIconFont));
 
         //ESTIMATE************
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
 //            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
             timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatDurationStd(itemOrg.getEstimateForSubtasks()), "ScreenItemValueUneditable"),
-                    Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false, Icons.iconActualEffort));
+                    Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false, Icons.iconActualEffort, Icons.myIconFont));
         }
         String estimateTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT : Item.EFFORT_ESTIMATE;
         String estimateHelpTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT_HELP : Item.EFFORT_ESTIMATE_HELP;
-        timeCont.add(layoutN(estimateTxt, effortEstimate, estimateHelpTxt, hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconEstimateMaterial)));
+//        timeCont.add(layoutN(estimateTxt, effortEstimate, estimateHelpTxt, hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconEstimateMaterial)));
+        timeCont.add(layoutN(estimateTxt, effortEstimate, estimateHelpTxt,
+                hideIcons ? null : (isProject ? Icons.iconEstimatePrjCust : Icons.iconEstimateCust), Icons.myIconFont));
 
         timeCont.add(makeSpacerThin());
 

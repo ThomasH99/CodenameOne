@@ -34,6 +34,7 @@ public class ScreenSettingsRepeatRules extends ScreenSettingsCommon {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
+        parseIdMap2=null; //not used by settings anymore, can be removed!
         addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator);
         addSettingBoolean(content, parseIdMap2, MyPrefs.repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule);
         addSettingBoolean(content, parseIdMap2, MyPrefs.repeatSetRelativeFieldsWhenCreatingRepeatInstances);

@@ -663,6 +663,8 @@ public class MyPrefs {
             prod ? true : true, "**");
     static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry(Format.f("Show {0} for tasks not {1}", Item.EFFORT_ACTUAL, ItemStatus.DONE.getName()),
             "itemListShowActualIfNonZeroEvenIfNotDone", prod ? false : true, "**");
+    static PrefEntry itemListShowActualEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ACTUAL),
+            "itemListShowActualEvenIfZero", prod ? false : true, "**");
     static PrefEntry itemListEffortEstimate = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ESTIMATE), "itemListEffortEstimate",
             prod ? false : true, "**");
     static PrefEntry itemListAllowDuplicateListNames = new PrefEntry("Allow use of same name for different lists", "itemListAllowDuplicateListNames",

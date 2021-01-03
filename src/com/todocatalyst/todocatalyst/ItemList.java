@@ -1183,12 +1183,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
 //    @Override
     private boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
-        addItemAtIndex((E) subItemOrList, index);
+        addItemAtIndex((E) subItemOrList, index,true);
         if (Config.TEST) {
             ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this || subItemOrList.getOwner().equals(this),
                     () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
         }//        ASSERT.that( subItemOrList.getOwner() == null , "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this);
-        subItemOrList.setOwner(this);
+//        subItemOrList.setOwner(this);
 //        DAO.getInstance().save((ParseObject)subtask);
         return true;
     }
@@ -4128,7 +4128,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return filterSortDef;
     }
 
-//<editor-fold defaultstate="collapsed" desc="comment">
+    /**
+     * @return The first time this object was saved on the server.
+     */
+    public Date getCreatedAt() {
+        Date date = super.getCreatedAt();
+        return date != null ? date : new MyDate(0); //ensure never to return null (like ParseObject.getCreatedAt() does!)
+    }
+
+    @Override
+    public Date getUpdatedAt() {
+        Date date = super.getUpdatedAt();
+        return date != null ? date : new MyDate(0); //ensure never to return null (like ParseObject.getCreatedAt() does!)
+    }//<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public List<ItemAndListCommonInterface> getWorkTimeProviders() {
 //        List<ItemAndListCommonInterface> providers = new ArrayList();

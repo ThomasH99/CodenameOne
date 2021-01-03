@@ -414,8 +414,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     /**
      * do this just after insertion of the element into the list
+     *
      * @param subItemOrList
-     * @return 
+     * @return
      */
 //    default public boolean doAfterInsertion(ItemAndListCommonInterface subItemOrList) {
 //        return false;
@@ -465,6 +466,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //    public boolean addToList(ItemAndListCommonInterface newElement, int index, boolean addAfterRefEltOrEndOfList);
     /**
      * Move item to the position where itemRef is currently
+     *
      * @param item
      * @param itemRef if null, item is inserted at the end of the list
      * @param insertAfterRefOrEndOfList if true, insert after itemRef. If
@@ -509,9 +511,9 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     /**
      * move item from its current position within the ItemList to after/before
-     * the refItem's position (or if refItem is null or not found, to beginning/end of list
-     * depending on addAfterRefEltOrEndOfList). If item not already in the list,
-     * it will be inserted into the given position.
+     * the refItem's position (or if refItem is null or not found, to
+     * beginning/end of list depending on addAfterRefEltOrEndOfList). If item
+     * not already in the list, it will be inserted into the given position.
      *
      * @param item
      * @param refItemN
@@ -1222,7 +1224,6 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @param objectAfter
      */
 //    public void setNewFieldValue(String fieldParseId, Object objectBefore, Object objectAfter);
-
 //    public void forceCalculationOfWorkTime();
 //        @Override
     /**
@@ -1251,7 +1252,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default void setUseDefaultFilter(boolean useDefaultFilter) {
 
     }
-    
+
     /**
      *
      * @return
@@ -1373,37 +1374,39 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     public void deletePrepare(Date deletedDate);
 
     default void checkOwners(List<ItemAndListCommonInterface> list) {
-        if (list != null) {
-            for (ItemAndListCommonInterface elt : list) {
-                if (elt instanceof Item) {
-                    Item item = (Item) elt;
-                    ItemAndListCommonInterface owner = elt.getOwner();
-                    ASSERT.that(owner == this
-                            || owner == null
-                            || this.isNoSave(),
-                            () -> ("ERROR in owner: Item="
-                            + (item.toString(false)
-                            + (owner instanceof ItemList
-                                    ? (", item.owner=" + ((ItemList) owner).toString(false))
-                                    : (", item.owner=" + ((Item) owner).toString(false)))
-                            + (this instanceof ItemList
-                                    ? (", but in list=" + ((ItemList) this).toString(false))
-                                    : (", but in list=" + ((Item) this).toString(false))))));
+        if (false) {
+            if (list != null) {
+                for (ItemAndListCommonInterface elt : list) {
+                    if (elt instanceof Item) {
+                        Item item = (Item) elt;
+                        ItemAndListCommonInterface owner = elt.getOwner();
+                        ASSERT.that(owner == this
+                                || owner == null
+                                || this.isNoSave(),
+                                () -> ("ERROR in owner: Item="
+                                + (item.toString(false)
+                                + (owner instanceof ItemList
+                                        ? (", item.owner=" + ((ItemList) owner).toString(false))
+                                        : (", item.owner=" + ((Item) owner).toString(false)))
+                                + (this instanceof ItemList
+                                        ? (", but in list=" + ((ItemList) this).toString(false))
+                                        : (", but in list=" + ((Item) this).toString(false))))));
 //                        + ", should be=" + this.toString(false))));
-                } else if (elt instanceof WorkSlot) {
-                    WorkSlot workSlot = (WorkSlot) elt;
-                    ItemAndListCommonInterface owner = elt.getOwner();
-                    ASSERT.that(owner == this
-                            || owner == null
-                            || this.isNoSave(),
-                            () -> ("ERROR in owner: WorkSlot="
-                            + (workSlot.toString()
-                            + (owner instanceof ItemList
-                                    ? (", item.owner=" + ((ItemList) owner).toString(false))
-                                    : (", item.owner=" + ((Item) owner).toString(false)))
-                            + (this instanceof ItemList
-                                    ? (", but in list=" + ((ItemList) this).toString(false))
-                                    : (", but in list=" + ((Item) this).toString(false))))));
+                    } else if (elt instanceof WorkSlot) {
+                        WorkSlot workSlot = (WorkSlot) elt;
+                        ItemAndListCommonInterface owner = elt.getOwner();
+                        ASSERT.that(owner == this
+                                || owner == null
+                                || this.isNoSave(),
+                                () -> ("ERROR in owner: WorkSlot="
+                                + (workSlot.toString()
+                                + (owner instanceof ItemList
+                                        ? (", item.owner=" + ((ItemList) owner).toString(false))
+                                        : (", item.owner=" + ((Item) owner).toString(false)))
+                                + (this instanceof ItemList
+                                        ? (", but in list=" + ((ItemList) this).toString(false))
+                                        : (", but in list=" + ((Item) this).toString(false))))));
+                    }
                 }
             }
         }
@@ -1508,5 +1511,18 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default public String getReplayId() {
         return getGuid();
     }
+
+    /**
+     * date when item was last explicitly edited by user, *excluding*
+     * 'automatic' updates or house-keeping updates by inheritance, values
+     * aggregated from subtasks, updates by Timer. Includes editing values in
+     * ScreenItem2, changing task status in task lists, adding/deleting
+     * subtasks.
+     *
+     * @param editedDate
+     */
+    public void setEditedDate(Date editedDate);
+
+    public Date getEditedDate();
     
 }

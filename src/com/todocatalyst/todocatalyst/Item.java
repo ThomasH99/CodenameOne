@@ -1508,7 +1508,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             } else {
 //                ASSERT.that(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null),
 //                        () -> "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
-                ASSERT.that(oldOwner == null || Objects.equals(newOwner, oldOwner) || Objects.equals(newOwner.getObjectIdP(), oldOwner.getObjectIdP()),
+                ASSERT.that(oldOwner == null || Objects.equals(newOwner, oldOwner)
+                        || (newOwner != null && Objects.equals(newOwner.getObjectIdP(), oldOwner.getObjectIdP())),
                         () -> "overwriting non-null owner, oldOwner=" + oldOwner + ", newOwner=" + newOwner);
             }
         }
@@ -1536,10 +1537,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             } else {
                 ASSERT.that(false, () -> "unknown owner type for " + newOwner);
             }
-        }
-        //if an owner has been set, then execute the repeatRule if necessary
-        if (newOwner != null) {
-            updateRepeatRule();
+            //if an owner has been set, then execute the repeatRule if necessary
+            //        if (oldOwner == null && newOwner != null) {
+            if (newOwner != null) {
+                updateRepeatRule(); //NO, changing owner is not the right place since owner may change for other reasons than inserting into a new owner list (e.g. if moving
+            }
         }
     }
 
@@ -4483,8 +4485,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (newRepeatRuleN != null && newRepeatRuleN.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
 //                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null)
 //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+                newRepeatRuleN.setUpdatePending(!isTemplate());xxx;
                 setRepeatRuleInParse(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
-                if (!isTemplate()) { // newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true);
+                if (false && !isTemplate()) { // newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true);
                     newRepeatRuleN.addOriginatorToRule(this); //if new RepeatRule, add Item as originator
                     Log.p("line 4448: opsUpdateRepeatRule.add(() -> newRepeatRuleN.updateItemsWhenRuleCreatedOrEdited(this, true));");
 //                    opsUpdateRepeatRule.add(() -> newRepeatRuleN.updateItemsWhenRuleCreatedOrEdited(this, true)); //will also save RR
@@ -4501,17 +4504,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (newRepeatRuleN == null || newRepeatRuleN.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) { //deleting the existing RR
 //                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
                 //                    DAO.getInstance().deleteInBackground(oldRepeatRule); //DONE in deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis (if no references)
+                oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //delete old instances
                 setRepeatRuleInParse(null);
                 Log.p("line 4459: opsUpdateRepeatRule.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this));");
                 if (false) {
-                    opsUpdateRepeatRule.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)); //will also save RR
-                } else {
-                    newRepeatRuleN.setUpdatePending(true);
+                    if (false) {
+                        opsUpdateRepeatRule.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)); //will also save RR
+                    } else {
+                        newRepeatRuleN.setUpdatePending(true);
+                    }
                 }
             } else { //newRepeatRule != null and possibly modified (eg. click Edit Rule, then Back
                 if (!newRepeatRuleN.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
                     oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRuleN); //update existing rule with updated values
-                    setRepeatRuleInParse(oldRepeatRule);
+                    setRepeatRuleInParse(oldRepeatRule); //set to ensure it is saved
                     if (!isTemplate()) {
                         Log.p("line 4466: opsUpdateRepeatRule.add(() -> oldRepeatRule.updateItemsWhenRuleCreatedOrEdited(this, false));");
                         if (false) {
@@ -5495,7 +5501,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        ItemStatus subtaskStatus = getStatusFromSubtasksN();
 //        setStatus(subtaskStatus, false, true, true, now);
 //    }
-
     protected void updateStatusOnSubtaskStatusChange() {
         ItemStatus subtaskStatus = getStatusFromSubtasksN();
         setStatus(subtaskStatus, false, true, true, new MyDate(), true);
@@ -6410,7 +6415,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        return (date == null) ? 0L : date.getTime();
 //        return getDueDate().getTime();
 //    }
-
     private Date getDueDateDFromParse() {
         Date date = getDate(PARSE_DUE_DATE);
         return (date == null) ? new MyDate(0) : date;
@@ -6555,7 +6559,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public Date getCreatedAt() {
         Date date = super.getCreatedAt();
-        return date != null ? date : new MyDate(0);
+        return date != null ? date : new MyDate(0); //ensure never to return null (like ParseObject.getCreatedAt() does!)
     }
 
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -6734,13 +6738,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    /**
-     * date when item was last explicitly edited by user, excluding updates by
-     * inheritance, values aggregated from subtasks, updates by Timer. Includes
-     * edits in ScreenItem2, changing task status, adding/deleting subtasks,
-     *
-     * @param editedDate
-     */
+    @Override
     public void setEditedDate(Date editedDate) {
         Date oldVal = getStartByDateD();
 
@@ -6753,6 +6751,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
+    @Override
     public Date getEditedDate() {
         Date date = getDate(PARSE_EDITED_DATE);
         return (date == null) ? new MyDate(0) : date;
@@ -7323,7 +7322,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private void setRemainingTotalInParse(long remainingEffortTotalMillis) {
         long oldVal = getRemainingTotalFromParse();
         if (remainingEffortTotalMillis > 0) {
-            if (oldVal != remainingEffortTotalMillis) {
+            if (remainingEffortTotalMillis != oldVal) {
                 put(PARSE_REMAINING_EFFORT_TOTAL, remainingEffortTotalMillis); //update first 
             }
         } else {
@@ -9757,23 +9756,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public void updateRepeatRule() {
         //2. Once subtasks' inherited values or pushed values (eg Status) are updated, calculate the repeatRule
-        if (false) {
-            ASSERT.that(opsUpdateRepeatRule.size() <= 1);
-            while (!opsUpdateRepeatRule.isEmpty()) {
-                Runnable f = opsUpdateRepeatRule.remove(0); //ensures that each operation is only called once, even if iterating (the run() calls an operation which calls saveInBackground triggering 
-                f.run();
-            }
-        } else {
-            RepeatRuleParseObject currentRepeatRule = getRepeatRuleN();
-            if (currentRepeatRule != null && currentRepeatRule.isUpdatePending()) {
-                currentRepeatRule.setUpdatePending(false); //MUST set false before updating to avoid recursion when new RR instances 
+//        if (false) {
+//            ASSERT.that(opsUpdateRepeatRule.size() <= 1);
+//            while (!opsUpdateRepeatRule.isEmpty()) {
+//                Runnable f = opsUpdateRepeatRule.remove(0); //ensures that each operation is only called once, even if iterating (the run() calls an operation which calls saveInBackground triggering 
+//                f.run();
+//            }
+//        } else {
+        RepeatRuleParseObject currentRepeatRule = getRepeatRuleN();
+        if (!isTemplate() && currentRepeatRule != null && currentRepeatRule.isUpdatePending()) {
+            currentRepeatRule.setUpdatePending(false); //MUST set false before updating to avoid recursion when new RR instances 
 //                if (currentRepeatRule.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
 //                    currentRepeatRule.updateItemsWhenRuleCreatedOrEdited(this); //will also save RR
 //                } else {
-                currentRepeatRule.updateItemsWhenRuleCreatedOrEdited(this);
+            currentRepeatRule.updateItemsWhenRuleCreatedOrEdited(this);
 //                }
-            }
         }
+//        }
     }
 
 //    public void updateOwnerWithValuesDerivedFromSubtasksXXX() {
@@ -9783,7 +9782,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            ownerItem.updateAllValuesDerivedFromSubtasks();
 //        }
 //    }
-
 //    public void updateBeforeEditSubtasks() {
 //        updateSubtasks();
 ////        updateOwnerWithValuesDerivedFromSubtasks();
@@ -9794,7 +9792,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (false) {
 //            updateSubtasks();
 //        }
-        if(false)updateRepeatRule();
+        if (false) {
+            updateRepeatRule();
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        updateOwnerWithValuesDerivedFromSubtasks();
 //        if (false) {
@@ -10407,7 +10407,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             //TODO!!! if EffortEstimate is also set in text, then DON'T autoupdate it based on Remaining
             boolean effortEstimateNotDefinedInTextInput = true;
 //            item.setEstimate(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, true); //update remaining, set for project-level
-            item.setRemainingForTask(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, effortEstimateNotDefinedInTextInput); //update remaining, set for project-level
+            if (res.minutes != 0) { //don't set if nothing is entered (this may overwrite the default value with 0!)
+                item.setRemainingForTask(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, effortEstimateNotDefinedInTextInput); //update remaining, set for project-level
+            }
             return cleanedTxt;
         }
         return txt;
@@ -11766,7 +11768,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            remove(PARSE_FILTER_SORT_DEF);
 //        }
 //    }
-
     @Override
     public void setFilterSortDef(FilterSortDef filterSortDef) {
 //        if (filterSortDef != null && !filterSortDef.equals(getDefaultFilterSortDef())) { //only save filter for subtasks if modified!
