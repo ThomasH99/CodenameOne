@@ -186,7 +186,7 @@ public class MyCheckBox extends Button {
         if (!inactive)
             addActionListener((evt) -> {
                 if (this.activateFullMenuOnSingleClick) {
-                    selectNewStatus();
+                    selectNewStatusOnSingleClick();
                 } else {
                     //TODO!! move below logic into static method in Item to avoid duplication
 //                ItemStatus itemStatus = itemStatus.getStatus();
@@ -312,7 +312,7 @@ public class MyCheckBox extends Button {
         return b;
     }
 
-    private void selectNewStatus() {
+    private void selectNewStatusOnSingleClick() {
         //TODO move this logic to Item.xxx
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        d = new Dialog("Select");
@@ -446,7 +446,7 @@ public class MyCheckBox extends Button {
 //        };
 //</editor-fold>
         if (!inactive)
-            selectNewStatus();
+            selectNewStatusOnSingleClick();
 //        fireActionEvent(x, y); //ensure that longPress to select any new status will trigger updates //NECESSARY? Or will the pointerReleased trigger a normal actionEvent?
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        d = new Dialog("Select");

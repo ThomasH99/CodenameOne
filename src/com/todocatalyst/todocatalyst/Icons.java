@@ -122,6 +122,8 @@ public class Icons {
     final static char iconCreatedDateCust = 'n'; //TODO: custom icon
     final static char iconModifiedDate = FontImage.MATERIAL_EDIT; //TODO: custom icon
     final static char iconModifiedDateCust = 'h'; //TODO: custom icon
+    final static char iconEditedDate = FontImage.MATERIAL_EDIT; //TODO: custom icon
+    final static char iconEditedDateCust = 'h'; //TODO: custom icon
     
     final static char iconPriority = FontImage.MATERIAL_PRIORITY_HIGH; //TODO: custom icon
     final static char iconPrio0Cust = '0'; //custom icon

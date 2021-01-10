@@ -614,7 +614,7 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
 //                }
 //                    DAO.getInstance().saveNewTriggerUpdate();
 //                    DAO.getInstance().saveToParseNow(newItem,(ParseObject) category2,(ParseObject) itemOrItemListForNewElements); 
-                    DAO.getInstance().saveToParseNow(newItem);
+//                    DAO.getInstance().saveToParseNow(newItem);
                 }
 //            }, () -> myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE), newItem.isTemplate(), predefinedValues);
             }, () -> myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE), newItem.isTemplate(), null);
@@ -664,7 +664,8 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
 
                 myForm.expandedObjects.add(refItem); //expand to show subtasks
                 saveKeys(newItem);
-                myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP());
+//                myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP());
+                myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY, newItem.getGuid());
 
                 refItem = newItem; //now start inserting below just added subtask
                 insertAsSubt = false; //remove the subtask property so next task does not become a subtask to the subtask
@@ -842,7 +843,8 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
     }
 
     private void saveKeys(Item newItem) {
-        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP());
+//        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItem.getObjectIdP());
+        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY, newItem.getGuid());
         ASSERT.that(Item.CLASS_NAME.equals(myForm.previousValues.get(MyForm.SAVE_LOCALLY_REF_ELT_PARSE_CLASS))); //already saved and can't change during an insert 'session'
         if (false) {
             myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_PARSE_CLASS, ((ParseObject) newItem).getClassName()); //already saved and can't change during an insert 'session'

@@ -86,11 +86,10 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        updateRepeatingWorkSlots();
         setNow(MyDate.currentTimeMillis()); //MyDate.MIN_DATE; //System.currentTimeMillis(); //for now, use a 'local' (object specific) value for now (should be global and coming from Screen/UI
     }
-    
-        public WorkSlotList( List<WorkSlot> list, boolean alreadySorted) {
-            this(null, list, alreadySorted);
-        }
 
+    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
+        this(null, list, alreadySorted);
+    }
 
 //    public WorkSlotList(List<WorkSlot> list, boolean alreadySorted) {
 //        this(null, list, alreadySorted);
@@ -148,6 +147,10 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
      * @param workSlot
      */
     public void add(WorkSlot workSlot) {
+        add(workSlot, true);
+    }
+
+    public void add(WorkSlot workSlot, boolean setOwner) {
 ////        workslotList.add(workSlot);
 ////        sortWorkSlotList(); //DONE //optimization: insert sorted instead of do entire bubblesort
 //        for (int i = sortedOnStartTimeWorkslotList.size() - 1; i >= 0; i--) {
@@ -161,6 +164,9 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
         sortedOnStartTimeWorkslotList.add(workSlot);
         WorkSlot.sortWorkSlotList(sortedOnStartTimeWorkslotList); //ONLY sure way to always keep sorted on startTime, then duration (if multiple with same startTime)
         owner.setWorkSlotsInParse(sortedOnStartTimeWorkslotList); //save updated list
+        if (setOwner) {
+            workSlot.setOwner(owner);
+        }
         //simple solution: new workSlots are likely be the most recent, so simply search from end of list to find where to insert
     }
 
@@ -214,7 +220,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
                 //gather all repeatRules to update in batch:
                 RepeatRuleParseObject repeatRule = ws.getRepeatRuleN();
 //                if (repeatRule != null && !(workSlotsWithRepeatRules.contains(repeatRule))) { //contains(): keep only one instance of each rule if multiple workslots originate from same rule
-                if (repeatRule != null ) { //contains(): keep only one instance of each rule if multiple workslots originate from same rule
+                if (repeatRule != null) { //contains(): keep only one instance of each rule if multiple workslots originate from same rule
                     workSlotsWithRepeatRules.add(repeatRule);
                 }
             }
@@ -374,7 +380,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
      * startDate
      * @return
      */
-    public static List<WorkSlot> getWorkSlotsInInterval( List<WorkSlot>sortedOnStartTimeWorkslotList, Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
+    public static List<WorkSlot> getWorkSlotsInInterval(List<WorkSlot> sortedOnStartTimeWorkslotList, Date startDate, Date endDate, boolean includeFullDay, boolean isSorted) {
 //        return removeWorkSlotsInInterval(this, startDate, endDate, includeFullDay, isSorted);
         //skip all elements that end *before* startTime, stops nu with workSlot
         ArrayList<WorkSlot> result = new ArrayList<>();

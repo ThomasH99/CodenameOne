@@ -67,11 +67,11 @@ public class ScreenListOfCategories extends MyForm {
 //                            DAO.getInstance().save(cat);
 //                        });
 //    }
-    ScreenListOfCategories(CategoryList categoryList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfCategories(CategoryList categoryList, MyForm previousForm, Runnable updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super(title == null ? SCREEN_TITLE : title, previousForm, () -> updateItemListOnDone.update(categoryList));
 //        super(SCREEN_TITLE, previousForm, () -> updateItemListOnDone.update(categoryList));
-        super(SCREEN_TITLE, previousForm, null);
-        setUpdateActionOnCancel(() -> updateItemListOnDone.update2(categoryList));
+        super(SCREEN_TITLE, previousForm, updateItemListOnDone);
+//        setUpdateActionOnCancel(() -> updateItemListOnDone.update2(categoryList));
         setUniqueFormId("ScreenListOfCategories");
 //        setUpdateItemListOnDone(updateItemListOnDone);
         this.categoryList = categoryList;
@@ -478,7 +478,7 @@ public class ScreenListOfCategories extends MyForm {
 
 //                new ScreenListOfItems(category, ScreenListOfCategories.this,
 //            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, mainCont)); //mainCont right container to use here??
-            new ScreenListOfItems(category.getText(), () -> category, (MyForm) swipCont.getComponentForm(), (itemsInCategory) -> {
+            new ScreenListOfItems(category.getText(), () -> category, (MyForm) swipCont.getComponentForm(), () -> {
                 ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, swipCont));
 //                if (false) { // I don't think this makes any sense, all edits to items within the category should be updated directly (eg Item.softdelete should remove it from category, edit Item to remove the category should also update/save the category, ...)
 //                    category.setList(itemsInCategory.getListFull()); //should probably be full, to check if re-activating this code
@@ -491,7 +491,7 @@ public class ScreenListOfCategories extends MyForm {
                 if (refreshOnItemEdits != null) {
                     refreshOnItemEdits.launchAction(); //refresh when items have been edited
                 }
-                return true;
+//                return true;
             }, 0).show();
         });
         editCategoryCmd.setAnalyticsActionId("EditCategoryFromListOfCategories");

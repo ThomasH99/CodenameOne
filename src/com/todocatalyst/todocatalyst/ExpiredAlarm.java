@@ -36,7 +36,7 @@ public class ExpiredAlarm implements Externalizable {
 //    }
 
     ExpiredAlarm(NotificationShadow notif) {
-        ASSERT.that(notif.getGuidStr()!=null, "trying to set alarm with objectId==null, notif="+notif);
+        ASSERT.that(notif.getGuidStr()!=null, "trying to set alarm with guid==null, notif="+notif);
         this.guid = notif.getGuidStr();
         this.alarmTime = notif.alarmTime;
         this.type = notif.type;
@@ -47,7 +47,8 @@ public class ExpiredAlarm implements Externalizable {
     
     @Override
     public String toString() {
-        return type+"/"+MyDate.formatDateTimeNew(alarmTime)+"/"+(DAO.getInstance().fetchItem(guid)).getText()+"/"+guid ;
+//        return type+"/"+MyDate.formatDateTimeNew(alarmTime)+"/"+(DAO.getInstance().fetchItem(guid)).getText()+"/"+guid ;
+        return type+"/"+MyDate.formatDateTimeNew(alarmTime)+"/guid:"+guid ;
     }
 
     @Override

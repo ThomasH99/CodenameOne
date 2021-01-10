@@ -201,7 +201,8 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
 //        DAO.getInstance().saveNew((ParseObject) categoryList);
         DAO.getInstance().saveToParseNow((ParseObject) newCategory);
 //        DAO.getInstance().saveNewTriggerUpdate();
-        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newCategory.getObjectIdP());
+//        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newCategory.getObjectIdP());
+        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY, newCategory.getGuid());
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, false); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container

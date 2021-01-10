@@ -1137,15 +1137,15 @@ public class MyForm extends Form {
         void editNewItemListItem(ItemList itemList);
     }
 
-    interface UpdateItemListAfterEditing {
-
-        /**
-         *
-         * @param itemList
-         */
-//        void update(ItemList itemList);
-        boolean update2(ItemAndListCommonInterface itemList); //renamed '2' to see if it fixes lambda backport compilation error for ios
-    }
+//    interface UpdateItemListAfterEditing {
+//
+//        /**
+//         *
+//         * @param itemList
+//         */
+////        void update(ItemList itemList);
+//        boolean update2(ItemAndListCommonInterface itemList); //renamed '2' to see if it fixes lambda backport compilation error for ios
+//    }
 
 //    interface GetWorkSlotList {
 //        void update(List<WorkSlot> workSlotList);
@@ -2847,26 +2847,28 @@ public class MyForm extends Form {
                 if (newItem.hasSaveableData()) {
                     if (itemListOrg instanceof Category) {
                         ((Category) itemListOrg).addItemToCategory(newItem, null, false, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //false because added above (before editing)
-                        Inbox.getInstance().addToList(newItem, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+                        if (newItem.getOwner() == null) { //if no owner was set manually, use Inbox
+                            Inbox.getInstance().addToList(newItem, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+                        }
 //                    DAO.getInstance().saveNew(true, newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNew(newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNewTriggerUpdate();
 //                        DAO.getInstance().saveToParseNow(newItem, Inbox.getInstance(), (Category) itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                        DAO.getInstance().saveToParseNow(newItem); //must save item since adding it to itemListOrg changes its owner
+//                        DAO.getInstance().saveToParseNow(newItem); //must save item since adding it to itemListOrg changes its owner
                     } else if (itemListOrg instanceof ItemList) {
                         itemListOrg.addToList(newItem, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
 //                    DAO.getInstance().saveNew(true, newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNew(newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNewTriggerUpdate();
 //                        DAO.getInstance().saveToParseNow(newItem, (ItemList) itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                        DAO.getInstance().saveToParseNow(newItem); //must save item since adding it to itemListOrg changes its owner
+//                        DAO.getInstance().saveToParseNow(newItem); //must save item since adding it to itemListOrg changes its owner
                     } else if (itemListOrg instanceof Item) {
                         itemListOrg.addToList(newItem, null, MyPrefs.insertNewItemsInStartOfLists.getBoolean()); //UI: add to top of list
 //                    DAO.getInstance().saveNew(true, newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNew(newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
 //                        DAO.getInstance().saveNewTriggerUpdate();
 //                        DAO.getInstance().saveToParseNow(newItem, (Item) itemListOrg); //must save item since adding it to itemListOrg changes its owner
-                        DAO.getInstance().saveToParseNow(newItem); //must save item since adding it to itemListOrg changes its owner
+//                        DAO.getInstance().saveToParseNow(newItem); //must save item since adding it to itemListOrg changes its owner
                     } else {
                         ASSERT.that(false);
                     }
@@ -3375,17 +3377,18 @@ public class MyForm extends Form {
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help, Character materialIcon, Font iconFont) {
         return new EditFieldContainer(fieldLabelTxt, field, help,
                 (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null),
-                true, false, false, false, false, materialIcon,iconFont);
+                true, false, false, false, false, materialIcon, iconFont);
     }
+
     protected static Component layoutN(String fieldLabelTxt, Picker field, String help, Character materialIcon) {
         return new EditFieldContainer(fieldLabelTxt, field, help,
-//<editor-fold defaultstate="collapsed" desc="comment">
+                //<editor-fold defaultstate="collapsed" desc="comment">
                 //                field instanceof MyDurationPicker
                 //                        ? (() -> ((MyDurationPicker) field).swipeClear())
                 //                        : (field instanceof MyDatePicker
                 //                                ? () -> ((MyDatePicker) field).swipeClear()
                 //                                : () -> ((MyDateAndTimePicker) field).swipeClear()),
-//</editor-fold>
+                //</editor-fold>
                 (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null),
                 true, false, false, false, false, materialIcon);
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3463,7 +3466,7 @@ public class MyForm extends Form {
     protected static Component layoutN(String fieldLabelTxt, Component field, String help,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, Character materialIcon, Font iconFont) {
 //        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
-        return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon,iconFont);
+        return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon, iconFont);
     }
 
     protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help,
@@ -4343,12 +4346,12 @@ public class MyForm extends Form {
      * @param fieldIdentifier
      * @param field
      * @param getOrg
-     * @param putOrg
-     * @param getField
-     * @param putField
+     * @param putOrgN
+     * @param getFieldN
+     * @param putFieldN
      * @param undefinedValue
      * @param getDefaultValue
-     * @param isInherited
+     * @param isInheritedN
      * @param previousValues
      * @param parseIdMap2
      */
@@ -4505,28 +4508,31 @@ public class MyForm extends Form {
 ////</editor-fold>
 //    }
 //</editor-fold>
-    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField, Object undefinedValue,
-            GetVal getDefaultValue, GetBool isInherited, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2) {
+    static void initField(String fieldIdentifier, Object field, GetVal getOrg, PutVal putOrgN, GetVal getFieldN, PutVal putFieldN, Object undefinedValue,
+            GetVal getDefaultValue, GetBool isInheritedN, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2) {
         //initialize 
-        if (getOrg.getVal() != null) {
-            putField.setVal(getOrg.getVal());
-            if (isInherited != null) {
-                updateUIIDForInherited((Component) field, isInherited.getVal());
+        if (putFieldN != null && getOrg.getVal() != null) {
+            putFieldN.setVal(getOrg.getVal());
+            if (isInheritedN != null) {
+                updateUIIDForInherited((Component) field, isInheritedN.getVal());
             }
         } else if (undefinedValue != null && MyUtil.eql(getOrg.getVal(), undefinedValue)) { //if org value==undefinedValue, then set field with default value
-            putField.setVal(getDefaultValue.getVal()); //set editable field (will be stored in previousValues *if* it is modified later on
-            if (isInherited != null) {
-                updateUIIDForInherited((Component) field, isInherited.getVal());
+            if (putFieldN != null) {
+                putFieldN.setVal(getDefaultValue.getVal()); //set editable field (will be stored in previousValues *if* it is modified later on
+            }
+            if (isInheritedN != null) {
+                updateUIIDForInherited((Component) field, isInheritedN.getVal());
             }
         }
         //set actionListener on edited field, to store edited values (only if different from the original one)
-        if (getField != null) {
+        if (getFieldN != null) {
             ActionListener updateElement = (e) -> { //must be a MyActionListener to get triggered if programmatically setting the value
-                putOrg.setVal(getField.getVal()); //update original value
-                //save updated element locally
+                if (putOrgN != null) {
+                    putOrgN.setVal(getFieldN.getVal()); //update original value
+                }                //save updated element locally
                 previousValues.saveElementToSaveLocally();
-                if (isInherited != null) {
-                    updateUIIDForInherited((Component) field, isInherited.getVal());
+                if (isInheritedN != null) {
+                    updateUIIDForInherited((Component) field, isInheritedN.getVal());
                 }
             };
 
@@ -4929,7 +4935,8 @@ public class MyForm extends Form {
 //        createAndAddInsertContainer(myDDContN, refElement, insertBeforeRefElement); //NB: createAndAddInsertContainer checks for null values
 //    }
 //</editor-fold>
-    protected static final String SAVE_LOCALLY_REF_ELT_OBJID_KEY = "InlineInsertElementOBJID";
+//    protected static final String SAVE_LOCALLY_REF_ELT_GUID_KEY = "InlineInsertElementOBJID";
+    protected static final String SAVE_LOCALLY_REF_ELT_GUID_KEY = "InlineInsertElementGUID";
     protected static final String SAVE_LOCALLY_REF_ELT_PARSE_CLASS = "InlineInsertEltParseCLASS";
     protected static final String SAVE_LOCALLY_INSERT_BEFORE_REF_ELT = "InlineInsertBEFORERefElt";
     protected static final String SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK = "InlineInsertSavedSUBTASK"; //used to save inline text from within the InlineInsert container
@@ -4972,8 +4979,8 @@ public class MyForm extends Form {
 //            makeInlineInsertReplayCmd();
         if (previousValues != null) {
             //if inlineInsert was left active when app was last active, then re-insert the container again
-            if (previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY) != null) { //check if there were an earlier inline container
-                String refEltObjId = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_OBJID_KEY);
+            if (previousValues.get(SAVE_LOCALLY_REF_ELT_GUID_KEY) != null) { //check if there were an earlier inline container
+                String refEltGuid = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_GUID_KEY);
                 String refClass = (String) previousValues.get(SAVE_LOCALLY_REF_ELT_PARSE_CLASS);
 //                boolean insertBefore = (Boolean) previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //!=null;
                 boolean insertBefore = previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT) != null; //!=null;
@@ -4984,16 +4991,16 @@ public class MyForm extends Form {
                     switch (refClass) {
                         case Item.CLASS_NAME:
 //                Item aboveItem = DAO.getInstance().fetchItem(refEltObjId);
-                            refElement = DAO.getInstance().fetchItem(refEltObjId);
+                            refElement = DAO.getInstance().fetchItem(refEltGuid);
                             break;
                         case ItemList.CLASS_NAME:
-                            refElement = DAO.getInstance().fetchItemList(refEltObjId);
+                            refElement = DAO.getInstance().fetchItemList(refEltGuid);
                             break;
                         case Category.CLASS_NAME:
-                            refElement = DAO.getInstance().fetchCategory(refEltObjId);
+                            refElement = DAO.getInstance().fetchCategory(refEltGuid);
                             break;
                         case WorkSlot.CLASS_NAME:
-                            refElement = DAO.getInstance().fetchCategory(refEltObjId);
+                            refElement = DAO.getInstance().fetchWorkSlotFromParseByGuid(refEltGuid);
                             break;
                         default:
                             if (Config.TEST) {
@@ -5005,9 +5012,9 @@ public class MyForm extends Form {
                     refElement = null; //needed to only initialize once to use in lambda expression below
                 }
 
-                MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltObjId);
+                MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltGuid);
                 if (Config.TEST) {
-                    ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltObjId + ", eltParseClass=" + refClass + ", insertAfter=" + insertBefore);
+                    ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltGuid + ", eltParseClass=" + refClass + ", insertAfter=" + insertBefore);
                 }
                 if (myDDContN != null && refElement != null) {
                     createAndAddPinchInsertContainer(myDDContN, refElement, insertBefore); //NB: createAndAddInsertContainer checks for null values
@@ -5556,7 +5563,8 @@ public class MyForm extends Form {
 //            refElt = refComp.getDragAndDropObject();
         if (previousValues != null) {
             if (refElt != null) { //can be null if inserting into empty list
-                previousValues.put(SAVE_LOCALLY_REF_ELT_OBJID_KEY, refElt.getObjectIdP());
+//                previousValues.put(SAVE_LOCALLY_REF_ELT_GUID_KEY, refElt.getObjectIdP());
+                previousValues.put(SAVE_LOCALLY_REF_ELT_GUID_KEY, refElt.getGuid());
                 previousValues.put(SAVE_LOCALLY_REF_ELT_PARSE_CLASS, ((ParseObject) refElt).getClassName());
 //            }
 //<editor-fold defaultstate="collapsed" desc="comment">

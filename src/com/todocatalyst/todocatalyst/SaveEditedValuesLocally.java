@@ -290,7 +290,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
     
     public void removePinchInsertKeys() {
-        remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
+        remove(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY); //delete the marker on exit
         remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //delete the marker on exit
         remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK); //delete the marker on exit
         remove(MyForm.SAVE_LOCALLY_REF_ELT_PARSE_CLASS); //delete the marker on exit
@@ -504,20 +504,20 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //            return null;
 //        }
 //    }
-    public List<ItemAndListCommonInterface> getOwnersN() {
-        if (get(Item.PARSE_OWNER_ITEM) != null) {
-            List<String> ids = (List) get(Item.PARSE_OWNER_ITEM);
-            List<ItemAndListCommonInterface> owners = new ArrayList();
-            for (String id : ids) {
-                ItemAndListCommonInterface owner = DAO.getInstance().fetchItemOwner(id);
-                owners.add(owner);
-            }
-            return owners;
-        } else {
-            return null;
-        }
-//        return getListOfElementsN(Item.PARSE_OWNER_ITEM);
-    }
+//    public List<ItemAndListCommonInterface> getOwnersN() {
+//        if (get(Item.PARSE_OWNER_ITEM) != null) {
+//            List<String> ids = (List) get(Item.PARSE_OWNER_ITEM);
+//            List<ItemAndListCommonInterface> owners = new ArrayList();
+//            for (String id : ids) {
+//                ItemAndListCommonInterface owner = DAO.getInstance().fetchItemOwner(id);
+//                owners.add(owner);
+//            }
+//            return owners;
+//        } else {
+//            return null;
+//        }
+////        return getListOfElementsN(Item.PARSE_OWNER_ITEM);
+//    }
 
     /**
      * shortcut to convert a list of subtasks/Items to a list of their ObjectIds
@@ -598,9 +598,9 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //    public void removeOwnerXXX() {
 //        remove(Item.PARSE_OWNER_ITEM);
 //    }
-    public void removeOwners() {
-        remove(Item.PARSE_OWNER_ITEM);
-    }
+//    public void removeOwners() {
+//        remove(Item.PARSE_OWNER_ITEM);
+//    }
     
     public Date getEditSessionStartTime() {
         return (Date) get(EDIT_SESSION_START_TIME);

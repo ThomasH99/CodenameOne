@@ -10,8 +10,8 @@ import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
-import static com.todocatalyst.todocatalyst.Item.PARSE_FILTER_SORT_DEF;
-import static com.todocatalyst.todocatalyst.ItemList.PARSE_WORKSLOTS;
+//import static com.todocatalyst.todocatalyst.Item.PARSE_FILTER_SORT_DEF;
+//import static com.todocatalyst.todocatalyst.ItemList.PARSE_WORKSLOTS;
 import static com.todocatalyst.todocatalyst.MyUtil.eql;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -90,6 +90,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
 //    public void setWorkSlots(List<WorkSlot> workSlots);
     public void setWorkSlotsInParse(List workSlots);
+//    public void setWorkSlotListInParse(List workSlots);
+
+    default public void setWorkSlotListInParse(WorkSlotList workSlots) {
+        setWorkSlotsInParse(workSlots.getWorkSlotListFull());
+    }
 
     /**
      * get list of current & future workslots (exclude all that have expired ie
@@ -154,10 +159,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //            workSlotList.setOwner(this);
         } //else {//else needed since new workSlot already added in WorkSlotList constructor above
         for (WorkSlot workSlot : workSlots) {
-            workSlotList.add(workSlot); //adds *sorted*!
-            workSlot.setOwner(this);
+            workSlotList.add(workSlot, true); //adds *sorted*!
+//            workSlot.setOwner(this); //now done in add above
         }
-//        setWorkSlotList(workSlotList);
+//        setWorkSlotListInParse(workSlotList);
     }
 
     /**
@@ -738,10 +743,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     public boolean isDirty();
 
-    public boolean isUnsaved();
+//    public boolean isUnsaved();
+    public boolean isNotCreated();
 
     default public boolean needsSaving() {
-        return isDirty() || isUnsaved();
+        return isDirty();// || isUnsaved();
     }
 
     /**
@@ -1523,6 +1529,16 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
     public void setEditedDate(Date editedDate);
 
+    /**
+     * set EditedDate to now
+     */
+    default public void setEditedDateToNow() {
+        setEditedDate(new MyDate());
+    }
+
+//    default public Date getEditedDate() {
+//        return null; //only defined for Item (not for 
+//    }
     public Date getEditedDate();
-    
+
 }

@@ -225,7 +225,8 @@ public class ScreenListOfWorkSlots extends MyForm {
                 newWorkSlot.setOwner(workSlotListOwner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
                 setKeepPos(new KeepInSameScreenPosition());
                 new ScreenWorkSlot(newWorkSlot, workSlotListOwner, ScreenListOfWorkSlots.this, () -> {
-                    if (newWorkSlot.hasSaveableData()) {
+                    if (false) { //all work done in when setting addUpdateActionOnDone()
+                        if (newWorkSlot.hasSaveableData()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    workSlot.setOwner(owner);
 //                    //set Owner of new workSlot
@@ -239,7 +240,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 ////                        throw RuntimeException("Unknown type of owner");
 //                    } else assert false: "should never happen";
 //</editor-fold>
-                        //save new workSlot
+                            //save new workSlot
 //                        DAO.getInstance().saveNew(newWorkSlot); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    workSlotList.addItemAtIndex(workSlot, 0);
@@ -265,15 +266,16 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                    }
 //                    workSlotList.add(newWorkSlot);
 //                    workSlotListOwner.setWorkSlotList(workSlotList);
-                        workSlotListOwner.addWorkSlot(newWorkSlot);
+                            workSlotListOwner.addWorkSlot(newWorkSlot);
 //                        DAO.getInstance().saveNew(true, newWorkSlot, (ParseObject) workSlotListOwner);
 //                        DAO.getInstance().saveNew(newWorkSlot, (ParseObject) workSlotListOwner);
 //                        DAO.getInstance().saveNewTriggerUpdate();
 //                        DAO.getInstance().saveToParseNow(newWorkSlot, (ParseObject) workSlotListOwner);
-                        DAO.getInstance().saveToParseNow(newWorkSlot);
+                            DAO.getInstance().saveToParseNow(newWorkSlot);
 
-                        if (false) {
-                            refreshAfterEdit();
+                            if (false) {
+                                refreshAfterEdit();
+                            }
                         }
                     }
                 }).show();
@@ -386,7 +388,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //                DAO.getInstance().saveNew(workSlot, true);
 //                DAO.getInstance().saveNew(workSlot);
 //                DAO.getInstance().saveNewTriggerUpdate();
-                DAO.getInstance().saveToParseNow(workSlot);
+//                DAO.getInstance().saveToParseNow(workSlot);
 //                    refreshAfterEdit();
 //                refreshOnItemEdits.launchAction();
                 if (false) {
@@ -478,7 +480,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        west.add(startTimeStr);
 //        west.add(startTimeLabel).add(endTimeLabel);
         west.add(startTimeIcon);
-        content.add(BoxLayout.encloseX(startTimeLabel,endTimeLabel));
+        content.add(BoxLayout.encloseX(startTimeLabel, endTimeLabel));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            static String formatDateNew(Date date, boolean useYesterdayTodayTomorrow, boolean includeDate, boolean includeTimeOfDay, boolean includeDayOfWeek, boolean useUSformat) {
 
@@ -495,7 +497,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //            south.addComponent(new Label("\"" + workSlot.getText() + "\"", "WorkSlotDetails"));
             txt = txt + "/" + workSlot.getText();
         }
-        content.addComponent(new SpanLabel(txt,"WorkSlotDetails"));
+        content.addComponent(new SpanLabel(txt, "WorkSlotDetails"));
         center.addComponent(content);
 //        if (showOwner && workSlot.getOwner() != null) {
 //            cont.addComponent(BorderLayout.CENTER, center);

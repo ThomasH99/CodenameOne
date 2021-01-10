@@ -32,7 +32,7 @@ import com.parse4cn1.ParseRole;
 import com.parse4cn1.ParseUser;
 import com.parse4cn1.callback.GetCallback;
 import com.parse4cn1.util.Logger;
-import static com.todocatalyst.todocatalyst.Item.PARSE_OWNER_ITEM;
+//import static com.todocatalyst.todocatalyst.Item.PARSE_OWNER_ITEM;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -92,7 +92,7 @@ public class DAO {
     MyCacheMapHash cache; // = new CacheMap(); //always initialize since DAO may be called before initializing cache via start() (https://www.codenameone.com/javadoc/com/codename1/background/BackgroundFetch.html)
 //    MyCacheMap cacheWorkSlots;// = new CacheMap(); //optimize speed when searching only for WorkSlots
     MyCacheMapHash cacheWorkSlots;// = new CacheMap(); //optimize speed when searching only for WorkSlots
-    MyCacheMapHash cacheGuid;// = new CacheMap(); //optimize speed when searching only for WorkSlots
+//    MyCacheMapHash cacheGuid;// = new CacheMap(); //optimize speed when searching only for WorkSlots
     Date latestCacheUpdateDate = new Date(MyDate.MIN_DATE); //start wtih minimal date
 //    Object temp;
 
@@ -146,17 +146,19 @@ public class DAO {
         if (parseObject.getGuid() != null) { //above just caches the singletons, so now also cache other objects, with a special treatment for workSlots
             if (parseObject instanceof WorkSlot) {
 //                ASSERT.that(parseObject.getObjectIdP() != null, () -> "cachPut of parseObject with objectIdP==null, parseObject=" + parseObject);
-                ASSERT.that(parseObject.getGuid() != null, () -> "cachePut of parseObject with objectIdP==null, parseObject=" + parseObject);
+                ASSERT.that(parseObject.getGuid() != null, () -> "cachePut of parseObject with guid==null, parseObject=" + parseObject);
 //                cacheWorkSlots.put(parseObject.getObjectIdP(), parseObject);
                 cacheWorkSlots.put(parseObject.getGuid(), parseObject);
             } else {
-                ASSERT.that(parseObject.getObjectIdP() != null, () -> "cachPut of parseObject with objectIdP==null, parseObject=" + parseObject);
+//                ASSERT.that(parseObject.getObjectIdP() != null, () -> "cachPut of parseObject with objectIdP==null, parseObject=" + parseObject);
+                ASSERT.that((parseObject instanceof ItemAndListCommonInterface || parseObject instanceof RepeatRuleParseObject));
 //                cache.put(parseObject.getObjectIdP(), parseObject); //will override any previously put object with same ojectId
                 cache.put(parseObject.getGuid(), parseObject); //will override any previously put object with same ojectId
             }
-        } else if (false && parseObject.getGuid() != null) {
-            cacheGuid.put(parseObject.getGuid(), parseObject);
-        }//        ASSERT.that(parseObject instanceof ParseObject, () -> "trying to store non-ParseObject in cache: parseObject=" + parseObject);
+        }
+//        else if (false && parseObject.getGuid() != null) {
+//            cacheGuid.put(parseObject.getGuid(), parseObject);
+//        }//        ASSERT.that(parseObject instanceof ParseObject, () -> "trying to store non-ParseObject in cache: parseObject=" + parseObject);
     }
 
     /**
@@ -223,9 +225,9 @@ public class DAO {
         }
     }
 
-    private synchronized ParseObject cacheGet(ParseObject parseObject) {
+    private synchronized ParseObject cacheGet(ParseObject parseObjectWithGuid) {
 //        return cacheGet(parseObject.getObjectIdP());
-        return cacheGet(parseObject.getGuid());
+        return cacheGet(parseObjectWithGuid.getGuid());
 //        return cacheGet(parseObject.getGuid());
     }
 
@@ -356,7 +358,7 @@ public class DAO {
         query.whereEqualTo(ParseObject.GUID, guid);
         try {
             List items = query.find();
-            ASSERT.that(items.size() <= 1, "multiple Items with same guid = " + items);
+            ASSERT.that(items.size() <= 1, "multiple Items with same guid = " + guid + "; items=" + items);
 //            fetchListElementsIfNeededReturnCachedIfAvail(items); //need to refer to cached items since comparison is done via object identify
             if (items.size() > 0) {
                 Item item = (Item) items.get(0);
@@ -446,32 +448,34 @@ public class DAO {
      * @param objectId
      * @return
      */
-    public Item fetchItemOLD(String objectId) {
-        Item item;
-        if (objectId == null || objectId.length() == 0) {
-            return null;
-        }
-//        if ((item = (Item) cache.get(objectId)) != null) {
-        if ((item = (Item) cacheGet(objectId)) != null) {
-            return item;
-        }
-//        Item item = null;
-        try {
-            item = ParseObject.fetch(Item.CLASS_NAME, objectId);
-            if (Config.TEST) {
-                assert !((ItemAndListCommonInterface) item).isSoftDeleted();
-            }
-//            cache.put(objectId, item);
-            cachePut(item);
-        } catch (ParseException ex) {
-            Log.e(ex);
-        }
-        return item;
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public Item fetchItemOLD(String objectId) {
+//        Item item;
+//        if (objectId == null || objectId.length() == 0) {
+//            return null;
+//        }
+////        if ((item = (Item) cache.get(objectId)) != null) {
+//        if ((item = (Item) cacheGet(objectId)) != null) {
+//            return item;
+//        }
+////        Item item = null;
+//        try {
+//            item = ParseObject.fetch(Item.CLASS_NAME, objectId);
+//            if (Config.TEST) {
+//                assert !((ItemAndListCommonInterface) item).isSoftDeleted();
+//            }
+////            cache.put(objectId, item);
+//            cachePut(item);
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//        return item;
+//    }
+//</editor-fold>
     public Item fetchItem(String guid) {
         Item item;
         if (guid == null || guid.length() == 0) {
+            ASSERT.that("fetchItem called with no guid");
             return null;
         }
 //        if ((item = (Item) cache.get(objectId)) != null) {
@@ -662,17 +666,16 @@ public class DAO {
 //        return repeatRule;
 //    }
 //</editor-fold>
-    public RepeatRuleParseObject fetchRepeatRule(String guid) {
-        RepeatRuleParseObject repeatRule;
-        if (guid == null || guid.length() == 0) {
-            return null;
-        }
-        if ((repeatRule = (RepeatRuleParseObject) cacheGet(guid)) != null) {
-            return repeatRule;
-        }
-        return fetchRepeatRuleFromParseByGuid(guid);
-    }
-
+//    public RepeatRuleParseObject fetchRepeatRule(String guid) {
+//        RepeatRuleParseObject repeatRule;
+//        if (guid == null || guid.length() == 0) {
+//            return null;
+//        }
+//        if ((repeatRule = (RepeatRuleParseObject) cacheGet(guid)) != null) {
+//            return repeatRule;
+//        }
+//        return fetchRepeatRuleFromParseByGuid(guid);
+//    }
     //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      *
@@ -738,50 +741,51 @@ public class DAO {
      *
      * @param list
      */
-    public List fetchListElementsIfNeededReturnCachedIfAvailUNCLEANED(List list) {
-        assert (list != null) : "updating null list from cache";
-        for (int i = 0, size = list.size(); i < size; i++) {
-//            Object cachedObject;
-            Object val = list.get(i);
-            if (val == null || val == JSONObject.NULL) {
-//                ASSERT.that((list.get(i) != null) , "entry nb=" + i + " in list  with size" + size+", name="+(list instanceof ItemList ? ((ItemList) list).getText() : "") + " == null");
-                if (Config.TEST) {
-                    int i2 = i;
-                    int size2 = size;
-                    ASSERT.that((val != null), ()
-                            -> "entry nb=" + i2 + " is null! In list  with size=" + size2
-                            + ", name=" + (list instanceof ItemAndListCommonInterface ? ((ItemAndListCommonInterface) list).getText() : "<none>")
-                            + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "<none>")
-                            + ", toString=" + list.toString());
-                    ASSERT.that((val != JSONObject.NULL), () -> "entry nb=" + i2 + " in list  with size" + size2 + ", name="
-                            + (list instanceof ItemList ? ((ItemList) list).getText() : "")
-                            + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
-                }
-//                ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " == JSONObject.NULL");
-                list.remove(i); //UI: clean up elements that don't exist anymore
-                i--; //neutralize the i++ in the loop
-                size--; //update size to match actual size of loop
-            } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                ParseObject listElt = (ParseObject) list.get(i);
-//                String objId = listElt.getObjectIdP();
-////            if (objId != null && (cachedObject = cache.get(objId)) != null && cachedObject != p) {
-////                if (objId != null && (cachedObject = cacheGet(objId)) != null && cachedObject != p) {
-//                if ((cachedObject = cacheGet(listElt)) != null && cachedObject != listElt) {
-//                    list.set(i, cachedObject);
-//                } else {
-//                    cachedObject = fetchIfNeededReturnCachedIfAvail(listElt); //NB! will possibly replace the parseObjects in the list with cached ones
-//                    cachePut(listElt); //put new
-//                    list.set(i, cachedObject);
+//    public List fetchListElementsIfNeededReturnCachedIfAvailUNCLEANED(List list) {
+//        assert (list != null) : "updating null list from cache";
+//        for (int i = 0, size = list.size(); i < size; i++) {
+////            Object cachedObject;
+//            Object val = list.get(i);
+//            if (val == null || val == JSONObject.NULL) {
+////                ASSERT.that((list.get(i) != null) , "entry nb=" + i + " in list  with size" + size+", name="+(list instanceof ItemList ? ((ItemList) list).getText() : "") + " == null");
+//                if (Config.TEST) {
+//                    int i2 = i;
+//                    int size2 = size;
+//                    ASSERT.that((val != null), ()
+//                            -> "entry nb=" + i2 + " is null! In list  with size=" + size2
+//                            + ", name=" + (list instanceof ItemAndListCommonInterface ? ((ItemAndListCommonInterface) list).getText() : "<none>")
+//                            + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "<none>")
+//                            + ", toString=" + list.toString());
+//                    ASSERT.that((val != JSONObject.NULL), () -> "entry nb=" + i2 + " in list  with size" + size2 + ", name="
+//                            + (list instanceof ItemList ? ((ItemList) list).getText() : "")
+//                            + ", parseId=" + (list instanceof ParseObject ? ((ParseObject) list).getObjectIdP() : "") + " == JSONObject.NULL");
 //                }
+////                ASSERT.that((list.get(i) != JSONObject.NULL), "entry nb=" + i + " in list " + (list instanceof ItemList ? ((ItemList) list).getText() : "") + " == JSONObject.NULL");
+//                list.remove(i); //UI: clean up elements that don't exist anymore
+//                i--; //neutralize the i++ in the loop
+//                size--; //update size to match actual size of loop
+//            } else {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                ParseObject listElt = (ParseObject) list.get(i);
+////                String objId = listElt.getObjectIdP();
+//////            if (objId != null && (cachedObject = cache.get(objId)) != null && cachedObject != p) {
+//////                if (objId != null && (cachedObject = cacheGet(objId)) != null && cachedObject != p) {
+////                if ((cachedObject = cacheGet(listElt)) != null && cachedObject != listElt) {
+////                    list.set(i, cachedObject);
+////                } else {
+////                    cachedObject = fetchIfNeededReturnCachedIfAvail(listElt); //NB! will possibly replace the parseObjects in the list with cached ones
+////                    cachePut(listElt); //put new
+////                    list.set(i, cachedObject);
+////                }
+////</editor-fold>
+////                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i)));
+//                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) val));
+//            }
+//        }
+//        return list;
+//    }
 //</editor-fold>
-//                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) list.get(i)));
-                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) val));
-            }
-        }
-        return list;
-    }
-
     public List fetchListElementsIfNeededReturnCachedIfAvail(List list) {
         if (Config.TEST) {
             ASSERT.that((list != null), "updating null list from cache");
@@ -918,7 +922,7 @@ public class DAO {
      * ownerList is returned and any changes to this will not be reflected until
      * the list is saved and fetched again).
      *
-     * @param parseObject
+     * @param parseObjectWithGuid
      * @return null if object does not (or no longer) exist on server
      */
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -992,23 +996,28 @@ public class DAO {
 //        }
 //    }
 //</editor-fold>
-    public ParseObject fetchIfNeededReturnCachedIfAvail(ParseObject parseObject) {
-        if (parseObject == null) {
+    public ParseObject fetchIfNeededReturnCachedIfAvail(ParseObject parseObjectWithGuid) {
+        if (parseObjectWithGuid == null) { //normal with null, for all potential references like to Source which is often undefined/empty
+//            ASSERT.that("fetchIfNeededReturnCachedIfAvail called with null");
             return null;
         }
 //        ASSERT.that (parseObject.getObjectIdP() != null,()->"trying to fetch a parseObject with NO objId, parseObj="+parseObject);
-        ASSERT.that(parseObject.getObjectIdP() != null || parseObject.getGuid() != null, () -> "trying to fetch a parseObject with NO objId AND no guid, parseObj=" + parseObject);
-        if (parseObject.getObjectIdP() == null || parseObject.getObjectIdP().equals("")) {
-            //this happens for example when getting elements from **
-//            cachePut(parseObject); //NO, can't cache without a objectId [//cache it to avoid duplicates (rellay necessary?)]
-            if (false && parseObject.getGuid() != null) {
-                Object guidCached = cacheGuid.get(parseObject.getGuid());
-                if (guidCached != null) {
-                    return (ParseObject) guidCached;
-                }
-            }
-            return parseObject; //for not yet saved parseObjects (pending saving), return the object itself
-        }
+        ASSERT.that(parseObjectWithGuid.getGuid() != null, () -> "trying to fetch a parseObject with NO guid= " + parseObjectWithGuid);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            if (parseObjectWithGuid.getObjectIdP() == null || parseObjectWithGuid.getObjectIdP().equals("")) {
+//                //this happens for example when getting elements from **
+////            cachePut(parseObject); //NO, can't cache without a objectId [//cache it to avoid duplicates (rellay necessary?)]
+//                if (false && parseObjectWithGuid.getGuid() != null) {
+//                    Object guidCached = cacheGuid.get(parseObjectWithGuid.getGuid());
+//                    if (guidCached != null) {
+//                        return (ParseObject) guidCached;
+//                    }
+//                }
+//                return parseObjectWithGuid; //for not yet saved parseObjects (pending saving), return the object itself
+//            }
+//        }
+//</editor-fold>
         ParseObject temp;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (parseObject.getObjectIdP() != null) {
@@ -1019,22 +1028,24 @@ public class DAO {
 //                return temp;
 //            } else
 //</editor-fold>
-        if ((temp = (ParseObject) cacheGet(parseObject)) != null) {
+        if ((temp = (ParseObject) cacheGet(parseObjectWithGuid)) != null) {
             return temp;
 //        } else if (parseObject instanceof WorkSlot) {
 
         } else {
+            ASSERT.that(parseObjectWithGuid.getObjectIdP() != null, () -> "trying to fetch a parseObject with NO objId= " + parseObjectWithGuid);
             try {
-                parseObject.fetchIfNeeded();
+                parseObjectWithGuid.fetchIfNeeded();
+                ASSERT.that(cacheGet(parseObjectWithGuid) == null, "");
                 if (Config.TEST) {
-                    if (parseObject instanceof ItemAndListCommonInterface) {
-                        ASSERT.that(!((ItemAndListCommonInterface) parseObject).isSoftDeleted(), () -> "DAO.fetch from Parse of soft-deleted object:" + parseObject);
-                    } else if (parseObject instanceof FilterSortDef) {
+                    if (parseObjectWithGuid instanceof ItemAndListCommonInterface) {
+                        ASSERT.that(!((ItemAndListCommonInterface) parseObjectWithGuid).isSoftDeleted(), () -> "DAO.fetch from Parse of soft-deleted object:" + parseObjectWithGuid);
+                    } else if (parseObjectWithGuid instanceof FilterSortDef) {
                         //                        assert !((FilterSortDef) parseObject).isDeleted();
-                        ASSERT.that(!((FilterSortDef) parseObject).isDeleted(), () -> "DAO.fetch of deleted object:" + parseObject);
-                    } else if (parseObject instanceof RepeatRuleParseObject) {
+                        ASSERT.that(!((FilterSortDef) parseObjectWithGuid).isDeleted(), () -> "DAO.fetch of deleted object:" + parseObjectWithGuid);
+                    } else if (parseObjectWithGuid instanceof RepeatRuleParseObject) {
 //                        assert !((RepeatRuleParseObject) parseObject).isSoftDeleted();
-                        ASSERT.that(!((RepeatRuleParseObject) parseObject).isSoftDeleted(), () -> "DAO.fetch of deleted object:" + parseObject);
+                        ASSERT.that(!((RepeatRuleParseObject) parseObjectWithGuid).isSoftDeleted(), () -> "DAO.fetch of deleted object:" + parseObjectWithGuid);
                     }
                 }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1046,7 +1057,7 @@ public class DAO {
 //                        cache.put(parseObject.getObjectIdP(), parseObject);
 //                    }
 //</editor-fold>
-                cachePut(parseObject);
+                cachePut(parseObjectWithGuid);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //NO need to fetch lists within the object, they are updated when they are used first time (in getList() using fetchListElementsIfNeededReturnCachedIfAvail()...)
 //                if (parseObject instanceof ItemAndListCommonInterface) {
@@ -1056,7 +1067,7 @@ public class DAO {
 //                    }
 //                }
 //</editor-fold>
-                return parseObject;
+                return parseObjectWithGuid;
             } catch (ParseException ex) {
 //            Log.e(ex);
                 return null;
@@ -1354,7 +1365,8 @@ public class DAO {
             queryWorkSlots.whereLessThan(WorkSlot.PARSE_START_TIME, startOfTomorrow); //and starts before tomorrow
 
             queryWorkSlots.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-            query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+//            query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+            query.selectKeys(Arrays.asList(ParseObject.GUID)); //just get search result, no data (these are cached)
 
             try {
                 List<WorkSlot> resultsWorkSlots = queryWorkSlots.find();
@@ -1811,7 +1823,10 @@ public class DAO {
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //normally never deleted, but could happen in the future
         query.include(CategoryList.PARSE_CATEGORY_LIST);
         query.selectKeys(Arrays.asList(
-                CategoryList.PARSE_CATEGORY_LIST + "." + ParseObject.GUID));
+                CategoryList.PARSE_CATEGORY_LIST + "." + ParseObject.GUID,
+                ParseObject.GUID,
+                CategoryList.PARSE_TEXT
+        ));
 
         try {
             results = query.find();
@@ -2116,7 +2131,12 @@ public class DAO {
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //normally never deleted, but could happen in the future
         query.include(ItemListList.PARSE_ITEMS);
         query.selectKeys(Arrays.asList(
-                ItemListList.PARSE_ITEMS + "." + ParseObject.GUID));
+                ItemListList.PARSE_ITEMS + "." + ParseObject.GUID,
+                ParseObject.GUID,
+                ItemListList.PARSE_TEXT
+        ));
+//         query.excludeKeys(Arrays.asList()); //test to see if this includes all keys despite having the TemplateList.PARSE_ITEMS + "." + ParseObject.GUID
+
         try {
             results = query.find();
             if (results.size() > 0) {
@@ -2289,7 +2309,11 @@ public class DAO {
 
         query.include(TemplateList.PARSE_ITEMS);
         query.selectKeys(Arrays.asList(
-                TemplateList.PARSE_ITEMS + "." + ParseObject.GUID));
+                TemplateList.PARSE_ITEMS + "." + ParseObject.GUID,
+                ParseObject.GUID,
+                TemplateList.PARSE_TEXT
+        ));
+//        query.excludeKeys(Arrays.asList()); //test to see if this includes all keys despite having the TemplateList.PARSE_ITEMS + "." + ParseObject.GUID
 
         try {
             results = query.find();
@@ -3832,9 +3856,10 @@ public class DAO {
         List<ParseObject> results = null;
 //        do {
         ParseQuery<ParseObject> query = ParseQuery.getQuery(ParseClassName);
-        Set<String> targetKeys = new HashSet<String>();
+//        Set<String> targetKeys = new HashSet<String>();
 //            targetKeys.add("playerName");
-        query.selectKeys(targetKeys); // will this avoid retrieving any data but just the objects themselves??
+//        query.selectKeys(targetKeys); // will this avoid retrieving any data but just the objects themselves??
+        query.selectKeys(Arrays.asList()); // will this avoid retrieving any data but just the objects themselves??
 //            query.setLimit(BATCH_SIZE).setSkip(skip);
         query.setLimit(BATCH_SIZE);
 //            skip = skip + BATCH_SIZE;
@@ -4635,15 +4660,15 @@ public class DAO {
      * @param parseObjects
      * @return
      */
-    private boolean listContainsUnsaved(List<ParseObject> parseObjects) {
-        return listContainsUnsaved(parseObjects, false);
+    private boolean listContainsNotCreated(List<ParseObject> parseObjects) {
+        return listContainsNotCreated(parseObjects, false);
     }
 
-    private boolean listContainsUnsaved(List<ParseObject> parseObjects, boolean onlyTestLastInList) {
+    private boolean listContainsNotCreated(List<ParseObject> parseObjects, boolean onlyTestLastInList) {
 //        for (ParseObject p : parseObjects) {
         for (int i = parseObjects.size() - 1; i >= 0; i--) { //optimization: start from last element, the most likely to not be saved
             ParseObject p = (ParseObject) parseObjects.get(i);
-            if (p.isUnsaved()) {
+            if (p.isNotCreated()) {
                 return true;
             } else if (onlyTestLastInList) {
                 return false;
@@ -4660,7 +4685,7 @@ public class DAO {
 //        for (ParseObject p : parseObjects) {
         for (int i = parseObjects.getSize() - 1; i >= 0; i--) { //optimization: start from last element, the most likely to not be saved
             ParseObject p = (ParseObject) parseObjects.getItemAt(i);
-            if (p.isUnsaved()) {
+            if (p.isNotCreated()) {
                 return true;
             }
             //DON'T iterate down the hierarchy!
@@ -4744,7 +4769,7 @@ public class DAO {
         if (item.isDirty() && !processedList.contains(item)) {//!repeatRule.isUnsaved()) {
 //            addToSaveList3(item, saveList);
             addToProcessed3(item);
-            boolean isUnsaved = item.isUnsaved();
+            boolean isNotCreated = item.isNotCreated();
 //                    if (!saveList.contains(item) && item.needsSaving()) {
 //            addToSaveListNoChk3(item, saveList);
 ////        }
@@ -4767,40 +4792,25 @@ public class DAO {
                 } else {
                     saveItemListNew3((ItemList) owner, saveList);
                 }
-                if (isUnsaved && owner.isUnsaved()) {
+                if (owner.isNotCreated()) {
                     referencesUnsavedParseObjects = true;
-                    if (owner instanceof Item) {
-//                        saveItemNew3((Item) owner, saveList);
-//                    beforeParseUpdate.add(() -> {
-                        item.setOwnerItem(null, false, false);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            item.setOwnerItem((Item) owner, false, false);
-//                            addToBatchUpdate3(item);
-//                                addToSaveList3(item, saveList);
-                        });
-                    } else {
-                        if (Config.TEST) {
-                            ASSERT.that(owner instanceof ItemList, "If Owner not an Item it should always be an ItemList, owner=" + owner);
+                    if (isNotCreated) {
+                        if (owner instanceof Item) {
+                            item.setOwnerItem(null, false, false);
+                            afterParseUpdate.add(() -> {
+                                item.setOwnerItem((Item) owner, false, false);
+                            });
+                        } else {
+                            if (Config.TEST) {
+                                ASSERT.that(owner instanceof ItemList, "If Owner not an Item it should always be an ItemList, owner=" + owner);
+                            }
+                            item.setOwner(null);
+                            //after owner has been saved, then add it back as owner and save item with owner
+                            afterParseUpdate.add(() -> {
+                                item.setOwner(owner);
+                            });
                         }
-//                        saveItemListNew3((ItemList) owner, saveList);
-//                    beforeParseUpdate.add(() -> {
-                        item.setOwner(null);
-//                    });
-                        //after owner has been saved, then add it back as owner and save item with owner
-                        afterParseUpdate.add(() -> {
-                            item.setOwner(owner);
-//                            addToBatchUpdate(item);
-//                                addToSaveList3(item, saveList);
-                        });
                     }
-                } else {
-//                    ASSERT.that(owner.isDirty(), "If Owner needs saving and is not unsaved, then it should be Dirty! owner=" + owner);
-//                    if (owner instanceof Item) {
-//                        saveItemNew3((Item) owner, saveList);
-//                    } else {
-//                        saveItemListNew3((ItemList) owner, saveList);
-////                    }
                 }
             }
 
@@ -4809,17 +4819,14 @@ public class DAO {
                 FilterSortDef filter = item.getFilterSortDefN();
                 if (filter != null && !filter.isNoSave() && filter.needsSaving()) {
                     saveFilterSortDefNew3(filter, saveList);
-                    if (isUnsaved && filter.isUnsaved()) {
+                    if (filter.isNotCreated()) {
                         referencesUnsavedParseObjects = true;
-//                    beforeParseUpdate.add(() -> {
-                        item.setFilterSortDef(null);
-//                    saveFilterSortDefNew2(filter, () -> {
-//                    });
-                        afterParseUpdate.add(() -> {
-                            item.setFilterSortDef(filter);
-//                            addToBatchUpdate(item);
-//                                addToSaveList3(item, saveList);
-                        });
+                        if (isNotCreated) {
+                            item.setFilterSortDef(null);
+                            afterParseUpdate.add(() -> {
+                                item.setFilterSortDef(filter);
+                            });
+                        }
                     }
                 }
             }
@@ -4829,16 +4836,14 @@ public class DAO {
                 Item source = (Item) item.getSource(); //source of Item is necessarily an Item itself
                 if (source != null && source.needsSaving()) {
                     saveItemNew3(source, saveList);
-                    if (isUnsaved && source.isUnsaved()) {
+                    if (source.isNotCreated()) {
                         referencesUnsavedParseObjects = true;
-//                    beforeParseUpdate.add(() -> {
-                        item.setSource(null);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            item.setSource(source);
-//                                addToBatchUpdate(item);
-//                                addToSaveList3(item, saveList);
-                        });
+                        if (isNotCreated) {
+                            item.setSource(null);
+                            afterParseUpdate.add(() -> {
+                                item.setSource(source);
+                            });
+                        }
                     }
                 }
             }
@@ -4848,16 +4853,14 @@ public class DAO {
                 Item dependingOnTask = (Item) item.getDependingOnTask();
                 if (dependingOnTask != null && dependingOnTask.needsSaving()) {
                     saveItemNew3(dependingOnTask, saveList);
-                    if (isUnsaved && dependingOnTask.isUnsaved()) {
+                    if (dependingOnTask.isNotCreated()) {
                         referencesUnsavedParseObjects = true;
-//                    beforeParseUpdate.add(() -> {
-                        item.setDependingOnTask(null);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            item.setDependingOnTask(dependingOnTask);
-//                                    addToBatchUpdate(item);
-//                                addToSaveList3(item, saveList);
-                        });
+                        if (isNotCreated) {
+                            item.setDependingOnTask(null);
+                            afterParseUpdate.add(() -> {
+                                item.setDependingOnTask(dependingOnTask);
+                            });
+                        }
                     }
                 }
             }
@@ -4867,16 +4870,14 @@ public class DAO {
                 RepeatRuleParseObject repeatRule = item.getRepeatRuleN();
                 if (repeatRule != null && repeatRule.needsSaving()) {
                     saveRepeatRuleNew3(repeatRule, saveList);
-                    if (isUnsaved && repeatRule.isUnsaved()) {
+                    if (repeatRule.isNotCreated()) {
                         referencesUnsavedParseObjects = true;
-//                    beforeParseUpdate.add(() -> {
-                        item.setRepeatRuleInParse(null);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            item.setRepeatRuleInParse(repeatRule);
-//                                    addToBatchUpdate(item);
-//                                addToSaveList3(item, saveList);
-                        });
+                        if (isNotCreated) {
+                            item.setRepeatRuleInParse(null);
+                            afterParseUpdate.add(() -> {
+                                item.setRepeatRuleInParse(repeatRule);
+                            });
+                        }
                     }
                 }
             }
@@ -4886,16 +4887,14 @@ public class DAO {
                 List subtasks = item.getListFull();
                 if (subtasks != null && subtasks.size() > 0) {
                     saveList3(subtasks, saveList);  //save any subtasks that might not be saved yet
-                    if (isUnsaved && listContainsUnsaved(subtasks)) {
+                    if (listContainsNotCreated(subtasks)) {
                         referencesUnsavedParseObjects = true;
-//                    beforeParseUpdate.add(() -> {
-                        item.setList(null); //optimization: strictly only necessary if any unsaved subtasks (or this Item is not yet saved), but for now always 
-//                    });
-                        afterParseUpdate.add(() -> {
-                            item.setList(subtasks);
-//                                        addToBatchUpdate(item);
-//                                addToSaveList3(item, saveList);
-                        });
+                        if (isNotCreated) {
+                            item.setList(null); //optimization: strictly only necessary if any unsaved subtasks (or this Item is not yet saved), but for now always 
+                            afterParseUpdate.add(() -> {
+                                item.setList(subtasks);
+                            });
+                        }
                     }
                 }
             }
@@ -4904,11 +4903,11 @@ public class DAO {
             {
                 List categories = item.getCategories();
                 //NOT currently possible to have unsaved categories (they are saved immediately after being created)
-                if (true || listContainsUnsaved(categories)) { //save any modified categories (eg an item was added)
+                if (true || listContainsNotCreated(categories)) { //save any modified categories (eg an item was added)
                     saveList3(categories, saveList);
                 }
                 if (Config.TEST) {
-                    ASSERT.that(!listContainsUnsaved(categories), () -> "ERROR: Item=" + item + " contains references to unsaved categories=" + categories);
+                    ASSERT.that(!listContainsNotCreated(categories), () -> "ERROR: Item=" + item + " contains references to unsaved categories=" + categories);
                 }
             }
 
@@ -4916,19 +4915,19 @@ public class DAO {
             {
                 List<WorkSlot> listWorkSlots = item.getWorkSlotsFromParseN();
                 if (listWorkSlots != null && !listWorkSlots.isEmpty()) {
-                    if (isUnsaved && listContainsUnsaved((List) listWorkSlots, true)) {
+                    if (listContainsNotCreated((List) listWorkSlots, true)) {
                         referencesUnsavedParseObjects = true;
-//                    beforeParseUpdate.add(() -> {
-                        item.setWorkSlotsInParse(null);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            item.setWorkSlotsInParse(listWorkSlots);
-//                                addToSaveList3((ParseObject) item, saveList);
-                        });
+                        if (isNotCreated) {
+                            item.setWorkSlotsInParse(null);
+                            afterParseUpdate.add(() -> {
+                                item.setWorkSlotsInParse(listWorkSlots);
+                            });
+                        }
                     }
                 }
             }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                if (referencesUnsavedParseObjects) {
 //                    afterParseUpdate.add(() -> addToSaveList3(item, saveList));
 //                } else {
@@ -4942,16 +4941,18 @@ public class DAO {
 //                }
 //                afterParseUpdate.add(() -> addToSaveList3(item, saveList));
 //            }
-            if (isUnsaved) {
-                if (referencesUnsavedParseObjects) {
-                    addToSaveList3(item, saveList);
-                    afterParseUpdate.add(() -> addToSaveList3(item, saveList));
-                } else {
-                    addToSaveList3(item, saveList);
-                }
-            } else { //already saved
-                afterParseUpdate.add(() -> addToSaveList3(item, saveList));
-            }
+//            if (isNotCreated) {
+//                if (referencesUnsavedParseObjects) {
+//                    addToSaveList3(item, saveList);
+//                    afterParseUpdate.add(() -> addToSaveList3(item, saveList));
+//                } else {
+//                    addToSaveList3(item, saveList);
+//                }
+//            } else { //already saved
+//                afterParseUpdate.add(() -> addToSaveList3(item, saveList));
+//            }
+//</editor-fold>
+            savingOrder(item, isNotCreated, referencesUnsavedParseObjects, saveList);
         }
 //            if (referencesUnsavedParseObjects) {
 //                afterParseUpdate.add(() -> addToSaveList3(item, saveList));
@@ -4998,7 +4999,7 @@ public class DAO {
         if (itemList.isDirty() && !processedList.contains(itemList)) {//!repeatRule.isUnsaved()) {
 //            addToSaveList3(itemList, saveList);
             addToProcessed3(itemList);
-            boolean isUnsaved = itemList.isUnsaved();
+            boolean isUnsaved = itemList.isNotCreated();
 //                    if (!saveList.contains(item) && item.needsSaving()) {
 //            addToSaveListNoChk3(item, saveList);
 ////        }
@@ -5009,13 +5010,15 @@ public class DAO {
             ItemAndListCommonInterface owner = itemList.getOwner();
             if (owner != null) {// && owner.needsSaving()) {
                 saveItemListNew3((ItemList) owner, saveList);
-                if (isUnsaved && owner.isUnsaved()) {
+                if (owner.isNotCreated()) {
                     referencesUnsavedParseObjects = true;
-                    itemList.setOwner(null);
-                    //after owner has been saved, then add it back as owner and save item with owner
-                    afterParseUpdate.add(() -> {
-                        itemList.setOwner(owner);
-                    });
+                    if (isUnsaved) {
+                        itemList.setOwner(null);
+                        //after owner has been saved, then add it back as owner and save item with owner
+                        afterParseUpdate.add(() -> {
+                            itemList.setOwner(owner);
+                        });
+                    }
                 }
             }
 
@@ -5033,16 +5036,14 @@ public class DAO {
                 //save a filter before saving the element referencing it
                 FilterSortDef filter = itemList.getFilterSortDefN();
                 if (filter != null && !filter.isNoSave()) {// && filter.getObjectIdP() == null) {
-                    if (isUnsaved && filter.isUnsaved()) {
+                    if (filter.isNotCreated()) {
                         referencesUnsavedParseObjects = true;
-//                    beforeParseUpdate.add(() -> {
-                        itemList.setFilterSortDef(null);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            itemList.setFilterSortDef(filter);
-//                        addToSaveList((ParseObject) itemList);
-//                                addToSaveList3((ParseObject) itemList, saveList);
-                        });
+                        if (isUnsaved) {
+                            itemList.setFilterSortDef(null);
+                            afterParseUpdate.add(() -> {
+                                itemList.setFilterSortDef(filter);
+                            });
+                        }
                     }
                 }
             }
@@ -5050,15 +5051,14 @@ public class DAO {
             {
                 List<ParseObject> listTasks = itemList.getListFull();
                 if (listTasks != null && !listTasks.isEmpty()) {
-                    if (isUnsaved && listContainsUnsaved(listTasks)) {
+                    if (listContainsNotCreated(listTasks)) {
                         referencesUnsavedParseObjects = true;
-//                    beforeParseUpdate.add(() -> {
-                        itemList.setList(null);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            itemList.setList(listTasks);
-//                                addToSaveList3((ParseObject) itemList, saveList);
-                        });
+                        if (isUnsaved) {
+                            itemList.setList(null);
+                            afterParseUpdate.add(() -> {
+                                itemList.setList(listTasks);
+                            });
+                        }
                     }
                 }
             }
@@ -5066,15 +5066,14 @@ public class DAO {
             {
                 List<ParseObject> listWorkSlots = itemList.getWorkSlotsFromParseN();
                 if (listWorkSlots != null && !listWorkSlots.isEmpty()) {
-                    if (isUnsaved && listContainsUnsaved(listWorkSlots, true)) {
+                    if (listContainsNotCreated(listWorkSlots, true)) {
                         referencesUnsavedParseObjects = true;
-//                    beforeParseUpdate.add(() -> {
-                        itemList.setWorkSlotsInParse(null);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            itemList.setWorkSlotsInParse(listWorkSlots);
-//                                addToSaveList3((ParseObject) itemList, saveList);
-                        });
+                        if (isUnsaved) {
+                            itemList.setWorkSlotsInParse(null);
+                            afterParseUpdate.add(() -> {
+                                itemList.setWorkSlotsInParse(listWorkSlots);
+                            });
+                        }
                     }
                 }
             }
@@ -5092,16 +5091,18 @@ public class DAO {
 //                }
 //                afterParseUpdate.add(() -> addToSaveList3(itemList, saveList));
 //            }
-            if (isUnsaved) {
-                if (referencesUnsavedParseObjects) {
-                    addToSaveList3(itemList, saveList);
-                    afterParseUpdate.add(() -> addToSaveList3(itemList, saveList));
-                } else {
-                    addToSaveList3(itemList, saveList);
-                }
-            } else { //already saved
-                afterParseUpdate.add(() -> addToSaveList3(itemList, saveList));
-            }
+//            if (isUnsaved) {
+//                if (referencesUnsavedParseObjects) {
+//                    addToSaveList3(itemList, saveList);
+//                    afterParseUpdate.add(() -> addToSaveList3(itemList, saveList));
+//                } else {
+//                    addToSaveList3(itemList, saveList);
+//                }
+//            } else { //already saved
+//                afterParseUpdate.add(() -> addToSaveList3(itemList, saveList));
+//            }
+            savingOrder(itemList, isUnsaved, referencesUnsavedParseObjects, saveList);
+
 //            if (referencesUnsavedParseObjects) {
 //                afterParseUpdate.add(() -> addToSaveList3(itemList, saveList));
 //            }
@@ -5312,20 +5313,22 @@ public class DAO {
         if (category.isDirty() && !processedList.contains(category)) {//!repeatRule.isUnsaved()) {
 //            addToSaveList3(category, saveList);
             addToProcessed3(category);
-            boolean isUnsaved = category.isUnsaved();
+            boolean isUnsaved = category.isNotCreated();
             boolean referencesUnsavedParseObjects = false;
 
             { //OWNER
                 ItemAndListCommonInterface owner = category.getOwner();
                 if (owner != null) {// && owner.needsSaving()) {
                     saveItemListNew3((ItemList) owner, saveList);
-                    if (isUnsaved && owner.isUnsaved()) {
+                    if (owner.isNotCreated()) {
                         referencesUnsavedParseObjects = true;
-                        category.setOwner(null);
-                        //after owner has been saved, then add it back as owner and save item with owner
-                        afterParseUpdate.add(() -> {
-                            category.setOwner(owner);
-                        });
+                        if (isUnsaved) {
+                            category.setOwner(null);
+                            //after owner has been saved, then add it back as owner and save item with owner
+                            afterParseUpdate.add(() -> {
+                                category.setOwner(owner);
+                            });
+                        }
                     }
                 }
             }
@@ -5334,12 +5337,14 @@ public class DAO {
                 //save a filter before saving the element referencing it
                 FilterSortDef filter = category.getFilterSortDefN();
                 if (filter != null && !filter.isNoSave()) {// && filter.getObjectIdP() == null) {
-                    if (isUnsaved && filter.isUnsaved()) {
+                    if (filter.isNotCreated()) {
                         referencesUnsavedParseObjects = true;
-                        category.setFilterSortDef(null);
-                        afterParseUpdate.add(() -> {
-                            category.setFilterSortDef(filter);
-                        });
+                        if (isUnsaved) {
+                            category.setFilterSortDef(null);
+                            afterParseUpdate.add(() -> {
+                                category.setFilterSortDef(filter);
+                            });
+                        }
                     }
                 }
             }
@@ -5347,12 +5352,14 @@ public class DAO {
             { //TASKS
                 List<ParseObject> listTasks = category.getListFull();
                 if (listTasks != null && !listTasks.isEmpty()) {
-                    if (isUnsaved && listContainsUnsaved(listTasks)) {
+                    if (listContainsNotCreated(listTasks)) {
                         referencesUnsavedParseObjects = true;
-                        category.setList(null);
-                        afterParseUpdate.add(() -> {
-                            category.setList(listTasks);
-                        });
+                        if (isUnsaved) {
+                            category.setList(null);
+                            afterParseUpdate.add(() -> {
+                                category.setList(listTasks);
+                            });
+                        }
                     }
                 }
             }
@@ -5360,12 +5367,14 @@ public class DAO {
             { //WORKSLOTS
                 List<ParseObject> listWorkSlots = category.getWorkSlotsFromParseN();
                 if (listWorkSlots != null && !listWorkSlots.isEmpty()) {
-                    if (isUnsaved && listContainsUnsaved(listWorkSlots, true)) {
+                    if (listContainsNotCreated(listWorkSlots, true)) {
                         referencesUnsavedParseObjects = true;
-                        category.setWorkSlotsInParse(null);
-                        afterParseUpdate.add(() -> {
-                            category.setWorkSlotsInParse(listWorkSlots);
-                        });
+                        if (isUnsaved) {
+                            category.setWorkSlotsInParse(null);
+                            afterParseUpdate.add(() -> {
+                                category.setWorkSlotsInParse(listWorkSlots);
+                            });
+                        }
                     }
                 }
             }
@@ -5383,22 +5392,40 @@ public class DAO {
 //                }
 //                afterParseUpdate.add(() -> addToSaveList3(category, saveList));
 //            }
-            if (isUnsaved) {
-                if (referencesUnsavedParseObjects) {
-                    addToSaveList3(category, saveList);
-                    afterParseUpdate.add(() -> addToSaveList3(category, saveList));
-                } else {
-                    addToSaveList3(category, saveList);
-                }
-            } else { //already saved
-                afterParseUpdate.add(() -> addToSaveList3(category, saveList));
-            }
+//            if (isUnsaved) {
+//                if (referencesUnsavedParseObjects) {
+//                    addToSaveList3(category, saveList);
+//                    afterParseUpdate.add(() -> addToSaveList3(category, saveList));
+//                } else {
+//                    addToSaveList3(category, saveList);
+//                }
+//            } else { //already saved
+//                afterParseUpdate.add(() -> addToSaveList3(category, saveList));
+//            }
+            savingOrder(category, isUnsaved, referencesUnsavedParseObjects, saveList);
 //            if (referencesUnsavedParseObjects) {
 //                afterParseUpdate.add(() -> addToSaveList3(category, saveList));
 //            }
         }
     }
 
+    private void savingOrder(ParseObject parseObject, boolean isNotCreated, boolean referencesUnsavedParseObjects, List saveList) {
+        if (isNotCreated) {
+            if (referencesUnsavedParseObjects) {
+                addToSaveList3(parseObject, saveList);
+                afterParseUpdate.add(() -> addToSaveList3(parseObject, saveList));
+            } else {
+                addToSaveList3(parseObject, saveList);
+            }
+        } else { //already created
+            if (referencesUnsavedParseObjects) {
+                afterParseUpdate.add(() -> addToSaveList3(parseObject, saveList));
+            } else {
+                addToSaveList3(parseObject, saveList);
+            }
+        }
+
+    }
 //    private void saveRepeatRuleNew3(RepeatRuleParseObject repeatRule, List saveList) {
 //        saveRepeatRuleNew3(repeatRule, true, saveList);
 //    }
@@ -5472,6 +5499,7 @@ public class DAO {
 //    }
 //</editor-fold>
 //    private void saveRepeatRuleNew3(RepeatRuleParseObject repeatRule, boolean saveInstances, List saveList) {
+
     private void saveRepeatRuleNew3(RepeatRuleParseObject repeatRule, List saveList) {
         boolean saveInstances = true;
 
@@ -5481,7 +5509,7 @@ public class DAO {
         if (repeatRule.isDirty() && !processedList.contains(repeatRule)) {//!repeatRule.isUnsaved()) {
 //            addToSaveList3(repeatRule, saveList);
             addToProcessed3(repeatRule);
-            boolean isUnsaved = repeatRule.isUnsaved();
+            boolean isNotCreated = repeatRule.isNotCreated();
             //save in second round (once we're sure any referenced unsaved elements have been created and can be referenced
 //                afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
 //            } else {
@@ -5490,18 +5518,15 @@ public class DAO {
             { //UNDONE INSTANCES
                 List undoneInstances = repeatRule.getListOfUndoneInstances();
                 if (undoneInstances != null && !undoneInstances.isEmpty()) {
-                    if (isUnsaved && listContainsUnsaved(undoneInstances, true)) {
+                    saveList3(undoneInstances, saveList, true);
+                    if (listContainsNotCreated(undoneInstances, true)) {
                         referencesUnsavedParseObjects = true;
-//                        if (saveInstances) {
-                        saveList3(undoneInstances, saveList, true);
-//                        }
-//                    beforeParseUpdate.add(() -> {
-                        repeatRule.setListOfUndoneInstances(null);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            repeatRule.setListOfUndoneInstances(undoneInstances); //only set the set when there was a list (handle cxase where one RR instances are set to null multiple times
-//                            addToSaveList3(repeatRule, saveList);
-                        });
+                        if (isNotCreated) {
+                            repeatRule.setListOfUndoneInstances(null);
+                            afterParseUpdate.add(() -> {
+                                repeatRule.setListOfUndoneInstances(undoneInstances); //only set the set when there was a list (handle cxase where one RR instances are set to null multiple times
+                            });
+                        }
                     }
                 }
             }
@@ -5509,22 +5534,19 @@ public class DAO {
             { //DONE INSTANCES
                 List doneInstances = repeatRule.getListOfDoneInstances();
                 if (doneInstances != null && !doneInstances.isEmpty()) {
-                    if (isUnsaved && listContainsUnsaved(doneInstances, true)) {
+                    saveList3(doneInstances, saveList, true);
+                    if (listContainsNotCreated(doneInstances, true)) {
                         referencesUnsavedParseObjects = true;
-//                        if (saveInstances) {
-                        saveList3(doneInstances, saveList, true);
-//                        }
-//                    beforeParseUpdate.add(() -> {
-                        repeatRule.setListOfDoneInstances(null);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            repeatRule.setListOfDoneInstances(doneInstances); //only set the set when there was a list (handle cxase where one RR instances are set to null multiple times
-//                            addToSaveList3(repeatRule, saveList);
-                        });
+                        if (isNotCreated) {
+                            repeatRule.setListOfDoneInstances(null);
+                            afterParseUpdate.add(() -> {
+                                repeatRule.setListOfDoneInstances(doneInstances); //only set the set when there was a list (handle cxase where one RR instances are set to null multiple times
+                            });
+                        }
                     }
                 }
             }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //           if( repeatRule.isUnsaved())
 //            if (!referencesUnsavedParseObjects) {
 //                addToSaveList3((ParseObject) repeatRule, saveList);
@@ -5544,15 +5566,127 @@ public class DAO {
 //                }
 //                afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
 //            }
-            if (isUnsaved) {
+//</editor-fold>
+//            if (false) {
+//                if (isNotCreated) {
+//                    if (referencesUnsavedParseObjects) {
+//                        addToSaveList3(repeatRule, saveList);
+//                        afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
+//                    } else {
+//                        addToSaveList3(repeatRule, saveList);
+//                    }
+//                } else { //already created
+//                    if (referencesUnsavedParseObjects) {
+//                        afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
+//                    } else {
+//                        addToSaveList3(repeatRule, saveList);
+//                    }
+////            if (referencesUnsavedParseObjects) {
+////                afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
+////            }
+//                }
+//            }
+            savingOrder(repeatRule, isNotCreated, referencesUnsavedParseObjects, saveList);
+//        }
+        }
+    }
+
+    private void saveRepeatRuleNew3TST(RepeatRuleParseObject repeatRule, List saveList) {
+        boolean saveInstances = true;
+
+        // saving a (completely new) repeatRule requires saving in a particular order to avoid problems with references to unsaved parseObjects:
+        //save RR first, *without* the potentially unsaved repeat instances
+//        if (!saveList.contains(repeatRule)) {
+        if (repeatRule.isDirty() && !processedList.contains(repeatRule)) {//!repeatRule.isUnsaved()) {
+//            addToSaveList3(repeatRule, saveList);
+            addToProcessed3(repeatRule);
+            boolean isNotCreated = repeatRule.isNotCreated();
+            //save in second round (once we're sure any referenced unsaved elements have been created and can be referenced
+//                afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
+//            } else {
+            boolean referencesUnsavedParseObjects = false;
+
+            { //UNDONE INSTANCES
+                List undoneInstances = repeatRule.getListOfUndoneInstances();
+                if (undoneInstances != null && !undoneInstances.isEmpty()) {
+                    saveList3(undoneInstances, saveList, true);
+                    if (isNotCreated) {
+                        if (listContainsNotCreated(undoneInstances, true)) {
+                            repeatRule.setListOfUndoneInstances(null);
+                            addToSaveList3(repeatRule, saveList);
+                            afterParseUpdate.add(() -> {
+                                repeatRule.setListOfUndoneInstances(undoneInstances); //only set the set when there was a list (handle cxase where one RR instances are set to null multiple times
+                                addToSaveList3(repeatRule, saveList);
+                            });
+                        } else {
+                            addToSaveList3(repeatRule, saveList);
+                        }
+                    } else { //isCreated
+                        if (listContainsNotCreated(undoneInstances, true)) {
+                            afterParseUpdate.add(() -> {
+                                addToSaveList3(repeatRule, saveList);
+                            });
+                        } else {
+                            addToSaveList3(repeatRule, saveList);
+                        }
+
+                    }
+                }
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+            { //DONE INSTANCES
+                List doneInstances = repeatRule.getListOfDoneInstances();
+                if (doneInstances != null && !doneInstances.isEmpty()) {
+                    if (isNotCreated && listContainsNotCreated(doneInstances, true)) {
+                        referencesUnsavedParseObjects = true;
+//                        if (saveInstances) {
+                        saveList3(doneInstances, saveList, true);
+//                        }
+//                    beforeParseUpdate.add(() -> {
+                        repeatRule.setListOfDoneInstances(null);
+//                    });
+                        afterParseUpdate.add(() -> {
+                            repeatRule.setListOfDoneInstances(doneInstances); //only set the set when there was a list (handle cxase where one RR instances are set to null multiple times
+//                            addToSaveList3(repeatRule, saveList);
+                        });
+                    }
+                }
+            }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//           if( repeatRule.isUnsaved())
+//            if (!referencesUnsavedParseObjects) {
+//                addToSaveList3((ParseObject) repeatRule, saveList);
+//            } else {
+//                afterParseUpdate.add(() -> addToSaveList3((ParseObject) repeatRule, saveList));
+//            }
+//           if( repeatRule.isUnsaved()&&referencesUnsavedParseObjects) {
+//                addToSaveList3((ParseObject) repeatRule, saveList);
+//            } else {
+//                afterParseUpdate.add(() -> addToSaveList3((ParseObject) repeatRule, saveList));
+//            }
+//            if (!referencesUnsavedParseObjects) {
+//                addToSaveList3(repeatRule, saveList);
+//            } else {
+//                if (repeatRule.isUnsaved()) {
+//                    addToSaveList3(repeatRule, saveList);
+//                }
+//                afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
+//            }
+//</editor-fold>
+            if (isNotCreated) {
                 if (referencesUnsavedParseObjects) {
                     addToSaveList3(repeatRule, saveList);
                     afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
                 } else {
                     addToSaveList3(repeatRule, saveList);
                 }
-            } else { //already saved
-                afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
+            } else { //already created
+                if (referencesUnsavedParseObjects) {
+                    afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
+                } else {
+                    addToSaveList3(repeatRule, saveList);
+                }
             }
 //            if (referencesUnsavedParseObjects) {
 //                afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
@@ -5574,7 +5708,7 @@ public class DAO {
         if (workSlot.isDirty() && !processedList.contains(workSlot)) {//!repeatRule.isUnsaved()) {
 //            addToSaveList3(workSlot, saveList);
             addToProcessed3(workSlot);
-            boolean isUnsaved = workSlot.isUnsaved();
+            boolean isUnsaved = workSlot.isNotCreated();
             //save in second round (once we're sure any referenced unsaved elements have been created and can be referenced
 //                afterParseUpdate.add(() -> addToSaveList3(repeatRule, saveList));
 //            } else {
@@ -5594,15 +5728,14 @@ public class DAO {
                 } else if (owner instanceof ItemList) {
                     saveItemListNew3((ItemList) owner, saveList);
                 }
-                if (isUnsaved && owner.isUnsaved()) {
-//                beforeParseUpdate.add(() -> {
+                if (owner.isNotCreated()) {
                     referencesUnsavedParseObjects = true;
-                    workSlot.setOwner(null);
-//                });
-                    afterParseUpdate.add(() -> {
-                        workSlot.setOwner(owner);
-//                        addToSaveList3(workSlot, saveList);
-                    });
+                    if (isUnsaved) {
+                        workSlot.setOwner(null);
+                        afterParseUpdate.add(() -> {
+                            workSlot.setOwner(owner);
+                        });
+                    }
                 }
             }
 
@@ -5611,15 +5744,14 @@ public class DAO {
                 WorkSlot source = workSlot.getSource(); //source of Item is necessarily an Item itself
                 if (source != null && source.needsSaving()) {
                     saveWorkSlotNew3(source, saveList);
-                    if (isUnsaved && source.isUnsaved()) {
+                    if (source.isNotCreated()) {
                         referencesUnsavedParseObjects = true;
-//                    beforeParseUpdate.add(() -> {
-                        workSlot.setSource(null);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            workSlot.setSource(source);
-//                            addToSaveList3(workSlot, saveList);
-                        });
+                        if (isUnsaved) {
+                            workSlot.setSource(null);
+                            afterParseUpdate.add(() -> {
+                                workSlot.setSource(source);
+                            });
+                        }
                     }
                 }
             }
@@ -5629,15 +5761,14 @@ public class DAO {
                 RepeatRuleParseObject repeatRule = workSlot.getRepeatRuleN();
                 if (repeatRule != null && repeatRule.needsSaving()) {
                     saveRepeatRuleNew3(repeatRule, saveList);
-                    if (isUnsaved && repeatRule.isUnsaved()) {
+                    if (repeatRule.isNotCreated()) {
                         referencesUnsavedParseObjects = true;
-//                    beforeParseUpdate.add(() -> {
-                        workSlot.setRepeatRuleInParse(null);
-//                    });
-                        afterParseUpdate.add(() -> {
-                            workSlot.setRepeatRuleInParse(repeatRule);
-//                            addToSaveList3(workSlot, saveList);
-                        });
+                        if (isUnsaved) {
+                            workSlot.setRepeatRuleInParse(null);
+                            afterParseUpdate.add(() -> {
+                                workSlot.setRepeatRuleInParse(repeatRule);
+                            });
+                        }
                     }
                 }
             }
@@ -5650,16 +5781,18 @@ public class DAO {
 //                }
 //                afterParseUpdate.add(() -> addToSaveList3(workSlot, saveList));
 //            }
-            if (isUnsaved) {
-                if (referencesUnsavedParseObjects) {
-                    addToSaveList3(workSlot, saveList);
-                    afterParseUpdate.add(() -> addToSaveList3(workSlot, saveList));
-                } else {
-                    addToSaveList3(workSlot, saveList);
-                }
-            } else { //already saved
-                afterParseUpdate.add(() -> addToSaveList3(workSlot, saveList));
-            }
+//            if (isUnsaved) {
+//                if (referencesUnsavedParseObjects) {
+//                    addToSaveList3(workSlot, saveList);
+//                    afterParseUpdate.add(() -> addToSaveList3(workSlot, saveList));
+//                } else {
+//                    addToSaveList3(workSlot, saveList);
+//                }
+//            } else { //already saved
+//                afterParseUpdate.add(() -> addToSaveList3(workSlot, saveList));
+//            }
+            savingOrder(workSlot, isUnsaved, referencesUnsavedParseObjects, saveList);
+
 //            if (referencesUnsavedParseObjects) {
 //                afterParseUpdate.add(() -> addToSaveList3(workSlot, saveList));
 //            }
@@ -5838,15 +5971,24 @@ public class DAO {
         if (false) {
             query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on the alarm field
         }
-        if (backgroundFetch) {
-            if (false) { //just get all fields for simplicity (avoid some data is missing //optimization: 
-                query.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE,
-                        Item.PARSE_WAITING_ALARM_DATE, Item.PARSE_SNOOZE_DATE))); // just fetchFromCacheOnly the data needed to set alarms //TODO!! investigate if only fetching the relevant fields is a meaningful optimziation (check that only the fetched fields are used!)
-            }
-        } else {
+        if (false) { //probably no reason not to simply fetch all default fields (and no need for referenced parseObjects' guid?!)
+            if (backgroundFetch) {
+                Log.p("getItemsWithNextcomingAlarms w *backgroundFetch* - is memoryCache empty?! cache.size=" + DAO.getInstance().cache.getCurrentMemoryCacheSize());
+                if (false) { //just get all fields for simplicity (avoid some data is missing //optimization: 
+                    query.selectKeys(new ArrayList(Arrays.asList(ParseObject.GUID, Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE,
+                            Item.PARSE_WAITING_ALARM_DATE, Item.PARSE_SNOOZE_DATE))); // just fetchFromCacheOnly the data needed to set alarms //TODO!! investigate if only fetching the relevant fields is a meaningful optimziation (check that only the fetched fields are used!)
+                }
+            } else {
 //            query.selectKeys(new ArrayList()); // just fetch minimu
-            query.selectKeys(Arrays.asList(ParseObject.GUID)); // just fetch minimu
+                query.selectKeys(Arrays.asList(ParseObject.GUID)); // just fetch minimu
+            }
+            query.selectKeys(Arrays.asList(
+                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID,
+                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID,
+                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID
+            ));
         }
+
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
         query.setLimit(maxNumberItemsToRetrieve);
         List<Item> results;
@@ -5937,7 +6079,8 @@ public class DAO {
         return results;
     }
 
-    public List<Item> getItemsWithAlarms(int maxNumberItemsToRetrieve, Date timeAfterWhichToFindNextItemWithAlarm, Date timeAfterWhichToFindNextItemWithWaitingAlarm, Date timeAfterWhichToFindNextItemWithSnoozedAlarm, int daysAhead) {
+    public List<Item> getItemsWithAlarms(int maxNumberItemsToRetrieve, Date timeAfterWhichToFindNextItemWithAlarm, Date timeAfterWhichToFindNextItemWithWaitingAlarm,
+            Date timeAfterWhichToFindNextItemWithSnoozedAlarm, int daysAhead) {
         //TODO!!!! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
         //TODO possible to query on items where alarmTimes are stored in an array (e.g. get all items for which at least one alarmTime in the array falls within the searched interval)??
 
@@ -6060,62 +6203,63 @@ public class DAO {
      * @param timeAfterWhichToFindNextItem
      * @return
      */
-    public Item getNextItemWithAlarm(Date timeAfterWhichToFindNextItem) {
-        ParseQuery<Item> queryReminderAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
-        setupItemQueryNotTemplateNotDeletedLimit10000(queryReminderAlarm, true);
-//        setupAlarmQuery(queryReminderAlarm, Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItem, new Date(0), 1);
-        queryReminderAlarm.whereGreaterThan(Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItem);
-        queryReminderAlarm.setLimit(1); //only return queryLimit first results (the queryLimit smallest alarms)
-//        queryReminderAlarm.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
-//        queryReminderAlarm.selectKeys(new ArrayList()); // just fetchFromCacheOnly the objectId - assumes items are cached already
-//        queryReminderAlarm.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-
-        ParseQuery<Item> queryWaitingAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
-        setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingAlarm, true);
-//        setupAlarmQuery(queryWaitingAlarm, Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItem, new Date(0), 1);
-        queryWaitingAlarm.whereGreaterThan(Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItem);
-        queryWaitingAlarm.setLimit(1); //only return queryLimit first results (the queryLimit smallest alarms)
-//        queryWaitingAlarm.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
-//        queryWaitingAlarm.selectKeys(new ArrayList()); // just fetchFromCacheOnly the objectId - assumes items are cached already
-//        queryWaitingAlarm.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-
-        Item nextItemWithAlarm = null;
-
-        try {
-            List<Item> resultsNextAlarm = queryReminderAlarm.find();
-            List<Item> resultsNextWaiting = queryWaitingAlarm.find();
-
-            if (resultsNextAlarm != null && resultsNextAlarm.size() >= 1) {
-                if (resultsNextWaiting != null && resultsNextWaiting.size() >= 1) {
-                    if (resultsNextAlarm.get(0).getAlarmDate().getTime() < resultsNextWaiting.get(0).getWaitingAlarmDate().getTime()) {
-//                        return resultsNextAlarm.get(0);
-                        nextItemWithAlarm = resultsNextAlarm.get(0);
-
-                    } else {
-//                        return resultsNextWaiting.get(0);
-                        nextItemWithAlarm = resultsNextWaiting.get(0);
-                    }
-                } else {
-//                    return resultsNextAlarm.get(0);
-                    nextItemWithAlarm = resultsNextAlarm.get(0);
-                }
-            } else if (resultsNextWaiting != null && resultsNextWaiting.size() >= 1) {
-//                return resultsNextWaiting.get(0);
-                nextItemWithAlarm = resultsNextWaiting.get(0);
-            };
-
-        } catch (ParseException ex) {
-            Log.e(ex);
-        }
-        ASSERT.that(cache != null, "cache must be initialized");
-
-        if (nextItemWithAlarm != null) {
-//            nextItemWithAlarm = (Item) cache.get(nextItemWithAlarm.getObjectIdP());
-            nextItemWithAlarm = (Item) cacheGet(nextItemWithAlarm.getObjectIdP());
-        }
-        return nextItemWithAlarm;
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public Item getNextItemWithAlarmXXX(Date timeAfterWhichToFindNextItem) {
+//        ParseQuery<Item> queryReminderAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+//        setupItemQueryNotTemplateNotDeletedLimit10000(queryReminderAlarm, true);
+////        setupAlarmQuery(queryReminderAlarm, Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItem, new Date(0), 1);
+//        queryReminderAlarm.whereGreaterThan(Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItem);
+//        queryReminderAlarm.setLimit(1); //only return queryLimit first results (the queryLimit smallest alarms)
+////        queryReminderAlarm.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
+////        queryReminderAlarm.selectKeys(new ArrayList()); // just fetchFromCacheOnly the objectId - assumes items are cached already
+////        queryReminderAlarm.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//
+//        ParseQuery<Item> queryWaitingAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+//        setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingAlarm, true);
+////        setupAlarmQuery(queryWaitingAlarm, Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItem, new Date(0), 1);
+//        queryWaitingAlarm.whereGreaterThan(Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItem);
+//        queryWaitingAlarm.setLimit(1); //only return queryLimit first results (the queryLimit smallest alarms)
+////        queryWaitingAlarm.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
+////        queryWaitingAlarm.selectKeys(new ArrayList()); // just fetchFromCacheOnly the objectId - assumes items are cached already
+////        queryWaitingAlarm.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//
+//        Item nextItemWithAlarm = null;
+//
+//        try {
+//            List<Item> resultsNextAlarm = queryReminderAlarm.find();
+//            List<Item> resultsNextWaiting = queryWaitingAlarm.find();
+//
+//            if (resultsNextAlarm != null && resultsNextAlarm.size() >= 1) {
+//                if (resultsNextWaiting != null && resultsNextWaiting.size() >= 1) {
+//                    if (resultsNextAlarm.get(0).getAlarmDate().getTime() < resultsNextWaiting.get(0).getWaitingAlarmDate().getTime()) {
+////                        return resultsNextAlarm.get(0);
+//                        nextItemWithAlarm = resultsNextAlarm.get(0);
+//
+//                    } else {
+////                        return resultsNextWaiting.get(0);
+//                        nextItemWithAlarm = resultsNextWaiting.get(0);
+//                    }
+//                } else {
+////                    return resultsNextAlarm.get(0);
+//                    nextItemWithAlarm = resultsNextAlarm.get(0);
+//                }
+//            } else if (resultsNextWaiting != null && resultsNextWaiting.size() >= 1) {
+////                return resultsNextWaiting.get(0);
+//                nextItemWithAlarm = resultsNextWaiting.get(0);
+//            };
+//
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//        ASSERT.that(cache != null, "cache must be initialized");
+//
+//        if (nextItemWithAlarm != null) {
+////            nextItemWithAlarm = (Item) cache.get(nextItemWithAlarm.getObjectIdP());
+//            nextItemWithAlarm = (Item) cacheGet(nextItemWithAlarm.getObjectIdP());
+//        }
+//        return nextItemWithAlarm;
+//    }
+//</editor-fold>
     //--------  CACHE DATA  -----------------------------------------------
     private List<Item> getAllItemsFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
@@ -6135,8 +6279,7 @@ public class DAO {
         query.include(Item.PARSE_INTERRUPTED_TASK);
         query.include(Item.PARSE_ORIGINAL_SOURCE);
         query.include(Item.PARSE_DEPENDS_ON_TASK);
-        query.selectKeys(Arrays.asList(
-                Item.PARSE_OWNER_ITEM + "." + ParseObject.GUID,
+        query.selectKeys(Arrays.asList(Item.PARSE_OWNER_ITEM + "." + ParseObject.GUID,
                 Item.PARSE_OWNER_LIST + "." + ParseObject.GUID,
                 Item.PARSE_OWNER_TEMPLATE_LIST + "." + ParseObject.GUID,
                 Item.PARSE_SUBTASKS + "." + ParseObject.GUID,
@@ -6146,7 +6289,48 @@ public class DAO {
                 Item.PARSE_WORKSLOTS + "." + ParseObject.GUID,
                 Item.PARSE_INTERRUPTED_TASK + "." + ParseObject.GUID,
                 Item.PARSE_ORIGINAL_SOURCE + "." + ParseObject.GUID,
-                Item.PARSE_DEPENDS_ON_TASK + "." + ParseObject.GUID
+                Item.PARSE_DEPENDS_ON_TASK + "." + ParseObject.GUID,
+                //
+                ParseObject.GUID,
+                //
+                Item.PARSE_ACTUAL_EFFORT,
+                Item.PARSE_ACTUAL_EFFORT_TASK_ITSELF,
+                Item.PARSE_ALARM_DATE,
+                Item.PARSE_CHALLENGE,
+                Item.PARSE_COMMENT,
+                Item.PARSE_COMPLETED_DATE,
+                Item.PARSE_DATE_WHEN_SET_WAITING,
+                Item.PARSE_DELETED_DATE,
+                Item.PARSE_DREAD_FUN_VALUE,
+                Item.PARSE_DUE_DATE,
+                Item.PARSE_EARNED_VALUE,
+                Item.PARSE_EARNED_VALUE_PER_HOUR,
+                Item.PARSE_EDITED_DATE,
+                Item.PARSE_EFFORT_ESTIMATE,
+                Item.PARSE_EFFORT_ESTIMATE_PROJECT_TASK_ITSELF,
+                Item.PARSE_EXPIRES_ON_DATE,
+                Item.PARSE_HIDE_UNTIL_DATE,
+                Item.PARSE_IMPORTANCE,
+                Item.PARSE_IMPORTANCE_URGENCY_VIRT,
+                Item.PARSE_INHERIT_ENABLED,
+                Item.PARSE_INTERRUPT_OR_INSTANT_TASK,
+                Item.PARSE_NEXTCOMING_ALARM,
+                Item.PARSE_PRIORITY,
+                Item.PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF,
+                Item.PARSE_REMAINING_EFFORT_TOTAL,
+                Item.PARSE_RESTART_TIMER,
+                Item.PARSE_SNOOZED_TYPE,
+                Item.PARSE_SNOOZE_DATE,
+                Item.PARSE_STARRED,
+                Item.PARSE_STARTED_ON_DATE,
+                Item.PARSE_START_BY_DATE,
+                Item.PARSE_STATUS,
+                Item.PARSE_TEXT,
+                Item.PARSE_TIMER_PAUSED,
+                Item.PARSE_TIMER_STARTED,
+                Item.PARSE_URGENCY,
+                Item.PARSE_WAITING_ALARM_DATE,
+                Item.PARSE_WAITING_TILL_DATE
         ));
         List<Item> results = null;
         try {
@@ -6185,7 +6369,14 @@ public class DAO {
                 WorkSlot.PARSE_OWNER_CATEGORY + "." + ParseObject.GUID,
                 WorkSlot.PARSE_OWNER_ITEM + "." + ParseObject.GUID,
                 WorkSlot.PARSE_OWNER_LIST + "." + ParseObject.GUID,
-                WorkSlot.PARSE_REPEAT_RULE + "." + ParseObject.GUID));
+                WorkSlot.PARSE_REPEAT_RULE + "." + ParseObject.GUID,
+                ParseObject.GUID,
+                WorkSlot.PARSE_DURATION,
+                WorkSlot.PARSE_END_TIME,
+                WorkSlot.PARSE_START_TIME,
+                WorkSlot.PARSE_TEXT
+        ));
+        //
         List<WorkSlot> results = null;
 
         try {
@@ -6215,9 +6406,29 @@ public class DAO {
 //        query.selectKeys(Arrays.asList(ParseObject.GUID));
         query.include(RepeatRuleParseObject.PARSE_UNDONE_INSTANCES);
         query.include(RepeatRuleParseObject.PARSE_DONE_INSTANCES);
-        query.selectKeys(Arrays.asList(
-                RepeatRuleParseObject.PARSE_UNDONE_INSTANCES + "." + ParseObject.GUID,
-                RepeatRuleParseObject.PARSE_DONE_INSTANCES + "." + ParseObject.GUID));
+        query.selectKeys(Arrays.asList(RepeatRuleParseObject.PARSE_UNDONE_INSTANCES + "." + ParseObject.GUID,
+                RepeatRuleParseObject.PARSE_DONE_INSTANCES + "." + ParseObject.GUID,
+                ParseObject.GUID,
+                RepeatRuleParseObject.PARSE_COUNT,
+                //                RepeatRuleParseObject.PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR_XXX,
+                //                RepeatRuleParseObject.PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR_XXX,
+                //                RepeatRuleParseObject.PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED_XXX,
+                RepeatRuleParseObject.PARSE_DATE_ON_COMPLETION_REPEATS,
+                RepeatRuleParseObject.PARSE_DAYS_IN_WEEK,
+                RepeatRuleParseObject.PARSE_DAY_IN_MONTH,
+                RepeatRuleParseObject.PARSE_DAY_IN_YEAR,
+                //                RepeatRuleParseObject.PARSE_DONE_INSTANCES,
+                RepeatRuleParseObject.PARSE_END_DATE,
+                RepeatRuleParseObject.PARSE_FREQUENCY,
+                RepeatRuleParseObject.PARSE_INTERVAL,
+                RepeatRuleParseObject.PARSE_MONTHS_IN_YEAR,
+                RepeatRuleParseObject.PARSE_NUMBER_OF_DAYS_TO_GENERATE_AHEAD,
+                RepeatRuleParseObject.PARSE_NUMBER_SIMULTANEOUS_REPEATS_TO_GENERATE_AHEAD,
+                RepeatRuleParseObject.PARSE_REPEAT_TYPE,
+                //                RepeatRuleParseObject.PARSE_SPECIFIED_START_DATE_XXX,
+                RepeatRuleParseObject.PARSE_WEEKDAYS_IN_MONTH,
+                RepeatRuleParseObject.PARSE_WEEKS_IN_MONTH
+        ));
         List<RepeatRuleParseObject> results = null;
 
         try {
@@ -6284,7 +6495,14 @@ public class DAO {
                 Category.PARSE_FILTER_SORT_DEF + "." + ParseObject.GUID,
                 Category.PARSE_OWNER + "." + ParseObject.GUID,
                 Category.PARSE_ITEMS + "." + ParseObject.GUID,
-                Category.PARSE_WORKSLOTS + "." + ParseObject.GUID));
+                Category.PARSE_WORKSLOTS + "." + ParseObject.GUID,
+                ParseObject.GUID,
+                Category.PARSE_COMMENT,
+                Category.PARSE_DELETED_DATE,
+                Category.PARSE_EDITED_DATE,
+                Category.PARSE_SYSTEM_NAME,
+                Category.PARSE_TEXT
+        ));
         //exclude the full data of the following fields (only keep Category's own data=Category.PARSE_COMMENT, Category.PARSE_TEXT, Category.PARSE_SYSTEM_NAME)
 //        query.selectKeys(Arrays.asList(Category.PARSE_ITEMLIST,Category.PARSE_FILTER_SORT_DEF, 
 //                Category.PARSE_ITEM_BAG, Category.PARSE_META_LISTS, Category.PARSE_SOURCE_LISTS,
@@ -6365,7 +6583,14 @@ public class DAO {
                 ItemList.PARSE_FILTER_SORT_DEF + "." + ParseObject.GUID,
                 ItemList.PARSE_ITEMS + "." + ParseObject.GUID,
                 ItemList.PARSE_OWNER + "." + ParseObject.GUID,
-                ItemList.PARSE_WORKSLOTS + "." + ParseObject.GUID));
+                ItemList.PARSE_WORKSLOTS + "." + ParseObject.GUID,
+                ParseObject.GUID,
+                ItemList.PARSE_COMMENT,
+                ItemList.PARSE_DELETED_DATE,
+                ItemList.PARSE_EDITED_DATE,
+                ItemList.PARSE_SYSTEM_NAME,
+                ItemList.PARSE_TEXT
+        ));
 
         if (!includeSystemLists) {
             query.whereDoesNotExist(ItemList.PARSE_SYSTEM_NAME);
@@ -6637,7 +6862,7 @@ public class DAO {
      * @param lastDateXXX
      * @return
      */
-    public boolean cacheAllData() {//Date firstDateXXX, Date lastDateXXX) {
+    public boolean cacheAllDataOLD() {//Date firstDateXXX, Date lastDateXXX) {
         if (false) {
             return false;
         }
@@ -6654,6 +6879,73 @@ public class DAO {
 //        CategoryList.getInstance();
 //        somethingWasLoaded = CategoryList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
             CategoryList.getInstance();
+//            ItemListList.getInstance();
+//            TemplateList.getInstance();
+//            cachePut(CategoryList.getInstance());
+        }
+
+        Log.p("Caching Categories");
+        somethingWasLoaded = cacheAllCategoriesFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
+
+        Log.p("Caching Filters");
+        somethingWasLoaded = cacheAllFilterSortDefsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
+//        getAllCategoriesFromParse();
+//        getAllCategoriesFromParse(reloadUpdateAfterThis, now);
+//        getAllItemListsFromParse();
+//        getAllItemListsFromParse(reloadUpdateAfterThis, now);
+
+        if (true) { //for now MUST load before Categories to ensure that cache points to correct instance in memory of CategoryList
+            Log.p("Caching ItemListList");
+//        somethingWasLoaded = cacheItemListList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of ItemLists
+//        somethingWasLoaded = ItemListList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
+            ItemListList.getInstance();
+//            cachePut(ItemListList.getInstance());
+        }
+
+        Log.p("Caching ItemLists");
+        somethingWasLoaded = cacheAllItemListsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
+
+        Log.p("Caching RepeatRules");
+        somethingWasLoaded = cacheAllRepeatRulesFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
+//        getCategoryList(); //will cache the list of Categories
+//        getItemListList(); //will cache the list of ItemLists
+//        getTemplateList(); //will cache the list of Templates
+
+        if (true) { //for now MUST load before Categories to ensure that cache points to correct instance in memory of CategoryList
+            Log.p("Caching TemplateList");
+//        somethingWasLoaded = cacheTemplateList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Templates
+//        somethingWasLoaded = TemplateList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
+            TemplateList.getInstance();
+//            cachePut(TemplateList.getInstance());
+        }
+
+        Log.p("Caching Items");
+        somethingWasLoaded = cacheAllItemsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
+
+        Log.p("Caching WorkSlots");
+        somethingWasLoaded = cacheAllWorkSlotsFromParse(firstDateXXX, lastDateXXX) || somethingWasLoaded;
+
+//        cacheUpdateAllCategoryItemReferences(categoryList);
+//        cacheUpdateAllItemListItemReferences(itemListLists);
+//        cacheUpdateAllItemReferences();
+        Log.p("cacheAllData FINISHED updating cache" + (somethingWasLoaded ? " NEW DATA LOADED" : " no data loaded"));
+        return somethingWasLoaded;
+    }
+
+    public boolean cacheAllData() {//Date firstDateXXX, Date lastDateXXX) {
+        boolean somethingWasLoaded = false;
+
+        //ALWAYS for complete reload of all data
+        Date firstDateXXX = new MyDate(MyDate.MIN_DATE);
+        Date lastDateXXX = new MyDate(MyDate.MAX_DATE);
+
+        if (true) { //for now MUST load before Categories to ensure that cache points to correct instance in memory of CategoryList
+            Log.p("Caching CategoryList");
+//        somethingWasLoaded = cacheCategoryList(afterDate, beforeDate) || somethingWasLoaded; //will cache the list of Categories
+//        CategoryList.getInstance().reloadFromParse();
+//        CategoryList.getInstance();
+//        somethingWasLoaded = CategoryList.getInstance().reloadFromParse(false, afterDate, beforeDate) || somethingWasLoaded;
+            CategoryList.getInstance(); //load *after* categories
 //            ItemListList.getInstance();
 //            TemplateList.getInstance();
 //            cachePut(CategoryList.getInstance());
@@ -6849,7 +7141,7 @@ public class DAO {
 
     private boolean testNoUnsaved(List<ParseObject> list) {
         for (ParseObject p : list) {
-            if (p.isUnsaved()) {
+            if (p.isNotCreated()) {
                 return true;
             }
         }
@@ -6950,12 +7242,12 @@ public class DAO {
 //</editor-fold>
     private void checkNoUnsavedReferences(Item item, String text) {
         if (Config.TEST) {
-            ASSERT.that(item.getOwner() == null || !item.getOwner().isUnsaved(), text + "Item=" + item + ", has unsaved owner=" + item.getOwner());
-            ASSERT.that(item.getSource() == null || !item.getSource().isUnsaved(), text + "Item=" + item + ", has unsaved source=" + item.getSource());
-            ASSERT.that(item.getDependingOnTask() == null || !item.getDependingOnTask().isUnsaved(), text + "Item=" + item + ", has unsaved depndingOn=" + item.getDependingOnTask());
-            ASSERT.that(item.getFilterSortDefN() == null || !item.getFilterSortDefN().isUnsaved(), text + "Item=" + item + ", has unsaved filter=" + item.getFilterSortDefN());
+            ASSERT.that(item.getOwner() == null || !item.getOwner().isNotCreated(), text + "Item=" + item + ", has unsaved owner=" + item.getOwner());
+            ASSERT.that(item.getSource() == null || !item.getSource().isNotCreated(), text + "Item=" + item + ", has unsaved source=" + item.getSource());
+            ASSERT.that(item.getDependingOnTask() == null || !item.getDependingOnTask().isNotCreated(), text + "Item=" + item + ", has unsaved depndingOn=" + item.getDependingOnTask());
+            ASSERT.that(item.getFilterSortDefN() == null || !item.getFilterSortDefN().isNotCreated(), text + "Item=" + item + ", has unsaved filter=" + item.getFilterSortDefN());
             checkNoUnsavedReferences(item.getListFull(), "In Project=" + item + "; Subtasks - ");
-            ASSERT.that(item.getRepeatRuleN() == null || !item.getRepeatRuleN().isUnsaved(), text + "Item=" + item + ", has unsaved owner=" + item.getOwner());
+            ASSERT.that(item.getRepeatRuleN() == null || !item.getRepeatRuleN().isNotCreated(), text + "Item=" + item + ", has unsaved owner=" + item.getOwner());
             if (item.getWorkSlotListN() != null) {
                 checkNoUnsavedReferences((List) item.getWorkSlotListN().getWorkSlotListFull(), "In Project=" + item + "; WorkSlots - ");
             }
@@ -6980,7 +7272,7 @@ public class DAO {
                     checkNoUnsavedReferences(item, text);
                 } else if (p instanceof WorkSlot) {
                     WorkSlot workSlot = (WorkSlot) p;
-                    ASSERT.that(!workSlot.getOwner().isUnsaved(), text + "WorkSlot=" + workSlot + ", has unsaved owner=" + workSlot.getOwner());
+                    ASSERT.that(!workSlot.getOwner().isNotCreated(), text + "WorkSlot=" + workSlot + ", has unsaved owner=" + workSlot.getOwner());
                 } else if (p instanceof Category) {
                     Category category = (Category) p;
                     checkNoUnsavedReferences(category.getListFull(), "In Category=" + category + "; ");

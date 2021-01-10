@@ -85,14 +85,15 @@ public class ScreenListOfItemLists extends MyForm {
 //                            DAO.getInstance().save(cat);
 //                        });
 //    }
-    ScreenListOfItemLists(ItemListList itemListList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) {
+    ScreenListOfItemLists(ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone) {
         this(itemListList.getText(), itemListList, previousForm, updateItemListOnDone);
     }
 
-    ScreenListOfItemLists(String title, ItemListList itemListList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfItemLists(String title, ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListList));
-        super(title, previousForm, null);
-        addUpdateActionOnDone(() -> updateItemListOnDone.update2(itemListList));
+        super(title, previousForm, updateItemListOnDone);
+//        addUpdateActionOnDone(() -> updateItemListOnDone.update2(itemListList));
+//        addUpdateActionOnDone(() -> updateItemListOnDone.update2(itemListList));
         setUniqueFormId("ScreenListOfItemLists");
         this.itemListList = itemListList;
         setScrollable(false);
@@ -226,9 +227,9 @@ public class ScreenListOfItemLists extends MyForm {
 //                    DAO.getInstance().saveInBackground((ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    previousForm.revalidate(); //refresh list to show new items(??)
 //                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
-                    if (false) {
-                        refreshAfterEdit();//refresh list to show new items(??)
-                    }
+//                    if (false) {
+//                        refreshAfterEdit();//refresh list to show new items(??)
+//                    }
                 }
             }).show();
         }
@@ -479,25 +480,29 @@ public class ScreenListOfItemLists extends MyForm {
             //SHOW/EDIT SUBTASKS OF LIST
 //        editItemPropertiesButton.setIcon(iconEdit);
 //            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-", itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle, (e) -> {
-            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-" + itemList.getReplayId(), "", Icons.iconEdit, 
+            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-" + itemList.getReplayId(), "", Icons.iconEdit,
                     (ActionEvent e) -> {
-                MyForm f = ((MyForm) mainCont.getComponentForm());
-                f.setKeepPos(new KeepInSameScreenPosition());
+                        MyForm f = ((MyForm) mainCont.getComponentForm());
+                        f.setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllElementsInSublist((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
 //                new ScreenListOfItems(itemList.getText(), itemList, ScreenListOfItemLists.this, (iList) -> {
-                new ScreenListOfItems(itemList.getText(), () -> itemList, (MyForm) mainCont.getComponentForm(), (ItemAndListCommonInterface iList) -> {
+                        new ScreenListOfItems(itemList.getText(), () -> itemList, (MyForm) mainCont.getComponentForm(),
+                                //                        (ItemAndListCommonInterface iList) -> {
+                                () -> {
+                                    if (false) {
 //                    if (true) {
 //                            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
-                        f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
-                        itemList.setList(iList.getListFull());
+                                        f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
+                                        itemList.setList(itemList.getListFull());
 //                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                        //TODO!!!! how to make below save run in background? (objId is needed eg for EditItemList-ObjId of new list)
+                                        //TODO!!!! how to make below save run in background? (objId is needed eg for EditItemList-ObjId of new list)
 //                        DAO.getInstance().saveAndWait((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveNew((ParseObject) itemList,true); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveNew((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveNewTriggerUpdate(); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                        DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                                        DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                                    }
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
 //                        if (false) {
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
@@ -509,7 +514,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                    if (false) {
 //                        f.refreshAfterEdit();
 //                    }
-                        return true;
+//                        return true;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                categoryList.addItemAtIndex(category, 0);
 //                                DAO.getInstance().save(categoryList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
@@ -526,8 +531,8 @@ public class ScreenListOfItemLists extends MyForm {
 //                                itemList.addItem(newItemList);
 //                            }).show();
 //</editor-fold>
-                }, 0).show();
-            }
+                                }, 0).show();
+                    }
             )
             );
         }

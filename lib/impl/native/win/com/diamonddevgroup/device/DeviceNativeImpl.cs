@@ -23,6 +23,10 @@ public class DeviceNativeImpl : IDeviceNativeImpl {
         return eas.SystemManufacturer;
     }
 
+    public bool isNotch() {
+        return false;
+    }
+
     public bool isSupported() {
         return false;
     }

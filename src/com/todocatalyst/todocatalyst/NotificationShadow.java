@@ -51,12 +51,12 @@ import java.util.Date;
          * create
          *
          * @param type
-         * @param objectId
+         * @param guid
          * @param time
          */
-        NotificationShadow(AlarmType type, String objectId, Date time) {
+        NotificationShadow(AlarmType type, String guid, Date time) {
             this.type = type;
-            this.notificationId = type.addTypeStrToStr(objectId);
+            this.notificationId = type.addTypeStrToStr(guid);
             this.alarmTime = time;
         }
         
@@ -71,11 +71,11 @@ import java.util.Date;
         
         /**
          * returns true if this NotisifcationShadow is for the objectId
-         * @param objectId
+         * @param guid
          * @return 
          */
-        boolean isForItem(String objectId) {
-            return notificationId.indexOf(objectId) == 0;
+        boolean isForItem(String guid) {
+            return notificationId.indexOf(guid) == 0;
         }
         
         @Override

@@ -15,7 +15,7 @@ import com.parse4cn1.ParseException;
 //import com.codename1.ui.List;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.Item.COPY_EXCLUDE_DUE_DATE;
-import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
+//import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -68,7 +68,7 @@ public class RepeatRuleParseObject
     final static int REPEAT_TYPE_FROM_DUE_DATE = 2;// 33;
 //    final static int REPEAT_TYPE_FROM_SPECIFIED_DATE = 3; //7; //TODO: implement as additional option?
 
-    final static String PARSE_SPECIFIED_START_DATE = "specifiedStartDate";
+    final static String PARSE_SPECIFIED_START_DATE_XXX = "specifiedStartDate";
     final static String PARSE_REPEAT_TYPE = "repeatType";
     final static String PARSE_FREQUENCY = "frequency";
     final static String PARSE_INTERVAL = "interval";
@@ -94,11 +94,12 @@ public class RepeatRuleParseObject
 //    final static String LAST_DATE_GENERATED_FOR = "lastDateGeneratedFor";
 //    private final static String PARSE_LAST_DATE_GENERATED = "lastGeneratedDate";
 //    private final static String PARSE_NEXTCOMING_REPEAT_DATE = "nextcomingDate"; //the nextcoming date for which a new repeat instance, also used to check if a RepeatRule need to generate new repeat instances
-    final static String PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR = "countOfInstancesGeneratedSoFar";
-    final static String PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR = "countOfDoneInstancesSoFar";
-    final static String PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED = "dateLastCompleted";
+    final static String PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR_XXX = "countOfInstancesGeneratedSoFar";
+    final static String PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR_XXX = "countOfDoneInstancesSoFar";
+    final static String PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED_XXX = "dateLastCompleted";
 
     final static String PARSE_DATE_ON_COMPLETION_REPEATS = "onCompletionDated"; //true if onCompletion repeats should be dated (and thus have a repeatRule pattern assigned)
+    final static String PARSE_DELETED_DATE = Item.PARSE_DELETED_DATE; //true if onCompletion repeats should be dated (and thus have a repeatRule pattern assigned)
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
     /**
@@ -2668,8 +2669,9 @@ public class RepeatRuleParseObject
 //        assert (true || getTotalNumberOfInstancesGeneratedSoFar() > 0); // ">0" - not the case if only one simultaneous instance
         if (getRepeatType() == REPEAT_TYPE_NO_REPEAT) { //handle case where a rule is deleted/disabled
 //<editor-fold defaultstate="collapsed" desc="NO repeat">
-            List undoneList = getListOfUndoneInstances();
-            List doneList = getListOfDoneInstances();
+            if (false) {
+                List undoneList = getListOfUndoneInstances();
+                List doneList = getListOfDoneInstances();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (undoneList.size() == getTotalNumberOfInstancesGeneratedSoFar() + 1 && undoneList.size() > 0) {
 //                //no repeating tasks have been completed so far
@@ -2680,12 +2682,12 @@ public class RepeatRuleParseObject
 //                }
 //            }
 //</editor-fold>
-            if (false) {
-                undoneList.remove(0); //UI: keep the first instance (original originator, even though the rule may be deleted on another instance)
-            }
-            if (false) { //NO, even originator may be deleted if rule stops repeating!
-                undoneList.remove(repeatRuleOriginator); //UI:keep the originator (the item editing the rule); remove repeatRuleOriginator from list In case it's still there) so it won't get deleted
-            }
+                if (false) {
+                    undoneList.remove(0); //UI: keep the first instance (original originator, even though the rule may be deleted on another instance)
+                }
+                if (false) { //NO, even originator may be deleted if rule stops repeating!
+                    undoneList.remove(repeatRuleOriginator); //UI:keep the originator (the item editing the rule); remove repeatRuleOriginator from list In case it's still there) so it won't get deleted
+                }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            int instancesToBeDeleted = undoneList.size();
 //            if (instancesToBeDeleted > 0) {
@@ -2701,18 +2703,21 @@ public class RepeatRuleParseObject
 //                }
 //            }
 //</editor-fold>
-            if (doneList.size() + undoneList.size() != 1) { //UI: don't delete if repeatRuleOriginator is only instance, must not delete the only item just because the RR is deleted, must not delete a done instance (since it represents work), even if other item is cancelled, then keep that one (use case: cancel one, then stop repeatrule)
-                Collection updatedOwners = deleteUnneededItemOrWorkSlotInstances(undoneList); //never delete done instances
+                if (doneList.size() + undoneList.size() != 1) { //UI: don't delete if repeatRuleOriginator is only instance, must not delete the only item just because the RR is deleted, must not delete a done instance (since it represents work), even if other item is cancelled, then keep that one (use case: cancel one, then stop repeatrule)
+                    Collection updatedOwners = deleteUnneededItemOrWorkSlotInstances(undoneList); //never delete done instances
 //            DAO.getInstance().saveNew(this, true); //update the rule
 //            DAO.getInstance().saveNew(this); //update the rule
 //            DAO.getInstance().saveNew(updatedOwners); //update the rule
 //            DAO.getInstance().saveNewTriggerUpdate();
-                DAO.getInstance().saveToParseLater(updatedOwners);
+                    DAO.getInstance().saveToParseLater(updatedOwners);
+                } else {
+                    ASSERT.that(doneList.contains(repeatRuleOriginator) || undoneList.contains(repeatRuleOriginator),
+                            () -> "ERROR, only 1 element in done+undone lists, but NOT originator, originator=" + repeatRuleOriginator + "; done=" + doneList + "; undone=" + undoneList);
+                }
+                DAO.getInstance().saveToParseNow(this); //update the rule
             } else {
-                ASSERT.that(doneList.contains(repeatRuleOriginator) || undoneList.contains(repeatRuleOriginator),
-                        () -> "ERROR, only 1 element in done+undone lists, but NOT originator, originator=" + repeatRuleOriginator + "; done=" + doneList + "; undone=" + undoneList);
+                deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(repeatRuleOriginator);
             }
-            DAO.getInstance().saveToParseNow(this); //update the rule
 //                DAO.getInstance().deleteBatch((List<ParseObject>)undoneList);
 //            }
 //don't change setTotalNumberOfInstancesGeneratedSoFar()!! UI: Keep the old count of generated instances (but should then show already generated instances to make it possible to understand what happens!)
@@ -4248,7 +4253,7 @@ public class RepeatRuleParseObject
 //    }
 //</editor-fold>
     /**
-     * called when an item (RepeatRuleObjectInterface) is Done. Removes the item
+     * called when an item (RepeatRuleObjectInterface) is Done.Removes the item
      * from the stored list of instances and create new repeat instances (as a
      * copy of the just completed item) to replace the just done one. If the
      * repeatRule has no more instances (the just Done item was the last) the
@@ -4263,6 +4268,7 @@ public class RepeatRuleParseObject
      * deadlock since new instances are only generated when a previous instance
      * is Completed.
      *
+     * @param completedItem
      * @param updateInstances if true, updates (recalculates) repeat instances.
      * Used eg to avoid to calculate instances if a just created Item with a
      * repeatRule is cancelled (deleted without being comitted)
@@ -6061,7 +6067,7 @@ public class RepeatRuleParseObject
     }
 
     public String toStringWObjId() {
-        return "RepRu=[" + (getObjectIdP() == null ? "no ObjId" : getObjectIdP()) + "]\"" + getText()
+        return "RepRu=[" + ((getObjectIdP() == null ? "no ObjId" : getObjectIdP())) + "/" + getGuid() + "]\"" + getText()
                 + "\"; DONE(" + getListOfDoneInstances().size() + ")= [" + getListOfDoneInstances() + "]"
                 + "; UNDONE(" + getListOfUndoneInstances().size() + ")= [" + getListOfUndoneInstances() + "]";
     }
@@ -6887,7 +6893,7 @@ public class RepeatRuleParseObject
     public Date getSpecifiedStartDateZZZ() {
 //        return specifiedStartDate;
 //        return getLong(SPECIFIED_START_DATE);
-        Date date = getDate(PARSE_SPECIFIED_START_DATE);
+        Date date = getDate(PARSE_SPECIFIED_START_DATE_XXX);
         return (date == null) ? new MyDate(0) : date;
     }
 
@@ -6925,9 +6931,9 @@ public class RepeatRuleParseObject
 //        }
 //        put(SPECIFIED_START_DATE, specifiedStartDate);
         if (specifiedStartDate != null && specifiedStartDate.getTime() != 0) {
-            put(PARSE_SPECIFIED_START_DATE, specifiedStartDate);
+            put(PARSE_SPECIFIED_START_DATE_XXX, specifiedStartDate);
         } else {
-            remove(PARSE_SPECIFIED_START_DATE);
+            remove(PARSE_SPECIFIED_START_DATE_XXX);
         }
     }
 
@@ -7811,9 +7817,9 @@ public class RepeatRuleParseObject
 
     public void setLatestDateCompletedOrCancelled(Date newDateOfCompleted) {
         if (newDateOfCompleted != null && newDateOfCompleted.getTime() != 0) {
-            put(PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED, newDateOfCompleted);
+            put(PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED_XXX, newDateOfCompleted);
         } else {
-            remove(PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED);
+            remove(PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED_XXX);
         }
     }
 
@@ -8044,9 +8050,9 @@ public class RepeatRuleParseObject
      */
     private void setTotalNumberOfDoneInstancesZZZ(int countOfInstancesDoneSoFar) {
         if (countOfInstancesDoneSoFar != 0) {
-            put(PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR, countOfInstancesDoneSoFar);
+            put(PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR_XXX, countOfInstancesDoneSoFar);
         } else {
-            remove(PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR);
+            remove(PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR_XXX);
         }
     }
 

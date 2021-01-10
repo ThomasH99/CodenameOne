@@ -423,7 +423,7 @@ public class TimerStackEntry implements Externalizable {
     public void internalize(int version, DataInputStream in) throws IOException {
         if (in.readBoolean()) {
 //            timedItem = DAO.getInstance().getItem(in.readUTF());
-            timedItem = DAO.getInstance().fetchItem(Util.readUTF(in));
+            timedItem = DAO.getInstance().fetchItem(Util.readUTF(in)); //now guid!
         }
         if (in.readBoolean()) {
 //            timedItem = DAO.getInstance().getItem(in.readUTF());

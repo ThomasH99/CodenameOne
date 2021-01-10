@@ -9,9 +9,9 @@ import com.codename1.ui.tree.TreeModel;
 import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
-import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
+//import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
 import static com.todocatalyst.todocatalyst.Item.PARSE_RESTART_TIMER;
-import static com.todocatalyst.todocatalyst.Item.PARSE_WORKSLOTS;
+//import static com.todocatalyst.todocatalyst.Item.PARSE_WORKSLOTS;
 import com.todocatalyst.todocatalyst.MyForm.ScreenType;
 import static com.todocatalyst.todocatalyst.MyForm.getListAsCommaSeparatedString;
 import static com.todocatalyst.todocatalyst.MyUtil.removeTrailingPrecedingSpacesNewLinesEtc;
@@ -25,6 +25,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Objects;
 //import java.util.List;
 
 /**
@@ -62,9 +63,20 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     final static String PARSE_WORKSLOTS = Item.PARSE_WORKSLOTS; //"filterSort";
 //    final static String PARSE_SYSTEM_LIST = "system";
     final static String PARSE_SYSTEM_NAME = "systemName"; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
+    final static String PARSE_EDITED_DATE = Item.PARSE_EDITED_DATE; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
+    final static String PARSE_DELETED_DATE = Item.PARSE_DELETED_DATE; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
 //    final static String PARSE_DELETED = "deleted"; //has this object been deleted on some device?
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
+    public boolean hasUserModifiedData() {
+        boolean userModifiedData
+                = isDirty(PARSE_TEXT)
+                || isDirty(PARSE_COMMENT)
+                || isDirty(PARSE_ITEMS)
+                || isDirty(PARSE_ITEM_BAG)
+                || isDirty(PARSE_OWNER);
+        return userModifiedData; //just setting ACL or guid (~system data) should not set item dirty
+    }
     private boolean noSave = false; //set to true for temporary lists, e.g. wrapping a parse search results
     private boolean allowAddingTasks = false; //set to true for the temporary list used to edit subtasks of a new project
 //    private List<E> filteredSortedList = null;
@@ -1144,15 +1156,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             Log.p("Calling getListFull() for list=" + this.getText());// + "; filter=" + getFilterSortDef());
         }
 
-        List<E> cachedList = getList(PARSE_ITEMS);
+        List<E> list = getList(PARSE_ITEMS);
 
 //            List<E> list = getList(PARSE_ITEMLIST);
 //            if (list != null) {
-        if (cachedList != null) {
+        if (list != null) {
 //                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(cachedList); //optimization?? heavy operation, any way (OTHER than caching which does work
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list); //optimization?? heavy operation, any way (OTHER than caching which does work
             if (Config.CHECK_OWNERS) {
-                checkOwners(cachedList);
+                checkOwners(list);
             }
 //        {
 //            for (E elt : cachedList) {
@@ -1176,14 +1188,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         } else {
 //            return null; //returning null would mean every user must check for null and create a list. And returning a new empty ArrayList and saving it doesn't have any side-effect since a new empty list isn't actually saved
 //                return new ArrayList();
-            cachedList = new ArrayList();
+            list = new ArrayList();
         }
-        return cachedList;
+        return list;
     }
 
 //    @Override
     private boolean addToList(int index, ItemAndListCommonInterface subItemOrList) {
-        addItemAtIndex((E) subItemOrList, index,true);
+        addItemAtIndex((E) subItemOrList, index, true);
         if (Config.TEST) {
             ASSERT.that(subItemOrList.getOwner() == null || subItemOrList.getOwner() == this || subItemOrList.getOwner().equals(this),
                     () -> "subItemOrList owner not null when adding to list, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this); //subItemOrList.getOwner()==this may happen when creating repeatInstances
@@ -1547,7 +1559,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        return toString(ToStringFormat.TOSTRING_COMMA_SEPARATED_LIST);
 //        return getText().length() != 0 ? getText() : getObjectIdP();
 //        return getText() + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "") + showSubtasks ? ((getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "")  : "");
-        return "\"" + getText() + "\"" + (isSystemList() ? "[SYS:" + getSystemName() + "]" : "") + " [" + getObjectIdP() + "]" + (isNoSave() ? " NoSave!" : "")
+        return "\"" + getText() + "\"" + (isSystemList() ? "[SYS:" + getSystemName() + "]" : "") + " [" + getObjectIdP() + "/" + getGuid() + "]" + (isNoSave() ? " NoSave!" : "")
                 + (showSubtasks ? (getListFull().size() > 0 ? (" " + getListFull().size() + " items") : "") : "");
     }
 
@@ -1698,9 +1710,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved --> should be done in DAO now
 //                DAO.getInstance().saveInBackground(filterSortDef); //
 //            }
-            remove(Item.PARSE_FILTER_SORT_DEF);
+            remove(PARSE_FILTER_SORT_DEF);
         } else {
-            put(Item.PARSE_FILTER_SORT_DEF, filterSortDef);
+            put(PARSE_FILTER_SORT_DEF, filterSortDef);
         }
 //        filteredSortedList = null;
     }
@@ -1729,8 +1741,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     @Override
     public FilterSortDef getFilterSortDefN() {
-        FilterSortDef filterSortDef = (FilterSortDef) getParseObject(Item.PARSE_FILTER_SORT_DEF);
-        filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
+        FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
+        if (filterSortDef != null) {
+            filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
+        }
         return filterSortDef;
     }
 
@@ -4140,7 +4154,28 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public Date getUpdatedAt() {
         Date date = super.getUpdatedAt();
         return date != null ? date : new MyDate(0); //ensure never to return null (like ParseObject.getCreatedAt() does!)
-    }//<editor-fold defaultstate="collapsed" desc="comment">
+    }
+
+    @Override
+    public void setEditedDate(Date editedDate) {
+        Date oldVal = getEditedDate();
+
+        if (editedDate != null && editedDate.getTime() != 0) {
+            if (!Objects.equals(oldVal, editedDate)) {
+                put(PARSE_EDITED_DATE, editedDate);
+            }
+        } else {
+            remove(PARSE_EDITED_DATE);
+        }
+    }
+
+    @Override
+    public Date getEditedDate() {
+        Date date = getDate(PARSE_EDITED_DATE);
+        return (date == null) ? new MyDate(0) : date;
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public List<ItemAndListCommonInterface> getWorkTimeProviders() {
 //        List<ItemAndListCommonInterface> providers = new ArrayList();

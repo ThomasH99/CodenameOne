@@ -401,10 +401,15 @@ public class MyTree2 extends ContainerScrollY {
         Container parent = c.getParent();
         if (parent != null) { //added due to nullpoint in expand/collapse hierarchy
             if (isInitialized() && animate) {
+                if (false && parent.getParent() != null) {
+                    parent = parent.getParent();
+                }
+
                 // prevent a race condition on node expansion contraction
 //                parent.animateHierarchyAndWait(300);
 //parent.getAnimationManager().
-                parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+//                parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+                parent.animateHierarchy(MyForm.ANIMATION_TIME_DEFAULT);
 //            if (multilineMode) {
 //                revalidate();
 //            }
@@ -993,7 +998,7 @@ public class MyTree2 extends ContainerScrollY {
 
         @Override
         public void actionPerformed(ActionEvent evt) {
-            Component c =  evt.getComponent(); //THJ: fix for type cast error when source is a command
+            Component c = evt.getComponent(); //THJ: fix for type cast error when source is a command
             if (c.getClientProperty(KEY_LONG_PRESS) != null) {
                 c.putClientProperty(KEY_LONG_PRESS, null); //is set in ScreenItemListofItems.subtask
                 return;
@@ -1254,7 +1259,7 @@ public class MyTree2 extends ContainerScrollY {
 //                        newStr = getDiffStr(previousStickyStr, Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitingTillDateD()));
                         newStr = getDiffStr(previousStickyStr, makeHeader(Item.WAIT_UNTIL_DATE, MyDate.formatDateNew(item.getWaitingTillDate()), item.getWaitingTillDate(), new MyDate(0)));
                         break;
-                    case Item.PARSE_IMPORTANCE_URGENCY:
+                    case Item.PARSE_IMPORTANCE_URGENCY_VIRT:
 //                        newStr = getDiffStr(previousStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());
                         newStr = getDiffStr(previousStickyStr, makeHeader(Item.IMPORTANCE_URGENCY, item.getImpUrgPrioValue(), 0));
                         break;

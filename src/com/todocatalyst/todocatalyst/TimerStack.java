@@ -3480,7 +3480,7 @@ class TimerStack {
 //                        DAO.getInstance().saveNew(timedItem, true); //save edited values
 //                        DAO.getInstance().saveNew(timedItem); //save edited values
 //                        DAO.getInstance().saveNewTriggerUpdate();
-                        DAO.getInstance().saveToParseNow(timedItem); //save edited values
+//                        DAO.getInstance().saveToParseNow(timedItem); //save edited values
 //                        }
 
                         refreshTotalActualEffort.actionPerformed(null); //refresh screen

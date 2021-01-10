@@ -103,6 +103,7 @@ public class ScreenItem2 extends MyForm {
 //    Map<Object, UpdateField> parseIdMap2 = new HashMap<Object, UpdateField>();
 //    MyForm previousForm;
     Item itemOrg;
+//    private boolean userModifiedData = false; //not good solution, not centralized enough to capture changes
     private Item itemCopy;
 
     MyTextField description;
@@ -249,6 +250,7 @@ public class ScreenItem2 extends MyForm {
         addUpdateActionOnDone(() -> {
 //            doneAction.run(); //launched via call to super() above
             itemOrg.updateRepeatRule(); //only update RR on exit, after all fields are updated, templates added, ...
+            DAO.getInstance().saveToParseNow(itemOrg);
         });
 
 //        ScreenItemP.item = item;
@@ -358,6 +360,11 @@ public class ScreenItem2 extends MyForm {
 //            DAO.getInstance().triggerParseUpdate();
 //        }
         super.updateOnExit();
+        if (itemOrg.hasUserModifiedData()) {
+//        if (userModifiedData) {
+            itemOrg.setEditedDateToNow();
+//            userModifiedData=false;
+        }
         DAO.getInstance().saveToParseNow(itemOrg);
     }
 
@@ -1620,7 +1627,7 @@ public class ScreenItem2 extends MyForm {
         starred.setUIID(setStarActive ? "ScreenItemStarredActive" : "ScreenItemStarredNotActive");
         starred.setMaterialIcon(setStarActive ? Icons.iconStarSelected : Icons.iconStarUnselected);
         description.setUIID(setStarActive ? "ScreenItemTaskTextStarred" : "ScreenItemTaskText");
-            description.repaint();
+        description.repaint();
     }
 
     private boolean isStarredSelected() {
@@ -2769,7 +2776,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         String remainingTxt = isProject ? Item.EFFORT_REMAINING_PROJECT : Item.EFFORT_REMAINING;
         String remainingHelpTxt = isProject ? Item.EFFORT_REMAINING_PROJECT_HELP : Item.EFFORT_REMAINING_HELP;
         timeCont.add(layoutN(remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconRemainingEffort)));
-        updateUIIDForInherited(remainingEffort, Item.isRemainingDefaultValue(remainingEffort.getDuration()));
+        if (MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean()) { //only show format as inherited if default value is turned on
+            updateUIIDForInherited(remainingEffort, Item.isRemainingDefaultValue(remainingEffort.getDuration()));
+        }
 //                MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean());
 //                && remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //NB! MUST do *after* layoutN() which sets the UIID
 
@@ -3531,13 +3540,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         } else {
             SpanButton editOwnerButton = new SpanButton();
 
-            ActionListener<ActionEvent> refreshOwnerButtonXXX = (e) -> {
-                String ownerStr
-                        = (previousValues != null && previousValues.getOwnersN() != null)
-                        ? (previousValues.getOwnersN().size() > 0 ? previousValues.getOwnersN().get(0).getText() : "")
-                        : (itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
-                editOwnerButton.setText(ownerStr);
-            };
+//            ActionListener<ActionEvent> refreshOwnerButtonXXX = (e) -> {
+//                String ownerStr
+//                        = (previousValues != null && previousValues.getOwnersN() != null)
+//                        ? (previousValues.getOwnersN().size() > 0 ? previousValues.getOwnersN().get(0).getText() : "")
+//                        : (itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
+//                editOwnerButton.setText(ownerStr);
+//            };
             editOwnerButton.setText(itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            final Command editOwnerCmd = Command.create(item.getOwner().getText(), null, (e) -> {
@@ -3601,25 +3610,25 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             );
             editOwnerButton.setCommand(editOwnerCmd);
 //        refreshOwnerButton.actionPerformed(null); //set button text *after* setting command
-            if (false) {
-                parseIdMap2.put(Item.PARSE_OWNER_ITEM, () -> {
-                    assert false; //not used anymore?!
-                    List<ItemAndListCommonInterface> newOwnersN = previousValues.getOwnersN();
-                    if (newOwnersN != null) { //a new owner is selected (or previous owner unselected
-                        if (newOwnersN.size() > 0) { //a new owner is selected
-                            ItemAndListCommonInterface newOwner = newOwnersN.get(0);
-                            ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
-                            newOwner.addToList(itemOrg);
-//                    DAO.getInstance().saveNew(itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
-//                        DAO.getInstance().saveToParseNow(itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
-                            DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) newOwner);
-                        } else { //previousValues.getOwner()==null meaning either no owner was selected or a prevoious owner was unselected (and should be removed)
-                            ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
-                            DAO.getInstance().saveToParseNow((ParseObject) oldOwner);
-                        }
-                    } //else: no change made to original owner so nothing to do!
-                });
-            }
+//            if (false) {
+//                parseIdMap2.put(Item.PARSE_OWNER_ITEM, () -> {
+//                    assert false; //not used anymore?!
+//                    List<ItemAndListCommonInterface> newOwnersN = previousValues.getOwnersN();
+//                    if (newOwnersN != null) { //a new owner is selected (or previous owner unselected
+//                        if (newOwnersN.size() > 0) { //a new owner is selected
+//                            ItemAndListCommonInterface newOwner = newOwnersN.get(0);
+//                            ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
+//                            newOwner.addToList(itemOrg);
+////                    DAO.getInstance().saveNew(itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
+////                        DAO.getInstance().saveToParseNow(itemOrg, (ParseObject) oldOwner, (ParseObject) newOwner);
+//                            DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) newOwner);
+//                        } else { //previousValues.getOwner()==null meaning either no owner was selected or a prevoious owner was unselected (and should be removed)
+//                            ItemAndListCommonInterface oldOwner = itemOrg.removeFromOwner();
+//                            DAO.getInstance().saveToParseNow((ParseObject) oldOwner);
+//                        }
+//                    } //else: no change made to original owner so nothing to do!
+//                });
+//            }
             //previousValues stores the ObjectId of the owner, not the owner itself!
             //NB! Item.PARSE_OWNER_ITEM is used to index previousValues, but owner can also be Item.PARSE_OWNER_LIST, but not Item.PARSE_OWNER_TEMPLATE_LIST
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3649,6 +3658,15 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        statusCont.add(new Label(Item.CREATED_DATE)).add(createdDate);
 //        statusCont.add(layout(Item.CREATED_DATE, createdDate, "**", true, true, true));
         statusCont.add(layoutN(Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDate));
+
+        if (itemOrg.isProject()) {
+            long lastEditedSubtasks = itemOrg.getEditedDateProjectOrSubtasks().getTime();
+            Label lastEditedDateSubtasks = new Label(lastEditedSubtasks == 0 ? "" : MyDate.formatDateTimeNew(lastEditedSubtasks));
+            statusCont.add(layoutN(Item.EDITED_DATE, lastEditedDateSubtasks, "**", true, hideIcons ? null : Icons.iconModifiedDate));
+        } else {
+            Label lastEditedDate = new Label(itemOrg.getEditedDate().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getEditedDate()));
+            statusCont.add(layoutN(Item.EDITED_DATE, lastEditedDate, Item.EDITED_DATE_HELP, true, hideIcons ? null : Icons.iconModifiedDate));
+        }
 
         if (itemOrg.isProject()) {
             long lastModifiedSubtasks = itemOrg.getLastModifiedDateProjectOrSubtasks().getTime();
@@ -3712,9 +3730,10 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         statusCont.add(layoutN(Item.COMPLETED_DATE, isTemplate ? null : completedDate, Item.COMPLETED_DATE_HELP,
                 hideIcons ? null : (status.getStatus() == ItemStatus.CANCELLED ? Icons.iconCancelledDate : Icons.iconCompletedDate))); //"click to set a completed date"
 
+//<editor-fold defaultstate="collapsed" desc="old setStatusChangeHandler">
         if (false) {
             status.setStatusChangeHandler((oldStatus, newStatus) -> {
-                //if status is set Ongoing and startedOnDate is not set and has not been set explicitly 
+                //if status is set Ongoing and startedOnDate is not set and has not been set explicitly
                 //if status is changed
                 //TODO!!! move this logic into Item as static method (or ensure consistent with changes made there), OR, at least check it is consistent with logic elsewhere (eg. if a project is set complete when last subtasks is completed, or in screenItemList)
 //            ItemStatus newStatus = status.getStatus();
@@ -3747,9 +3766,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                         startedOnDate.setDateAndNotify(zeroDate);
                         startedOnDate.repaint();
                     }
-                    //TODO!!!!!! check the logic for setting dates back to 0!! 
-                    //TODO In general, need to have methods in Item *without* any side-effects on other fields to ensure that the fields are set to the values seen in the UI
-                    //TODO extract the logic for which changed fields impact others? Add new Item.setters embedding th needed logic for updating other fields and use those in the places where the automatic updates are needed
+//TODO!!!!!! check the logic for setting dates back to 0!!
+//TODO In general, need to have methods in Item *without* any side-effects on other fields to ensure that the fields are set to the values seen in the UI
+//TODO extract the logic for which changed fields impact others? Add new Item.setters embedding th needed logic for updating other fields and use those in the places where the automatic updates are needed
 //                        if ((completedDate.getDate().getTime() == 0 && completedDate.getDate().getTime() == item.getCompletedDate()) || item.getCompletedDate() == 0) {
 //                if (completedDate.getDate().getTime() != 0) {
 //                    completedDate.setDateAndNotify(zeroDate);
@@ -3775,7 +3794,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                     dateSetWaitingDate.setDateAndNotify(now);
                     dateSetWaitingDate.repaint();
 //                        }
-                    //UI: set startedOnDate when setting Waiting (even if no effort registered)?
+//UI: set startedOnDate when setting Waiting (even if no effort registered)?
 //                        if (startedOnDate.getDate().getTime() == 0 && startedOnDate.getDate().getTime() == item.getStartedOnDate()) {
                     if (startedOnDate.getDate().getTime() == 0) {
                         startedOnDate.setDate(now);
@@ -3795,6 +3814,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 
             });
         }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //              status.addActionListener(statusListener);
 //        status.addActionListener((evt) -> {
@@ -3906,15 +3926,16 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            }
 //        };
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="old startedOnDate.addActionListener">
         if (false) {
             startedOnDate.addActionListener((evt) -> {
-                //if startedOnDate is set, then if status has not been set explicitly and it is Created (not Waiting), the set it 
+                //if startedOnDate is set, then if status has not been set explicitly and it is Created (not Waiting), the set it
 //                if (startedOnDate.getDate().getTime() != 0 && item.getStartedOnDate() == 0 && status.getStatus() == item.getStatus() && status.getStatus() == ItemStatus.CREATED) {
                 noAutoUpdateOnStatusChange = true;
                 if (startedOnDate.getDate().getTime() == 0) {
                     //TODO!! should it be allowed to remove a startdate if there is actual effort? YES, because you want to be able to edit freely the different fields of an Item! (not too much intelligence)
-//                    if (actualEffort.getTime() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter 
-                    if (status.getStatus() == ItemStatus.DONE || status.getStatus() == ItemStatus.ONGOING) { //doesn't matter 
+//                    if (actualEffort.getTime() == 0 && status.getStatus() == ItemStatus.ONGOING) { //doesn't matter
+                    if (status.getStatus() == ItemStatus.DONE || status.getStatus() == ItemStatus.ONGOING) { //doesn't matter
                         status.setStatus(actualEffortTask.getDuration() == 0 ? ItemStatus.CREATED : ItemStatus.ONGOING);
                     }
                     if (completedDate.getDate().getTime() != 0) {
@@ -3936,6 +3957,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 noAutoUpdateOnStatusChange = false;
             });
         }
+//</editor-fold>
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyActionListener completedOnDateListener = new MyActionListener() {
@@ -3993,6 +4015,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            }
 //        };
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="old completedDate.addActionListener">
         if (false) {
             completedDate.addActionListener((evt) -> {
                 //if completeDate is set, then if status has not been set explicitly and it is Created/Ongoing/Waiting), the set it Completed
@@ -4024,6 +4047,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 noAutoUpdateOnStatusChange = false;
             });
         }
+//</editor-fold>
 
         statusCont.add(makeSpacerThin());
 

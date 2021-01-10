@@ -828,9 +828,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String DONE = "DONE"; //"Done";
     final static String DUE_DATE = "Due"; //"DUE_DATE"; //"Due";
     final static String DUE_DATE_HELP = "DUE_DATE_HELP"; //"Due";
-    final static String UPDATED_DATE = "Modified"; //"Modified"; "Date last modified", "Update", "Last modified"
-    final static String UPDATED_DATE_SUBTASKS = "Modified subtasks"; //"Modified"; "Date last modified", "Update", "Last modified"
+    final static String UPDATED_DATE = "Updated";//"Modified"; //"Modified"; "Date last modified", "Update", "Last modified"
+    final static String UPDATED_DATE_SUBTASKS = "Updated subtasks"; //"Modified subtasks"; //"Modified"; "Date last modified", "Update", "Last modified"
     final static String UPDATED_DATE_HELP = "The time this task was last modified. Set automatically. Cannot be modified by user."; //"Modified"; "Date last modified", "Update", "Last modified"
+    final static String EDITED_DATE = "Edited"; //"Modified"; "Date last modified", "Update", "Last modified"
+    final static String EDITED_DATE_SUBTASKS = "Edited subtasks"; //"Modified"; "Date last modified", "Update", "Last modified"
+    final static String EDITED_DATE_HELP = "The time this task was last directly edited. Not updated when e.g. inherited values change. Set automatically. Cannot be modified by user."; //"Modified"; "Date last modified", "Update", "Last modified"
     final static String COMPLETED_DATE = "Completed"; //"Completed by"; //"Completed"; "Date completed", "Completed on"
 //    final static String COMPLETED_DATE_HELP = "The time this task was completed. Set automatically when a task is marked " + ItemStatus.DONE + " or " + ItemStatus.CANCELLED; //"Completed by"; //"Completed"; "Date completed", "Completed on"
     final static String COMPLETED_DATE_HELP = "The time this task was completed. Set automatically when a task is marked [DONE] or [CANCELLED]"; //"Completed by"; //"Completed"; "Date completed", "Completed on", "Set automatically when a task is completed"
@@ -1005,7 +1008,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_TEMPLATE = "template"; //is this task a template?
     final static String PARSE_UPDATED_AT = "updatedAt"; //cannot be edited (PARSE set field)
     final static String PARSE_CREATED_AT = "createdAt"; //cannot be edited (PARSE set field)
-    final static String PARSE_IMPORTANCE_URGENCY = "impUrgValue"; //cannot be edited (PARSE set field)
+    final static String PARSE_IMPORTANCE_URGENCY_VIRT = "impUrgValue"; //VIRTual - not used in Parse, but only to eg sort on the combinatino of Imp+Urg, cannot be edited (PARSE set field)
     final static String PARSE_ORIGINAL_SOURCE = "source"; //for an interrupt task: which task was interrupted (taken from Timer)
     final static String PARSE_NEXTCOMING_ALARM = "nextAlarm"; //first-coming/next-coming alarm (to allow easy search in Parse)
     final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
@@ -2178,6 +2181,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     DAO.getInstance().saveNew(newRepeatRule);
                 }
             }
+        }
+        
+        if(defCopyPaste||defToRepeatInst||defToTempl||defToTemplInst) {
+            setEditedDateToNow(); //always set edited date on creation of new instance (also a 'user-edited action)
         }
 
         return destination;
@@ -4477,7 +4484,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param newRepeatRuleN a new RR, null, or an edited *copy* of an existing
      * RR
      */
-    public void setRepeatRule(RepeatRuleParseObject newRepeatRuleN) {
+    public void setRepeatRuleOLD(RepeatRuleParseObject newRepeatRuleN) {
         RepeatRuleParseObject oldRepeatRule = getRepeatRuleN();
 //        boolean notTemplate = !isTemplate();
 
@@ -4485,7 +4492,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (newRepeatRuleN != null && newRepeatRuleN.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
 //                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null)
 //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
-                newRepeatRuleN.setUpdatePending(!isTemplate());xxx;
+                newRepeatRuleN.setUpdatePending(!isTemplate());
                 setRepeatRuleInParse(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
                 if (false && !isTemplate()) { // newRepeatRule.updateRepeatInstancesWhenRuleWasCreatedOrEdited(this, true);
                     newRepeatRuleN.addOriginatorToRule(this); //if new RepeatRule, add Item as originator
@@ -4501,7 +4508,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 //setting null or NO_REPEAT when already null - do nothing
             }
         } else { //oldRepeatRule != null
-            if (newRepeatRuleN == null || newRepeatRuleN.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) { //deleting the existing RR
+            if (false && (newRepeatRuleN == null || newRepeatRuleN.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT)) { //deleting the existing RR
 //                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
                 //                    DAO.getInstance().deleteInBackground(oldRepeatRule); //DONE in deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis (if no references)
                 oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //delete old instances
@@ -4517,8 +4524,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             } else { //newRepeatRule != null and possibly modified (eg. click Edit Rule, then Back
                 if (!newRepeatRuleN.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
                     oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRuleN); //update existing rule with updated values
+                    newRepeatRuleN.setUpdatePending(!isTemplate());
                     setRepeatRuleInParse(oldRepeatRule); //set to ensure it is saved
-                    if (!isTemplate()) {
+                    if (false && !isTemplate()) {
                         Log.p("line 4466: opsUpdateRepeatRule.add(() -> oldRepeatRule.updateItemsWhenRuleCreatedOrEdited(this, false));");
                         if (false) {
                             opsUpdateRepeatRule.add(() -> oldRepeatRule.updateItemsWhenRuleCreatedOrEdited(this)); //will also save RR
@@ -4528,6 +4536,44 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     }
 //                setRepeatRuleInParse(oldRepeatRule); //must set again to save?? NO, not necessary, only if the *reference* changes in Item
 //                    DAO.getInstance().saveInBackground(oldRepeatRule); //NOW done in DAO.save. must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+                }
+            }
+        }
+    }
+
+    public void setRepeatRule(RepeatRuleParseObject newRepeatRuleN) {
+        RepeatRuleParseObject oldRepeatRule = getRepeatRuleN();
+
+        if (oldRepeatRule == null) { //setting a RR for the first time
+            if (newRepeatRuleN != null && newRepeatRuleN.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+                newRepeatRuleN.setUpdatePending(!isTemplate());
+                setRepeatRuleInParse(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+            } else {
+                //setting null or NO_REPEAT when already null - do nothing
+            }
+        } else { //oldRepeatRule != null
+            if (false && (newRepeatRuleN == null || newRepeatRuleN.getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT)) { //deleting the existing RR
+//                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this))
+                //                    DAO.getInstance().deleteInBackground(oldRepeatRule); //DONE in deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis (if no references)
+                oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this); //delete old instances
+                setRepeatRuleInParse(null);
+                Log.p("line 4459: opsUpdateRepeatRule.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this));");
+                if (false) {
+                    if (false) {
+                        opsUpdateRepeatRule.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)); //will also save RR
+                    } else {
+                        newRepeatRuleN.setUpdatePending(true);
+                    }
+                }
+            } else { //newRepeatRule != null and possibly modified (eg. click Edit Rule, then Back
+                if (!oldRepeatRule.equals(newRepeatRuleN)) { //do nothing if rule is not edited!!
+                    if (newRepeatRuleN == null) {
+                        oldRepeatRule.setRepeatType(RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT); //set old rule to no repeat to force deletion of superfluous instances
+                    } else {
+                        oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRuleN); //update existing rule with updated values
+                    }
+                    newRepeatRuleN.setUpdatePending(!isTemplate());
+                    setRepeatRuleInParse(oldRepeatRule); //set to ensure it is saved
                 }
             }
         }
@@ -5636,7 +5682,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public void refreshStatusFromSubtasks() {
         ItemStatus subtaskStatus = getStatusFromSubtasksN();
         if (subtaskStatus != null) {
-            setStatus(subtaskStatus);
+            setStatus(subtaskStatus, false, true, true, new MyDate(), true); //DON'T update subtask status, only supertasks (ripple up, now down)
         }
 //        else return getStatus();
     }
@@ -5676,7 +5722,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 ItemStatus oldSubtaskStatus = subtask.getStatus();
                 if (shouldTaskStatusChange(newStatus, oldSubtaskStatus, oldStatus == ItemStatus.DONE) && subtask.updateInheritedValuesFor(PARSE_STATUS)) { //only change status when transition is allowed
 //                    subtask.setStatus(newStatus, true, false, true, now); //always update dependent fields for subtasks
-                    subtask.setStatus(newStatus, true, true, true, now); //always update dependent fields for subtasks. MUST also update supertask so that e.g. the completedDate of project is updated with latest subtask date
+                    subtask.setStatus(newStatus, true, true, true, now, true); //always update dependent fields for subtasks. MUST also update supertask so that e.g. the completedDate of project is updated with latest subtask date, must update subtask repeatRules!
                     return true;
                 } else {
                     return false; //UI: do nothing it user does not want to change all subtasks!
@@ -5688,10 +5734,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setStatusInParse(newStatus); //if not updating subtasks, then set projet status itself
 //            }
         setStatusInParse(newStatus); //if not updating subtasks, then set projet status itself
-        Item itemOwner = getOwnerItem();
-        if (itemOwner != null) //                itemOwner.setStatus(itemOwner.getStatusFromSubtasksN());
-        {
-            itemOwner.refreshStatusFromSubtasks();
+        if (updateSupertasks) {
+            Item itemOwner = getOwnerItem();
+            if (itemOwner != null) { //                itemOwner.setStatus(itemOwner.getStatusFromSubtasksN());
+                itemOwner.refreshStatusFromSubtasks();
+            }
         }
 
         //UI: else do nothing it user does not want to change all subtasks!
@@ -6740,7 +6787,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     @Override
     public void setEditedDate(Date editedDate) {
-        Date oldVal = getStartByDateD();
+        Date oldVal = getEditedDate();
 
         if (editedDate != null && editedDate.getTime() != 0) {
             if (!Objects.equals(oldVal, editedDate)) {
@@ -9492,7 +9539,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public String toString(boolean showSubtasks) {
 //        return getText();
 //        return getText().length() != 0 ? getText()+" ("+getObjectId()+")" : getObjectId();
-        return getText() + (isDirty() ? "§" : "") + (isTemplate() ? "%" : "") + "[" + getObjectIdP() + "]"
+        return getText() + (isDirty() ? "§" : "") + (isTemplate() ? "%" : "") + "[" + getObjectIdP() + "/" + getGuid()+ "]"
                 + (getCompletedDate().getTime() != 0 ? " Done" + MyDate.formatDateSmart(getCompletedDate()) : "")
                 + (getDueDate().getTime() != 0 ? " Due" + MyDate.formatDateSmart(getDueDate()) : "")
                 + (isDone() ? " [DONE]" : (getRemainingTotal() > 0 ? " " + MyDate.formatDurationShort(getRemainingTotal()) : ""))
@@ -10272,6 +10319,50 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 || getRemainingTotal() != 0
                 || getCategories().size() != 0
                 || getListFull().size() != 0;
+    }
+
+    /**
+     * returns true if any user-editable field is changed/dirty
+     *
+     * @return
+     */
+    public boolean hasUserModifiedData() {
+
+        boolean userModifiedData
+                = isDirty(PARSE_TEXT)
+                || isDirty(PARSE_COMMENT)
+                || isDirty(PARSE_DREAD_FUN_VALUE)
+                || isDirty(PARSE_CHALLENGE)
+                || isDirty(PARSE_EXPIRES_ON_DATE)
+                || isDirty(PARSE_INTERRUPT_OR_INSTANT_TASK)
+                || isDirty(PARSE_ALARM_DATE)
+                || isDirty(PARSE_WAITING_ALARM_DATE)
+                || isDirty(PARSE_REPEAT_RULE)
+                || isDirty(PARSE_STARTED_ON_DATE)
+                || isDirty(PARSE_STATUS)
+                || isDirty(PARSE_DUE_DATE)
+                || isDirty(PARSE_HIDE_UNTIL_DATE)
+                || isDirty(PARSE_START_BY_DATE)
+                || isDirty(PARSE_WAITING_TILL_DATE)
+                || isDirty(PARSE_DATE_WHEN_SET_WAITING)
+                || isDirty(PARSE_EFFORT_ESTIMATE)
+                || isDirty(PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF)
+                || isDirty(PARSE_ACTUAL_EFFORT)
+                || isDirty(PARSE_CATEGORIES)
+                || isDirty(PARSE_PRIORITY)
+                || isDirty(PARSE_STARRED)
+                || isDirty(PARSE_EARNED_VALUE)
+                || isDirty(PARSE_COMPLETED_DATE)
+                || isDirty(PARSE_IMPORTANCE)
+                || isDirty(PARSE_URGENCY)
+                || isDirty(PARSE_OWNER_LIST)
+                || isDirty(PARSE_OWNER_ITEM)
+                || isDirty(PARSE_OWNER_TEMPLATE_LIST)
+                || isDirty(PARSE_INTERRUPTED_TASK)
+                || isDirty(PARSE_DEPENDS_ON_TASK)
+                || isDirty(PARSE_SUBTASKS)
+                || isDirty(PARSE_DUE_DATE);
+        return userModifiedData; //just setting ACL or guid (~system data) should not set item dirty
     }
 
     static class EstimateResult {
@@ -11683,6 +11774,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
         return new MyDate(lastSubtaskUpdate);
+//        return getUpdatedAt();
+    }
+
+    public Date getEditedDateProjectOrSubtasks() {
+        long lastSubtaskEditedDate = getEditedDate().getTime(); //if ever project task itself is updated the last, return that date. 
+        long temp;
+        if (isProject()) {
+            for (Object o : getListFull()) {
+                if (o instanceof Item) {
+                    temp = ((Item) o).getEditedDateProjectOrSubtasks().getTime(); //cache since potentially heavy operation
+                    if (temp > lastSubtaskEditedDate) {
+                        lastSubtaskEditedDate = temp;
+                    }
+                }
+            }
+        }
+        return new MyDate(lastSubtaskEditedDate);
 //        return getUpdatedAt();
     }
 
