@@ -807,13 +807,16 @@ public class ScreenListOfItems extends MyForm {
 
 //            toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList(Inbox.getInstance(), "CreateNewItemInInbox", "Add task to Inbox", Icons.iconNewTaskToInbox));
             if (itemListOrItemOrg instanceof Category && !itemListOrItemOrg.isNoSave() && !optionTemplateEditMode) {
-                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrItemOrg, "Add task", Icons.iconNew));
+//                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrItemOrg, "Add task", Icons.iconNew));
+                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrItemOrg, "CreateNewItem-Category", false));
             } else if ((itemListOrItemOrg instanceof ItemList && (!itemListOrItemOrg.isNoSave() || itemListOrItemOrg.isAllowAddingElements())
                     && !optionTemplateEditMode)) {
                 //don't allow adding tasks to noSave lists like ??
-                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrItemOrg, "Add task", Icons.iconNew));
+//                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrItemOrg, "Add task", Icons.iconNew));
+                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((ItemList) itemListOrItemOrg, "CreateNewItem-ItemList", false));
             } else if ((itemListOrItemOrg instanceof Item)) {
-                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((Item) itemListOrItemOrg, "Add task", Icons.iconNew));
+//                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((Item) itemListOrItemOrg, "Add task", Icons.iconNew));
+                toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToItemList((Item) itemListOrItemOrg, "CreateNewItem-Project", false));
             }
 //            toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
         }
@@ -934,7 +937,7 @@ public class ScreenListOfItems extends MyForm {
                 Command newCmd = MyReplayCommand.createKeep("CreateNewTemplate", "Add template", Icons.iconNew, (e) -> {
                     Item newTemplate = new Item(false);
                     newTemplate.setTemplate(true); //always template here
-                    ASSERT.that(itemListOrItemOrg==TemplateList.getInstance(),"ERROR: itemListOrItemOrg!=TemplateList.getInstance()");
+                    ASSERT.that(itemListOrItemOrg == TemplateList.getInstance(), "ERROR: itemListOrItemOrg!=TemplateList.getInstance()");
                     newTemplate.setOwner(itemListOrItemOrg);
 //                    addNewTaskToListAndSave(template, MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists) ? 0 : itemListOrg.getSize(), itemListOrg); //necessary to add to owner when creating repeatInstances (item will be added to itemListOrg upon acceptance/exit from screen)
                     setKeepPos(new KeepInSameScreenPosition());
@@ -1029,7 +1032,22 @@ public class ScreenListOfItems extends MyForm {
                                     Item newSubtask = selectedTemplate.copyMeInto(new Item(false), Item.CopyMode.COPY_TO_COPY_PASTE, 0);
                                     itemListOrItemOrg.addToList(newSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
                                 } else {
-                                    itemListOrItemOrg.addToList(selectedTemplate.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE)); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+                                    Item templateCopy = selectedTemplate.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE);
+                                    if (itemListOrItemOrg instanceof Item && ((Item) itemListOrItemOrg).isDueDateInheritanceOn() && ((Item) itemListOrItemOrg).getDueDate().getTime() != 0) {
+                                        templateCopy.updateRelativeDates(((Item) itemListOrItemOrg).getDueDate());
+                                    } else { //UI: for ItemLists, Categories, Items w/o inherited due date, offer user to pick a date
+                                        Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //default due date
+                                        String optionalText = "";
+                                        if (selectedTemplates.size() > 1) {
+                                            optionalText = "Template \"" + templateCopy.getText() + "\" ";
+                                        }
+                                        newDueDate = showDialogSetDueDateN(newDueDate, optionalText);
+                                        if (newDueDate != null && newDueDate.getTime() != 0) {
+                                            templateCopy.setDueDate(newDueDate); //if new date entered, save it!
+                                            templateCopy.updateRelativeDates(newDueDate);
+                                        }
+                                    }
+                                    itemListOrItemOrg.addToList(templateCopy); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
                                 }//                                DAO.getInstance().saveNew(newSubtask); //save new subtasks (will be deleted again if Cancel
                             }
 //                            DAO.getInstance().saveNew(newTemplateCopies, false);
@@ -2375,7 +2393,7 @@ public class ScreenListOfItems extends MyForm {
         int totalNumberSubtasks = item.getNumberOfSubtasks(false, true); //true: get subtasks, always necessary for a project
 //        int totalNumberDoneSubtasks = totalNumberSubtasks - numberUndoneSubtasks; //true: get subtasks, always necessary for a project
 //            if (numberUndoneSubtasks > 0 || totalNumberSubtasks > 0) {
-        Button expandSubTasksButton = numberUndoneSubtasks > 0 || totalNumberSubtasks > 0 ? new Button() {
+        Button expandSubTasksButton = (numberUndoneSubtasks > 0 || totalNumberSubtasks > 0) || item.isProject() ? new Button() { //true: always allow expanding subtasks, even if they're all done!
             @Override
             public void longPointerPress(int x, int y) {
                 super.longPointerPress(x, y);
@@ -2446,7 +2464,8 @@ public class ScreenListOfItems extends MyForm {
 //                subTasksButton.setCommand(expandSubTasks);
             expandSubTasksButton.setText(numberUndoneSubtasks + "/" + totalNumberSubtasks);
 //            topContainer.putClientProperty("subTasksButton", subTasksButton);
-            if (numberUndoneSubtasks > 0) { //only activate/unfiltered expansion if active subtasks to show
+//            if (numberUndoneSubtasks > 0) { //only activate/unfiltered expansion if active subtasks to show
+            if (item.isProject()) { //only activate/unfiltered expansion if active subtasks to show
                 swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandSubTasksButton);
             } else if (expandedObjects != null) { //&& expandedObjects.contains(item)) { //if nothing to expand, but already expanded
                 expandedObjects.remove(item);
@@ -2642,52 +2661,54 @@ public class ScreenListOfItems extends MyForm {
 //            status = null;
 //        } else {
 //            status = new MyCheckBox(item.getStatus(), (oldStatus, newStatus) -> {
-        status.setStatusChangeHandler((oldStatus, newStatus) -> {
-            if (newStatus != oldStatus && item.confirmUpdateOfSubtasks(oldStatus, newStatus)) {
+        if (!item.isTemplate()) {
+            status.setStatusChangeHandler((oldStatus, newStatus) -> {
+                if (newStatus != oldStatus && item.confirmUpdateOfSubtasks(oldStatus, newStatus)) {
 //                if (false) { //stop timer in Item.save() - once all changes to status have been taken into account (whether Done/Cancel/SoftDelete
 //                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item); //call this here to avoid triggering if status is changed from within the Timer
 //                }
-                boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item, false, true, true); //call this here to avoid triggering if status is changed from within the Timer
+                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item, false, true, true); //call this here to avoid triggering if status is changed from within the Timer
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
 
-                //if setting Done, ask if set actual
+                    //if setting Done, ask if set actual
 //                if (((newStatus == ItemStatus.DONE || newStatus == ItemStatus.WAITING)
 //                        && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.WAITING))
 //                        && !wasTimerRunningForTheTask
 //        &&(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZeroXXX.getBoolean() && item.getActual() == 0)
 //                        && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
-                if (((newStatus == ItemStatus.DONE && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean())
-                        || (newStatus == ItemStatus.WAITING && MyPrefs.askToEnterActualIfMarkingTaskWaitingOutsideTimer.getBoolean()))
-                        && !wasTimerRunningForTheTask) {
-                    Long newActual = showDialogUpdateActualTimeIfAppropriate(item.getActualForTaskItself());
-                    if (newActual != null) {
-                        item.setActualForTaskItself(newActual, false); //false, since this dialog is ONLY called when setting a task status, so no reason to change due to Actual
+                    if (((newStatus == ItemStatus.DONE && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean())
+                            || (newStatus == ItemStatus.WAITING && MyPrefs.askToEnterActualIfMarkingTaskWaitingOutsideTimer.getBoolean()))
+                            && !wasTimerRunningForTheTask) {
+                        Long newActual = showDialogUpdateActualTimeIfAppropriate(item.getActualForTaskItself());
+                        if (newActual != null) {
+                            item.setActualForTaskItself(newActual, false); //false, since this dialog is ONLY called when setting a task status, so no reason to change due to Actual
+                        }
                     }
-                }
 
-                //if setting Waiting, ask if set waiting date and/or waiting alarm
-                if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) { //DEACTIVATE, waiting for proper Done/Retrospective screen
-                    showDialogSetWaitingDateAndAlarmIfAppropriate(item); //only call if we're changing TO Waiting status
-                }
+                    //if setting Waiting, ask if set waiting date and/or waiting alarm
+                    if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) { //DEACTIVATE, waiting for proper Done/Retrospective screen
+                        showDialogSetWaitingDateAndAlarmIfAppropriate(item); //only call if we're changing TO Waiting status
+                    }
 
 //                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
 //                myForm.setKeepPos(); //keepPos since may be filtered after status change
 //                item.setStatus(newStatus);
-                item.setStatus(newStatus, true, true, true, new MyDate(), true);
+                    item.setStatus(newStatus, true, true, true, new MyDate(), true);
 //                        if (refreshOnItemEdits != null) {
 //                            refreshOnItemEdits.launchAction();
 //                        }
 //                DAO.getInstance().saveNew(true, item);
 //                DAO.getInstance().saveNew(item);
 //                DAO.getInstance().saveNewTriggerUpdate();
-                DAO.getInstance().saveToParseNow(item);
-                myForm.refreshAfterEdit(); //refresh after save as it may update sub/supertasks etc
-                //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
+                    DAO.getInstance().saveToParseNow(item);
+                    myForm.refreshAfterEdit(); //refresh after save as it may update sub/supertasks etc
+                    //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
 //                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refreshTimersFromParseServer();}});
-            } else {
-                status.setStatus(oldStatus, false); //set status back to old value
-            }
-        });
+                } else {
+                    status.setStatus(oldStatus, false); //set status back to old value
+                }
+            });
+        }
         status.setUIID("ListOfItemsMyCheckBox");
         if (Config.TEST) {
             status.setName("CheckBox");
@@ -2787,7 +2808,7 @@ public class ScreenListOfItems extends MyForm {
                 && (isDone || MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean())) {
             actualEffortLabel = new Label(MyDate.formatDurationShort(actualTotal, true).toString());
 //                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
-            actualEffortLabel.setFontIcon(Icons.myIconFont, isDone?Icons.iconActualFinalCust:Icons.iconActualCurrentCust);
+            actualEffortLabel.setFontIcon(Icons.myIconFont, isDone ? Icons.iconActualFinalCust : Icons.iconActualCurrentCust);
             actualEffortLabel.setUIID("ListOfItemsActualEffort");
             actualEffortLabel.setGap(GAP_LABEL_ICON);
         }

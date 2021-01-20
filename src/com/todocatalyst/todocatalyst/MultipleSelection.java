@@ -144,7 +144,7 @@ public class MultipleSelection {
                 item.setEstimateForTask(ref.getEstimateTotal());
             }
             if (ref.getRemainingTotal() != 0) {
-                item.setRemainingForTask(ref.getRemainingTotal());
+                item.setRemainingForTaskItself(ref.getRemainingTotal());
             }
             if (ref.getActualForTaskItself() != 0) {
                 item.setActualForTaskItself(ref.getActualForTaskItself(), false);

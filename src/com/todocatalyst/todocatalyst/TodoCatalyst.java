@@ -392,12 +392,14 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         Log.p("AppName=" + Display.getInstance().getProperty("AppName", "1.0"));
         Log.p("AppVersion=" + Display.getInstance().getProperty("AppVersion", "1.0"));
         Log.p("init() starting...");
+        
+        Icons.init();
 
         long timeSinceLastInit = getTimeSinceLastAppStartAndUpdateTimeMillis();
         Log.p("Time since last app start (call to init())= " + MyDate.formatDurationStd(timeSinceLastInit, true));
 
 //        if (MyPrefs.deleteLocalStorageIfRestartedQuickly.getBoolean()&&timeSinceLastInit < MyDate.MINUTE_IN_MILLISECONDS) {
-        if (MyPrefs.deleteLocalStorageIfRestartedQuickly.getBoolean()
+        if ((MyPrefs.deleteLocalStorageIfRestartedQuickly.getBoolean() || !Display.getInstance().isSimulator())
                 && timeSinceLastInit < MyPrefs.deleteLocalStorageIfRestartedBeforeSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS) {
 //            Log.p("Time since last restart less than " + MyDate.formatDuration(timeSinceLastInit,true) + " - deleting Replay");
             Log.p("Time since last restart less than " + MyDate.formatDuration(timeSinceLastInit, true));
@@ -652,6 +654,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 
                         Message m = new Message("Body of message"
                                 + "DeviceId: " + Log.getUniqueDeviceId()
+                                + "DeviceKey: " + Log.getUniqueDeviceKey()
                                 + "\nBuilt by user: " + Display.getInstance().getProperty("built_by_user", "")
                                 + "\nPackage name: " + Display.getInstance().getProperty("package_name", "")
                                 + "\nAppVersion: " + Display.getInstance().getProperty("AppVersion", "0.1")

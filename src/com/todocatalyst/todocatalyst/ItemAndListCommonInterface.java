@@ -432,14 +432,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * Categories!). Checks that owner must be null before insert to catch any
      * duplicated inserts!
      *
-     * @param subItemOrList
+     * @param itemOrListToAdd
      * @return
      */
-    public boolean addToList(ItemAndListCommonInterface subItemOrList);
+    public boolean addToList(ItemAndListCommonInterface itemOrListToAdd);
 
-    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList);
+    public boolean addToList(ItemAndListCommonInterface itemOrListToAdd, boolean addToEndOfList);
 
-    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner);
+    public boolean addToList(ItemAndListCommonInterface itemOrListToAdd, boolean addToEndOfList, boolean addAsOwner);
 
     /**
      * add subItemOrList to the list (for an ItemList or Category) or the list
@@ -456,17 +456,17 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * unfiltered list!
      */
 //    public boolean addToList(int index, ItemAndListCommonInterface subItemOrList);
-    public boolean addToList(int index, ItemAndListCommonInterface subtask, boolean addAsOwner);
+    public boolean addToList(int index, ItemAndListCommonInterface itemOrListToAdd, boolean addAsOwner);
 
     /**
      *
-     * @param newElement new item
+     * @param itemOrListToAdd new item
      * @param refElementN the reference item item inserted before/after this one
      * @param addAfterRefEltOrEndOfList if true, add subItemOrList *after* the
      * position of item
      * @return
      */
-    public boolean addToList(ItemAndListCommonInterface newElement, ItemAndListCommonInterface refElementN, boolean addAfterRefEltOrEndOfList);
+    public boolean addToList(ItemAndListCommonInterface itemOrListToAdd, ItemAndListCommonInterface refElementN, boolean addAfterRefEltOrEndOfList);
 
 //    public boolean addToList(ItemAndListCommonInterface newElement, int index, boolean addAfterRefEltOrEndOfList);
     /**

@@ -339,6 +339,9 @@ public class MyPrefs {
             = new PrefEntry("Copy initial values between " + Item.EFFORT_ESTIMATE + " and " + Item.EFFORT_REMAINING + " the first time these values are being edited for a task",
                     "updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItem", prod ? false : true, "**");
 
+    static PrefEntry keepRemainingForTaskItselfWhenATaskBecomesAProject
+            = new PrefEntry("When a task becomes a project by adding Always show details for tasks", 
+                    "keepRemainingForTaskItselfWhenATaskBecomesAProject", prod ? false : false, "**");
     static PrefEntry addCommentWhenRemaningIsSetToZeroWhenTaskBecomesProject
             = new PrefEntry(Format.f("When a task has {0 remaining} set and is made into a project, add a comment with the old value",Item.EFFORT_REMAINING),
                     "addCommentWhenRemaningIsSetToZeroWhenTaskBecomesProject", prod ? false : true, "**");
@@ -598,7 +601,7 @@ public class MyPrefs {
 
     static PrefEntry deleteLocalStorageIfRestartedQuickly
             = new PrefEntry("Delete local copy of data if app is restarted quickly", "deleteLocalStorageIfRestartedQuickly",
-                    prod ? true : false, "**");
+                    prod ? true : true, "**");
     static PrefEntry deleteLocalStorageIfRestartedBeforeSeconds
             = new PrefEntry("Delete local copy of data if app is within this many seconds", "deleteLocalStorageIfRestartedBeforeSeconds",
                     prod ? 8 : 15, "**");

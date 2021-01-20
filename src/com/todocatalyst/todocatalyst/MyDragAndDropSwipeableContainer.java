@@ -182,7 +182,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @param itemOrItemList
      * @param insertAfterRefItemOrEndOfList
      */
-    private void moveItemOrItemListAndSave(ItemAndListCommonInterface oldOwner, ItemAndListCommonInterface newOwner,
+    private static void moveItemOrItemListAndSave(ItemAndListCommonInterface oldOwner, ItemAndListCommonInterface newOwner,
             ItemAndListCommonInterface itemOrItemList, ItemAndListCommonInterface refItem, boolean insertAfterRefItemOrEndOfList) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //Container draggedParent;
@@ -220,12 +220,12 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         }
     }
 
-    private void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner, ItemAndListCommonInterface itemOrItemList,
+    private static void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner, ItemAndListCommonInterface itemOrItemList,
             ItemAndListCommonInterface refItem, boolean insertAfterRefItemOrEndOfList) {
         moveItemOrItemListAndSave(itemOrItemList.getOwner(), newOwner, itemOrItemList, refItem, insertAfterRefItemOrEndOfList);
     }
 
-    private void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner,
+    private static void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner,
             ItemAndListCommonInterface itemOrItemList, boolean insertAfterRefItemOrEndOfList) {
         moveItemOrItemListAndSave(itemOrItemList.getOwner(), newOwner, itemOrItemList, null, insertAfterRefItemOrEndOfList);
     }
@@ -330,7 +330,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @param item
      * @param newPos
      */
-    private void moveItemBetweenCategoriesAndSave(Category oldCategory, Category newCategory, Item item, Item refItem, boolean insertAfterOrEndOfList) {
+    private static void moveItemBetweenCategoriesAndSave(Category oldCategory, Category newCategory, Item item, Item refItem, boolean insertAfterOrEndOfList) {
         if (oldCategory == newCategory && oldCategory != null) { //if within same Category (and categories not null)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (newPos > oldCategory.getItemIndex(item)) {
@@ -1969,18 +1969,24 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     public void close() {
         Form f = getComponentForm();
         if (f instanceof MyForm) {
-            if (((MyForm) f).openSwipeContainer != this) {
+//            SwipeableContainer openSwipeContainer = ((MyForm) f).openSwipeContainer;
+            if (((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                ((MyForm) f).openSwipeContainer.close(); //close any previously open container (correct?! - will fix fact that several can stay open at same time?!)
                 ((MyForm) f).openSwipeContainer = null; //ensure last open container is reset if closed normally (e.g. swipe to close)
             }
         }
         super.close();
     }
 
-//    @Override
+    @Override
     public void openToLeft() {
         Form f = getComponentForm();
         if (f instanceof MyForm) {
             if (false && ((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                ((MyForm) f).openSwipeContainer.close();
+            }
+//            SwipeableContainer openSwipeContainer = ((MyForm) f).openSwipeContainer;
+            if (((MyForm) f).openSwipeContainer != null) {
                 ((MyForm) f).openSwipeContainer.close();
             }
             ((MyForm) f).openSwipeContainer = this;
@@ -1988,11 +1994,15 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         super.openToLeft();
     }
 
-//    @Override
+    @Override
     public void openToRight() {
         Form f = getComponentForm();
         if (f instanceof MyForm) {
             if (false && ((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                ((MyForm) f).openSwipeContainer.close();
+            }
+            SwipeableContainer openSwipeContainer = ((MyForm) f).openSwipeContainer;
+            if (((MyForm) f).openSwipeContainer != null) {
                 ((MyForm) f).openSwipeContainer.close();
             }
             ((MyForm) f).openSwipeContainer = this;

@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.io.Log;
 import com.codename1.ui.CheckBox;
 import com.codename1.ui.Display;
 import com.codename1.ui.Font;
@@ -25,11 +26,16 @@ public class Icons {
 //    private static Icons INSTANCE;
 //    public static Font iconFont = Font.createTrueTypeFont("myIconFont", "myiconfont.ttf"); //name and filename
 //    public static Font iconFont = Font.createTrueTypeFont("myiconfont", "myiconfont.ttf"); //name and filename, file MUST reside in /src/ root!
-    public static Font myIconFont = Font.createTrueTypeFont("myicons", "myicons.ttf"); //name and filename, file MUST reside in /src/ root!
+    public static Font myIconFont ;//= Font.createTrueTypeFont("myicons", "myicons.ttf"); //name and filename, file MUST reside in /src/ root!
     Label label = new Label();
 
     private Icons() {
 
+    }
+    
+    static public void init() {
+        myIconFont = Font.createTrueTypeFont("myicons", "myicons.ttf"); //name and filename, file MUST reside in /src/ root! //necessary with explicit initialisation (since icons don't show on iPhone)?!
+        Log.p("Initializing myicons.ttf, status="+(myIconFont!=null?"OK":"null!!"));
     }
 
 //    public static Icons get() {

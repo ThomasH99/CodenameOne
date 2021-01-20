@@ -39,7 +39,10 @@ import static com.todocatalyst.todocatalyst.MyForm.REPEAT_RULE_KEY;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Main screen should contain the following elements: Views - user defined views
@@ -1188,6 +1191,57 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
     }
 
+    /**
+     *
+     * @param templateOrg
+     * @param itemOrgN
+     */
+    static protected void setTemplateInstanceRelativeDates(Item itemOrgN, Item templateOrg) {
+        if (templateOrg.getDueDate().getTime() != 0) {
+
+            boolean templFieldsDependOnDue = templateOrg.getAlarmDate().getTime() != 0 || templateOrg.getStartByDateD().getTime() != 0
+                    || templateOrg.getExpiresOnDate().getTime() != 0 || templateOrg.getHideUntilDateD().getTime() != 0;
+
+            if (templFieldsDependOnDue) { //only if there are any fields in the template that depend on due date:
+                Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //TODO setting to pich a f
+//                if (dueDate.getDate().getTime() == 0) {
+                if (itemOrgN == null || itemOrgN.getDueDate().getTime() == 0) {
+//                Dialog.show(SUBTASK_KEY, this, cmds);
+                    newDueDate = showDialogSetDueDateN(newDueDate);
+                    if (itemOrgN != null && newDueDate.getTime() != 0) {
+                        itemOrgN.setDueDate(newDueDate); //if new date entered, save it!
+                    }//                assert false; 
+                } else {
+//                    newDueDate.setTime(dueDate.getDate().getTime());
+                    newDueDate = itemOrgN.getDueDate();
+                }
+                if (newDueDate.getTime() != 0) { //if we now have a dueDate, set the relative fields
+                    //MOST FIELDS are only set if not defined (or if user deleted the value in the input field (Pickers etc)
+//                    if (false && dueDate.getDate().getTime() == 0) { //NB. Due date NEVER set based on due date in template
+//                        //TODO: make a setting for how far ahead a default due date should be set
+//                        dueDate.setDate(templateOrg.getDueDate());
+//                    }
+                    long templDueDateAdj = newDueDate.getTime() - templateOrg.getDueDate().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
+                    //CERTAIN DATES are set RELATIVE to the DUE DATE:
+                    if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as 
+                        if (itemOrgN.getAlarmDate().getTime() == 0 && templateOrg.getAlarmDate().getTime() != 0) {
+                            itemOrgN.setAlarmDate(new MyDate(templateOrg.getAlarmDate().getTime() + templDueDateAdj));
+                        }
+                        if (itemOrgN.getStartByDateD().getTime() == 0 && templateOrg.getStartByDateD().getTime() != 0) {
+                            itemOrgN.setStartByDate(new MyDate(templateOrg.getStartByDateD().getTime() + templDueDateAdj));
+                        }
+                        if (itemOrgN.getExpiresOnDate().getTime() == 0 && templateOrg.getExpiresOnDate().getTime() != 0) {
+                            itemOrgN.setExpiresOnDate(new MyDate(templateOrg.getExpiresOnDate().getTime() + templDueDateAdj));
+                        }
+                        if (itemOrgN.getHideUntilDateD().getTime() == 0 && templateOrg.getHideUntilDateD().getTime() != 0) {
+                            itemOrgN.setHideUntilDate(new MyDate(templateOrg.getHideUntilDateD().getTime() + templDueDateAdj));
+                        }
+                    }
+                }
+            }
+        }
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void addTemplateToPickersXXX(Item itemOrg, final Item templateOrg) {
 //        //if the user has not yet set a due date and the template has fields depending on due date, ask for a due date
@@ -1378,115 +1432,135 @@ public class ScreenItem2 extends MyForm {
      */
     private void addTemplate(Item itemOrg, final Item templateOrg) {
 //        Item templateCopy = templateOrg.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK);
-        Item templateCopy = templateOrg;
+//        Item templateOrg = templateOrg;
         //if the user has not yet set a due date and the template has fields depending on due date, ask for a due date
-        if (templateCopy.getDueDate().getTime() != 0) {
+        if (false) {
+            if (true) {
+                setTemplateInstanceRelativeDates(itemOrg, templateOrg);
+            } else if (templateOrg.getDueDate().getTime() != 0) {
 
-            boolean templFieldsDependOnDue = templateCopy.getAlarmDate().getTime() != 0 || templateCopy.getStartByDateD().getTime() != 0
-                    || templateCopy.getExpiresOnDate().getTime() != 0 || templateCopy.getHideUntilDateD().getTime() != 0;
-            if (templFieldsDependOnDue) { //only if there are any fields in the template that depend on due date:
-                Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //TODO setting to pich a f
+                boolean templFieldsDependOnDue = templateOrg.getAlarmDate().getTime() != 0 || templateOrg.getStartByDateD().getTime() != 0
+                        || templateOrg.getExpiresOnDate().getTime() != 0 || templateOrg.getHideUntilDateD().getTime() != 0;
+                if (templFieldsDependOnDue) { //only if there are any fields in the template that depend on due date:
+                    Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //TODO setting to pich a f
 //                if (dueDate.getDate().getTime() == 0) {
-                if (itemOrg.getDueDate().getTime() == 0) {
+                    if (itemOrg.getDueDate().getTime() == 0) {
 //                Dialog.show(SUBTASK_KEY, this, cmds);
-                    newDueDate = showDialogSetDueDate(newDueDate);
-                    if (newDueDate.getTime() != 0) {
-                        itemOrg.setDueDate(newDueDate); //if new date entered, save it!
-                    }//                assert false; 
-                } else {
+                        newDueDate = showDialogSetDueDateN(newDueDate);
+                        if (newDueDate.getTime() != 0) {
+                            itemOrg.setDueDate(newDueDate); //if new date entered, save it!
+                        }//                assert false; 
+                    } else {
 //                    newDueDate.setTime(dueDate.getDate().getTime());
-                    newDueDate = itemOrg.getDueDate();
-                }
-                if (newDueDate.getTime() != 0) { //if we now have a dueDate, set the relative fields
-                    //MOST FIELDS are only set if not defined (or if user deleted the value in the input field (Pickers etc)
-                    if (false && dueDate.getDate().getTime() == 0) { //NB. Due date NEVER set based on due date in template
-                        //TODO: make a setting for how far ahead a default due date should be set
-                        dueDate.setDate(templateCopy.getDueDate());
+                        newDueDate = itemOrg.getDueDate();
                     }
-                    long templDueDateAdj = newDueDate.getTime() - templateCopy.getDueDate().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
-                    //CERTAIN DATES are set RELATIVE to the DUE DATE:
-                    if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as 
-                        if (itemOrg.getAlarmDate().getTime() == 0 && templateCopy.getAlarmDate().getTime() != 0) {
-                            itemOrg.setAlarmDate(new MyDate(templateCopy.getAlarmDate().getTime() + templDueDateAdj));
+                    if (newDueDate.getTime() != 0) { //if we now have a dueDate, set the relative fields
+                        //MOST FIELDS are only set if not defined (or if user deleted the value in the input field (Pickers etc)
+                        if (false && dueDate.getDate().getTime() == 0) { //NB. Due date NEVER set based on due date in template
+                            //TODO: make a setting for how far ahead a default due date should be set
+                            dueDate.setDate(templateOrg.getDueDate());
                         }
-                        if (itemOrg.getStartByDateD().getTime() == 0 && templateCopy.getStartByDateD().getTime() != 0) {
-                            itemOrg.setStartByDate(new MyDate(templateCopy.getStartByDateD().getTime() + templDueDateAdj));
-                        }
-                        if (itemOrg.getExpiresOnDate().getTime() == 0 && templateCopy.getExpiresOnDate().getTime() != 0) {
-                            itemOrg.setExpiresOnDate(new MyDate(templateCopy.getExpiresOnDate().getTime() + templDueDateAdj));
-                        }
-                        if (itemOrg.getHideUntilDateD().getTime() == 0 && templateCopy.getHideUntilDateD().getTime() != 0) {
-                            itemOrg.setHideUntilDate(new MyDate(templateCopy.getHideUntilDateD().getTime() + templDueDateAdj));
+                        long templDueDateAdj = newDueDate.getTime() - templateOrg.getDueDate().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
+                        //CERTAIN DATES are set RELATIVE to the DUE DATE:
+                        if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as 
+                            if (itemOrg.getAlarmDate().getTime() == 0 && templateOrg.getAlarmDate().getTime() != 0) {
+                                itemOrg.setAlarmDate(new MyDate(templateOrg.getAlarmDate().getTime() + templDueDateAdj));
+                            }
+                            if (itemOrg.getStartByDateD().getTime() == 0 && templateOrg.getStartByDateD().getTime() != 0) {
+                                itemOrg.setStartByDate(new MyDate(templateOrg.getStartByDateD().getTime() + templDueDateAdj));
+                            }
+                            if (itemOrg.getExpiresOnDate().getTime() == 0 && templateOrg.getExpiresOnDate().getTime() != 0) {
+                                itemOrg.setExpiresOnDate(new MyDate(templateOrg.getExpiresOnDate().getTime() + templDueDateAdj));
+                            }
+                            if (itemOrg.getHideUntilDateD().getTime() == 0 && templateOrg.getHideUntilDateD().getTime() != 0) {
+                                itemOrg.setHideUntilDate(new MyDate(templateOrg.getHideUntilDateD().getTime() + templDueDateAdj));
+                            }
                         }
                     }
                 }
             }
         }
 
-        if (!itemOrg.isStarred() && templateCopy.isStarred()) {
+        if (templateOrg.hasDatesDependingOnDue()) { //only if there are any fields in the template that depend on due date:
+            Date newDueDate;
+            if (itemOrg.getDueDate().getTime() != 0) {
+                itemOrg.updateRelativeDates(itemOrg.getDueDate());
+            } else {
+                newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //default due date
+                newDueDate = showDialogSetDueDateN(newDueDate);
+                if (newDueDate != null && newDueDate.getTime() != 0) {
+                    itemOrg.setDueDate(newDueDate); //if new date entered, save it!
+                    itemOrg.updateRelativeDates(newDueDate);
+                }
+            }
+        }
+
+        if (!itemOrg.isStarred() && templateOrg.isStarred()) {
             itemOrg.setStarred(true);
         }
 
-        if (itemOrg.getPriority() == 0 && templateCopy.getPriority() > 0) {
-            itemOrg.setPriority(templateCopy.getPriority());//NB. We store the actual value of Priority locally and adjust when setting the picker
+        if (itemOrg.getPriority() == 0 && templateOrg.getPriority() > 0) {
+            itemOrg.setPriority(templateOrg.getPriority());//NB. We store the actual value of Priority locally and adjust when setting the picker
         }
 
-        if (itemOrg.getImportanceN() == null && templateCopy.getImportanceN() != null) {
-            itemOrg.setImportance(templateCopy.getImportanceN());
+        if (itemOrg.getImportanceN() == null && templateOrg.getImportanceN() != null) {
+            itemOrg.setImportance(templateOrg.getImportanceN());
         }
-        if (itemOrg.getUrgencyN() == null && templateCopy.getUrgencyN() != null) {
-            itemOrg.setUrgency(templateCopy.getUrgencyN());
+        if (itemOrg.getUrgencyN() == null && templateOrg.getUrgencyN() != null) {
+            itemOrg.setUrgency(templateOrg.getUrgencyN());
         }
-        if (itemOrg.getChallengeN() == null && templateCopy.getChallengeN() != null) {
-            itemOrg.setChallenge(templateCopy.getChallengeN());
+        if (itemOrg.getChallengeN() == null && templateOrg.getChallengeN() != null) {
+            itemOrg.setChallenge(templateOrg.getChallengeN());
         }
-        if (itemOrg.getDreadFunValueN() == null && templateCopy.getDreadFunValueN() != null) {
-            itemOrg.setDreadFunValue(templateCopy.getDreadFunValueN());
-        }
-
-        if (itemOrg.getEarnedValue() == 0 && templateCopy.getEarnedValue() > 0) {
-            itemOrg.setEarnedValue(templateCopy.getEarnedValue());
+        if (itemOrg.getDreadFunValueN() == null && templateOrg.getDreadFunValueN() != null) {
+            itemOrg.setDreadFunValue(templateOrg.getDreadFunValueN());
         }
 
-        if (false && !templateCopy.isProject() && ((remainingEffort.getDuration() == 0 || Item.isRemainingDefaultValue(remainingEffort.getDuration()))) && templateCopy.getRemainingTotal() > 0) { //UI: adding a template will overwrite the default Remaining
-//            remainingEffort.setDuration(template.getRemaining());
-            previousValues.put(Item.PARSE_REMAINING_EFFORT_TOTAL, templateCopy.getRemainingTotal());
+        if (itemOrg.getEarnedValue() == 0 && templateOrg.getEarnedValue() > 0) {
+            itemOrg.setEarnedValue(templateOrg.getEarnedValue());
         }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    if (false && !templateOrg.isProject() && ((remainingEffort.getDuration() == 0 || Item.isRemainingDefaultValue(remainingEffort.getDuration()))) && templateOrg.getRemainingTotal() > 0) { //UI: adding a template will overwrite the default Remaining
+////            remainingEffort.setDuration(template.getRemaining());
+//        previousValues.put(Item.PARSE_REMAINING_EFFORT_TOTAL, templateOrg.getRemainingTotal());
+//    }
+//</editor-fold>
         //if template has a task-level estimate and itemOrg has none, or only default value, then use template's estimate
-        if (templateCopy.getEstimateForTask() > 0 && ((itemOrg.getEstimateForTask() == 0 || Item.isRemainingDefaultValue(itemOrg.getEstimateForTask())))) {
-            itemOrg.setEstimateForTask(templateCopy.getEstimateForTask());
+        if (templateOrg.getEstimateForTask() > 0 && ((itemOrg.getEstimateForTask() == 0 || Item.isRemainingDefaultValue(itemOrg.getEstimateForTask())))) {
+            itemOrg.setEstimateForTask(templateOrg.getEstimateForTask());
         }
         //SOME FIELDS DO NOT HAVE A SIMPLE INPUT FIELD EDITOR
         //RepeatRule
-        if (itemOrg.getRepeatRuleN() == null && templateCopy.getRepeatRuleN() != null) {
-            itemOrg.setRepeatRule(templateCopy.getRepeatRuleN());
+        if (itemOrg.getRepeatRuleN() == null && templateOrg.getRepeatRuleN() != null) {
+            itemOrg.setRepeatRule(templateOrg.getRepeatRuleN().cloneMe()); //Must insert a *copy* of RR!
         }
 
         //SPECIAL CASES
-        if ((itemOrg.getText().isEmpty() || MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()) && !templateCopy.getText().isEmpty()) {
+        if ((itemOrg.getText().isEmpty() || MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()) && !templateOrg.getText().isEmpty()) {
             itemOrg.setText(itemOrg.getText().isEmpty()
-                    ? templateCopy.getText()
-                    : itemOrg.getText() + " " + templateCopy.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
+                    ? templateOrg.getText()
+                    : itemOrg.getText() + " " + templateOrg.getText()); //UI: add template's comment to the end(?!) of the comment, with a newline
         }
         //Template Comments are ??
 //        comment.setText(comment.getText().length() > 0 ? comment.getText() + "\n" + template.getComment() : template.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
-        itemOrg.setComment(itemOrg.getComment().isEmpty() ? templateCopy.getComment()
-                : itemOrg.getComment() + "\n" + templateCopy.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
+        itemOrg.setComment(itemOrg.getComment().isEmpty() ? templateOrg.getComment()
+                : itemOrg.getComment() + "\n" + templateOrg.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
 
         //Templates Categories are merged (only new categories in template are added - no duplicates!)
-        if (false) {
-            for (Category c : templateCopy.getCategories()) {
-                c.removeItemFromCategory(templateCopy, true); //doesn't matter if categories are removed from templateCopy since it's never used
-            }
-        }
-        itemOrg.addCategories(templateCopy.getCategories());
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            for (Category c : templateOrg.getCategories()) {
+//                c.removeItemFromCategory(templateOrg, true); //doesn't matter if categories are removed from templateCopy since it's never used
+//            }
+//        }
+//</editor-fold>
+        itemOrg.addCategories(templateOrg.getCategories());
 //                         
         //Template Subtasks are merged
 //        List<Item> templateSubtasks = templateCopy.getListFull();
         List<ParseObject> newTemplSubtaskList = new ArrayList<>();
 
-        for (Item templateSubtaskCopy : (List<Item>) templateCopy.getListFull()) { //full list, filter has no meaning for a template
+        for (Item templateSubtaskCopy : (List<Item>) templateOrg.getListFull()) { //full list, filter has no meaning for a template
             //optimization: adding many subtasks individually will update inhiertance etc multiple times
 //            templateSubtaskCopy.setOwner(null); //remove old owner (top-level template)
             Item newTemplSubtask = templateSubtaskCopy.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
@@ -1803,8 +1877,8 @@ public class ScreenItem2 extends MyForm {
 //                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l), null);
         initField(Item.PARSE_REMAINING_EFFORT_TOTAL, remainingEffort,
                 //                () -> item.getRemaining(false), 
-                () -> itemCopy.getRemainingForTaskFromParse(),
-                (l) -> itemOrg.setRemainingForTask((long) l, false),
+                () -> itemCopy.getRemainingForTaskItselfFromParse(),
+                (l) -> itemOrg.setRemainingForTaskItself((long) l, false),
                 () -> remainingEffort.getDuration(),
                 (l) -> remainingEffort.setDuration((long) l));
 
@@ -3473,7 +3547,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             }
             remainingEffort.repaint(); //TEST: moved outside if to see if picker updates on iPhone then!
         });
-
+        
         //TAB STATUS FIELDS
         Container statusCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         if (Config.TEST) {
@@ -4131,6 +4205,18 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             statusCont.add(layoutN(Item.OBJECT_GUID, itemGuid, Item.OBJECT_GUID_HELP, true, hideIcons ? null : Icons.iconObjectId));
         }
 
+        if (Config.TEST) {
+            //INTERRUPT
+//        MyOnOffSwitch interruptTask = new MyOnOffSwitch(parseIdMap2, () -> itemLS.isInteruptOrInstantTask(), (b) -> item.setInteruptOrInstantTask(b));
+            MyOnOffSwitch isTemplateSwitch = new MyOnOffSwitch();
+//                statusCont.add(new Label(Item.INTERRUPT_TASK)).add(interruptTask).add(new SpanLabel("This task interrupted another task"));
+//        statusCont.add(layout(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task"));
+            initField(Item.PARSE_TEMPLATE, isTemplateSwitch, () -> itemCopy.isTemplate(), (b) -> itemOrg.setTemplate((boolean) b),
+                    () -> isTemplateSwitch.isValue(), (b) -> isTemplateSwitch.setValue((boolean) b));
+//        statusCont.add(layoutN(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task", true));
+            statusCont.add(layoutN(Item.TEMPLATE, isTemplateSwitch, "This task is a Template", true, hideIcons ? null : Icons.iconMainTemplates));
+
+        }
         if (false && Config.TEST) {
 //            Container statusCont=null;
 

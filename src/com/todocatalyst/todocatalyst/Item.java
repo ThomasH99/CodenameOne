@@ -139,7 +139,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        this(taskText, remainingEffortInMinutes, dueDate, false);
         this();
         setText(taskText);
-        Item.this.setRemainingForTask(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS, true);
+        Item.this.setRemainingForTaskItself(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS, true);
         setDueDate(dueDate);
     }
 
@@ -341,42 +341,41 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //    }
 //</editor-fold>
-    @Override
-    public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        Object owner = getOwner();
-//        if (owner instanceof ItemList) {
-//            ItemList ownerList = (ItemList) owner;
-//            if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()) {// && (ownerList.indexOf(this)) != -1) {
-//                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); ///NB. no need to check if 'this' is in list since this insert defaults normal add if not
-//            } else {
-//                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
-//            }
-//            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, ownerList); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
-//        } else if (owner instanceof Item) {
-//            Item itemOwner = (Item) owner;
-//            List subtaskList = itemOwner.getList();
-//            assert subtaskList != null; //should never get null
-//            if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()){// && (subtaskList.indexOf(this)) != -1) {
-//                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); //add just after
-//            } else {
-//                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance);
-//            }
-//            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, itemOwner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
-//        } else { //no owner, save for 'Inbox'
-//            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+//    @Override
+//    public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        Object owner = getOwner();
+////        if (owner instanceof ItemList) {
+////            ItemList ownerList = (ItemList) owner;
+////            if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()) {// && (ownerList.indexOf(this)) != -1) {
+////                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); ///NB. no need to check if 'this' is in list since this insert defaults normal add if not
+////            } else {
+////                ownerList.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+////            }
+////            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, ownerList); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+////        } else if (owner instanceof Item) {
+////            Item itemOwner = (Item) owner;
+////            List subtaskList = itemOwner.getList();
+////            assert subtaskList != null; //should never get null
+////            if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()){// && (subtaskList.indexOf(this)) != -1) {
+////                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); //add just after
+////            } else {
+////                itemOwner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance);
+////            }
+////            DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, itemOwner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+////        } else { //no owner, save for 'Inbox'
+////            DAO.getInstance().save((ParseObject) newRepeatRuleInstance); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+////        }
+////</editor-fold>
+//        ItemAndListCommonInterface owner = getOwner();
+//        if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()) {// && (ownerList.indexOf(this)) != -1) {
+//            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); ///NB. no need to check if 'this' is in list since this insert defaults normal add if not
+//        } else {
+//            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
 //        }
-//</editor-fold>
-        ItemAndListCommonInterface owner = getOwner();
-        if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()) {// && (ownerList.indexOf(this)) != -1) {
-            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); ///NB. no need to check if 'this' is in list since this insert defaults normal add if not
-        } else {
-            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
-        }
-//        DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, (ParseObject) owner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
-        return owner;
-    }
-
+////        DAO.getInstance().saveInBackground((ParseObject) newRepeatRuleInstance, (ParseObject) owner); //save before saving ownerList, but *after* adding to list and setting owner, to be able to reference from other objects
+//        return owner;
+//    }
 //    @Override
 //    public ItemAndListCommonInterface insertIntoListIN_INTERFACE_NOW_XXX(RepeatRuleObjectInterface newRepeatRuleInstance, RepeatRuleObjectInterface.RepatInsertPosition insertPosition) {
 //
@@ -1275,6 +1274,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private Item getOwnerItem() {
         Item ownerItem = (Item) getParseObject(PARSE_OWNER_ITEM);
         ownerItem = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(ownerItem);
+        if (Config.REPAIR) {
+            if (ownerItem == this) {
+                ASSERT.that(false, "ADDRESSED - task having itself as owner, set to null, item=" + this);
+                setOwnerItem(null);
+            }
+        }
         return ownerItem;
     }
 
@@ -1699,6 +1704,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         } else {
             remove(PARSE_COMMENT);
+
         }
 //        if (!this.comment.equals(val)) {
 //            this.comment = val;
@@ -2034,14 +2040,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (defAll || defCopyPaste || defFromTemplToTask || defToRepeatInst) {//||defToTempl) { //
 //        if (defAll || defToRepeatInst || defCopyPaste) {//||defToTempl) { //
         if (false && defAll) {//||defToTempl) { //DONE BELOW
-            if (getRemainingForTask() == 0) {
-                destination.setRemainingForTask(getRemainingDefaultValue(), false); //getRemainingDefaultValue is only defined if setting already active
+            if (getRemainingForTaskItself() == 0) {
+                destination.setRemainingForTaskItself(getRemainingDefaultValue(), false); //getRemainingDefaultValue is only defined if setting already active
             }
         }
         if (defAll || defRestoreLocallySavedValues) { //UI: normally neither Remaining, nor Actual should be copied since they updates individually for each instance
 //            destination.setRemaining(getRemaining(), false);
 //            destination.setRemaining(getRemainingForProjectTaskItself(false), false);
-            destination.setRemainingForTask(getRemainingForTask(), false);
+            destination.setRemainingForTaskItself(getRemainingForTaskItself(), false);
 //            destination.setActual(getActual(), false);
             destination.setActualForTaskItself(getActualForTaskItself(), false);
         }
@@ -2182,8 +2188,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             }
         }
-        
-        if(defCopyPaste||defToRepeatInst||defToTempl||defToTemplInst) {
+
+        if (defCopyPaste || defToRepeatInst || defToTempl || defToTemplInst) {
             setEditedDateToNow(); //always set edited date on creation of new instance (also a 'user-edited action)
         }
 
@@ -2230,25 +2236,38 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
+    public boolean hasDatesDependingOnDue() {
+        boolean templFieldsDependOnDue = getAlarmDate().getTime() != 0 || getStartByDateD().getTime() != 0
+                || getExpiresOnDate().getTime() != 0 || getHideUntilDateD().getTime() != 0;
+        return templFieldsDependOnDue;
+    }
+
     /**
      * update the Item's relative dates to have the same time between the new
      * due date as they had to the old due date
      *
-     * @param newDueDateTime
+     * @param newDueDateTime - if null or 0, remove/reset all dates: due, alarm,
+     * hideUntil,StartBy, expiresOn
      */
-    public void updateRepeatInstanceRelativeDates(Date newDueDateTime) {
-        ASSERT.that(newDueDateTime.getTime() != 0);
-        Date oldDueDate = getDueDate();
-        long newDueDate = newDueDateTime.getTime();
-        long delta = 0;
+    public void updateRelativeDates(Date newDueDateTime) {
+        long delta;
+        if (newDueDateTime == null || newDueDateTime.getTime() == 0) {
+            delta = 0;
+        } else {
+            ASSERT.that(newDueDateTime.getTime() != 0);
+            Date oldDueDate = getDueDate();
+            long newDueDate = newDueDateTime.getTime();
+            delta = 0;
 //        if (oldDueDate != 0 && newDueDate != 0) {
-        if (oldDueDate.getTime() != 0) {
-            delta = newDueDate - oldDueDate.getTime();
+            if (oldDueDate.getTime() != 0) {
+                delta = newDueDate - oldDueDate.getTime();
+            }
         }
 
-        setDueDate(newDueDateTime);
+        if (delta != 0) {
 
-        if (delta != 0 && MyPrefs.repeatSetRelativeFieldsWhenCreatingRepeatInstances.getBoolean()) {
+            setDueDate(newDueDateTime);
+
             //TODO!!!!: what if no DueDate is set, but only an alarmDate or showFromDate? Can this happen (what would the repeatReference date then be?)
             if (getAlarmDate().getTime() != 0) { //only update if a value was defined for the referenceItem
 //                setAlarmDate(newDueDate - (oldDueDate - getAlarmDate()));
@@ -2699,6 +2718,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                            + ", should be=" + this.toString(false));
 //                }
 //            }
+            if (Config.REPAIR) {
+                for (Item i : list) {
+                    if (i.getOwnerItem() == null) {
+                        ASSERT.that(false, () -> "FIXED - subtask with NULL owner, item=" + i + "; owner=\"" + this.getText() + "\" [" + this.getObjectIdP() + "/" + this.getGuid() + "]");
+                        i.setOwnerItem(this);
+                        DAO.getInstance().saveToParseNow(i);
+                    } else if (i.getOwnerItem() != this) {
+                        ASSERT.that(false, () -> "FIXED - subtask NOT having owner as owner, item=" + i
+                                + "; CURRENT owner=[" + i.getOwner().getText() + "\" [" + i.getOwner().getObjectIdP() + "/" + i.getOwner().getGuid() + "]"
+                                + "; ACTUAL owner=\"" + this.getText() + "\" [" + this.getObjectIdP() + "/" + this.getGuid() + "]");
+                        i.setOwnerItem(this);
+                        DAO.getInstance().saveToParseNow(i);
+                    }
+                }
+//                checkOwners(list);
+            }
             if (Config.CHECK_OWNERS) {
                 checkOwners(list);
             }
@@ -2767,11 +2802,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * subtask, boolean addAfterItem) which calculates right index for subtask
      *
      * @param index
-     * @param subtask
+     * @param itemOrListToAdd
      * @return
      */
     @Override
-    public boolean addToList(int index, ItemAndListCommonInterface subtask, boolean addAsOwner) {
+    public boolean addToList(int index, ItemAndListCommonInterface itemOrListToAdd, boolean addAsOwner) {
         boolean status = true;
         List listFull = getListFull();
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2787,12 +2822,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //        }
 //</editor-fold>
-        listFull.add(index, subtask);
-        ASSERT.that(subtask.getOwner() == null || this == subtask.getOwner(), "subItemOrList owner not null when adding to list, SUBTASK=" + subtask + ", OLD OWNER=" + subtask.getOwner() + ", NEW OWNER=" + this);
-        ItemAndListCommonInterface oldOwner = subtask.getOwner();
+        listFull.add(index, itemOrListToAdd);
+        ASSERT.that(itemOrListToAdd.getOwner() == null || this == itemOrListToAdd.getOwner(), "subItemOrList owner not null when adding to list, SUBTASK=" + itemOrListToAdd + ", OLD OWNER=" + itemOrListToAdd.getOwner() + ", NEW OWNER=" + this);
+        ItemAndListCommonInterface oldOwner = itemOrListToAdd.getOwner();
         setList(listFull);
         if (addAsOwner && !isNoSave()) {
-            subtask.setOwner(this);
+            itemOrListToAdd.setOwner(this);
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) { //now done in setOwner() above
@@ -2802,30 +2837,30 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
         if (false) {
-            ((Item) subtask).updateRepeatRule(); //update a RR with pending changes *after* the items is inserted 
+            ((Item) itemOrListToAdd).updateRepeatRule(); //update a RR with pending changes *after* the items is inserted 
         }
         return status;
     }
 
-    private boolean addToList(int index, ItemAndListCommonInterface subtask) {
-        return addToList(index, subtask, true);
+    private boolean addToList(int index, ItemAndListCommonInterface itemOrListToAdd) {
+        return addToList(index, itemOrListToAdd, true);
     }
 
-    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner) {
-        return addToList(addToEndOfList ? getSize() : 0, subItemOrList, addAsOwner);
+    public boolean addToList(ItemAndListCommonInterface itemOrListToAdd, boolean addToEndOfList, boolean addAsOwner) {
+        return addToList(addToEndOfList ? getSize() : 0, itemOrListToAdd, addAsOwner);
     }
 
     @Override
-    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList) {
+    public boolean addToList(ItemAndListCommonInterface itemOrListToAdd, boolean addToEndOfList) {
         List listFull = getListFull();
 //        listFull.add(addToEndOfList ? listFull.size() : 0, subItemOrList);
 //        setList(listFull);
-        return addToList(addToEndOfList ? listFull.size() : 0, subItemOrList);
+        return addToList(addToEndOfList ? listFull.size() : 0, itemOrListToAdd);
 //        return true;
     }
 
     @Override
-    public boolean addToList(ItemAndListCommonInterface subItemOrList) {
+    public boolean addToList(ItemAndListCommonInterface itemOrListToAdd) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        List subtasks = getList();
 //        boolean status = subtasks.add(subtask);
@@ -2838,20 +2873,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        else
 //            return addToList((ItemAndListCommonInterface) subItemOrList, (ItemAndListCommonInterface) getListFull().get(getListFull().size()), true);
 //</editor-fold>
-        return addToList((ItemAndListCommonInterface) subItemOrList, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+        return addToList((ItemAndListCommonInterface) itemOrListToAdd, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
     }
 
-    public Item section(String topicText) {
-        Item topic = new Item(topicText);
-        return topic;
-    }
-
-    public Item topic(String topicText) {
-        Item topicTask = new Item(topicText);
-        addToList(topicTask);
-        return this;
-    }
-
+//    public Item section(String topicText) {
+//        Item topic = new Item(topicText);
+//        return topic;
+//    }
+//    public Item topic(String topicText) {
+//        Item topicTask = new Item(topicText);
+//        addToList(topicTask);
+//        return this;
+//    }
 //    @Override
 //        public boolean addToList(ItemAndListCommonInterface subItemOrList, int index, boolean addAsOwner) {
 //        return addToList(subItemOrList, addToEndOfList ? getSize() : 0, addAsOwner);
@@ -2861,7 +2894,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        return true;
 //    }
     @Override
-    public boolean addToList(ItemAndListCommonInterface newItem, ItemAndListCommonInterface referenceItemN, boolean addAfterItemOrEndOfList) {
+    public boolean addToList(ItemAndListCommonInterface itemOrListToAdd, ItemAndListCommonInterface referenceItemN, boolean addAfterItemOrEndOfList) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        List subtasks = getListFull();
 //        boolean status = true;
@@ -2884,7 +2917,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            return addToList(newItem); //UI: else add to end of list //TODO! should this depend on a setting?
 //        } else
 //            return addToList(indexFull + (addAfterItemOrEndOfList ? 1 : 0), newItem);
-        return addToList(indexFull, newItem);
+        return addToList(indexFull, itemOrListToAdd);
     }
 
 //    @Override
@@ -2893,16 +2926,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
     @Override
 //    public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeOwner) {
-    public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeOwner) {
+    public boolean removeFromList(ItemAndListCommonInterface itemOrList, boolean removeOwner) {
         List subtasks = getListFull();
-        boolean status = subtasks.remove(subItemOrList);
+        boolean status = subtasks.remove(itemOrList);
         setList(subtasks);
-        assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subtask=" + subItemOrList + ", owner=" + subItemOrList.getOwner() + ", list=" + this;
-        if (removeOwner)// && getOwner() == this)
-        {
-            subItemOrList.setOwner(null);
+        assert itemOrList.getOwner() == this : "list not owner of removed subtask, subtask=" + itemOrList + ", owner=" + itemOrList.getOwner() + ", list=" + this;
+        if (removeOwner) { // && getOwner() == this)
+            itemOrList.setOwner(null);
         }
-        ((Item) subItemOrList).removeValuesInheritedFromOwner(this);
+//        ((Item) itemOrList).removeValuesInheritedFromOwner(this); //now done in setOwnerItem(null)
         return status;
     }
 
@@ -3476,6 +3508,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         } else {
             remove(PARSE_DREAD_FUN_VALUE);
+
         }
     }
 
@@ -4546,6 +4579,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         if (oldRepeatRule == null) { //setting a RR for the first time
             if (newRepeatRuleN != null && newRepeatRuleN.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+                newRepeatRuleN.addOriginatorToRule(this);
                 newRepeatRuleN.setUpdatePending(!isTemplate());
                 setRepeatRuleInParse(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
             } else {
@@ -6243,7 +6277,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     setStartByDate(newOwnerItem.getStartByDateD());
                 }
 
-                if (MyPrefs.itemInheritOwnerProjectTemplateXXX.getBoolean()) {
+                if (true || MyPrefs.itemInheritOwnerProjectTemplateXXX.getBoolean()) {
                     setTemplate(newOwnerItem.isTemplate());
                 }
             }
@@ -7068,14 +7102,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private void setEstimateTotalInParse(long effortEstimateMillis) {
 //        long oldVal = getLong(PARSE_EFFORT_ESTIMATE);
         long oldVal = getEstimateTotal();
-        if (effortEstimateMillis != 0) {
-            if (oldVal != effortEstimateMillis) {
-                put(PARSE_EFFORT_ESTIMATE, effortEstimateMillis); //update first 
+        if (effortEstimateMillis != oldVal) {
+            if (effortEstimateMillis != 0) {
+                if (oldVal != effortEstimateMillis) {
+                    put(PARSE_EFFORT_ESTIMATE, effortEstimateMillis); //update first 
+                }
+            } else {
+                remove(PARSE_EFFORT_ESTIMATE);
             }
-        } else {
-            remove(PARSE_EFFORT_ESTIMATE);
+            updateEarnedValuePerHour();
+            //ripple up:
+            Item ownerItem = getOwnerItem();
+            if (ownerItem != null) {
+//            ownerItem.setEstimateTotal(ownerItem.getEstimateTotal() + effortEstimateTotalMillis - oldEffortTotal);
+                ownerItem.updateEstimateOnChangeInSubtasks();
+            }
+
         }
-        updateEarnedValuePerHour();
     }
 
     private void setEstimateForTaskInParse(long effortForTaskEstimateMillis) {
@@ -7116,11 +7159,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         setEstimateTotalInParse(effortEstimateTotalMillis);
 
-        //ripple up:
-        Item ownerItem = getOwnerItem();
-        if (ownerItem != null) {
-            ownerItem.setEstimateTotal(ownerItem.getEstimateTotal() + effortEstimateTotalMillis - oldEffortTotal);
-        }
+//        //ripple up:
+//        Item ownerItem = getOwnerItem();
+//        if (ownerItem != null) {
+//            ownerItem.setEstimateTotal(ownerItem.getEstimateTotal() + effortEstimateTotalMillis - oldEffortTotal);
+//        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        update();
 //signal to owner if total has changed
@@ -7190,11 +7233,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (autoUpdateRemainingEffort && !isProject()) {
             if (MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining.getBoolean()
                     && effortEstimateProjectTaskItselfMillis > 0
-                    && getRemainingForTaskFromParse() == 0) {
-                setRemainingForTask(effortEstimateProjectTaskItselfMillis - getActualForTaskItself(), false); //TODO actualEffort should be set *before* effort estimate for this to work
+                    && getRemainingForTaskItselfFromParse() == 0) {
+                setRemainingForTaskItself(effortEstimateProjectTaskItselfMillis - getActualForTaskItself(), false); //TODO actualEffort should be set *before* effort estimate for this to work
             } else if (MyPrefs.automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual.getBoolean()
                     && effortEstimateProjectTaskItselfMillis > getRemainingTotalFromParse() + getActualTotal()) { // *increase* remaining //UI:
-                setRemainingForTask(effortEstimateProjectTaskItselfMillis - getActualTotal(), false); //false to avoid circular updates between setEstimate() and setRemaining()
+                setRemainingForTaskItself(effortEstimateProjectTaskItselfMillis - getActualTotal(), false); //false to avoid circular updates between setEstimate() and setRemaining()
             }
         }
 
@@ -7368,19 +7411,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     private void setRemainingTotalInParse(long remainingEffortTotalMillis) {
         long oldVal = getRemainingTotalFromParse();
-        if (remainingEffortTotalMillis > 0) {
-            if (remainingEffortTotalMillis != oldVal) {
-                put(PARSE_REMAINING_EFFORT_TOTAL, remainingEffortTotalMillis); //update first 
+        if (remainingEffortTotalMillis != oldVal) {
+            if (remainingEffortTotalMillis > 0) {
+                if (remainingEffortTotalMillis != oldVal) {
+                    put(PARSE_REMAINING_EFFORT_TOTAL, remainingEffortTotalMillis); //update first 
+                }
+            } else {
+                remove(PARSE_REMAINING_EFFORT_TOTAL);
             }
-        } else {
-            remove(PARSE_REMAINING_EFFORT_TOTAL);
-        }
 
-        updateEarnedValuePerHour();
+            updateEarnedValuePerHour();
 
-        Item ownerItem = getOwnerItem();
-        if (ownerItem != null) {
-            ownerItem.setRemainingTotalInParse(ownerItem.getRemainingTotal() + remainingEffortTotalMillis - oldVal);
+            Item ownerItem = getOwnerItem();
+            if (ownerItem != null) {
+//            ownerItem.setRemainingTotalInParse(ownerItem.getRemainingTotal() + remainingEffortTotalMillis - oldVal);
+                ownerItem.updateRemainingOnSubtaskChange();
+            }
         }
 
     }
@@ -7395,7 +7441,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private void setRemainingForTaskInParse(long remainingEffortProjectTaskItselfMillis) {
         if (remainingEffortProjectTaskItselfMillis != 0) {
             //only set (make dirty) if actually different (bit of a hack solution, should find reason why it is set even though no change
-            if (remainingEffortProjectTaskItselfMillis != getRemainingForTaskFromParse()) {
+            if (remainingEffortProjectTaskItselfMillis != getRemainingForTaskItselfFromParse()) {
                 put(PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF, remainingEffortProjectTaskItselfMillis); //update first 
             }
         } else {
@@ -7411,7 +7457,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     void setRemainingDefaultValueIfNone() {
 //        setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue());
         if (getRemainingTotal() == 0) {
-            setRemainingForTask(getRemainingDefaultValue());
+            setRemainingForTaskItself(getRemainingDefaultValue());
         }
     }
 
@@ -7513,8 +7559,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //    }
 //</editor-fold>
-    public void setRemainingForTask(long remainingEffortForTaskItselfMillis, boolean autoUpdateEffortEstimate) {
-        setRemainingForTask(remainingEffortForTaskItselfMillis, autoUpdateEffortEstimate, false);
+    public void setRemainingForTaskItself(long remainingEffortForTaskItselfMillis, boolean autoUpdateEffortEstimate) {
+        setRemainingForTaskItself(remainingEffortForTaskItselfMillis, autoUpdateEffortEstimate, false);
     }
 
     /**
@@ -7524,7 +7570,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param firstTimeAddOfSubtasks true the first time subtasks are added to a
      * task (making it a project) - used to update projectRemaining to 0
      */
-    public void setRemainingForTask(long remainingEffortProjectTaskItselfMillis, boolean autoUpdateEffortEstimate, boolean firstTimeAddOfSubtasks) {
+    public void setRemainingForTaskItself(long remainingEffortProjectTaskItselfMillis, boolean autoUpdateEffortEstimate, boolean firstTimeAddOfSubtasks) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long oldEffortTotal = getRemainingEffort();
 ////        long prevRemaining = getRemainingEffortFromParse();
@@ -7532,7 +7578,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        long newEffortTotal = effortSubtasks + remainingEffortMillis;
 //        long prevRemainingProjectTask = getRemainingEffortProjectTaskItself();
 //</editor-fold>
-        if (autoUpdateEffortEstimate && getRemainingForTaskFromParse() == getRemainingDefaultValue() //if first time we set Remaining
+        if (autoUpdateEffortEstimate && getRemainingForTaskItselfFromParse() == getRemainingDefaultValue() //if first time we set Remaining
                 && MyPrefs.automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero.getBoolean()
                 && getEstimateTotal() == 0) {//and no effort estimate already set
             //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
@@ -7542,7 +7588,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
 //        setRemainingEffortInParse(newEffortTotal);// + actualEffortMillis);
 //        setRemainingImpl(remainingEffortProjectTaskItselfMillis);// + actualEffortMillis);
-        long oldRemainingPrjTaskItself = getRemainingForTask();
+        long oldRemainingPrjTaskItself = getRemainingForTaskItself();
         long oldRemainingTotal = getRemainingTotal();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (firstTimeAddOfSubtasks) {
@@ -7639,9 +7685,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        owner.setRemainingTotal(owner.getRemainingTotal()+(getRemainingSubtasks()-oldRemainingTotal));
 //    }
 //</editor-fold>
-    public void setRemainingForTask(long remainingEffortForTaskItselfMillis) {
+    public void setRemainingForTaskItself(long remainingEffortForTaskItselfMillis) {
 //        setRemaining(remainingEffortProjectTaskItselfMillis, true);
-        setRemainingForTask(remainingEffortForTaskItselfMillis, false); //false=> don't update the other field by default, only if explicitly defined
+        setRemainingForTaskItself(remainingEffortForTaskItselfMillis, false); //false=> don't update the other field by default, only if explicitly defined
 
     }
 
@@ -7723,7 +7769,26 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
 //</editor-fold>
     private void updateRemainingOnSubtaskChange() {
-        setRemainingForTask(getRemainingForTaskFromParse(), true);
+//        setRemainingForTask(getRemainingForTaskFromParse(), true);
+        long remainingSubtasks = getRemainingForSubtasks();
+        long remainingTotal = getRemainingTotal();
+        long remainingTaskItself = getRemainingForTaskItself();
+
+        //if task is (jjst) changed to project and subtasks have their own remaining, then check if task's own Remaining should be set to 0 or kept
+        if (remainingSubtasks > 0 && remainingTaskItself > 0 && remainingTotal == remainingTaskItself) { //remainingTotal == remainingTaskItself should only be true first time we add a subtask with non-zero Remaining
+            if (MyPrefs.keepRemainingForTaskItselfWhenATaskBecomesAProject.getBoolean()) {
+                //do nothing, leave old Remaining for task itself even though subtasks now have their own Remaining
+            } else {
+                setRemainingForTaskItself(0, false);
+//                setRemainingTotalInParse(remainingSubtasks, true);
+                if (MyPrefs.addCommentWhenRemaningIsSetToZeroWhenTaskBecomesProject.getBoolean()) {
+                    addToCommentDefaultPosition(Format.f("{0 Remaining} was changed from {1} to 0 since task was changed to projet", Item.EFFORT_REMAINING, "" + remainingTaskItself));
+                }
+            }
+        }
+
+//        setRemainingTotalInParse(getRemainingForTaskItself() + remainingSubtasks);
+        setRemainingTotalInParse(getRemainingForTaskItself() + remainingSubtasks);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -7751,7 +7816,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
 //    private long getRemainingEffortProjectTaskFromParse() {
-    public long getRemainingForTaskFromParse() {
+    public long getRemainingForTaskItselfFromParse() {
         Long remainingProjectTaskItselfEffort = getLong(PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF);
         return (remainingProjectTaskItselfEffort == null) ? 0L : remainingProjectTaskItselfEffort;
     }
@@ -7765,9 +7830,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        }
 //        return effort;
 //    }
-    public long getRemainingForTask() {
+    public long getRemainingForTaskItself() {
 //        return getRemainingForProjectTaskItself(true); //by default, 
-        long effort = getRemainingForTaskFromParse();
+        long effort = getRemainingForTaskItselfFromParse();
         return effort;
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -7885,7 +7950,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public boolean isRemainingDefaultValue() {
 //        return getRemainingForProjectTaskItself() == getRemainingDefaultValue();
-        return isRemainingDefaultValue(getRemainingForTask());
+        return isRemainingDefaultValue(getRemainingForTaskItself());
     }
 
     ////////////// ACTUAL ///////////////
@@ -7908,16 +7973,24 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
     private void setActualTotalInParse(long actualEffortTotalMillis) {
 //        long rounded = ((actualEffortTotalMillis + 500) / 1000) * 1000; //https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
-        long rounded = actualEffortTotalMillis; //no need to round, picker now handles millis - https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
+//        long rounded = actualEffortTotalMillis; //no need to round, picker now handles millis - https://stackoverflow.com/questions/20385067/how-to-round-off-timestamp-in-milliseconds-to-nearest-seconds
         long oldVal = getActualTotal();
-        if (rounded > 0) {
-            if (oldVal != actualEffortTotalMillis) {
-                put(PARSE_ACTUAL_EFFORT, rounded);
+        if (actualEffortTotalMillis != oldVal) {
+            if (actualEffortTotalMillis > 0) {
+                if (oldVal != actualEffortTotalMillis) {
+                    put(PARSE_ACTUAL_EFFORT, actualEffortTotalMillis);
+                }
+            } else {
+                remove(PARSE_ACTUAL_EFFORT);
             }
-        } else {
-            remove(PARSE_ACTUAL_EFFORT);
+            updateEarnedValuePerHour();
+            Item ownerItem = getOwnerItem();
+            if (ownerItem != null) {
+//            ownerItem.setActualTotal(ownerItem.getActualTotal() + actualEffortTotalMillis - oldActualTotal, false);
+                ownerItem.updateActualOnSubtaskChange();
+            }
         }
-        updateEarnedValuePerHour();
+
     }
 
     private void setActualTotal(long actualEffortTotalMillis, boolean autoUpdateStatusAndStartedOnDate) {
@@ -7964,10 +8037,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         setActualTotalInParse(actualEffortTotalMillis);
 
-        Item ownerItem = getOwnerItem();
-        if (ownerItem != null) {
-            ownerItem.setActualTotal(ownerItem.getActualTotal() + actualEffortTotalMillis - oldActualTotal, false);
-        }
+//        Item ownerItem = getOwnerItem();
+//        if (ownerItem != null) {
+////            ownerItem.setActualTotal(ownerItem.getActualTotal() + actualEffortTotalMillis - oldActualTotal, false);
+//            ownerItem.updateActualOnSubtaskChange();
+//        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (actualEffortMillis != oldActualEffort) {
 //        if (false) {
@@ -9539,11 +9613,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public String toString(boolean showSubtasks) {
 //        return getText();
 //        return getText().length() != 0 ? getText()+" ("+getObjectId()+")" : getObjectId();
-        return getText() + (isDirty() ? "§" : "") + (isTemplate() ? "%" : "") + "[" + getObjectIdP() + "/" + getGuid()+ "]"
+        return getText() + (isDirty() ? "§" : "") + (isTemplate() ? "%" : "") + "[" + getObjectIdP() + "/" + getGuid() + "]"
                 + (getCompletedDate().getTime() != 0 ? " Done" + MyDate.formatDateSmart(getCompletedDate()) : "")
                 + (getDueDate().getTime() != 0 ? " Due" + MyDate.formatDateSmart(getDueDate()) : "")
                 + (isDone() ? " [DONE]" : (getRemainingTotal() > 0 ? " " + MyDate.formatDurationShort(getRemainingTotal()) : ""))
-                + (showSubtasks ? (getListFull().size() == 0 ? "" : " subtasks={" + getListAsCommaSeparatedString(getListFull(), true) + "}") : "");
+                + (showSubtasks ? (getListFull().size() == 0 ? "" : " subtasks(" + getListFull().size() + ")=*{" + getListAsCommaSeparatedString(getListFull(), true) + "}*") : "");
     }
 
     /**
@@ -9811,7 +9885,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //        } else {
         RepeatRuleParseObject currentRepeatRule = getRepeatRuleN();
-        if (!isTemplate() && currentRepeatRule != null && currentRepeatRule.isUpdatePending()) {
+        if (currentRepeatRule != null && !isTemplate() && currentRepeatRule.isUpdatePending()) {
             currentRepeatRule.setUpdatePending(false); //MUST set false before updating to avoid recursion when new RR instances 
 //                if (currentRepeatRule.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
 //                    currentRepeatRule.updateItemsWhenRuleCreatedOrEdited(this); //will also save RR
@@ -10141,12 +10215,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param template
      */
     public void setTemplate(boolean template) {
-        if (template) {
-            if (!isTemplate()) {
+        if (template != isTemplate()) {
+            if (template) {
                 put(PARSE_TEMPLATE, true);
+            } else {
+                remove(PARSE_TEMPLATE);
             }
-        } else {
-            remove(PARSE_TEMPLATE);
         }
     }
 
@@ -10246,6 +10320,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         if (false) {
             resetWorkTimeDefinition(); //need to reset this each time the WorkSlot list is changed
+
         }
     }
 
@@ -10363,6 +10438,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 || isDirty(PARSE_SUBTASKS)
                 || isDirty(PARSE_DUE_DATE);
         return userModifiedData; //just setting ACL or guid (~system data) should not set item dirty
+
     }
 
     static class EstimateResult {
@@ -10499,7 +10575,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             boolean effortEstimateNotDefinedInTextInput = true;
 //            item.setEstimate(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, true); //update remaining, set for project-level
             if (res.minutes != 0) { //don't set if nothing is entered (this may overwrite the default value with 0!)
-                item.setRemainingForTask(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, effortEstimateNotDefinedInTextInput); //update remaining, set for project-level
+                item.setRemainingForTaskItself(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, effortEstimateNotDefinedInTextInput); //update remaining, set for project-level
             }
             return cleanedTxt;
         }
@@ -10705,7 +10781,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (toCSV) {
                     list.add((MyDate.formatDuration(getRemainingTotalFromParse())));
                 } else {
-                    setRemainingForTask((Long) val, false); //UI: import of project estimates
+                    setRemainingForTaskItself((Long) val, false); //UI: import of project estimates
                 }
                 break;
             case PARSE_ACTUAL_EFFORT:
@@ -10991,7 +11067,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     requiredCalc += subtask.getWorkTimeRequiredFromProvider(this);
                 }
 //                requiredCalc += getRemainingForProjectTaskItself(false); //false=> no default effort (for a project with subtasks, only subtasks should have default values)
-                requiredCalc += getRemainingForTask(); //false=> no default effort (for a project with subtasks, only subtasks should have default values)
+                requiredCalc += getRemainingForTaskItself(); //false=> no default effort (for a project with subtasks, only subtasks should have default values)
             } else { //leaf task
                 requiredCalc = getRemainingTotal(); //how much total workTime is required?
             }

@@ -909,24 +909,24 @@ class TimerStack {
      *
      * @return true if changes were made to know that UI should be refreshed.
      */
-    public void refreshTimersFromParseServer() {
-        //TODO!!! fetch in background, or rellay: via Push, and launch any necessary UI updates via runSerially on EDT. 
-//        Object fresh = DAO.getInstance().fetchIfChangedOnServer(this);
-//        if (fresh != null) {
-//            INSTANCE = (TimerInstance) fresh;
-        synchronized (TIMER_LOCK) {
-            INSTANCE = new TimerStack(DAO.getInstance().getTimerInstanceList());
-        }
-        List<TimerInstance> timers = DAO.getInstance().getTimerInstanceList();
-        for (TimerInstance timerInstance : timers) {
-            //if timer is stopped on server, but running here, then stop it here and if another is running on server start that one
-            //if timer is running on server, but not here
-        }
-        INSTANCE = new TimerStack(timers);
-//            return true;
+//    public void refreshTimersFromParseServer() {
+//        //TODO!!! fetch in background, or rellay: via Push, and launch any necessary UI updates via runSerially on EDT. 
+////        Object fresh = DAO.getInstance().fetchIfChangedOnServer(this);
+////        if (fresh != null) {
+////            INSTANCE = (TimerInstance) fresh;
+//        synchronized (TIMER_LOCK) {
+//            INSTANCE = new TimerStack(DAO.getInstance().getTimerInstanceList());
 //        }
-//        return false;
-    }
+//        List<TimerInstance> timers = DAO.getInstance().getTimerInstanceList();
+//        for (TimerInstance timerInstance : timers) {
+//            //if timer is stopped on server, but running here, then stop it here and if another is running on server start that one
+//            //if timer is running on server, but not here
+//        }
+//        INSTANCE = new TimerStack(timers);
+////            return true;
+////        }
+////        return false;
+//    }
 
     //**************** PUBLIC INTERFACE ****************
 //    private void addNewTimerInstanceXXX(TimerInstance newTimerInstance) {
@@ -3211,7 +3211,7 @@ class TimerStack {
             gotoNextTaskButtonWithItemText = MyPrefs.timerShowNextTask.getBoolean()
                     ? new SpanButton("Next: \"" + nextComingItem.getText() + "\"" //                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatTimeDuration(nextComingItem.getRemainingEffort()) + "]") : ""))
                             //                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatDurationShort(nextComingItem.getRemainingForProjectTaskItself(true)) + "]") : ""))
-                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatDurationShort(nextComingItem.getRemainingForTask()) + "]") : ""))
+                            + (MyPrefs.timerShowRemainingForNextTask.getBoolean() ? (" [" + MyDate.formatDurationShort(nextComingItem.getRemainingForTaskItself()) + "]") : ""))
                     : new SpanButton(""); //gotoNextTask button is hidden unless timerAutomaticallyGotoNextTask is false
             gotoNextTaskButtonWithItemText.setCommand(cmdStartNextTask);
             if (MyPrefs.getBoolean(MyPrefs.timerAutomaticallyGotoNextTask)) {
@@ -3456,7 +3456,7 @@ class TimerStack {
                         estimate.setDuration(timedItem.getEstimateTotal());
 //                remainingEffort.setTime((int) timedItem.getRemainingEffort(false, false) / MyDate.MINUTE_IN_MILLISECONDS); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
 //                        remainingEffort.setTime((int) timedItem.getRemainingEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
-                        effort.setDuration((int) timedItem.getRemainingForTaskFromParse()); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
+                        effort.setDuration((int) timedItem.getRemainingForTaskItselfFromParse()); //don't use 0 for done tasks (if we time a Done task, want to see actual value stored in Remaining)
 
 //<editor-fold defaultstate="collapsed" desc="comment">
                         if (false) { //SINCE newActual is the item's edited Actual, not updated with elapsed time before editing the item, it should not be possible to become less than
@@ -3645,11 +3645,11 @@ class TimerStack {
             estimate.addActionListener((e) -> {
 //                effortEstimateBeingAutoupdated=true;
                 timedItem.setEstimateForTask(estimate.getDuration(), false); //saved immediately on edit
-                if (timedItem.getRemainingForTaskFromParse() == 0
+                if (timedItem.getRemainingForTaskItselfFromParse() == 0
                         && effort.getDuration() == 0
                         && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()) {
 //                    timedItem.setRemaining(effortEstimate.getDuration(), false); //NB. not necessary because updating the duration picker will trigger the other actionListener
-                    timedItem.setRemainingForTask(estimate.getDuration(), false); //saved immediately on edit
+                    timedItem.setRemainingForTaskItself(estimate.getDuration(), false); //saved immediately on edit
                     effort.setDuration(estimate.getDuration());
                     effort.repaint();
                 }
@@ -3662,7 +3662,7 @@ class TimerStack {
 
             effort.addActionListener((e) -> {
 //                remainingEstimateBeingAutoupdated=true;
-                timedItem.setRemainingForTask(effort.getDuration(), false); //saved immediately on edit
+                timedItem.setRemainingForTaskItself(effort.getDuration(), false); //saved immediately on edit
                 if (timedItem.getEstimateTotal() == 0 && estimate.getDuration() == 0
                         && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()) {
 //                    timedItem.setEstimate(remainingEffort.getDuration(), false);
@@ -3679,7 +3679,7 @@ class TimerStack {
 
             estimate.setDuration(timedItem.getEstimateTotal());
 //            remainingEffort.setDuration(timedItem.getRemainingEffort());
-            effort.setDuration(timedItem.getRemainingForTaskFromParse());
+            effort.setDuration(timedItem.getRemainingForTaskItselfFromParse());
 
 //            totalActualEffort = new Label(); //MyDate.formatTime(calcTotalEffortInMinutes(item, elapsedTimePicker.getTime(), MyPrefs.getBoolean((MyPrefs.timerShowTotalActualInTimer))), showSeconds), "Button");
             refreshTotalActualEffort.actionPerformed(null);

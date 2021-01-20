@@ -5,6 +5,10 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.io.Log;
+import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.ItemList.PARSE_ITEMS;
+import static com.todocatalyst.todocatalyst.ItemList.PARSE_OWNER;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -26,7 +30,7 @@ import java.util.List;
  *
  * @author thomashjelm
  */
-public class ItemBucket extends ItemList {//implements ItemAndListCommonInterface{
+public class ItemBucket<E> extends ItemList {//implements ItemAndListCommonInterface{
 
     interface getName {
 
@@ -71,7 +75,7 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
     boolean mostRecentFirst; //show oldest completed Items first
 
 //    ItemBucket withoutCategoryGroup; //'global' bucket variable, A HACK, but should work since each bucket will
-    final static ItemBucket dummyForSearch = new ItemBucket(); //used for binary search to avoid creating a new bucket each time (efficiency)
+    private final static ItemBucket dummyForSearch = new ItemBucket(); //used for binary search to avoid creating a new bucket each time (efficiency)
 
     /**
      * only used to create a empty bucket when searching for hashValues
@@ -145,7 +149,10 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
     }
 
     private ItemBucket getOwnerBucket() {
-        return (ItemBucket) getOwner();
+//        return (ItemBucket) getOwner();
+        ParseObject ownerList = getParseObject(PARSE_OWNER);
+        //NB: don't fetch this owner in DAO because ItemBuckets are never saved!
+        return (ItemBucket) ownerList;
     }
 
     Date getStartTime() {
@@ -404,7 +411,6 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
 //        }
 //        return null;
 //    }
-
     @Override
     public List getWorkSlotsFromParseN() {
         if (level == 0) { //I'm the top-level bucket
@@ -423,11 +429,15 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
 //            if (hash != null) { //hash!=null => there are sub-buckets so sum up their worktime
                 List<WorkSlot> wslots = new ArrayList();
                 for (ItemBucket bucket : (List<ItemBucket>) getListFull()) {
+                    ASSERT.that(bucket.hashValue instanceof ItemList,
+                            () -> "bucket.hashValue NOT instanceof ItemList, hashValue=" + bucket.hashValue);
 //                    List<WorkSlot> ws = ((ItemList) bucket.hashValue).getWorkSlotsFromParseN(); //we're only adding the worksltos previously stored in ItemBucket
-                    List<WorkSlot> ws = ((ItemList) bucket.hashValue).getWorkSlots(getStartTime(), getEndTime()); //we're only adding the worksltos previously stored in ItemBucket
-                    if (ws != null) {
+                    if (bucket.hashValue != null) { //bucket.hashValue may be null, eg for bucket No Category
+                        List<WorkSlot> ws = ((ItemList) bucket.hashValue).getWorkSlots(getStartTime(), getEndTime()); //we're only adding the worksltos previously stored in ItemBucket
+                        if (ws != null) {
 //                        wslots.addAll(((ItemList) bucket.hashValue).getWorkSlotsFromParseN()); //we're only adding the worksltos previously stored in ItemBucket
-                        wslots.addAll(ws); //we're only adding the worksltos previously stored in ItemBucket
+                            wslots.addAll(ws); //we're only adding the worksltos previously stored in ItemBucket
+                        }
                     }
                 }
                 return wslots;
@@ -464,5 +474,15 @@ public class ItemBucket extends ItemList {//implements ItemAndListCommonInterfac
 //        return 0;
 //</editor-fold>
         return WorkSlot.getWorkTimeSum(getWorkSlotsFromParseN());
+    }
+
+    public List<E> getListFull() {
+        List<E> list = getList(PARSE_ITEMS);
+        if (list != null) {
+            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list, true); //optimization?? heavy operation, any way (OTHER than caching which does work
+        } else {
+            list = new ArrayList();
+        }
+        return list;
     }
 }

@@ -30,6 +30,9 @@ public abstract class Config {
     public static final boolean TEST_STORE_PASSWORD_FOR_USER = true && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_BACKGR = false && !PRODUCTION_RELEASE; //false;
     public static final boolean CHECK_OWNERS = false && !PRODUCTION_RELEASE; //false;
+    
+    public static final boolean REPAIR = true && !PRODUCTION_RELEASE; //false;
+    
     public static final boolean TEST_DRAG_AND_DROP = true && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_PINCH = true && !PRODUCTION_RELEASE; //false;
     public static final int TEST_PINCH_SCR_WIDTH_PERCENT = 10; //% of right-hand side of screen where a touch is programatically converted to a pinch

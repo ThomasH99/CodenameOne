@@ -566,6 +566,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //</editor-fold>
         if (oldRepeatRule == null) { //setting a RR for the first time
             if (newRepeatRuleN != null && newRepeatRuleN.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
+                newRepeatRuleN.addOriginatorToRule(this);
                 newRepeatRuleN.setUpdatePending(true);
                 setRepeatRuleInParse(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
             } else {
@@ -1666,14 +1667,14 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        }
 //    }
 //</editor-fold>
-    @Override
-//    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface orgInstance, RepeatRuleObjectInterface repeatRuleObject) {
-    public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface workSlotRepeatCopy) {
-        ItemAndListCommonInterface owner = getOwner();
-        owner.addWorkSlot((WorkSlot) workSlotRepeatCopy);
-//        DAO.getInstance().saveInBackground((ParseObject) workSlotRepeatCopy);
-        return owner;
-    }
+//    @Override
+////    public void insertIntoListAndSaveListAndInstance(RepeatRuleObjectInterface orgInstance, RepeatRuleObjectInterface repeatRuleObject) {
+//    public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface workSlotRepeatCopy) {
+//        ItemAndListCommonInterface owner = getOwner();
+//        owner.addWorkSlot((WorkSlot) workSlotRepeatCopy);
+////        DAO.getInstance().saveInBackground((ParseObject) workSlotRepeatCopy);
+//        return owner;
+//    }
 
 //    @Override
     public boolean equalsXXX(Object obj) {
@@ -1733,7 +1734,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    }
 //</editor-fold>
     @Override
-    public void updateRepeatInstanceRelativeDates(Date newDueDateTime) {
+    public void updateRelativeDates(Date newDueDateTime) {
         setStartTime(newDueDateTime);
     }
 

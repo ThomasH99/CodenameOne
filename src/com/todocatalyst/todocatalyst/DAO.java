@@ -151,7 +151,10 @@ public class DAO {
                 cacheWorkSlots.put(parseObject.getGuid(), parseObject);
             } else {
 //                ASSERT.that(parseObject.getObjectIdP() != null, () -> "cachPut of parseObject with objectIdP==null, parseObject=" + parseObject);
-                ASSERT.that((parseObject instanceof ItemAndListCommonInterface || parseObject instanceof RepeatRuleParseObject));
+                if (Config.TEST) {
+                    ASSERT.that((parseObject instanceof ItemAndListCommonInterface
+                            || parseObject instanceof RepeatRuleParseObject || parseObject instanceof FilterSortDef));
+                }
 //                cache.put(parseObject.getObjectIdP(), parseObject); //will override any previously put object with same ojectId
                 cache.put(parseObject.getGuid(), parseObject); //will override any previously put object with same ojectId
             }
@@ -787,6 +790,10 @@ public class DAO {
 //    }
 //</editor-fold>
     public List fetchListElementsIfNeededReturnCachedIfAvail(List list) {
+        return fetchListElementsIfNeededReturnCachedIfAvail(list, false);
+    }
+
+    public List fetchListElementsIfNeededReturnCachedIfAvail(List list, boolean dontFetchFromParse) {
         if (Config.TEST) {
             ASSERT.that((list != null), "updating null list from cache");
         }
@@ -802,7 +809,7 @@ public class DAO {
                 list.remove(i);
                 size--;
             } else {
-                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) val));
+                list.set(i, fetchIfNeededReturnCachedIfAvail((ParseObject) val, dontFetchFromParse));
                 if (Config.TEST) {
                     ASSERT.that(list.get(i) != null, () -> "null returned from cache for object=" + val + "; for list=" + list);
                 }
@@ -997,6 +1004,18 @@ public class DAO {
 //    }
 //</editor-fold>
     public ParseObject fetchIfNeededReturnCachedIfAvail(ParseObject parseObjectWithGuid) {
+        return fetchIfNeededReturnCachedIfAvail(parseObjectWithGuid, false);
+    }
+
+    /**
+     *
+     * @param parseObjectWithGuid
+     * @param dontFetchFromParse only fetch list elements from cache (e.g. for
+     * temporary lists build for Statistics where all elements must already be
+     * local or are 'artificial' elements created locally!)
+     * @return
+     */
+    public ParseObject fetchIfNeededReturnCachedIfAvail(ParseObject parseObjectWithGuid, boolean dontFetchFromParse) {
         if (parseObjectWithGuid == null) { //normal with null, for all potential references like to Source which is often undefined/empty
 //            ASSERT.that("fetchIfNeededReturnCachedIfAvail called with null");
             return null;
@@ -1031,12 +1050,13 @@ public class DAO {
         if ((temp = (ParseObject) cacheGet(parseObjectWithGuid)) != null) {
             return temp;
 //        } else if (parseObject instanceof WorkSlot) {
-
+        } else if (dontFetchFromParse) { //if not in cache and not supposed to fetch in Parse, then simply use the object itself
+            return parseObjectWithGuid;
         } else {
             ASSERT.that(parseObjectWithGuid.getObjectIdP() != null, () -> "trying to fetch a parseObject with NO objId= " + parseObjectWithGuid);
             try {
                 parseObjectWithGuid.fetchIfNeeded();
-                ASSERT.that(cacheGet(parseObjectWithGuid) == null, "");
+                ASSERT.that(cacheGet(parseObjectWithGuid) == null, () -> "just fetched parseObjectWithGuid ALREADY in cache, =" + parseObjectWithGuid);
                 if (Config.TEST) {
                     if (parseObjectWithGuid instanceof ItemAndListCommonInterface) {
                         ASSERT.that(!((ItemAndListCommonInterface) parseObjectWithGuid).isSoftDeleted(), () -> "DAO.fetch from Parse of soft-deleted object:" + parseObjectWithGuid);
@@ -2456,7 +2476,25 @@ public class DAO {
 //        query.orderByDescending(Item.PARSE_CREATED_AT); //assuming TimerInstances are necessarily created in the order they appear (and interrupt previous tiemrs)
         query.orderByAscending(Item.PARSE_CREATED_AT); //assuming TimerInstances are necessarily created in the order they appear (and interrupt previous tiemrs)
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
-        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+
+        query.include(TimerInstance.PARSE_LIST);
+        query.include(TimerInstance.PARSE_PROJECT);
+        query.include(TimerInstance.PARSE_TIMED_ITEM);
+        query.selectKeys(Arrays.asList(
+                TimerInstance.PARSE_LIST + "." + ParseObject.GUID,
+                TimerInstance.PARSE_PROJECT + "." + ParseObject.GUID,
+                TimerInstance.PARSE_TIMED_ITEM + "." + ParseObject.GUID,
+                //
+                ParseObject.GUID,
+                //
+                TimerInstance.PARSE_TIMER_ELAPSED_TIME,
+                TimerInstance.PARSE_TIMER_FULL_SCREEN,
+                TimerInstance.PARSE_TIMER_START_TIME,
+                TimerInstance.PARSE_TIMER_TIME_EVEN_INVALID_ITEMS,
+                TimerInstance.PARSE_TIMER_WAS_RUNNING_WHEN_INTERRUPTED
+        ));
+
+//        query.whereDoesNotExist(Item.PARSE_DELETED_DATE); //not used for Timers
         try {
             results = query.find();
         } catch (ParseException ex) {
@@ -4778,8 +4816,9 @@ public class DAO {
             boolean referencesUnsavedParseObjects = false;
 
             //OWNER
-            ItemAndListCommonInterface owner = item.getOwner();
-            if (owner != null) {// && owner.needsSaving()) {
+            {
+                ItemAndListCommonInterface owner = item.getOwner();
+                if (owner != null) {// && owner.needsSaving()) {
 //                if (false) {
 //                    if (owner instanceof Item) {
 //                        saveItemNew3((Item) owner, saveList);
@@ -4787,28 +4826,29 @@ public class DAO {
 //                        saveItemListNew3((ItemList) owner, saveList);
 //                    }
 //                }
-                if (owner instanceof Item) {
-                    saveItemNew3((Item) owner, saveList);
-                } else {
-                    saveItemListNew3((ItemList) owner, saveList);
-                }
-                if (owner.isNotCreated()) {
-                    referencesUnsavedParseObjects = true;
-                    if (isNotCreated) {
-                        if (owner instanceof Item) {
-                            item.setOwnerItem(null, false, false);
-                            afterParseUpdate.add(() -> {
-                                item.setOwnerItem((Item) owner, false, false);
-                            });
-                        } else {
-                            if (Config.TEST) {
-                                ASSERT.that(owner instanceof ItemList, "If Owner not an Item it should always be an ItemList, owner=" + owner);
+                    if (owner instanceof Item) {
+                        saveItemNew3((Item) owner, saveList);
+                    } else {
+                        saveItemListNew3((ItemList) owner, saveList);
+                    }
+                    if (owner.isNotCreated()) {
+                        referencesUnsavedParseObjects = true;
+                        if (isNotCreated) {
+                            if (owner instanceof Item) {
+                                item.setOwnerItem(null, false, false);
+                                afterParseUpdate.add(() -> {
+                                    item.setOwnerItem((Item) owner, false, false);
+                                });
+                            } else {
+                                if (Config.TEST) {
+                                    ASSERT.that(owner instanceof ItemList, "If Owner not an Item it should always be an ItemList, owner=" + owner);
+                                }
+                                item.setOwner(null);
+                                //after owner has been saved, then add it back as owner and save item with owner
+                                afterParseUpdate.add(() -> {
+                                    item.setOwner(owner);
+                                });
                             }
-                            item.setOwner(null);
-                            //after owner has been saved, then add it back as owner and save item with owner
-                            afterParseUpdate.add(() -> {
-                                item.setOwner(owner);
-                            });
                         }
                     }
                 }
@@ -6347,6 +6387,13 @@ public class DAO {
     private boolean cacheAllItemsFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         List<Item> results = getAllItemsFromParse(reloadUpdateAfterThis, now);
+//        if (Config.REPAIR_DATA) {
+//            for (Item item : results) {
+//                if (item.getOwner()== item) {
+//                    item.setOwner(Inbox.getInstance());
+//                }
+//            }
+//        }
         cacheList(results);
         return !results.isEmpty();
     }
@@ -6399,16 +6446,19 @@ public class DAO {
     private List<RepeatRuleParseObject> getAllRepeatRulesFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         ParseQuery<RepeatRuleParseObject> query = ParseQuery.getQuery(RepeatRuleParseObject.CLASS_NAME);
-        query.whereGreaterThan(Item.PARSE_UPDATED_AT, reloadUpdateAfterThis);
-        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
+        query.whereGreaterThan(RepeatRuleParseObject.PARSE_UPDATED_AT, reloadUpdateAfterThis);
+        query.whereLessThanOrEqualTo(RepeatRuleParseObject.PARSE_UPDATED_AT, now);
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
-        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+        query.whereDoesNotExist(RepeatRuleParseObject.PARSE_DELETED_DATE);
 //        query.selectKeys(Arrays.asList(ParseObject.GUID));
         query.include(RepeatRuleParseObject.PARSE_UNDONE_INSTANCES);
         query.include(RepeatRuleParseObject.PARSE_DONE_INSTANCES);
-        query.selectKeys(Arrays.asList(RepeatRuleParseObject.PARSE_UNDONE_INSTANCES + "." + ParseObject.GUID,
+        query.selectKeys(Arrays.asList(
+                RepeatRuleParseObject.PARSE_UNDONE_INSTANCES + "." + ParseObject.GUID,
                 RepeatRuleParseObject.PARSE_DONE_INSTANCES + "." + ParseObject.GUID,
+                //
                 ParseObject.GUID,
+                //
                 RepeatRuleParseObject.PARSE_COUNT,
                 //                RepeatRuleParseObject.PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR_XXX,
                 //                RepeatRuleParseObject.PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR_XXX,
@@ -7102,10 +7152,12 @@ public class DAO {
             if (Config.TEST) {
                 List toSaveListTest = (List<ParseObject>) Storage.getInstance().readObject("SaveList");
                 int i = 0;
-                if (Objects.equals(toSaveListTest, saveList)) {
-                    Log.p("Lists equals");
-                } else {
-                    Log.p("Lists NOT equals, saveList=" + saveList + "; toSaveListTest=" + toSaveListTest);
+                if (false) {
+                    if (Objects.equals(toSaveListTest, saveList)) {
+                        Log.p("Lists equals");
+                    } else {
+                        Log.p("Lists NOT equals, saveList=" + saveList + "; toSaveListTest=" + toSaveListTest);
+                    }
                 }
             }
             Storage.getInstance().writeObject("SaveList", saveList); //save

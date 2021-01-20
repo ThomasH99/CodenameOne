@@ -346,18 +346,18 @@ StatusBar {
     /*cn1-derive: Button;/**/
     /*cn1-derive: Container;/**/
     /*color: blue;/**/
-    /*padding-top: 2mm;  /*no longer needed on iphone 10 with safeArea*/
+    padding-top: 0mm;  /*no longer needed on iphone 10 with safeArea
     /*    padding-bottom: 3mm; */
 
     background-color: transparent;/**/
 }
+
 StatusBarZeroSize {
     /*cn1-derive: Button;/**/
     /*cn1-derive: Container;/**/
     /*color: blue;/**/
     /*padding-top: 2mm;  /*no longer needed on iphone 10 with safeArea*/
     /*    padding-bottom: 3mm; */
-
     margin: 0;
     padding: 0;
     background-color: transparent;/**/
@@ -365,6 +365,8 @@ StatusBarZeroSize {
 
 StatusBarButton { /*the 'virtual' button in the statusbar that catches clicks to scroll to top/bottom/swithc position */
     cn1-derive: StatusBar;
+    padding: 3mm 0mm;
+    background-color: blue;/**/
 }
 
 Toolbar {
@@ -384,8 +386,8 @@ Toolbar {
     background-color: red;
 }*/
 
-FormTitle {
-    cn1-derive: Label; /*Button;*/
+FormTitle { 
+    /*cn1-derive: Label; Button;*/
     /*font-size: 120%; /**/
     font-size: 100%; /**/
     color: black; /*#333333; /*blue;/**/

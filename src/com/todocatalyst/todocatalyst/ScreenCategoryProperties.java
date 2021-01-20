@@ -70,6 +70,8 @@ public class ScreenCategoryProperties extends MyForm {
         setLayout(new BoxLayout(BoxLayout.Y_AXIS));
         setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
 
+//        previousValues = new SaveEditedValuesLocally(getUniqueFormId());
+
         addCommandsToToolbar(getToolbar());//, theme);
 
 //        setCheckOnExit(()->checkCategoryIsValidForSaving(this.category));
@@ -155,16 +157,16 @@ public class ScreenCategoryProperties extends MyForm {
 //        Command backCmd = makeDoneUpdateWithParseIdMapCommand();
 //        backButton = new Button(backCmd);
 //        toolbar.addCommandToLeftBar(backCmd);
-//</editor-fold>
 //        toolbar.setBackCommand(backCommand = makeDoneUpdateWithParseIdMapCommand());
 //        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
 //        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
+//</editor-fold>
         addStandardBackCommand();
 
 //        //DELETE
+////<editor-fold defaultstate="collapsed" desc="comment">
 //        if (category.getObjectIdP() != null) { //only Delete categories already on Parse, not one you're just creating (use Cancel instead)
 //            toolbar.addCommandToOverflowMenu(CommandTracked.createMaterial("Delete", Icons.iconDelete, (e) -> {
-////<editor-fold defaultstate="collapsed" desc="comment">
 ////            Log.p("Clicked");
 ////            item.revert(); //forgetChanges***/refresh
 ////            previousForm.showBack(); //drop any changes
@@ -174,12 +176,11 @@ public class ScreenCategoryProperties extends MyForm {
 //////            previousForm.revalidate();
 ////            previousForm.showBack(); //drop any changes
 ////            showPreviousScreenOrDefault(previousForm, true);
-////</editor-fold>
 //                DAO.getInstance().delete(category, false, true);
 //                showPreviousScreen(true);
 //            }));
 //        }
-
+////</editor-fold>
         //CANCEL
         if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
 //            toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
@@ -249,7 +250,7 @@ public class ScreenCategoryProperties extends MyForm {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container content) {
         parseIdMap2.parseIdMapReset();
-        
+
         boolean hide = MyPrefs.hideIconsInEditTaskScreen.getBoolean();
 
 //        Container content = new Container();
@@ -307,13 +308,13 @@ public class ScreenCategoryProperties extends MyForm {
         //CREATED
         Label createdDate = new Label(category.getCreatedAt() == null || category.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getCreatedAt()));
 //        content.add(new Label(Item.CREATED_DATE)).add(createdDate);
-        content.add(layoutN(Item.CREATED_DATE, createdDate, "**", true,hide ? null : Icons.iconCreatedDate));
-        
-    //MODIFIED
+        content.add(layoutN(Item.CREATED_DATE, createdDate, "**", true, hide ? null : Icons.iconCreatedDate));
+
+        //MODIFIED
         Label lastModifiedDate = new Label(category.getUpdatedAt() == null || category.getUpdatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getUpdatedAt()));
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**", true,hide ? null : Icons.iconModifiedDate));
-        
+        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**", true, hide ? null : Icons.iconModifiedDate));
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
 //            //TODO!! make the validator work, e.g. show Toastbar message
@@ -345,7 +346,7 @@ public class ScreenCategoryProperties extends MyForm {
 //</editor-fold>
         if (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(category.getObjectIdP() == null ? "<set on save>" : category.getObjectIdP(), "ScreenItemValueUneditable");
-            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true,hide ? null : Icons.iconObjectId));
+            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hide ? null : Icons.iconObjectId));
         }
 
         setCheckIfSaveOnExit(()

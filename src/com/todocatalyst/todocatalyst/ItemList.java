@@ -1226,13 +1226,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public boolean addToList(int index, ItemAndListCommonInterface subtask, boolean addAsOwner) {
-        return addItemAtIndex((E) subtask, index, addAsOwner);
+    public boolean addToList(int index, ItemAndListCommonInterface itemOrListToAdd, boolean addAsOwner) {
+        return addItemAtIndex((E) itemOrListToAdd, index, addAsOwner);
     }
 
-    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList, boolean addAsOwner) {
+    public boolean addToList(ItemAndListCommonInterface itemOrListToAdd, boolean addToEndOfList, boolean addAsOwner) {
 //        addToList( subItemOrList,MyPrefs.getBoolean(MyPrefs.insertNewItemsInStartOfLists));
-        addItemAtIndex((E) subItemOrList, addToEndOfList ? getSize() : 0, addAsOwner);
+        addItemAtIndex((E) itemOrListToAdd, addToEndOfList ? getSize() : 0, addAsOwner);
 //        if (addAsOwner && !isNoSave()) { //never override owner temporary lists as owner
 //            subItemOrList.setOwner(this);
 //        }
@@ -1240,25 +1240,25 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public boolean addToList(ItemAndListCommonInterface subItemOrList, boolean addToEndOfList) {
-        return addToList(subItemOrList, addToEndOfList, true);
+    public boolean addToList(ItemAndListCommonInterface itemOrListToAdd, boolean addToEndOfList) {
+        return addToList(itemOrListToAdd, addToEndOfList, true);
     }
 
-    public boolean addToList(ItemAndListCommonInterface subItemOrList) {
-        return addToList(subItemOrList, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+    public boolean addToList(ItemAndListCommonInterface itemOrListToAdd) {
+        return addToList(itemOrListToAdd, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
     }
 
     @Override
-    public boolean removeFromList(ItemAndListCommonInterface subItemOrList, boolean removeReferences) {
+    public boolean removeFromList(ItemAndListCommonInterface itemOrListToAdd, boolean removeReferences) {
 //        List subtasks = getList();
 //        boolean status = subtasks.remove(subtask);
 //        setList(subtasks);
 //        return status;
-        boolean removed = removeItem(subItemOrList); //TODO: update removeItem to return boolean
+        boolean removed = removeItem(itemOrListToAdd); //TODO: update removeItem to return boolean
 //        assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subItemOrList=" + subItemOrList + ", owner=" + getOwner() + ", list=" + this;
-        ASSERT.that(!(this instanceof ItemList) || subItemOrList.getOwner() == this, () -> "list not owner of removed subItemOrList (" + subItemOrList + "), owner=" + getOwner() + ", list=" + this); //
+        ASSERT.that(!(this instanceof ItemList) || itemOrListToAdd.getOwner() == this, () -> "list not owner of removed subItemOrList (" + itemOrListToAdd + "), owner=" + getOwner() + ", list=" + this); //
         if (removed && removeReferences) {
-            subItemOrList.setOwner(null);
+            itemOrListToAdd.setOwner(null);
         }
         return removed;
     }
@@ -1742,7 +1742,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public FilterSortDef getFilterSortDefN() {
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
-        if (filterSortDef != null) {
+        if (filterSortDef != null&&!isNoSave()) { //don't try to fetch filters for noSave lists
             filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
         }
         return filterSortDef;

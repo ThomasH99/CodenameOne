@@ -669,7 +669,7 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
                 Item itemOwner = (Item) ownerItemItemListOrCategory;
                 boolean notAProject = !itemOwner.isProject();
 //                long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(notAProject); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
-                long remainingPrjTask = itemOwner.getRemainingForTask(); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
+                long remainingPrjTask = itemOwner.getRemainingForTaskItself(); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
                 if (remainingPrjTask > 0 || notAProject) {
                     WorkTimeSlices newWorkTS = workTimeSlices.getWorkTime(remainingPrjTask, ownerItemItemListOrCategory);
                     if (newWorkTS != null) {

@@ -68,11 +68,11 @@ public class MyCheckBox extends Button {
     }
 
     public MyCheckBox(ItemStatus itemStatus) {//, IsItemOngoing itemOngoing) {
-        this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null,false);
+        this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null, false);
     }
 
     public MyCheckBox(ItemStatus itemStatus, boolean makeInactive) {//, IsItemOngoing itemOngoing) {
-        this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null,makeInactive);
+        this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null, makeInactive);
     }
 
 //    public MyCheckBox(Item item, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler) {
@@ -183,7 +183,7 @@ public class MyCheckBox extends Button {
         this.statusChangeHandler = statusChangeHandler;
 
 //Handle single-click
-        if (!inactive)
+        if (!inactive) {
             addActionListener((evt) -> {
                 if (this.activateFullMenuOnSingleClick) {
                     selectNewStatusOnSingleClick();
@@ -211,6 +211,7 @@ public class MyCheckBox extends Button {
                     }
                 }
             });
+        }
     }
 
     public String toString() {
@@ -289,7 +290,9 @@ public class MyCheckBox extends Button {
         Button b = new Button(new Command(cmdName) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                ev.actionPerformed(evt);
+                if (!inactive) {
+                    ev.actionPerformed(evt);
+                }
             }
         });
 //        b.setUIID();
@@ -302,7 +305,9 @@ public class MyCheckBox extends Button {
         Button b = new Button(new Command(cmdName) {
             @Override
             public void actionPerformed(ActionEvent evt) {
-                ev.actionPerformed(evt);
+                if (!inactive) {
+                    ev.actionPerformed(evt);
+                }
             }
         });
 //        b.setUIID();
@@ -445,8 +450,9 @@ public class MyCheckBox extends Button {
 //            }
 //        };
 //</editor-fold>
-        if (!inactive)
+        if (!inactive) {
             selectNewStatusOnSingleClick();
+        }
 //        fireActionEvent(x, y); //ensure that longPress to select any new status will trigger updates //NECESSARY? Or will the pointerReleased trigger a normal actionEvent?
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        d = new Dialog("Select");
