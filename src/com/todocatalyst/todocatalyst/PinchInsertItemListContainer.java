@@ -224,7 +224,8 @@ public class PinchInsertItemListContainer extends PinchInsertContainer  {
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(this);
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
         if (true||stopAddingInlineContainers) {
-            if(false)myForm.setPinchInsertContainer(null); //remove this as inlineContainer
+//            if(false)
+                myForm.setPinchInsertContainer(null); //remove this as inlineContainer
 //            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
             myForm.previousValues.removePinchInsertKeys(); //delete the marker on exit
 //            ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated

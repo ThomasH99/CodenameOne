@@ -362,12 +362,12 @@ public class ScreenItem2 extends MyForm {
 //            DAO.getInstance().saveItem3(itemOrg);
 //            DAO.getInstance().triggerParseUpdate();
 //        }
-        super.updateOnExit();
-        if (itemOrg.hasUserModifiedData()) {
+        if (itemOrg.hasUserModifiedData()) { //update Edited date before anything else
 //        if (userModifiedData) {
             itemOrg.setEditedDateToNow();
 //            userModifiedData=false;
         }
+        super.updateOnExit();
         DAO.getInstance().saveToParseNow(itemOrg);
     }
 
@@ -379,6 +379,7 @@ public class ScreenItem2 extends MyForm {
         getContentPane().removeAll(); //clear old content pane
         buildContentPane(getContentPane()); //rebuild and removeFromCache
         super.refreshAfterEdit();
+        refresh = new ArrayList<Runnable>(); //initiate to automatically refresh all fields on edit of item
 //        revalidate(); //refresh form
 //        restoreKeepPos();
         //TODO!!!! restore scroll position in expanded list of subtasks 
@@ -1884,7 +1885,8 @@ public class ScreenItem2 extends MyForm {
 
         //DESCRIPTION
         if (false) {
-            description.addActionListener((e) -> {
+//            description.addActionListener((e) -> {
+            description.setDoneListener((e) -> {
 //            setTitle(getScreenTitle(item.isTemplate(), description.getText()));
                 Item.EstimateResult res = Item.getEffortEstimateFromTaskText(description.getText(), false);
                 //TODO!!! create a function that will determine when to any of the user setting baesd on the values in description string
@@ -2163,7 +2165,7 @@ public class ScreenItem2 extends MyForm {
                 () -> startByDate.getDate(),
                 (d) -> startByDate.setDate((Date) d),
                 () -> itemCopy.isStartByDateInherited(startByDate.getDate()));
-        mainCont.add(layoutN(Item.START_BY_TIME, startByDate, Item.START_BY_TIME_HELP, hideIcons ? null : Icons.iconStartByDate));
+        mainCont.add(layoutN(Item.START_BY_TIME, startByDate, Item.START_BY_TIME_HELP, hideIcons ? null : Icons.iconStartByDateCust, Icons.myIconFont));
 //        updateUIIDForInherited(startByDate, itemCopy.isStartByDateInherited(startByDate.getDate()));
 
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(addDatePickerWithClearButton(startByDate));
@@ -2626,7 +2628,8 @@ public class ScreenItem2 extends MyForm {
             editSubtasks.setText(totalNumberSubtasks == 0 ? "" : "" + numberUndoneSubtasks + "/" + totalNumberSubtasks); //set *after* adding command
 //            updateSubtaskButton.run(); //update button label - NB *after* setCommand above, otherwise [3/3] not shown
 
-            mainCont.add(layoutN(Item.SUBTASKS, editSubtasks, Item.SUBTASKS_HELP, false, hideIcons ? null : Icons.iconEditSubTasks));
+//            mainCont.add(layoutN(Item.SUBTASKS, editSubtasks, Item.SUBTASKS_HELP, false, hideIcons ? null : Icons.iconEditSubTasks));
+            mainCont.add(layoutN(Item.SUBTASKS, editSubtasks, Item.SUBTASKS_HELP, false, hideIcons ? null : Icons.iconEditSubTasksCust, Icons.myIconFont));
         }
 
 //        mainCont.add(makeSpacerThin());
@@ -2844,12 +2847,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (isProject) {
 //            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
             timeCont.addComponent(layoutN(Item.EFFORT_REMAINING_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getRemainingForSubtasks()), "ScreenItemValueUneditable"),
-                    Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconRemainingEffort)); //hack to insert after alarmDate field
+                    Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconRemainingSubCust, Icons.myIconFont)); //hack to insert after alarmDate field
         }
 //TODO: makes no sense to show remaining for project itself, just confusing??
         String remainingTxt = isProject ? Item.EFFORT_REMAINING_PROJECT : Item.EFFORT_REMAINING;
         String remainingHelpTxt = isProject ? Item.EFFORT_REMAINING_PROJECT_HELP : Item.EFFORT_REMAINING_HELP;
-        timeCont.add(layoutN(remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconRemainingEffort)));
+        timeCont.add(layoutN(remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hideIcons ? null : (isProject ? Icons.iconRemainingPrjCust : Icons.iconRemainingCust), Icons.myIconFont));
+//        timeCont.add(layoutN(remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hideIcons ? null : (isProject ? Icons.iconRemainingPrjCust : Icons.iconRemainingCust)));
         if (MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean()) { //only show format as inherited if default value is turned on
             updateUIIDForInherited(remainingEffort, Item.isRemainingDefaultValue(remainingEffort.getDuration()));
         }
@@ -2860,7 +2864,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //if project, show actual for subtasks
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
             timeCont.add(layoutN(Item.EFFORT_ACTUAL_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getActualForSubtasks()), "ScreenItemValueUneditable"),
-                    Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconActualEffort));
+                    Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconActualCurrentSubCust, Icons.myIconFont));
         }
 
         //if single task, show picker with text for single task, if project show picker w text for ProjectTaskItself
@@ -2927,7 +2931,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
 //            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
             timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatDurationStd(itemOrg.getEstimateForSubtasks()), "ScreenItemValueUneditable"),
-                    Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false, Icons.iconActualEffort, Icons.myIconFont));
+                    Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false, Icons.iconEstimateSubCust, Icons.myIconFont));
         }
         String estimateTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT : Item.EFFORT_ESTIMATE;
         String estimateHelpTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT_HELP : Item.EFFORT_ESTIMATE_HELP;
@@ -3001,7 +3005,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> waitingTill.getDate(),
                 (d) -> waitingTill.setDate((Date) d),
                 () -> itemCopy.isWaitingTillInherited(waitingTill.getDate()));
-        timeCont.add(layoutN(Item.WAIT_UNTIL_DATE, waitingTill, Item.WAIT_UNTIL_DATE_HELP, hideIcons ? null : Icons.iconWaitingDateMaterial));
+//        timeCont.add(layoutN(Item.WAIT_UNTIL_DATE, waitingTill, Item.WAIT_UNTIL_DATE_HELP, hideIcons ? null : Icons.iconWaitingDateMaterial));
+        timeCont.add(layoutN(Item.WAIT_UNTIL_DATE, waitingTill, Item.WAIT_UNTIL_DATE_HELP, hideIcons ? null : Icons.iconWaitingDateCust, Icons.myIconFont));
 //        updateUIIDForInherited(waitingTill, itemCopy.isWaitingTillInherited(waitingTill.getDate()));
 
 //        MyDateAndTimePicker waitingAlarm = new MyDateAndTimePicker(parseIdMap2, () -> itemLS.getWaitingAlarmDateD(), (d) -> item.setWaitingAlarmDate(d)); //"<waiting reminder this date>", 
@@ -3015,7 +3020,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        timeCont.add(new Label(Item.WAITING_ALARM_DATE)).add(addDatePickerWithClearButton(waitingAlarm));
 //        timeCont.add(new Label(Item.WAITING_ALARM_DATE)).add(waitingAlarm.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.WAITING_ALARM_DATE, waitingAlarm.makeContainerWithClearButton(), "**"));
-        timeCont.add(layoutN(Item.WAITING_ALARM_DATE, waitingAlarm, Item.WAITING_ALARM_DATE_HELP, hideIcons ? null : Icons.iconWaitingAlarm));
+//        timeCont.add(layoutN(Item.WAITING_ALARM_DATE, waitingAlarm, Item.WAITING_ALARM_DATE_HELP, hideIcons ? null : Icons.iconWaitingAlarm));
+        timeCont.add(layoutN(Item.WAITING_ALARM_DATE, waitingAlarm, Item.WAITING_ALARM_DATE_HELP, hideIcons ? null : Icons.iconWaitingAlarmCust, Icons.myIconFont));
 
 //        MyDateAndTimePicker dateSetWaitingDate = new MyDateAndTimePicker("<set date>", parseIdMap2, () -> item.getDateWhenSetWaitingD(), (d) -> item.setDateWhenSetWaiting(d));
 //        MyDateAndTimePicker dateSetWaitingDate = new MyDateAndTimePicker("", parseIdMap2, () -> itemLS.getDateWhenSetWaitingD(), (d) -> item.setDateWhenSetWaiting(d));
@@ -3086,7 +3092,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        timeCont.add(layout(Item.HIDE_UNTIL, hideUntil.makeContainerWithClearButton(), "**"));
         timeCont.add(layoutN(Item.HIDE_UNTIL, hideUntil, Item.HIDE_UNTIL_HELP, hideIcons ? null : Icons.iconHideUntilDate));
 
-        if (true) {
+        if (false) { //De-activated for now
 //            MyDatePicker expireByDate = new MyDatePicker(parseIdMap2, () -> itemLS.getExpiresOnDateD(), (d) -> item.setExpiresOnDateD(d)); // "<auto-cancel on date>", 
             expiresOnDate = new MyDatePicker(); // "<auto-cancel on date>", 
             initField(Item.PARSE_EXPIRES_ON_DATE, expiresOnDate, () -> itemCopy.getExpiresOnDate(), (t) -> itemOrg.setExpiresOnDate((Date) t),
@@ -3096,7 +3102,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            timeCont.add(new Label(Item.AUTOCANCEL_BY)).add(expireByDate.makeContainerWithClearButton());
 //            timeCont.add(layout(Item.AUTOCANCEL_BY, expireByDate.makeContainerWithClearButton(), "**"));
 //            timeCont.add(layoutN(Item.AUTOCANCEL_BY, expiresOnDate, Item.AUTOCANCEL_BY_HELP, hide ? null : Icons.iconAutoCancelByDate));
-            timeCont.add(layoutN(Item.EXPIRES_ON_DATE, expiresOnDate, Item.EXPIRES_ON_DATE_HELP, hideIcons ? null : Icons.iconAutoCancelByDate));
+//            timeCont.add(layoutN(Item.EXPIRES_ON_DATE, expiresOnDate, Item.EXPIRES_ON_DATE_HELP, hideIcons ? null : Icons.iconAutoCancelByDate));
+            timeCont.add(layoutN(Item.EXPIRES_ON_DATE, expiresOnDate, Item.EXPIRES_ON_DATE_HELP, hideIcons ? null : Icons.iconAutoCancelByDateCust, Icons.myIconFont));
         }
 
         //TAB PRIO
@@ -3119,7 +3126,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        priority = new MyComponentGroup(new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, true);
         priority = new MyComponentGroup(new Integer[]{1, 2, 3, 4, 5, 6, 7, 8, 9},
                 null, //new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, 
-                new char[]{'1', '2', '3', '4', '5', '6', '7', '8', '9'}, Icons.myIconFont, true);
+                new char[]{0x43, '2', '3', '4', '5', '6', '7', '8', '9', ':', ';'}, Icons.myIconFont, true);
         initField(Item.PARSE_PRIORITY, priority,
                 () -> itemCopy.getPriority(),
                 (t) -> itemOrg.setPriority(t != null ? (int) t : 0),
@@ -3232,7 +3239,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(layout(Item.CHALLENGE, FlowLayout.encloseCenterMiddle(challenge), "**", true));
 //        prioCont.add(layout(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP, true, false, true));
 //</editor-fold>
-        prioCont.add(layoutN(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP, hideIcons ? null : Icons.iconChallengeHard));//, null, false, false, true, true));
+//        prioCont.add(layoutN(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP, hideIcons ? null : Icons.iconChallengeEasyCust));//, null, false, false, true, true));
+        prioCont.add(layoutN(Item.CHALLENGE, challenge, Item.CHALLENGE_HELP, hideIcons ? null : Icons.iconChallengeEasyCust, Icons.myIconFont));//, null, false, false, true, true));
         updateUIIDForInherited(challenge, itemCopy.isChallengeInherited(challenge.getSelectedValue() != null ? Challenge.valueOf((String) challenge.getSelectedValue()) : null));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3243,7 +3251,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(layout(Item.FUN_DREAD, FlowLayout.encloseCenterMiddle(dreadFun), Item.FUN_DREAD_HELP));
 //        prioCont.add(layout(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, true, false, true));
 //</editor-fold>
-        dreadFun = new MyComponentGroup(DreadFunValue.getNameList(), DreadFunValue.getDescriptionList(), true);
+//        dreadFun = new MyComponentGroup(DreadFunValue.getNameList(), DreadFunValue.getDescriptionList(), true);
+        dreadFun = new MyComponentGroup(DreadFunValue.getNameList(), DreadFunValue.getDescriptionList(),
+                DreadFunValue.getIconList(), Challenge.getIconFont(), true);
         initField(Item.PARSE_DREAD_FUN_VALUE, dreadFun,
                 () -> itemCopy.getDreadFunValueN() != null ? itemCopy.getDreadFunValueN().name() : null,
                 (enumName) -> itemOrg.setDreadFunValue(enumName != null ? (DreadFunValue.valueOf((String) enumName)) : null),
@@ -3260,7 +3270,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                (enumStr) -> dreadFun.select(enumStr != null ? DreadFunValue.valueOf((String) enumStr).getDescription() : null),
 //                () -> item.isDreadFunInherited((dreadFun.getSelectedString() != null ? DreadFunValue.getValue(dreadFun.getSelectedString()) : null))
 //        );
-        prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, hideIcons ? null : Icons.iconFun));//, null, false, false, true, true));
+//        prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, hideIcons ? null : Icons.iconFun));//, null, false, false, true, true));
+//        prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, hideIcons ? null : Icons.iconFun));//, null, false, false, true, true));
+        prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, hideIcons ? null : Icons.iconFunDreadLabel));//, null, false, false, true, true));
         updateUIIDForInherited(dreadFun, itemCopy.isDreadFunInherited(dreadFun.getSelectedValue() != null ? DreadFunValue.valueOf((String) dreadFun.getSelectedValue()) : null));
 
         prioCont.add(makeSpacerThin());
@@ -3337,11 +3349,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 }
             }
         };
-        earnedValue.addActionListener(earnedValuePerHourUpdater);
-        remainingEffort.addActionListener(earnedValuePerHourUpdater);
-        actualEffortTask.addActionListener(earnedValuePerHourUpdater);
-        earnedValue.addActionListener(earnedValuePerHourUpdater);
-        earnedValuePerHourUpdater.actionPerformed(null); //ensure earned value per hour is updated on each refresh (to reflect e.g. 
+        if (false) {
+            earnedValue.addActionListener(earnedValuePerHourUpdater);
+            remainingEffort.addActionListener(earnedValuePerHourUpdater);
+            actualEffortTask.addActionListener(earnedValuePerHourUpdater);
+            earnedValue.addActionListener(earnedValuePerHourUpdater);
+            earnedValuePerHourUpdater.actionPerformed(null); //ensure earned value per hour is updated on each refresh (to reflect e.g. 
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyActionListener remainingEffortChangeListener = new MyActionListener() {
 //            @Override
@@ -3418,25 +3432,27 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 ////            }
 //        });
 //</editor-fold>
-        remainingEffort.addActionListener((e) -> {
-            //Automatically update Estimate and Remaining when one of them is set (and no value is defined manually). NB. This will only work for the first one being set. 
-            //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
-            //update effort estimate based on remaining (only if estimate item.estimate==0 and no value has been set while editing)
-            if (!remainingEffortSetManually && !remainingEffortSetAutomatically) {
-                remainingEffortSetManually = true; //set on first manual set and keep it (=> no more automatic setting in this round)
-            }
-            if (remainingEffortSetManually && !effortEstimateSetManually
-                    && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
-                    && itemOrg.getEstimateTotal() == 0) { //UI: only allow manual setting if no value was set before
-                effortEstimateSetAutomatically = true;
-                effortEstimate.setDurationAndNotify(remainingEffort.getDuration() + actualEffortTask.getDuration()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated) 
-                effortEstimateSetAutomatically = false;
-                effortEstimate.repaint();
-            }
-            updateUIIDForInherited(remainingEffort,
-                    MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean()
-                    && remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //NB! MUST do *after* layoutN() which sets the UIID
-        });
+        if (false) {
+            remainingEffort.addActionListener((e) -> {
+                //Automatically update Estimate and Remaining when one of them is set (and no value is defined manually). NB. This will only work for the first one being set. 
+                //DONE!! create a Setting to make estimate and remaining follow each other every time they're edited (while no value has been set for the item) - currently the automatic setting of the other only works the first time
+                //update effort estimate based on remaining (only if estimate item.estimate==0 and no value has been set while editing)
+                if (!remainingEffortSetManually && !remainingEffortSetAutomatically) {
+                    remainingEffortSetManually = true; //set on first manual set and keep it (=> no more automatic setting in this round)
+                }
+                if (remainingEffortSetManually && !effortEstimateSetManually
+                        && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean()
+                        && itemOrg.getEstimateTotal() == 0) { //UI: only allow manual setting if no value was set before
+                    effortEstimateSetAutomatically = true;
+                    effortEstimate.setDurationAndNotify(remainingEffort.getDuration() + actualEffortTask.getDuration()); //UI: when auto-updating estimate, any already worked time is automatically added to the estimate (since it is the remaining set *after* actual was updated) 
+                    effortEstimateSetAutomatically = false;
+                    effortEstimate.repaint();
+                }
+                updateUIIDForInherited(remainingEffort,
+                        MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean()
+                        && remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //NB! MUST do *after* layoutN() which sets the UIID
+            });
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyActionListener effortEstimateChangeListener = new MyActionListener() {
 //        ActionListener effortEstimateChangeListener = new ActionListener() {
@@ -3527,27 +3543,29 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 ////            }
 //        });
 //</editor-fold>
-        effortEstimate.addActionListener((e) -> {
-            //only automatically update effort estimate if never defined and not changed in the current editing 
-            if (!effortEstimateSetManually && !effortEstimateSetAutomatically) {
-                effortEstimateSetManually = true; //set on first manual set and keep it (=> no more automatic setting in this round)
-            }
-            if (effortEstimateSetManually && !remainingEffortSetManually
-                    && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean() //&& item.getRemainingEffortNoDefault() == 0
-                    //                    && itemOrg.getRemainingForProjectTaskItselfFromParse() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
-                    //only update Remaining to new Estimate if not changed manually and equal to zero or default value:
-                    //                    && (remainingEffort.getDuration() == itemOrg.getRemainingForProjectTaskItselfFromParse()
-                    //                    && (remainingEffort.getDuration() == 0
-                    //                    || remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS)
-                    ) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
-                remainingEffortSetAutomatically = true;
-                remainingEffort.setDurationAndNotify(effortEstimate.getDuration() - actualEffortTask.getDuration()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
-                remainingEffortSetAutomatically = false;
-                remainingEffort.repaint();
-            }
-            remainingEffort.repaint(); //TEST: moved outside if to see if picker updates on iPhone then!
-        });
-        
+        if (false) {
+            effortEstimate.addActionListener((e) -> {
+                //only automatically update effort estimate if never defined and not changed in the current editing 
+                if (!effortEstimateSetManually && !effortEstimateSetAutomatically) {
+                    effortEstimateSetManually = true; //set on first manual set and keep it (=> no more automatic setting in this round)
+                }
+                if (effortEstimateSetManually && !remainingEffortSetManually
+                        && MyPrefs.updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem.getBoolean() //&& item.getRemainingEffortNoDefault() == 0
+                        //                    && itemOrg.getRemainingForProjectTaskItselfFromParse() == 0) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+                        //only update Remaining to new Estimate if not changed manually and equal to zero or default value:
+                        //                    && (remainingEffort.getDuration() == itemOrg.getRemainingForProjectTaskItselfFromParse()
+                        //                    && (remainingEffort.getDuration() == 0
+                        //                    || remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS)
+                        ) { //update remaining based on estimate(only if item.remaining==0 and no value has been set while editing)
+                    remainingEffortSetAutomatically = true;
+                    remainingEffort.setDurationAndNotify(effortEstimate.getDuration() - actualEffortTask.getDuration()); //UI: when auto-updating remaining, any already worked time is automatically deducted from the estimate
+                    remainingEffortSetAutomatically = false;
+                    remainingEffort.repaint();
+                }
+                remainingEffort.repaint(); //TEST: moved outside if to see if picker updates on iPhone then!
+            });
+        }
+
         //TAB STATUS FIELDS
         Container statusCont = new Container(new BoxLayout(BoxLayout.Y_AXIS));
         if (Config.TEST) {
@@ -3605,14 +3623,15 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                : (item.getOwner() != null ? item.getOwner().getText() : ""));
 //</editor-fold>
         //OWNER
+        if (!templateEditMode) {
 //        MySpanButton editOwnerButton = new MySpanButton();
 //        SpanButton editOwnerButton = new SpanButton();
-        if (Objects.equals(itemOrg.getOwner(), TemplateList.getInstance())) {
-            SpanLabel editOwnerLabel = new SpanLabel(TemplateList.getInstance().getText());
-            statusCont.add(layoutN(Item.BELONGS_TO, editOwnerLabel, Item.BELONGS_TO_HELP, false, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+            if (Objects.equals(itemOrg.getOwner(), TemplateList.getInstance())) {
+                SpanLabel editOwnerLabel = new SpanLabel(TemplateList.getInstance().getText());
+                statusCont.add(layoutN(Item.BELONGS_TO, editOwnerLabel, Item.BELONGS_TO_HELP, false, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 
-        } else {
-            SpanButton editOwnerButton = new SpanButton();
+            } else {
+                SpanButton editOwnerButton = new SpanButton();
 
 //            ActionListener<ActionEvent> refreshOwnerButtonXXX = (e) -> {
 //                String ownerStr
@@ -3621,34 +3640,34 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                        : (itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
 //                editOwnerButton.setText(ownerStr);
 //            };
-            editOwnerButton.setText(itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
+                editOwnerButton.setText(itemOrg.getOwner() != null ? itemOrg.getOwner().getText() : "");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            final Command editOwnerCmd = Command.create(item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = new Command(item.getOwner() == null ? "<no owner>" : item.getOwner().getText()) {
 //        Command editOwnerCmd = MyReplayCommand.create("EditOwner", item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
 //        Command editOwnerCmd = Command.create(item.getOwner() == null ? "" : item.getOwner().getText(), null, (e) -> {
 //</editor-fold>
-            Command editOwnerCmd = MyReplayCommand.create("EditOwner", null, null, (e) -> {
-                List projects = DAO.getInstance().getAllProjects(false); //TODO optimization: slow to fetch all projects each time!
-                projects.remove(itemOrg); //Must not be possible to select the item itself as its own owner. NB to modify the list since not used elsewhere (new created in DAO)
+                Command editOwnerCmd = MyReplayCommand.create("EditOwner", null, null, (e) -> {
+                    List projects = DAO.getInstance().getAllProjects(false); //TODO optimization: slow to fetch all projects each time!
+                    projects.remove(itemOrg); //Must not be possible to select the item itself as its own owner. NB to modify the list since not used elsewhere (new created in DAO)
 
-                //cconvert list of ObjectId to list of actual owners (well, 0 or 1 owner)
+                    //cconvert list of ObjectId to list of actual owners (well, 0 or 1 owner)
 //            List<ItemAndListCommonInterface> locallyEditedOwner
 //                    = (previousValues != null && previousValues.getOwnersN() != null)
 //                    ? previousValues.getOwnersN() //use previous selection (either new owner or previous owner was unselected
 //                    : new ArrayList(Arrays.asList(itemOrg.getOwner())); //fetch the actual owner 
-                List<ItemAndListCommonInterface> locallyEditedOwner = new ArrayList(Arrays.asList(itemOrg.getOwner())); //fetch the actual owner 
+                    List<ItemAndListCommonInterface> locallyEditedOwner = new ArrayList(Arrays.asList(itemOrg.getOwner())); //fetch the actual owner 
 
 //            ItemAndListCommonInterface previousOwner = locallyEditedOwner.get(0);
-                ScreenObjectPicker ownerPicker = new ScreenObjectPicker("Select " + Item.OWNER /*+ " for " + item.getText()*/,
-                        ItemListList.getInstance(),
-                        projects,
-                        //                    itemOrg.getOwner(), 
-                        locallyEditedOwner,
-                        ScreenItem2.this,
-                        () -> {
-                            if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
-                                ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
+                    ScreenObjectPicker ownerPicker = new ScreenObjectPicker("Select " + Item.OWNER /*+ " for " + item.getText()*/,
+                            ItemListList.getInstance(),
+                            projects,
+                            //                    itemOrg.getOwner(), 
+                            locallyEditedOwner,
+                            ScreenItem2.this,
+                            () -> {
+                                if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
+                                    ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                            if (false) {
 //                                if (selectedOwner.equals(itemOrg.getOwner())) {
@@ -3666,23 +3685,23 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                                }
 //                            }
 //</editor-fold>
-                                itemOrg.setOwner(selectedOwner);
-                            } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
-                                //SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected
+                                    itemOrg.setOwner(selectedOwner);
+                                } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
+                                    //SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected
 //                                ASSERT.that("SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected");
 //                                if (itemOrg.getOwner() == null) {
 //                                    previousValues.removeOwners(); //remove previousValue, e.g. no owner before, none selected now
 //                                } else {
 //                                    previousValues.putOwners(locallyEditedOwner); //store empty list (e.g. if previous owner was deselected)
 //                                }
-                                ASSERT.that(false, "should not be possible to not select an owner");
-                            }
-                            editOwnerButton.setText(itemOrg.getOwner().getText());
-                        }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
-                ownerPicker.show();
-            }
-            );
-            editOwnerButton.setCommand(editOwnerCmd);
+                                    ASSERT.that(false, "should not be possible to not select an owner");
+                                }
+                                editOwnerButton.setText(itemOrg.getOwner().getText());
+                            }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
+                    ownerPicker.show();
+                }
+                );
+                editOwnerButton.setCommand(editOwnerCmd);
 //        refreshOwnerButton.actionPerformed(null); //set button text *after* setting command
 //            if (false) {
 //                parseIdMap2.put(Item.PARSE_OWNER_ITEM, () -> {
@@ -3703,8 +3722,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                    } //else: no change made to original owner so nothing to do!
 //                });
 //            }
-            //previousValues stores the ObjectId of the owner, not the owner itself!
-            //NB! Item.PARSE_OWNER_ITEM is used to index previousValues, but owner can also be Item.PARSE_OWNER_LIST, but not Item.PARSE_OWNER_TEMPLATE_LIST
+                //previousValues stores the ObjectId of the owner, not the owner itself!
+                //NB! Item.PARSE_OWNER_ITEM is used to index previousValues, but owner can also be Item.PARSE_OWNER_LIST, but not Item.PARSE_OWNER_TEMPLATE_LIST
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        initField(Item.PARSE_OWNER_ITEM, editOwnerButton, () -> item.getOwner(), (o) -> item.setOwner((ItemAndListCommonInterface) o),
 //                () -> {
@@ -3724,7 +3743,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                });
 //        statusCont.add(layout(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, true, false, false)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //</editor-fold>
-            statusCont.add(layoutN(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, false, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+                statusCont.add(layoutN(Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, false, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+            }
         }
         statusCont.add(makeSpacerThin());
 
@@ -3736,10 +3756,10 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (itemOrg.isProject()) {
             long lastEditedSubtasks = itemOrg.getEditedDateProjectOrSubtasks().getTime();
             Label lastEditedDateSubtasks = new Label(lastEditedSubtasks == 0 ? "" : MyDate.formatDateTimeNew(lastEditedSubtasks));
-            statusCont.add(layoutN(Item.EDITED_DATE, lastEditedDateSubtasks, "**", true, hideIcons ? null : Icons.iconModifiedDate));
+            statusCont.add(layoutN(Item.EDITED_DATE, lastEditedDateSubtasks, "**", true, hideIcons ? null : Icons.iconEditedDate));
         } else {
             Label lastEditedDate = new Label(itemOrg.getEditedDate().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getEditedDate()));
-            statusCont.add(layoutN(Item.EDITED_DATE, lastEditedDate, Item.EDITED_DATE_HELP, true, hideIcons ? null : Icons.iconModifiedDate));
+            statusCont.add(layoutN(Item.EDITED_DATE, lastEditedDate, Item.EDITED_DATE_HELP, true, hideIcons ? null : Icons.iconEditedDate));
         }
 
         if (itemOrg.isProject()) {
@@ -4165,27 +4185,29 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         }
 
         //INTERRUPT
+        if (!isTemplate) {
 //        MyOnOffSwitch interruptTask = new MyOnOffSwitch(parseIdMap2, () -> itemLS.isInteruptOrInstantTask(), (b) -> item.setInteruptOrInstantTask(b));
-        interruptTask = new MyOnOffSwitch();
+            interruptTask = new MyOnOffSwitch();
 //                statusCont.add(new Label(Item.INTERRUPT_TASK)).add(interruptTask).add(new SpanLabel("This task interrupted another task"));
 //        statusCont.add(layout(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task"));
-        initField(Item.PARSE_INTERRUPT_OR_INSTANT_TASK, interruptTask, () -> itemCopy.isInteruptOrInstantTask(), (b) -> itemOrg.setInteruptOrInstantTask((boolean) b),
-                () -> interruptTask.isValue(), (b) -> interruptTask.setValue((boolean) b));
+            initField(Item.PARSE_INTERRUPT_OR_INSTANT_TASK, interruptTask, () -> itemCopy.isInteruptOrInstantTask(), (b) -> itemOrg.setInteruptOrInstantTask((boolean) b),
+                    () -> interruptTask.isValue(), (b) -> interruptTask.setValue((boolean) b));
 //        statusCont.add(layoutN(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task", true));
-        statusCont.add(layoutN(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task", true, hideIcons ? null : Icons.iconInterrupt));
+            statusCont.add(layoutN(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task", true, hideIcons ? null : Icons.iconInterrupt));
 //        if (item.isInteruptOrInstantTask()) {
 //            MyOnOffSwitch interruptTask = new MyOnOffSwitch(parseIdMap2, () -> item.isInteruptOrInstantTask(), (b) -> item.setInteruptOrInstantTask(b));
-        //INTERRUPTED TASK
-        if (itemOrg.getTaskInterrupted() != null) {
-            //TODO!!! enable deleting the taskInterrupted (in case wrong or meaningless)
+            //INTERRUPTED TASK
+            if (itemOrg.getTaskInterrupted() != null) {
+                //TODO!!! enable deleting the taskInterrupted (in case wrong or meaningless)
 //            statusCont.add(layout(Item.INTERRUPT_TASK_INTERRUPTED,
 //                    new SpanLabel("\"" + itemLS.getTaskInterrupted() != null ? itemLS.getTaskInterrupted().getText() + "\"" : "<none>"), "**", true, false, true)); //TODO capture and save the task that was interrupted
-            statusCont.add(layoutN(Item.INTERRUPT_TASK_INTERRUPTED,
-                    //                    new SpanLabel("\"" + itemLS.getTaskInterrupted() != null ? itemLS.getTaskInterrupted().getText() + "\"" : "<none>"),
-                    new SpanLabel(itemOrg.getTaskInterrupted().getText()),
-                    Item.INTERRUPT_TASK_INTERRUPTED_HELP, true)); //TODO capture and save the task that was interrupted
+                statusCont.add(layoutN(Item.INTERRUPT_TASK_INTERRUPTED,
+                        //                    new SpanLabel("\"" + itemLS.getTaskInterrupted() != null ? itemLS.getTaskInterrupted().getText() + "\"" : "<none>"),
+                        new SpanLabel(itemOrg.getTaskInterrupted().getText()),
+                        Item.INTERRUPT_TASK_INTERRUPTED_HELP, true)); //TODO capture and save the task that was interrupted
 //            } else {
 //                statusCont.add(new Label(Item.INTERRUPT_OR_INSTANT_TASK)).add(interruptTask);
+            }
         }
 //        }
 
@@ -4205,7 +4227,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             statusCont.add(layoutN(Item.OBJECT_GUID, itemGuid, Item.OBJECT_GUID_HELP, true, hideIcons ? null : Icons.iconObjectId));
         }
 
-        if (Config.TEST) {
+        if (MyPrefs.enableShowingSystemInfo.getBoolean() || Config.TEST) {
             //INTERRUPT
 //        MyOnOffSwitch interruptTask = new MyOnOffSwitch(parseIdMap2, () -> itemLS.isInteruptOrInstantTask(), (b) -> item.setInteruptOrInstantTask(b));
             MyOnOffSwitch isTemplateSwitch = new MyOnOffSwitch();
@@ -4217,7 +4239,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             statusCont.add(layoutN(Item.TEMPLATE, isTemplateSwitch, "This task is a Template", true, hideIcons ? null : Icons.iconMainTemplates));
 
         }
-        if (false && Config.TEST) {
+        if (MyPrefs.testPickersOnDevice.getBoolean()) {
 //            Container statusCont=null;
 
             TextField textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode

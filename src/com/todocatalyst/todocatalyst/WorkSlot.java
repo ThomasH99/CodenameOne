@@ -975,7 +975,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //        return "SLOT[" + getText() + "|Start=" + new MyDate(getStartTime()).formatDate(false) + "|End=" + new MyDate(getEnd()).formatDate(false) + "|Duration=" + Duration.formatDuration(getDurationInMillis()) + "]";
         return (getRepeatRuleN() != null ? "*" : "")
                 + "WS:"
-                +  "[" + (getObjectIdP() == null ? "NoObjId" :getObjectIdP()) +"/"+getGuid()+ "]"
+                + "[" + (getObjectIdP() == null ? "NoObjId" : getObjectIdP()) + "/" + getGuid() + "]"
                 + MyDate.formatDateTimeNew(getStartTimeD()) + "/" + MyDate.formatDurationShort(getDurationInMinutes() * MyDate.MINUTE_IN_MILLISECONDS, true)
                 //                + " " + getText() + "[" + getObjectIdP() + "]" + (getOwner() != null ? " Owner:" + getOwner().getText() : "") + " [" + getObjectIdP() + "]";
                 + (" Owner:" + (getOwner() != null ? (getOwner().getText() + "/" + getOwner().getObjectIdP()) : "None")
@@ -1163,8 +1163,33 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      *
      * @param endTimeInMillis
      */
-    public void setEndTime(long endTimeInMillis) {
-        setDurationInMillis(Math.max(0, endTimeInMillis - getStartTimeD().getTime())); //max=> avoid negative duration
+//    public void setEndTime(long endTimeInMillis) {
+//        setDurationInMillis(Math.max(0, endTimeInMillis - getStartTimeD().getTime())); //max=> avoid negative duration
+//    }
+    /**
+     * set end time and adjust start or duration if needed
+     *
+     * @param endTime if endTime is *before* startTime, adjust duration to 0 and
+     * thereby force end time to equal start time
+     * @param keepDurationAndMoveStartTimeIfBothAreSet keep the current duration
+     * (even if 0) and move startTime to match, if false, adjust duration
+     */
+    public void setEndTime(Date endTime, boolean keepDurationAndMoveStartTimeIfBothAreSet) {
+        if (getStartTimeD().getTime() == 0) {
+            setStartTime(new MyDate(endTime.getTime() - getDurationInMillis()));
+        } else if (getDurationInMillis() == 0) {
+            setDurationInMillis(Math.max(0, endTime.getTime() - getStartTimeD().getTime())); //max=> avoid negative duration
+        } else {
+            if (keepDurationAndMoveStartTimeIfBothAreSet) {
+                setStartTime(new MyDate(endTime.getTime() - getDurationInMillis()));
+            } else {
+//                if (endTime.getTime() < getStartTimeD().getTime()) {
+//                    setDurationInMinutes(0);
+//                } else {
+                setDurationInMillis(Math.max(0, endTime.getTime() - getStartTimeD().getTime())); //max=> avoid negative duration
+//                }
+            }
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1675,7 +1700,6 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        DAO.getInstance().saveInBackground((ParseObject) workSlotRepeatCopy);
 //        return owner;
 //    }
-
 //    @Override
     public boolean equalsXXX(Object obj) {
         if (this == obj) {

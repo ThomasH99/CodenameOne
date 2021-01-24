@@ -45,7 +45,7 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeWaitingExpiringToday);
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeAlarmsExpiringToday);
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeWorkSlotsCoveringToday);
-                addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewShowProjectsInsteadOfLeafTasks);
+                addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewShowLeafTasksInsteadOfProjects);
                 addSettingInt(content, parseIdMap2, MyPrefs.todayViewIncludeOverdueFromThisManyPastDays, 0, 60, 1); //UI: max 60 days of overdue
                 content.add(makeSpacer());
                 break;
@@ -109,7 +109,7 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
 
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.hideStickyHeadersForSortedLists);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenOnScrollingDown);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenOnScrollingUp);
         addSettingBoolean(content, parseIdMap2, MyPrefs.titleAutoSize);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropLeftDropZoneWidth, 0, 30, 1);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropRightDropZoneWidth, 0, 30, 1);

@@ -18,8 +18,6 @@ public class MyPrefs {
 
     final static boolean prod = !Config.TEST;
     //TODAY view
-    static PrefEntry todayViewIncludeOverdueFromThisManyPastDays
-            = new PrefEntry("In Today, include tasks overdue by this many days", "todayViewIncludeOverdueFromThisManyPastDays", prod ? 0 : 1, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
     static PrefEntry todayViewIncludeWaitingExpiringToday
             = new PrefEntry("In Today, include tasks until today", "todayViewIncludeWaitingExpiringToday", prod ? true : true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
     static PrefEntry todayViewIncludeAlarmsExpiringToday
@@ -28,8 +26,10 @@ public class MyPrefs {
             = new PrefEntry("In Today, include tasks starting today", "todayViewIncludeStartingToday", prod ? true : true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
     static PrefEntry todayViewIncludeWorkSlotsCoveringToday
             = new PrefEntry("In Today, include WorkSlots starting today", "todayViewIncludeWorkSlotsCoveringToday", prod ? true : true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
-    static PrefEntry todayViewShowProjectsInsteadOfLeafTasks
-            = new PrefEntry("In Today, show top-level projects instead of leaf tasks", "todayViewShowProjectsInsteadOfLeafTasks", prod ? false : false, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+    static PrefEntry todayViewShowLeafTasksInsteadOfProjects
+            = new PrefEntry("In Today, leaf tasks instead of top-level projects instead of leaf tasks", "todayViewShowLeafTasksInsteadOfProjects", prod ? false : false, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+    static PrefEntry todayViewIncludeOverdueFromThisManyPastDays
+            = new PrefEntry("In Today, include tasks from this many past days", "todayViewIncludeOverdueFromThisManyPastDays", prod ? 0 : 1, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
 
 //ESTIMATES
     static PrefEntry automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining
@@ -133,7 +133,7 @@ public class MyPrefs {
             = new PrefEntry("Show seconds in Timer", "showSecondsInTimer", prod ? true : true, "Hiding seconds may feel less stressful but doesn't visually show that the Timer is running");
 
     static PrefEntry timerBuzzerActive
-            = new PrefEntry("Buzz at regular intervals to remind that Timer is running", "timerBuzzerActive", prod ? false : true, ""); //, "Reminder vibration interval when Timer is running");
+            = new PrefEntry("Buzz at regular intervals to remind that Timer is running", "timerBuzzerActive", prod ? false : false, ""); //, "Reminder vibration interval when Timer is running");
     static PrefEntry timerBuzzerInterval
             = new PrefEntry("Buzz interval when Timer is running (minutes)", "timerBuzzerInterval", (int) (prod ? 10 : 1), ""); //, "Reminder vibration interval when Timer is running");
 
@@ -245,7 +245,7 @@ public class MyPrefs {
 //    static PrefEntry categoryAllowDuplicateNamesDescriptionInCategoryList
 //            = new PrefEntry("**", "showCategoryDescriptionInCategoryList", false, "Show Category description in category lists");
     static PrefEntry addNewCategoriesToBeginningOfCategoryList
-            = new PrefEntry("Add new categories to the beginning of the list", "addNewCategoriesToBeginningOfCategoryList", prod ? false : false, "**");
+            = new PrefEntry("Add new categories to the beginning of the list", "addNewCategoriesToBeginningOfCategoryList", prod ? true : true, "**");
 
     //ALARMS
 //    static PrefEntry alarmLastDateUptoWhichAlarmsHaveBeenSet = new PrefEntry("alarmLastDateUptoWhichAlarmsHaveBeenSet", new Date(0));
@@ -298,8 +298,8 @@ public class MyPrefs {
 
     static PrefEntry alarmDaysAheadToFetchFutureAlarms
             = new PrefEntry("**", "alarmDaysAheadToFetchFutureAlarms", 30, "**"); //10 = 10 minutes after midnight
-    static PrefEntry alarmRoundSnoozeTimeDownToMinutes
-            = new PrefEntry("", "alarmDaysAheadToFetchFutureAlarms", prod ? false : true, "**"); //mainly for testing?! to have snooze expire on the top of the minute
+    static PrefEntry alarmRoundSnoozeTimeDownToMinutes //probably not useful?! you won't notice for long snoozes and short (eg 1-2min) become of unpredictable length
+            = new PrefEntry("", "alarmDaysAheadToFetchFutureAlarms", prod ? false : false, "**"); //mainly for testing?! to have snooze expire on the top of the minute
 
     //ITEM
     static PrefEntry checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress
@@ -559,8 +559,8 @@ public class MyPrefs {
             = new PrefEntry("**", "themeNameWithoutBackslash", "theme", "name of the graphical theme");
     static PrefEntry titleAutoSize
             = new PrefEntry("Reduce Screen title font size for long texts", "titleAutoSize", prod ? true : true, "**");
-    static PrefEntry scrollToolbarOffScreenOnScrollingDown
-            = new PrefEntry("Hide the toolbar at top of the screen when scrolling a screen down", "scrollToolbarOffScreenOnScrollingDown",
+    static PrefEntry scrollToolbarOffScreenOnScrollingUp
+            = new PrefEntry("Hide the toolbar at top of the screen when scrolling a screen down", "scrollToolbarOffScreenOnScrollingUp",
                     prod ? true : true, "**"); //TODO: but not working?!
     static PrefEntry firstDoubleTapScrollsToBottomOfScreen
             = new PrefEntry("First statusbar doubletap scrolls to bottom of list instead of top",
@@ -579,8 +579,8 @@ public class MyPrefs {
             = new PrefEntry("Enable pinch insert in lists", "pinchInsertEnabled", prod ? true : true, "**");
     static PrefEntry pinchInsertActivateEditing
             = new PrefEntry("Automatically start editing new task after pinch insert ", "pinchInsertActivateEditing", prod ? true : true, "**");
-    static PrefEntry screenEnableDisplayRotationToLandscape
-            = new PrefEntry("Enable screen rotation to landscape", "screenEnableDisplayRotation", prod ? false : false,
+    static PrefEntry screenEnableDisplayRotationAwayFromPortrait
+            = new PrefEntry("Enable screen rotation to landscape", "screenEnableDisplayRotation", prod ? false : true,
                     "Rotation to landscape mode is disabled by default, setting this option enables it");
     static PrefEntry enableShowingSystemInfo
             = new PrefEntry("Show additional system information like unique identified", "enableShowingSystemInfo", prod ? false : true, "**");
@@ -592,6 +592,9 @@ public class MyPrefs {
             = new PrefEntry("Enable more frequent saving to speed up the application responsiveness", "backgroundSave", prod ? false : false, "**");
     static PrefEntry cacheDynamicLists
             = new PrefEntry("Cache dynamic lists (pull to refresh) - NOT supported by app yet", "cacheDynamicLists", prod ? false : false, "**");
+    //TESTING settings
+    static PrefEntry testPickersOnDevice
+            = new PrefEntry("Activate different pickers in ScreenItem2 to test pickers on iOS", "testPickersOnDevice", prod ? false : true, "**");
 
 //PINCH
     static PrefEntry pinchAdjustUpper //used to play with/tune the adjustment factor used if pinch fingers are far apart

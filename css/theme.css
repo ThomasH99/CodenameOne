@@ -411,8 +411,8 @@ TitleSmall {
 TitleCommand { /*the commands in the title bar*/
     cn1-derive: Button;
     /*margin-top: 0.5mm;/**/
-    margin: 1.5mm 1.5mm;
-    padding: 0mm;
+    margin: 0mm;
+    padding: 1mm 1.5mm 1.5mm 1.5mm;
     font-size: 160%; /*140%;*/
     background-color: transparent;
     /*color: green;
@@ -1779,7 +1779,7 @@ ListOfItemsSwipeButtons{
 
 SwipeButtonCommonBase{
     font-size: 120%;
-    padding: 2mm;
+    padding: 2mm 3mm 2mm 3mm; /*2mm;*/
     margin: 0;
     /*text-align: right;*/
     text-align: center;

@@ -34,7 +34,8 @@ public class Icons {
     }
     
     static public void init() {
-        myIconFont = Font.createTrueTypeFont("myicons", "myicons.ttf"); //name and filename, file MUST reside in /src/ root! //necessary with explicit initialisation (since icons don't show on iPhone)?!
+//        myIconFont = Font.createTrueTypeFont("myicons", "myicons.ttf"); //name and filename, file MUST reside in /src/ root! //necessary with explicit initialisation (since icons don't show on iPhone)?!
+        myIconFont = Font.createTrueTypeFont("Untitled1", "myicons2.ttf"); //"Untitled1" needed for iOS!! name and filename, file MUST reside in /src/ root! //necessary with explicit initialisation (since icons don't show on iPhone)?!
         Log.p("Initializing myicons.ttf, status="+(myIconFont!=null?"OK":"null!!"));
     }
 
@@ -120,19 +121,34 @@ public class Icons {
     final static char iconAlarmTriggered = FontImage.MATERIAL_NOTIFICATIONS_NONE; //TODO: MATERIAL_NOTIFICATIONS_ACTIVE; custom icon
     final static char iconHideUntilDate = FontImage.MATERIAL_VISIBILITY_OFF; //TODO: custom icon
     final static char iconHideUntilDateCust = 'p'; //TODO: custom icon
-    final static char iconAutoCancelByDate = FontImage.MATERIAL_CANCEL_PRESENTATION; //TODO: custom icon
-    final static char iconAutoCancelByDateCust = 'r'; //TODO: custom icon
     final static char iconStartedOnDate = FontImage.MATERIAL_TIMELAPSE; //TODO: custom icon
     final static char iconStartedOnDateCust = 'j'; //TODO: custom icon
     final static char iconCreatedDate = FontImage.MATERIAL_TRIP_ORIGIN; //TODO: custom icon
     final static char iconCreatedDateCust = 'n'; //TODO: custom icon
-    final static char iconModifiedDate = FontImage.MATERIAL_EDIT; //TODO: custom icon
+    final static char iconModifiedDate = FontImage.MATERIAL_BORDER_COLOR; //TODO: custom icon
     final static char iconModifiedDateCust = 'h'; //TODO: custom icon
     final static char iconEditedDate = FontImage.MATERIAL_EDIT; //TODO: custom icon
     final static char iconEditedDateCust = 'h'; //TODO: custom icon
-    
+    final static char iconAutoCancelByDate = FontImage.MATERIAL_CANCEL_PRESENTATION; //TODO: custom icon
+    final static char iconAutoCancelByDateCust = 'r'; //TODO: custom icon
+//    final static char iconExpireByDate = FontImage.MATERIAL_CANCEL;//FontImage.MATERIAL_EVENT_BUSY;
+
+    final static char iconWaitingAlarmXXX = FontImage.MATERIAL_PAUSE; 
+    final static char iconWaitingAlarmCust = 'A'; 
+    final static char iconWaitingAlarmExpiredCust = '='; 
+    final static char iconWaitingDateMaterialXXX = FontImage.MATERIAL_PAUSE; 
+    final static char iconWaitingDateCust = 'k'; 
+    final static char iconSetWaitingDateMaterial = FontImage.MATERIAL_PAUSE_CIRCLE_OUTLINE; // FontImage.MATERIAL_PAUSE_PRESENTATION
+    final static char iconSetWaitingDateCustXXX = 'm';
+//    final static Image iconWaitingDate = FontImage.createMaterial(iconWaitingDateMaterial, labelStyle);
+
+    final static char iconStartByDate = FontImage.MATERIAL_PRESENT_TO_ALL; //FontImage.MATERIAL_EXIT_TO_APP; //TODO custom icon
+    final static char iconStartByDateCust = 0x38; //FontImage.MATERIAL_EXIT_TO_APP; //TODO custom icon
+
+
+    //NB: BELOW definition of icons NOT used here, defined directly in ScreenItem2
     final static char iconPriority = FontImage.MATERIAL_PRIORITY_HIGH; //TODO: custom icon
-    final static char iconPrio0Cust = '0'; //custom icon
+    final static char iconPrio0Cust = 0x43; //custom icon
     final static char iconPrio1Cust = '1'; //custom icon
     final static char iconPrio2Cust = '2'; //custom icon
     final static char iconPrio3Cust = '3'; //custom icon
@@ -225,10 +241,9 @@ public class Icons {
 //    final static Image iconStarSelectedLabelStyle = FontImage.createMaterial(iconStarSelected, labelStyle);
 //    final static Image iconSelectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_RADIO_BUTTON_CHECKED, labelStyle, 2); //3mm
 
-    final static char iconSelected = FontImage.MATERIAL_CHECK_BOX; //FontImage.MATERIAL_SELECT_ALL
+//    final static char iconSelected = FontImage.MATERIAL_CHECK_BOX; //FontImage.MATERIAL_SELECT_ALL
 //    final static Image iconSelectedLabelStyle = FontImage.createMaterial(iconSelected, labelStyle, 2); //3mm
 
-    final static char iconSelectAll = FontImage.MATERIAL_DONE_ALL; //TODO: find better symbol (with unchecked boxes)
     final static char iconSetMultiple = FontImage.MATERIAL_VIEW_LIST; //TODO: find better symbol (with unchecked boxes)
     final static char iconSetDeleteAll = FontImage.MATERIAL_DELETE_SWEEP; //TODO: find better symbol (with unchecked boxes)
     final static char iconMoveAllToTop = FontImage.MATERIAL_ARROW_UPWARD; //TODO: find better symbol (with unchecked boxes)
@@ -243,11 +258,15 @@ public class Icons {
     final static char iconRepeatOverview = FontImage.MATERIAL_FILTER; //or: DYNAMIC_FEED
 
     final static char iconSelectedElt = FontImage.MATERIAL_CHECK_BOX; //3mm
-    final static char iconSelectedEltCust = ';'; //3mm
+    final static char iconSelectedEltCust = '^'; //3mm
 //    final static Image iconUnselectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_RADIO_BUTTON_UNCHECKED, labelStyle, 2);
 //    final static Image iconUnselectedLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_CHECK_BOX_OUTLINE_BLANK, labelStyle, 2);
     final static char iconUnselectedElt = FontImage.MATERIAL_CHECK_BOX_OUTLINE_BLANK;
-    final static char iconUnselectedEltCust = ':';
+    final static char iconUnselectedEltCust = ']';
+    final static char iconSelectAll = FontImage.MATERIAL_DONE_ALL; //TODO: find better symbol (with unchecked boxes)
+    final static char iconSelectAllCust = iconSelectedEltCust; //; //TODO: find better symbol (with unchecked boxes)
+    final static char iconUnselectAll = FontImage.MATERIAL_DONE_ALL; //TODO: find better symbol (with unchecked boxes)
+    final static char iconUnselectAllCust = iconUnselectedEltCust; //TODO: find better symbol (with unchecked boxes)
 //    final static Image iconTemplateStatusSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_DO_NOT_DISTURB_ALT, labelStyle);
 
 //    static Image iconSetDueDateToToday() {
@@ -269,8 +288,8 @@ public class Icons {
 //    static Image iconInsertNewTaskExdend= iconInsertNewTaskIndent.rotate180Degrees(true); //flip the above image
 
 //    final static Image iconCreateSubTask = FontImage.createMaterial(FontImage.MATERIAL_PLAYLIST_PLAY, labelStyle);
-    final static char iconEditSubTasks = FontImage.MATERIAL_FORMAT_INDENT_INCREASE; //TODO custom icon //MATERIAL_FORMAT_ALIGN_LEFT
-    final static char iconEditSubTasksCust = 'B'; //TODO custom icon //MATERIAL_FORMAT_ALIGN_LEFT
+    final static char iconEditSubTasksXXX = FontImage.MATERIAL_FORMAT_INDENT_INCREASE; //TODO custom icon //MATERIAL_FORMAT_ALIGN_LEFT
+    final static char iconEditSubTasksCust = 'C'; //TODO custom icon //MATERIAL_FORMAT_ALIGN_LEFT
 
     //TEMPLATE
     final static char iconNewItemFromTemplate = FontImage.MATERIAL_LIBRARY_ADD;
@@ -308,8 +327,8 @@ public class Icons {
 //    final static char iconCheckboxCancelledChar = FontImage.MATERIAL_REMOVE_CIRCLE; //dark circle to illustrate 'done with'
     final static char iconItemStatusCancelled = FontImage.MATERIAL_HIGHLIGHT_OFF; //dark circle to illustrate 'done with' //MATERIAL_REMOVE_CIRCLE_OUTLINE, MATERIAL_BLOCK, MATERIAL_NOT_INTERESTED
     final static char iconItemStatusOngoing = FontImage.MATERIAL_TIMELAPSE;
-    final static char iconItemStatusDone = FontImage.MATERIAL_CHECK_CIRCLE; //TODO: should be MATERIAL_CHECK_CIRCLE_OUTLINE but not in CN1
-    final static char iconItemStatusWaiting = FontImage.MATERIAL_PAUSE_CIRCLE_OUTLINE;
+    final static char iconItemStatusDone = FontImage.MATERIAL_CHECK_CIRCLE_OUTLINE; //TODO: should be MATERIAL_CHECK_CIRCLE_OUTLINE but not in CN1
+    final static char iconItemStatusWaiting = FontImage.MATERIAL_PAUSE_CIRCLE_FILLED; //Filled makes the icon's 'passive' status stand out more. MATERIAL_PAUSE_CIRCLE_OUTLINE;
 //    final static Image iconCheckboxCreatedLabelStyle = FontImage.createMaterial(iconItemStatusCreated, labelStyle); //TODO NOT GOOD - same symbol as multiple selection
 //    final static Image iconCheckboxCancelled = FontImage.createMaterial(FontImage.MATERIAL_INDETERMINATE_CHECK_BOX, labelStyle);
 //    final static Image iconCheckboxCancelledLabelStyle = FontImage.createMaterial(iconItemStatusCancelled, labelStyle); //dark circle to illustrate 'done with'
@@ -323,22 +342,11 @@ public class Icons {
 
     final static char iconCommentTimeStamp = FontImage.MATERIAL_SCHEDULE;
 
-    final static char iconWaitingAlarm = FontImage.MATERIAL_PAUSE; //TODO custom
-    final static char iconWaitingAlarmCust = 'A'; 
-    final static char iconWaitingAlarmExpiredCust = '='; 
-    final static char iconWaitingDateMaterial = FontImage.MATERIAL_PAUSE; //TODO custom
-    final static char iconWaitingDateCust = 'k'; //TODO custom
-    final static char iconSetWaitingDateMaterial = FontImage.MATERIAL_PAUSE_PRESENTATION;
-    final static char iconSetWaitingDateCust = 'm';
-//    final static Image iconWaitingDate = FontImage.createMaterial(iconWaitingDateMaterial, labelStyle);
-
-    final static char iconStartByDate = FontImage.MATERIAL_PRESENT_TO_ALL; //FontImage.MATERIAL_EXIT_TO_APP; //TODO custom icon
-    final static char iconExpireByDate = FontImage.MATERIAL_CANCEL;//FontImage.MATERIAL_EVENT_BUSY;
-
     final static char iconDreadFunNeutral = FontImage.MATERIAL_THUMBS_UP_DOWN; //MATERIAL_SENTIMENT_VERY_SATISFIED;
-    final static char iconFun = FontImage.MATERIAL_THUMB_UP; //MATERIAL_SENTIMENT_VERY_SATISFIED
+    final static char iconFunDreadLabel = FontImage.MATERIAL_SENTIMENT_SATISFIED; //MATERIAL_SENTIMENT_NEUTRAL; FontImage.MATERIAL_THUMB_UP; MATERIAL_SENTIMENT_VERY_SATISFIED
+    final static char iconFun = FontImage.MATERIAL_MOOD; //FontImage.MATERIAL_THUMB_UP; MATERIAL_SENTIMENT_VERY_SATISFIED
     final static char iconFunCust = '^'; //MATERIAL_SENTIMENT_VERY_SATISFIED
-    final static char iconDread = FontImage.MATERIAL_THUMB_DOWN; //FontImage.MATERIAL_SENTIMENT_VERY_DISSATISFIED;
+    final static char iconDread = FontImage.MATERIAL_MOOD_BAD; //MATERIAL_THUMB_DOWN; FontImage.MATERIAL_SENTIMENT_VERY_DISSATISFIED;
     final static char iconDreadCust = ']'; //FontImage.MATERIAL_SENTIMENT_VERY_DISSATISFIED;
 
     final static char iconChallengeVeryEasy = FontImage.MATERIAL_SENTIMENT_VERY_SATISFIED;
@@ -369,22 +377,28 @@ public class Icons {
     final static char iconEstimateMaterial = FontImage.MATERIAL_HOURGLASS_FULL;
     final static char iconEstimateCust = '(';
     final static char iconEstimatePrjCust = ')';
+    final static char iconEstimateSubCust = '%';
     
     
     
 //    final static char iconEstimateMaterial = FontImage.MATERIAL_RESTORE;
 //    final static Image iconActualEffort = FontImage.createMaterial(FontImage.MATERIAL_TIMELAPSE, labelStyle);
 //    final static char iconActualEffort = FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
-    final static char iconActualEffort = '('; //FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
+    final static char iconActualEffort = ','; //FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
     final static char iconActualCurrentCust = ',';
     final static char iconActualCurrentPrjCust = '-';
+    final static char iconActualCurrentSubCust = '1';
+    
     final static char iconActualFinalCust = '.';
     final static char iconActualFinalPrjCust = '/';
+    final static char iconActualFinalSubCust = '2';
+    
 //    final static Image iconActualEffortLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_HOURGLASS_FULL, labelStyle);
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_TIMELAPSE;
     final static char iconRemainingEffort = FontImage.MATERIAL_HOURGLASS_EMPTY; //MATERIAL_EVENT_AVAILABLE;
     final static char iconRemainingCust = '*';
     final static char iconRemainingPrjCust = '+';
+    final static char iconRemainingSubCust = '0';
 //    final static Image iconRemainingEffortLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_EVENT_AVAILABLE, labelStyle);
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_EVENT_AVAILABLE;
 //    final static char iconRemainingEffortMaterial = FontImage.MATERIAL_RESTORE;

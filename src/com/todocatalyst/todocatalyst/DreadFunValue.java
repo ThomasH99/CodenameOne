@@ -5,6 +5,8 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.ui.Font;
+
 /**
  *
  * @author thomashjelm
@@ -27,13 +29,14 @@ public enum DreadFunValue {
         switch (this) {
             case FUN:
 //                return Icons.iconFun;
-                return Icons.iconChallengeEasy;
+//                return Icons.iconChallengeEasy;
+                return Icons.iconFunCust;
             case NEUTRAL:
 //                return Icons.iconDreadFunNeutral;
-                return Icons.iconChallengeAverage;
+                return Icons.iconDreadFunNeutral;
             case DREAD:
 //                return Icons.iconDread;
-                return Icons.iconChallengeVeryHard;                
+                return Icons.iconDreadCust;                
         }
         return '?';
     }
@@ -52,15 +55,18 @@ public enum DreadFunValue {
 
     //returns description strings for the enum in display order (which may be different from the sort order which follows the declaration order
     static String[] getDescriptionList() {
-        return new String[]{FUN.getDescription(), NEUTRAL.getDescription(), DREAD.getDescription()};
+//        return new String[]{FUN.getDescription(), NEUTRAL.getDescription(), DREAD.getDescription()};
+        return new String[]{FUN.getDescription(), DREAD.getDescription()};
     }
 
     static int[] getDescriptionValues() {
-        return new int[]{FUN.ordinal(), NEUTRAL.ordinal(), DREAD.ordinal()};
+//        return new int[]{FUN.ordinal(), NEUTRAL.ordinal(), DREAD.ordinal()};
+        return new int[]{FUN.ordinal(), DREAD.ordinal()};
     }
 
     static String[] getNameList() {
-        return new String[]{FUN.name(), NEUTRAL.name(), DREAD.name()};
+//        return new String[]{FUN.name(), NEUTRAL.name(), DREAD.name()};
+        return new String[]{FUN.name(),  DREAD.name()};
     }
 
     /**
@@ -79,4 +85,14 @@ public enum DreadFunValue {
         }
         return null;
     }
+    
+    static char[] getIconList() {
+        return new char[]{Icons.iconFunCust, Icons.iconDreadCust};
+    }
+    
+        static Font getIconFont() {
+        return Icons.myIconFont;
+    }
+
+
 }

@@ -1986,7 +1986,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 ((MyForm) f).openSwipeContainer.close();
             }
 //            SwipeableContainer openSwipeContainer = ((MyForm) f).openSwipeContainer;
-            if (((MyForm) f).openSwipeContainer != null) {
+            if (((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
                 ((MyForm) f).openSwipeContainer.close();
             }
             ((MyForm) f).openSwipeContainer = this;
@@ -2001,8 +2001,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             if (false && ((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
                 ((MyForm) f).openSwipeContainer.close();
             }
-            SwipeableContainer openSwipeContainer = ((MyForm) f).openSwipeContainer;
-            if (((MyForm) f).openSwipeContainer != null) {
+//            SwipeableContainer openSwipeContainer = ((MyForm) f).openSwipeContainer;
+            if (((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
                 ((MyForm) f).openSwipeContainer.close();
             }
             ((MyForm) f).openSwipeContainer = this;

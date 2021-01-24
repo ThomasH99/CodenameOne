@@ -44,7 +44,7 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime);
         addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddToBeginningOfComment);
         addSettingBoolean(content, parseIdMap2, MyPrefs.hideIconsInEditTaskScreen);
-        addSettingInt(content, parseIdMap2, MyPrefs.itemDueDateDefaultDaysAheadInTime, 0,31,1);
+        addSettingInt(content, parseIdMap2, MyPrefs.itemDueDateDefaultDaysAheadInTime, 0, 31, 1);
         addSettingTimeInMinutes(content, parseIdMap2, MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes);
 
         content.add(makeSpacer());
@@ -69,6 +69,9 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectStartByDate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectWaitingTillDate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues);
+
+        content.add(makeSpacer());
+        addSettingBoolean(content, parseIdMap2, MyPrefs.testPickersOnDevice);
 
     }
 }

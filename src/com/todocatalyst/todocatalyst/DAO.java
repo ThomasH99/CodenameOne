@@ -1321,7 +1321,7 @@ public class DAO {
         setupItemQueryNotTemplateNotDeletedLimit10000(queryDueToday, true);
         queryDueToday.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startDate);
         queryDueToday.whereLessThan(Item.PARSE_DUE_DATE, startOfTomorrow);
-        if (MyPrefs.todayViewShowProjectsInsteadOfLeafTasks.getBoolean()) {
+        if (MyPrefs.todayViewShowLeafTasksInsteadOfProjects.getBoolean()) {
             queryDueToday.whereExists(Item.PARSE_SUBTASKS);
             queryDueToday.whereDoesNotExist(Item.PARSE_OWNER_ITEM);
         } else {
@@ -1576,7 +1576,7 @@ public class DAO {
 //        return null;//new ItemList();
 //    }
 //</editor-fold>
-    public static List<ItemAndListCommonInterface> getTodayLeafTaskList(List<ItemAndListCommonInterface> all) {
+    public static List<ItemAndListCommonInterface> getTodayLeafTaskListZZZ(List<ItemAndListCommonInterface> all) {
         //UI: badgecount includes all elements shown in Today view (counting leaf-tasks for Projects!)
         List<ItemAndListCommonInterface> leafList = new ArrayList();
         for (ItemAndListCommonInterface elt : all) {
@@ -1633,7 +1633,8 @@ public class DAO {
 //        }
 //</editor-fold>
 //        return getTodayLeafTaskList(getToday(null)).size();
-        return getTodayLeafTaskList(getToday()).size();
+//        return getTodayLeafTaskListZZZ(getToday()).size();
+        return getToday().size();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

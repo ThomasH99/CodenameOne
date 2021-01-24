@@ -927,7 +927,6 @@ class TimerStack {
 ////        }
 ////        return false;
 //    }
-
     //**************** PUBLIC INTERFACE ****************
 //    private void addNewTimerInstanceXXX(TimerInstance newTimerInstance) {
 //        addNewTimerInstance(newTimerInstance, false);
@@ -2361,9 +2360,9 @@ class TimerStack {
         }
     }
 
-    private static void updateTimedItemToOngoing(MyCheckBox status,Item timedItem){//, Date timerStartedOn) {
+    private static void updateTimedItemToOngoing(MyCheckBox status, Item timedItem) {//, Date timerStartedOn) {
 //        Item timedItem = getCurrentlyTimedItemN();
-        if (true||timedItem.getStatus() == ItemStatus.CREATED) { //status checked in status.setStatus()! DON'T update if ONGOING/CANCELLED/WAITING/DONE
+        if (true || timedItem.getStatus() == ItemStatus.CREATED) { //status checked in status.setStatus()! DON'T update if ONGOING/CANCELLED/WAITING/DONE
 ////            timedItem.setStatus(ItemStatus.ONGOING);
 //            timedItem.setStatus(ItemStatus.ONGOING, false, true, true, timerStartedOn);
 //            if (false && timedItem.getStartedOnDateD().getTime() == 0) {//false: done in setStatus(). UI: in Timer, startedOnDate is set to when timer was started on the task, but only if the delay expired (if setting active)
@@ -2373,7 +2372,7 @@ class TimerStack {
 ////            DAO.getInstance().saveNew(timedItem, true); //ongoing value
 //            DAO.getInstance().saveNew(timedItem); //ongoing value
 //            DAO.getInstance().saveNewExecuteUpdate();
-            status.setStatus(ItemStatus.ONGOING,true); //will update status (if needed), save the item and refresh the screen
+            status.setStatus(ItemStatus.ONGOING, true); //will update status (if needed), save the item and refresh the screen
         }
     }
 
@@ -2804,7 +2803,7 @@ class TimerStack {
                 //update 
                 MyForm itemBeingEditedByForm = timedItem.isEditOngoing();
                 if (itemBeingEditedByForm instanceof ScreenItem2) {
-                    ASSERT.that(((ScreenItem2) itemBeingEditedByForm).itemOrg==timedItem);
+                    ASSERT.that(((ScreenItem2) itemBeingEditedByForm).itemOrg == timedItem);
                     ((ScreenItem2) itemBeingEditedByForm).status.setStatus(ItemStatus.ONGOING);
                 }
 //                refreshFormOnTimerUpdate(); //refresh screen to show Ongoing + it's possible impact on the mother project
@@ -3507,7 +3506,9 @@ class TimerStack {
 //                    buzzerTimer.schedule(MyPrefs.timerBuzzerInterval.getInt(), true, form);
 //                }
             //TODO!!! find better solution than activating the buzzerTimer with Integer.MAX
-            buzzerTimer.schedule(MyPrefs.timerBuzzerInterval.getInt() != 0 ? MyPrefs.timerBuzzerInterval.getInt() * MyDate.MINUTE_IN_MILLISECONDS : Integer.MAX_VALUE, true, myForm); //Integer.MAX_VALUE=25days so little risk of unexpceted buzz
+            if (MyPrefs.timerBuzzerActive.getBoolean()) {
+                buzzerTimer.schedule(MyPrefs.timerBuzzerInterval.getInt() != 0 ? MyPrefs.timerBuzzerInterval.getInt() * MyDate.MINUTE_IN_MILLISECONDS : Integer.MAX_VALUE, true, myForm); //Integer.MAX_VALUE=25days so little risk of unexpceted buzz
+            }
         };
 
 //<editor-fold defaultstate="collapsed" desc="comment">

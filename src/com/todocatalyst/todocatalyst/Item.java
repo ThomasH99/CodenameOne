@@ -827,7 +827,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String DONE = "DONE"; //"Done";
     final static String DUE_DATE = "Due"; //"DUE_DATE"; //"Due";
     final static String DUE_DATE_HELP = "DUE_DATE_HELP"; //"Due";
-    final static String UPDATED_DATE = "Updated";//"Modified"; //"Modified"; "Date last modified", "Update", "Last modified"
+    final static String UPDATED_DATE = "Changed";//"Updated", "Modified"; //"Modified"; "Date last modified", "Update", "Last modified"
     final static String UPDATED_DATE_SUBTASKS = "Updated subtasks"; //"Modified subtasks"; //"Modified"; "Date last modified", "Update", "Last modified"
     final static String UPDATED_DATE_HELP = "The time this task was last modified. Set automatically. Cannot be modified by user."; //"Modified"; "Date last modified", "Update", "Last modified"
     final static String EDITED_DATE = "Edited"; //"Modified"; "Date last modified", "Update", "Last modified"
@@ -934,7 +934,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    final static String URGENCY_HELP = "Indicates the Importance of this task, according to the ** principle. Prioritizing using "+IMPORTANCE+" and "+URGENCY+" can help overcome a tendency to over-prioritize urgent tasks over important tasks.";
     final static String URGENCY_HELP = "Indicates the Importance of this task, according to the ** principle. Prioritizing using [IMPORTANCE] and [URGENCY] can help overcome a tendency to over-prioritize urgent tasks over important tasks.";
     final static String IMPORTANCE_URGENCY = "Importance/Urgency"; // "Importance/Urgency"
-    final static String FUN_DREAD = "Fun";
+    final static String FUN_DREAD = "Like"; //"Enjoy", "Affinity", "Fun";
     final static String FUN_DREAD_HELP = "Is this a task you'd love to work on or not? Helps pick tasks on a low-energy day";
     final static String CHALLENGE = "Difficulty"; //"Challenge";
     final static String CHALLENGE_HELP = "Indicates how difficult or challenging the task is and what level of mental energu it requires"; //"Challenge";
@@ -1276,8 +1276,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         ownerItem = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(ownerItem);
         if (Config.REPAIR) {
             if (ownerItem == this) {
+//                setOwnerItem(null); //set Owner null first to avoid infinite loop when fixing this issue
+                remove(PARSE_OWNER_ITEM);
                 ASSERT.that(false, "ADDRESSED - task having itself as owner, set to null, item=" + this);
-                setOwnerItem(null);
+                return null;
             }
         }
         return ownerItem;
@@ -1516,7 +1518,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             } else {
 //                ASSERT.that(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null),
 //                        () -> "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
-                ASSERT.that(oldOwner == null || Objects.equals(newOwner, oldOwner)
+                ASSERT.that(newOwner == null ||oldOwner == null || Objects.equals(newOwner, oldOwner)
                         || (newOwner != null && Objects.equals(newOwner.getObjectIdP(), oldOwner.getObjectIdP())),
                         () -> "overwriting non-null owner, oldOwner=" + oldOwner + ", newOwner=" + newOwner);
             }
@@ -7234,10 +7236,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining.getBoolean()
                     && effortEstimateProjectTaskItselfMillis > 0
                     && getRemainingForTaskItselfFromParse() == 0) {
-                setRemainingForTaskItself(effortEstimateProjectTaskItselfMillis - getActualForTaskItself(), false); //TODO actualEffort should be set *before* effort estimate for this to work
+                setRemainingForTaskItself(Math.max(0,effortEstimateProjectTaskItselfMillis - getActualForTaskItself()), false); //TODO actualEffort should be set *before* effort estimate for this to work
             } else if (MyPrefs.automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual.getBoolean()
                     && effortEstimateProjectTaskItselfMillis > getRemainingTotalFromParse() + getActualTotal()) { // *increase* remaining //UI:
-                setRemainingForTaskItself(effortEstimateProjectTaskItselfMillis - getActualTotal(), false); //false to avoid circular updates between setEstimate() and setRemaining()
+                setRemainingForTaskItself(Math.max(0,effortEstimateProjectTaskItselfMillis - getActualTotal()), false); //false to avoid circular updates between setEstimate() and setRemaining()
             }
         }
 

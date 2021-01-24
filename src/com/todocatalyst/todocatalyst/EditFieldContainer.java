@@ -41,6 +41,10 @@ public class EditFieldContainer extends Container {
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, Character materialIcon) {
         this(fieldLabelTxt, field, helpText, swipeClearFct, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, false, materialIcon);
     }
+    EditFieldContainer(String fieldLabelTxt, Component field, String helpText, SwipeClear swipeClearFct,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, Character materialIcon, Font iconFont) {
+        this(fieldLabelTxt, field, helpText, swipeClearFct, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, false, materialIcon, iconFont);
+    }
 
     /**
      *

@@ -51,11 +51,15 @@ public class ScreenSettingsTimer extends ScreenSettingsCommon {
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerKeepScreenAlwaysOnInTimer);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeWaitingTasks);
-        if(false)addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeDoneTasks);
+        if (false) {
+            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeDoneTasks);
+        }
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.enableTimerToRestartOnLists);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject);
         if (false) {
+//            Component setting0 = SettingTimeInMinutes(cont, parseIdMap2, MyPrefs.timerBuzzerInterval); //disable until buzzer can run in background
+            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerBuzzerActive); //disable until buzzer can run in background
             addSettingTimeInMinutes(cont, parseIdMap2, MyPrefs.timerBuzzerInterval); //disable until buzzer can run in background
         }
         addSettingInt(cont, parseIdMap2, MyPrefs.timerUpdateInterval, 1, 60, 1);

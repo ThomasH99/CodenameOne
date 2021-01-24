@@ -17,6 +17,7 @@ import com.codename1.ui.Component;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.FlowLayout;
+import com.codename1.ui.plaf.UIManager;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.MyForm.ANIMATION_TIME_FAST;
 import static com.todocatalyst.todocatalyst.MyTree2.KEY_EXPANDED;
@@ -357,7 +358,11 @@ public class ScreenListOfItems extends MyForm {
         setUniqueFormId("ScreenListOfItems");
         if (false) {
             setScrollVisible(true); //UI: show scrollbar(?)
-        }//        super(title, previousForm, null);
+        }//        super(title, previousForm, null);'
+        UIManager.getInstance().getLookAndFeel().setFadeScrollBar(true);
+//        UIManager.getInstance().getLookAndFeel().setFadeScrollBarSpeed(300);
+        UIManager.getInstance().getLookAndFeel().setFadeScrollEdge(true);
+//        UIManager.getInstance().getLookAndFeel().setFadeScrollEdgeLength(100);
         setOptions(options);
         setPinchInsertEnabled(true);
         getComponentForm().getLayeredPane().setLayout(new BorderLayout()); //needed for StickyHeaderMod
@@ -1355,7 +1360,8 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command cmdSelectAll = new CommandTracked("Select All", Icons.iconSelectAll) {
+//            Command cmdSelectAll = new CommandTracked("Select All", Icons.iconSelectAll) {
+            Command cmdSelectAll = new CommandTracked("Select All", Icons.iconSelectAllCust, Icons.myIconFont) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
@@ -1372,7 +1378,7 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command cmdUnselectAll = new CommandTracked("Unselect All", Icons.iconSelected) {
+            Command cmdUnselectAll = new CommandTracked("Unselect All", Icons.iconUnselectAllCust, Icons.myIconFont) {
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
@@ -1635,7 +1641,7 @@ public class ScreenListOfItems extends MyForm {
                 if (true) { //temporarily disabled until next release
                     //                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
 //                    toolbar.addCommandToOverflowMenu(CommandTracked.create("Select", Icons.iconSelected, (e) -> {
-                    selectCmd = CommandTracked.create("Select", Icons.iconSelected, (e) -> {
+                    selectCmd = CommandTracked.create("Select", Icons.iconSelectAll, Icons.myIconFont, (e) -> {
                         Button selectButton = toolbar.findCommandComponent(selectCmd);
                         if (selectButton != null) {
                             selectButton.setText(isSelectionMode() ? "Select" : "Exit Select");
@@ -2618,7 +2624,8 @@ public class ScreenListOfItems extends MyForm {
 //            RadioButton selected = new RadioButton();
 //            selected = new Button();
 //            selected.setIcon(myForm.selectedObjects.contains(item) ? Icons.iconSelectedLabelStyle : Icons.iconUnselectedLabelStyle);
-            selected.setMaterialIcon(myForm.selectedObjects.isSelected(item) ? Icons.iconSelectedElt : Icons.iconUnselectedElt);
+//            selected.setMaterialIcon(myForm.selectedObjects.isSelected(item) ? Icons.iconSelectedElt : Icons.iconUnselectedElt);
+            selected.setFontIcon(Icons.myIconFont, myForm.selectedObjects.isSelected(item) ? Icons.iconSelectedEltCust : Icons.iconUnselectedEltCust);
             if (Config.TEST) {
                 selected.setName("SelectBox");
             }
@@ -2642,7 +2649,8 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
                     if (myForm.selectedObjects.flipSelection(item)) {
 //                        selected.setIcon(myForm.selectedObjects.isSelected(item) ? Icons.iconSelectedLabelStyle : Icons.iconUnselectedLabelStyle);
-                        selected.setMaterialIcon(myForm.selectedObjects.isSelected(item) ? Icons.iconSelectedElt : Icons.iconUnselectedElt);
+//                        selected.setMaterialIcon(myForm.selectedObjects.isSelected(item) ? Icons.iconSelectedElt : Icons.iconUnselectedElt);
+                        selected.setFontIcon(Icons.myIconFont, myForm.selectedObjects.isSelected(item) ? Icons.iconSelectedEltCust : Icons.iconUnselectedEltCust);
                         selected.repaint();
                     }
                 }
@@ -3068,7 +3076,8 @@ public class ScreenListOfItems extends MyForm {
                 funDreadLabel = new Label(item.getDreadFunValueN().getTestTxt(), "ListOfItemsItemDetailsLabel");
             } else {
                 funDreadLabel = new Label("", "ListOfItemsItemDetailsLabel");
-                funDreadLabel.setMaterialIcon(item.getDreadFunValueN().getIcon());
+//                funDreadLabel.setMaterialIcon(item.getDreadFunValueN().getIcon());
+                funDreadLabel.setFontIcon(Icons.myIconFont, item.getDreadFunValueN().getIcon());
             }
             funDreadLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
@@ -3179,7 +3188,8 @@ public class ScreenListOfItems extends MyForm {
         Label waitingAlarmLabel = null;
         if (item.getWaitingAlarmDate().getTime() != 0) {
             waitingAlarmLabel = new Label(MyDate.formatDateSmart(item.getWaitingAlarmDate()), "ListOfItemsAlarmDate");
-            waitingAlarmLabel.setMaterialIcon(Icons.iconWaitingAlarm);
+//            waitingAlarmLabel.setMaterialIcon(Icons.iconWaitingAlarm);
+            waitingAlarmLabel.setFontIcon(Icons.myIconFont, Icons.iconWaitingAlarmCust);
             waitingAlarmLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 waitingAlarmLabel.setName("WaitingAlarm");
@@ -3192,7 +3202,7 @@ public class ScreenListOfItems extends MyForm {
         if (item.getHideUntilDateD().getTime() != 0 && MyPrefs.itemListAlwaysShowHideUntilDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            hideUntilLabel = new Label("H:" + MyDate.formatDateNew(item.getHideUntilDateD()), "ItemDetailsLabel");
-            hideUntilLabel = new Label(MyDate.formatDateSmart(item.getHideUntilDateD()), "ItemDetailsLabel");
+            hideUntilLabel = new Label(MyDate.formatDateSmart(item.getHideUntilDateD(), false), "ItemDetailsLabel");
             hideUntilLabel.setMaterialIcon(Icons.iconHideUntilDate);
             hideUntilLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
@@ -3219,18 +3229,21 @@ public class ScreenListOfItems extends MyForm {
         }
 
         //EXPIRE BY
-        Label expireByLabel = new Label();
-        if (item.getExpiresOnDate().getTime() != 0 && MyPrefs.itemListExpiresByDate.getBoolean()) {
+        if (false) { //de-activated until actually implemented
+            Label expireByLabel = new Label();
+            if (item.getExpiresOnDate().getTime() != 0 && MyPrefs.itemListExpiresByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            expireByLabel = new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD()), "ItemDetailsLabel");
-            expireByLabel = new Label(MyDate.formatDateSmart(item.getExpiresOnDate()), "ItemDetailsLabel");
-            expireByLabel.setMaterialIcon(Icons.iconExpireByDate);
-            expireByLabel.setGap(GAP_LABEL_ICON);
-            if (Config.TEST) {
-                expireByLabel.setName("ExpireBy");
-            }
-            if (showInDetails) {
-                southDetailsContainer.addComponent(expireByLabel);
+                expireByLabel = new Label(MyDate.formatDateSmart(item.getExpiresOnDate(),false,false,false,true), "ItemDetailsLabel");
+//            expireByLabel.setMaterialIcon(Icons.iconExpireByDate);
+                expireByLabel.setFontIcon(Icons.myIconFont, Icons.iconAutoCancelByDateCust);
+                expireByLabel.setGap(GAP_LABEL_ICON);
+                if (Config.TEST) {
+                    expireByLabel.setName("ExpireBy");
+                }
+                if (showInDetails) {
+                    southDetailsContainer.addComponent(expireByLabel);
+                }
             }
         }
 
@@ -3242,7 +3255,8 @@ public class ScreenListOfItems extends MyForm {
 //            waitingTillLabel = new Label(MyDate.formatDateNew(item.getWaitingTillDateD()), Icons.iconWaitingDate, "ItemDetailsLabel");
 //            waitingTillLabel = new Label(MyDate.formatDateNew(item.getWaitingTillDateD()), "ItemDetailsLabel");
             waitingTillLabel = new Label(MyDate.formatDateSmart(item.getWaitingTillDate()), "ItemDetailsLabel");
-            waitingTillLabel.setMaterialIcon(Icons.iconWaitingDateMaterial);
+//            waitingTillLabel.setMaterialIcon(Icons.iconWaitingDateMaterial);
+            waitingTillLabel.setFontIcon(Icons.myIconFont, Icons.iconWaitingDateCust);
             waitingTillLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 waitingTillLabel.setName("WaitingTill");

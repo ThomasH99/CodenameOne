@@ -1080,7 +1080,7 @@ public class ScreenRepair extends MyForm {
                 List<ItemAndListCommonInterface> todayList = DAO.getInstance().getToday();
                 long end = System.currentTimeMillis();
 
-                List<ItemAndListCommonInterface> todayLeafList = DAO.getTodayLeafTaskList(todayList);
+                List<ItemAndListCommonInterface> todayLeafList = DAO.getTodayLeafTaskListZZZ(todayList);
 
 //                Dialog.show("INFO", "Today Badge Count = " + DAO.getInstance().getBadgeCount(true, true), "OK", null);
                 Dialog.show("INFO", "Today Badge Count = " + todayLeafList.size() + "; millis=" + (end - start)

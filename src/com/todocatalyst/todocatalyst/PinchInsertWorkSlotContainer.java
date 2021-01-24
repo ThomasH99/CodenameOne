@@ -196,7 +196,7 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
             if (refIndex >= 0 && refIndex + 1 < workslots.size()) {
                 WorkSlot nextWorkSlot = (WorkSlot) workslots.get(refIndex + 1);
                 if (newWorkSlot.getStartTime() > nextWorkSlot.getEndTime()) {
-                    newWorkSlot.setEndTime(nextWorkSlot.getStartTime()); //UI: reduce a pinchinserted workslot overlapping with the next one, to end when the next one starts
+                    newWorkSlot.setEndTime(nextWorkSlot.getStartTimeD(),false); //UI: reduce a pinchinserted workslot overlapping with the next one, to end when the next one starts
                 }
             }
         }
@@ -250,7 +250,8 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(this);
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
         if (stopAddingInlineContainers) {
-            if(false)myForm.setPinchInsertContainer(null); //remove this as inlineContainer
+//            if(false)
+                myForm.setPinchInsertContainer(null); //remove this as inlineContainer
 //            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
             myForm.previousValues.removePinchInsertKeys(); //delete the marker on exit
             

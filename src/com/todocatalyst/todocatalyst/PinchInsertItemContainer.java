@@ -913,9 +913,9 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
         ASSERT.that(parent != null, "if parent==null it would mean this inlineCont was not removed!");
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
         if (stopAddingInlineContainers) {
-            if (false) {
+//            if (false) 
                 myForm.setPinchInsertContainer(null); //remove this as inlineContainer
-            }//            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
+//            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
 //            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //delete the marker on exit
 //            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK); //delete the marker on exit
 //

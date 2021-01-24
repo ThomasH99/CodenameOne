@@ -52,8 +52,7 @@ public class ScreenSettingsAlarms extends ScreenSettingsCommon {
             //Examples:
             addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowEffortEstimateDetails);
             addSettingInt(cont, parseIdMap2, MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds, 0, 30, 1);
-            addSettingTimeInMinutes(cont, parseIdMap2, MyPrefs.timerBuzzerInterval); //disable until buzzer can run in background
-        }
+         }
 
     }
 }

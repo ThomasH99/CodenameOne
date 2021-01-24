@@ -392,7 +392,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         Log.p("AppName=" + Display.getInstance().getProperty("AppName", "1.0"));
         Log.p("AppVersion=" + Display.getInstance().getProperty("AppVersion", "1.0"));
         Log.p("init() starting...");
-        
+
         Icons.init();
 
         long timeSinceLastInit = getTimeSinceLastAppStartAndUpdateTimeMillis();
@@ -776,14 +776,14 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         com.codename1.io.Util.register(RepeatRuleParseObject.CLASS_NAME, RepeatRuleParseObject.class); //register Externalizable class
         com.codename1.io.Util.register(FilterSortDef.CLASS_NAME, FilterSortDef.class); //register Externalizable class
         com.codename1.io.Util.register(WorkSlot.CLASS_NAME, WorkSlot.class); //register Externalizable class
-        
+
 //        com.codename1.io.Util.register("ParseObject", ParseObject.class); //not possible for ParseObject: must be initialized with a classname
         com.codename1.io.Util.register("SetFieldOperation", SetFieldOperation.class); //register Externalizable class
         com.codename1.io.Util.register("DeleteFieldOperation", DeleteFieldOperation.class); //register Externalizable class
 //        com.codename1.io.Util.register(ListSelector.CLASS_NAME, ListSelector.class); //register Externalizable class
 //</editor-fold>
 
-        Display.getInstance().setLongPointerPressInterval(400); //UI: 600 too long, 700 is maybe a bit long, 650 a bit too long. set delay for activating LongPress (default 800 is too fast??)
+        Display.getInstance().setLongPointerPressInterval(600); //UI: 400 was set for a long time, but may clash with Pinch, 600 too long, 700 is maybe a bit long, 650 a bit too long. set delay for activating LongPress (default 800 is too fast??)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //add a 'theme layer' on top of an existing theme
 //            UIManager.getInstance().addThemeProps(theme.getTheme("NameOfLayerTheme"));
@@ -957,10 +957,11 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                 Display.getInstance().lockOrientation(true); //lock screen rotation to portrait=true, https://stackoverflow.com/questions/48712682/codenameone-rotate-display
             }//        }
 //            Display.getInstance().lockOrientation(!Config.TEST); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
-            if (MyPrefs.screenEnableDisplayRotationToLandscape.getBoolean()) {
+            if (MyPrefs.screenEnableDisplayRotationAwayFromPortrait.getBoolean()) {
                 Display.getInstance().unlockOrientation(); //enable screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
+            } else {
+                Display.getInstance().lockOrientation(true); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
             }
-            Display.getInstance().lockOrientation(true); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
         }
 
         //Check if already logged in, if so, removeFromCache cache
