@@ -195,9 +195,15 @@ MyIcon {
     overflowImageSize: "5.0"; /*tried w 6.0, a tad big*/
     menuImageSize:"5.0";
 
-    paintsTitleBarBool: true;
+    paintsTitleBarBool:true;
     statusBarScrollsUpBool:true;
+    scrollVisibleBool:true;
+
+    /*style the scrollbar - does it work here? Used in CN1 LookAndFeel.java*/
     scrollVisibleBool: true;
+    fadeScrollEdgeBool:false;
+    fadeScrollEdgeInt:20;
+    fadeScrollBarBool:true;
 
     tabsFillRowsBool:true; /*ensures tabs in ScreenItem2 fill out the row*/
 
@@ -302,7 +308,8 @@ MyButton {
 
 TextField { 
     cn1-derive: Default; /*ListOfItemsTextBase;*/
-    font-family :  "native:MainRegular"; /*"native:MainRegular";*/
+    /*font-family :  "native:MainRegular"; "native:MainRegular";*/
+    font-family :  "native:MainLight"; /*"native:MainRegular";*/
     /*font-family :  "native:MainRegular";/*"native:MainThin"; "native:MainRegular";*/
     /*padding: 3mm;/**/
     margin: 0mm; /*field goes to edge of screen*/
@@ -353,29 +360,30 @@ StatusBar {
 }
 
 StatusBarZeroSize {
+    cn1-derive: StatusBar;
     /*cn1-derive: Button;/**/
     /*cn1-derive: Container;/**/
     /*color: blue;/**/
     /*padding-top: 2mm;  /*no longer needed on iphone 10 with safeArea*/
     /*    padding-bottom: 3mm; */
-    margin: 0;
+/*    margin: 0;
     padding: 0;
-    background-color: transparent;/**/
+    background-color: transparent; BLOCK all this to just use a normal StatusBar*/
 }
 
 StatusBarButton { /*the 'virtual' button in the statusbar that catches clicks to scroll to top/bottom/swithc position */
     cn1-derive: StatusBar;
-    padding: 3mm 0mm;
-    background-color: blue;/**/
+    /*padding: 3mm 0mm;*/ /*try without any sizing to see if default size makes it work on iPhone*/
+    background-color: blue;
 }
 
 Toolbar {
     /*cn1-derive: Button;/**/
     cn1-derive: Container;/**/
     color: blue;
-    background-color: lightgrey;
+    background-color: whitesmoke; /*lightgrey;*/
     /*border-bottom: 0.2mm black;/**/
-    border-bottom: 2px black solid;
+    /*border-bottom: 2px black solid;*/
     /*border-width: 20pt;*/
     /*border:  red;/**/
 }
@@ -392,7 +400,7 @@ FormTitle {
     font-size: 100%; /**/
     color: black; /*#333333; /*blue;/**/
     font-family :  "native:MainBold";
-    background-color: transparent;
+    background-color: transparent; /*transperent lets the background, e.g. ligth */
     text-align: center;
     /*background-color: red;/**/
     /*background-color: transparent;/**/
@@ -413,7 +421,7 @@ TitleCommand { /*the commands in the title bar*/
     /*margin-top: 0.5mm;/**/
     margin: 0mm;
     padding: 1mm 1.5mm 1.5mm 1.5mm;
-    font-size: 160%; /*140%;*/
+    font-size: 140%; /*140%;160 too big compared to other apps, looks clumsy*/
     background-color: transparent;
     /*color: green;
     /*background-color: red;*/
@@ -572,7 +580,7 @@ ScreenItemTaskTextHint {
     /*    margin: 0mm;
         padding: 0mm; */
     font-family:  "native:MainThin";
-    color: lightgray;
+    color: darkgray;
     /*color: red;*/
 }
 
@@ -613,7 +621,7 @@ ScreenItemComment {
     /*border: 0mm solid red;/**/
     margin: 0mm;
     font-family :  "native:MainLight";/**/
-    color: darkgray;/**/
+    color: darkslategray;/**/
     /*font-size: 90%;/**/
     /*margin: 2px 0mm 0 0mm;/**/
 }
@@ -1198,7 +1206,7 @@ MainMenuCommand {
 ScreenItemStarredActive { /*style for starred icon task text in lists*/
     cn1-derive: ScreenItemEditableValue;
     /*color:red; /*blueviolet;/**/
-    background: yellow;
+    /*background: yellow; yellow background not needed since text turns yellow and star black, */
     /*    padding:0 0.5mm 0 0; top+bottom right+left
         margin:0mm;*/
 }
@@ -1225,7 +1233,8 @@ ListOfItemsTextCont { /*style for task container (WrapButton) in lists*/
 ListOfItemsTextBase { /*style for task text in lists*/
     cn1-derive: Label;/**/
     color: black;
-    font-family :  "native:MainRegular"; /*"native:MainLight";*/
+    font-family :  "native:MainLight"; /*"native:MainLight";*/
+    /*font-family :  "native:MainRegular"; "native:MainLight";*/
     /*font-family :  "native:MainBold"; /*"native:MainLight";
     /* color:black;*/
     /*font-size: 90%; /*100%;*/
@@ -1245,7 +1254,7 @@ ListOfItemsText { /*style for task text in lists    */
 ListOfItemsTextDone { /*style for DONE task text in lists*/
     cn1-derive: ListOfItemsText;
     color:lightgrey;
-    text-decoration: line-through;
+    /*text-decoration: line-through;*/
 }
 
 ListOfItemsTextStarred { /*style for Starred task text in lists*/
@@ -1518,6 +1527,7 @@ ListOfItemListsBase {
     cn1-derive: ListOfItemsTextBase; /*Label;*/
     margin: 0;/**/
     padding: 0;/**/
+    font-family :  "native:MainBold"; /*"native:MainLight";*/
     /*background: white;*/
     /*margin-left: 2mm;/**/
 }
@@ -1531,7 +1541,6 @@ ItemListContainer {
 ListOfItemListsTextCont { /*the 'span' container of the wrap button with the icon/text of the itemlist*/
     cn1-derive: ListOfItemListsBase;
     /*text-decoration: bold;*/
-    font-family :  "native:MainBold"; /*"native:MainLight";*/
 }
 ListOfItemListsText { /*the text/name of the itemlist*/
     cn1-derive: ListOfItemListsBase;
@@ -1576,9 +1585,11 @@ CategoryContainer { /*inside swipeable*/
 
 CategoryListContainer {
     cn1-derive: BaseListElementContainer; 
-    border-top: 1pt solid darkgrey;
+    /*border-top: 1pt solid darkgrey;*/
+       border-bottom: 1px solid darkgray; /*darkslategray/black: too dark, 4px solid blueviolet; /*lightgrey; */
+
     /*border-bottom: 1pt solid darkgrey;*/
-    background: #d1eded;
+    /*background: #d1eded;*/
     padding: 2mm 0mm 2mm 3mm; 
     /*margin: 0mm 2mm 2mm 3mm;*/
     /*border-top: 1pt solid green;*/
@@ -2072,7 +2083,7 @@ WorkSlotDetails { /*style for task details - SOUTH */
 
 ListOfItemsSelected { /*the size of the hidden(?) button below the checkbox)*/
     cn1-derive: FinishTime;
-    font-size: 80%;
+    /*    font-size: 80%;*/
     margin: 0 0 0 0mm;
     padding: 0 1mm 0 2mm;
     text-align: left;
@@ -2290,4 +2301,33 @@ PickerDialogText{
     cn1-derive: Label;
     text-align:center;
     color: green;
+}
+
+/*Used in CN1 LookAndFeel.initScroll*/
+
+Scroll{ /*also HorizontalScroll*/
+    color: yellow;
+}
+
+ScrollThumb{ /*also HorizontalScrollThumb*/
+    color: red;
+}
+
+/*Styles for Overflow menu */
+/*https://stackoverflow.com/questions/60331822/codename-one-how-to-style-the-overflow-and-its-commands-in-css*/
+
+Menu{ 
+    color: blue;
+}
+
+Command { 
+    cn1-derive: Label;
+    padding: 0mm 0mm 0mm 1mm;
+        border-bottom: 1px solid darkgray;
+
+    /*color: green;*/
+}
+
+CommandList{ 
+    color: red;
 }

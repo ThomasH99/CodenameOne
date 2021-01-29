@@ -90,8 +90,9 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
         }
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowRemainingEvenIfZero);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListHideRemainingWhenDefaultValue);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListEffortEstimate);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListDontShowValueIfEarnedValuePerHourIsNonZero);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowEffortEstimateEvenIfZero);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowEarnedValuePerHourEvenIfZero);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowEarnedValueIfEarnedValuePerHourIsZero);
         addSettingInt(content, parseIdMap2, MyPrefs.earnedValueDecimals, 0, 2, 1);
 
         content.add(makeSpacer());

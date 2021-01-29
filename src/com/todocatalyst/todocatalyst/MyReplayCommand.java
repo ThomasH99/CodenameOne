@@ -47,7 +47,7 @@ public class MyReplayCommand extends CommandTracked {
 
     private MyReplayCommand(String cmdUniqueID, String commandName, char icon, Font font) {
         super(commandName);
-        if (false) {
+        if (font!=null) {
             setIconFont(font);
         }
         setMaterialIcon(icon);
@@ -211,6 +211,9 @@ public class MyReplayCommand extends CommandTracked {
 
     public static MyReplayCommand create(String commandNameAndUniqueId, char icon, final ActionListener ev) {
         return create(commandNameAndUniqueId, "", commandNameAndUniqueId, icon, ev, false, () -> true);
+    }
+    public static MyReplayCommand create(String commandNameAndUniqueId, char icon, Font iconFont, final ActionListener ev) {
+        return create(commandNameAndUniqueId, "", commandNameAndUniqueId, icon, iconFont, ev, false, () -> true);
     }
 //    public static MyReplayCommand create(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, MyForm.GetBool pushCmd) {
 //        return create(cmdUniqueID, "", commandName, icon, ev, false, pushCmd);

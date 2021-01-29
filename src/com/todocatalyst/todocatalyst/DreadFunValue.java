@@ -30,13 +30,13 @@ public enum DreadFunValue {
             case FUN:
 //                return Icons.iconFun;
 //                return Icons.iconChallengeEasy;
-                return Icons.iconFunCust;
+                return Icons.iconFun; //Cust;
             case NEUTRAL:
 //                return Icons.iconDreadFunNeutral;
                 return Icons.iconDreadFunNeutral;
             case DREAD:
 //                return Icons.iconDread;
-                return Icons.iconDreadCust;                
+                return Icons.iconDread; //Cust;                
         }
         return '?';
     }
@@ -87,11 +87,11 @@ public enum DreadFunValue {
     }
     
     static char[] getIconList() {
-        return new char[]{Icons.iconFunCust, Icons.iconDreadCust};
+        return new char[]{Icons.iconFun, Icons.iconDread};
     }
     
         static Font getIconFont() {
-        return Icons.myIconFont;
+        return null; //Icons.myIconFont;
     }
 
 

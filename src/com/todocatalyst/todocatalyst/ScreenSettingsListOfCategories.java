@@ -36,11 +36,11 @@ public class ScreenSettingsListOfCategories extends ScreenSettingsCommon {
     protected void buildContentPane(Container content) {
 //        cont.setScrollableY(true);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowNumberUndoneTasks);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowTotalNumberOfLeafTasks);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowNumberDoneTasks);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowRemainingEstimate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowTotalTime);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowWorkTime);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowTotalNumberOfLeafTasks);
 
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropLeftDropZoneWidth, 0, 30, 1);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropRightDropZoneWidth, 0, 30, 1);

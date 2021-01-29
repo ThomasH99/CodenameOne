@@ -671,14 +671,16 @@ public class MyPrefs {
             "itemListShowActualIfNonZeroEvenIfNotDone", prod ? false : true, "**");
     static PrefEntry itemListShowActualEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ACTUAL),
             "itemListShowActualEvenIfZero", prod ? false : true, "**");
-    static PrefEntry itemListEffortEstimate = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ESTIMATE), "itemListEffortEstimate",
+    static PrefEntry itemListShowEffortEstimateEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ESTIMATE), "itemListShowEffortEstimateEvenIfZero",
             prod ? false : true, "**");
     static PrefEntry itemListAllowDuplicateListNames = new PrefEntry("Allow use of same name for different lists", "itemListAllowDuplicateListNames",
             prod ? false : false, "**"); //TODO!!!: ask for confirmation instead!
     static PrefEntry earnedValueDecimals = new PrefEntry(Format.f("Number of decimals shown for {0 earled value}", Item.EARNED_VALUE), "earnedValueDecimals",
             prod ? 2 : 2, "**");
-    static PrefEntry itemListDontShowValueIfEarnedValuePerHourIsNonZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EARNED_VALUE),
-            "itemListDontShowValueIfEarnedValuePerHourIsNonZero", prod ? false : true, "**"); //TODO!!!: check this setting is correctly named/used
+    static PrefEntry itemListShowEarnedValuePerHourEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EARNED_VALUE_PER_HOUR),
+            "itemListShowEarnedValuePerHourEvenIfZero", prod ? false : true, "**"); 
+    static PrefEntry itemListShowEarnedValueIfEarnedValuePerHourIsZero = new PrefEntry(Format.f("Show {0} if {1} is 0", Item.EARNED_VALUE, Item.EARNED_VALUE_PER_HOUR),
+            "itemListShowEarnedValueIfEarnedValuePerHourIsZero", prod ? false : true, "**"); 
 
     //
     static PrefEntry creationLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_CREATION_LOG_TITLE, "creationLogInterval",

@@ -889,7 +889,7 @@ public class ScreenWorkSlot extends MyForm {
 
         //MODIFIED
         Label lastModifiedDate = new Label(workSlot.getUpdatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getUpdatedAt()));
-        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, hideIcons ? null : Icons.iconModifiedDate));
+        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, hideIcons ? null : Icons.iconModifiedDateCust, Icons.myIconFont));
 
         //OBJECT-ID
         if ((Config.TEST

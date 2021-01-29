@@ -129,11 +129,16 @@ public class MyCheckBox extends Button {
 //            }
 //</editor-fold>
         iconsPopupChar = new char[ItemStatus.values().length];
-        iconsPopupChar[0] = Icons.iconItemStatusCreated;
-        iconsPopupChar[1] = Icons.iconItemStatusOngoing;
-        iconsPopupChar[2] = Icons.iconItemStatusWaiting;
-        iconsPopupChar[3] = Icons.iconItemStatusDone;
-        iconsPopupChar[4] = Icons.iconItemStatusCancelled;
+//        iconsPopupChar[0] = Icons.iconItemStatusCreated;
+//        iconsPopupChar[1] = Icons.iconItemStatusOngoing;
+//        iconsPopupChar[2] = Icons.iconItemStatusWaiting;
+//        iconsPopupChar[3] = Icons.iconItemStatusDone;
+//        iconsPopupChar[4] = Icons.iconItemStatusCancelled;
+        iconsPopupChar[0] = Icons.iconItemStatusCreatedCust;
+        iconsPopupChar[1] = Icons.iconItemStatusOngoingCust;
+        iconsPopupChar[2] = Icons.iconItemStatusWaitingCust;
+        iconsPopupChar[3] = Icons.iconItemStatusDoneCust;
+        iconsPopupChar[4] = Icons.iconItemStatusCancelledCust;
 //        }
 //        if (groupStyle != null && !groupStyle.equals(this.groupStyleName)) {
 //        } else {
@@ -279,7 +284,8 @@ public class MyCheckBox extends Button {
 //        setIcon(ItemStatus.icons[itemStatus.ordinal()]);
 //        setIcon(ItemStatus.getStatusIcon(itemStatus));
 //        setIcon(iconsSingleStatus[itemStatus.ordinal()]);
-        setMaterialIcon(iconsPopupChar[itemStatus.ordinal()]);
+//        setMaterialIcon(iconsPopupChar[itemStatus.ordinal()]);
+        setFontIcon(Icons.myIconFont, iconsPopupChar[itemStatus.ordinal()]);
     }
 
     ItemStatus getStatus() {
@@ -312,7 +318,8 @@ public class MyCheckBox extends Button {
         });
 //        b.setUIID();
 //        b.setIcon(materialIcon);
-        b.setMaterialIcon(materialIcon);
+//        b.setMaterialIcon(materialIcon);
+        b.setFontIcon(Icons.myIconFont, materialIcon);
 //        return c;
         return b;
     }

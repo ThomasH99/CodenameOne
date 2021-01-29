@@ -359,10 +359,11 @@ public class ScreenListOfItems extends MyForm {
         if (false) {
             setScrollVisible(true); //UI: show scrollbar(?)
         }//        super(title, previousForm, null);'
+            getContentPane().setScrollVisible(true); //UI: https://stackoverflow.com/questions/36842004/cant-get-setscrollvisible-to-work
         UIManager.getInstance().getLookAndFeel().setFadeScrollBar(true);
 //        UIManager.getInstance().getLookAndFeel().setFadeScrollBarSpeed(300);
         UIManager.getInstance().getLookAndFeel().setFadeScrollEdge(true);
-//        UIManager.getInstance().getLookAndFeel().setFadeScrollEdgeLength(100);
+        UIManager.getInstance().getLookAndFeel().setFadeScrollEdgeLength(100);
         setOptions(options);
         setPinchInsertEnabled(true);
         getComponentForm().getLayeredPane().setLayout(new BorderLayout()); //needed for StickyHeaderMod
@@ -1641,7 +1642,7 @@ public class ScreenListOfItems extends MyForm {
                 if (true) { //temporarily disabled until next release
                     //                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
 //                    toolbar.addCommandToOverflowMenu(CommandTracked.create("Select", Icons.iconSelected, (e) -> {
-                    selectCmd = CommandTracked.create("Select", Icons.iconSelectAll, Icons.myIconFont, (e) -> {
+                    selectCmd = CommandTracked.create("Select", Icons.iconSelectAllCust, Icons.myIconFont, (e) -> {
                         Button selectButton = toolbar.findCommandComponent(selectCmd);
                         if (selectButton != null) {
                             selectButton.setText(isSelectionMode() ? "Select" : "Exit Select");
@@ -3115,7 +3116,7 @@ public class ScreenListOfItems extends MyForm {
         }
 
         //EARNED VALUE
-        if (item.getEarnedValue() != 0 && !(MyPrefs.itemListDontShowValueIfEarnedValuePerHourIsNonZero.getBoolean() && item.getEarnedValuePerHour() != 0)) {
+        if (item.getEarnedValue() != 0 && (item.getEarnedValuePerHour() == 0 && MyPrefs.itemListShowEarnedValueIfEarnedValuePerHourIsZero.getBoolean())) {
             Label earnedValueLabel; // = new Label();
 //            challengeLabel = new Label(item.getChallengeN().toString(), "ItemDetailsLabel");
 //            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
@@ -3131,7 +3132,7 @@ public class ScreenListOfItems extends MyForm {
         }
 
         //EARNED VALUE PER HOUR
-        if (item.getEarnedValuePerHour() != 0) {
+        if (item.getEarnedValuePerHour() != 0 || MyPrefs.itemListShowEarnedValuePerHourEvenIfZero.getBoolean()) {
             Label earnedValuePerHourLabel; // = new Label();
 //            challengeLabel = new Label(item.getChallengeN().toString(), "ItemDetailsLabel");
 //            challengeLabel = new Label(item.getChallengeN().getDescription(), "ItemDetailsLabel");
@@ -3218,7 +3219,8 @@ public class ScreenListOfItems extends MyForm {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            startByLabel = new\ Label("S:" + MyDate.formatDateNew(item.getStartByDateD()), "ItemDetailsLabel");
             startByLabel = new Label(MyDate.formatDateSmart(item.getStartByDateD()), "ItemDetailsLabel");
-            startByLabel.setMaterialIcon(Icons.iconStartByDate);
+//            startByLabel.setMaterialIcon(Icons.iconStartByDate);
+            startByLabel.setFontIcon(Icons.myIconFont,Icons.iconStartByDateCust);
             startByLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 startByLabel.setName("StartBy");
@@ -3234,7 +3236,7 @@ public class ScreenListOfItems extends MyForm {
             if (item.getExpiresOnDate().getTime() != 0 && MyPrefs.itemListExpiresByDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            expireByLabel = new Label("E:" + MyDate.formatDateNew(item.getExpiresOnDateD()), "ItemDetailsLabel");
-                expireByLabel = new Label(MyDate.formatDateSmart(item.getExpiresOnDate(),false,false,false,true), "ItemDetailsLabel");
+                expireByLabel = new Label(MyDate.formatDateSmart(item.getExpiresOnDate(), false, false, false, true), "ItemDetailsLabel");
 //            expireByLabel.setMaterialIcon(Icons.iconExpireByDate);
                 expireByLabel.setFontIcon(Icons.myIconFont, Icons.iconAutoCancelByDateCust);
                 expireByLabel.setGap(GAP_LABEL_ICON);
@@ -3268,10 +3270,11 @@ public class ScreenListOfItems extends MyForm {
 
         //ESTIMATE
         Label effortEstimateLabel = null; //new Label();
-        if (item.getEstimateTotal() != 0 && MyPrefs.itemListEffortEstimate.getBoolean()) {
+        if (item.getEstimateTotal() != 0 || MyPrefs.itemListShowEffortEstimateEvenIfZero.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            effortEstimateLabel = new Label("E:" + MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
-            effortEstimateLabel = new Label("E" + MyDate.formatDurationShort(item.getEstimateTotal()), "ItemEffortEstimateLabel");
+//            effortEstimateLabel = new Label("E" + MyDate.formatDurationShort(item.getEstimateTotal()), "ItemEffortEstimateLabel");
+            effortEstimateLabel = new Label(MyDate.formatDurationShort(item.getEstimateTotal()), "ItemEffortEstimateLabel");
 //            effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
             effortEstimateLabel.setFontIcon(Icons.myIconFont, Icons.iconEstimateCust);
             effortEstimateLabel.setGap(GAP_LABEL_ICON);
@@ -3352,17 +3355,6 @@ public class ScreenListOfItems extends MyForm {
         if (impUrgLabel != null) {
             westCont.add(impUrgLabel);
         }
-//        if (effortCont != null) westCont.add(effortCont);
-        if (!isDone && remainingEffortLabel != null) {
-            westCont.add(remainingEffortLabel);
-        }
-        if (isDone && effortEstimateLabel != null) {
-            westCont.add(effortEstimateLabel);
-        }
-//        if (isDone && actualEffortLabel != null) {
-        if (actualEffortLabel != null) {
-            westCont.add(actualEffortLabel);
-        }
 //        if (dateCont != null) westCont.add(dateCont);
         if (!isDone) { //show relevant date in prio order: waitingTill, finishTime or dueDate
             if (waitingTillLabel != null && item.getStatus() == ItemStatus.WAITING) {
@@ -3379,6 +3371,17 @@ public class ScreenListOfItems extends MyForm {
             if (dueDateLabel != null) {
                 southDetailsContainer.addComponent(dueDateLabel);
             }
+        }
+//        if (effortCont != null) westCont.add(effortCont);
+        if (!isDone && remainingEffortLabel != null) {
+            westCont.add(remainingEffortLabel);
+        }
+        if (isDone && effortEstimateLabel != null) {
+            westCont.add(effortEstimateLabel);
+        }
+//        if (isDone && actualEffortLabel != null) {
+        if (actualEffortLabel != null) {
+            westCont.add(actualEffortLabel);
         }
         if (isDone && completedDateLabel != null) {
             westCont.add(completedDateLabel);

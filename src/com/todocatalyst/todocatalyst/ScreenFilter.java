@@ -334,6 +334,35 @@ public class ScreenFilter extends MyForm {
 //        content.add(tl.createConstraint().horizontalSpan(2), new SpanLabel("Show only certain types of tasks"));
 //        content.add(new SpanLabel("Show only certain types of tasks"));
         content.add(makeSpacerThin());
+        //Starred
+         content.add(layoutSetting(Format.f("Show only {0} tasks",Item.STARRED), new MyOnOffSwitch(parseIdMap2,
+                () -> {
+                    return filterSortDef.isShowInterruptTasksOnly();
+                }, (b) -> {
+                    filterSortDef.setShowInterruptTasksOnly(b);
+                }), "**"));
+         
+
+        //Estimates all/with/without
+//        content.add(new SpanLabel("With estimates")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutSetting(Format.f("Show only tasks with {0}",Item.EFFORT_ESTIMATE), new MyOnOffSwitch(parseIdMap2, () -> {
+            return filterSortDef.isShowWithoutEstimatesOnly();
+        }, (b) -> {
+            filterSortDef.setShowWithoutEstimatesOnly(b);
+        }), "**"));
+        
+        content.add(layoutSetting(Format.f("Show only tasks with {0}",Item.EFFORT_ACTUAL), new MyOnOffSwitch(parseIdMap2, () -> {
+            return filterSortDef.isShowWithActualsOnly();
+        }, (b) -> {
+            filterSortDef.setShowWithActualsOnly(b);
+        }), "**"));
+        
+        content.add(layoutSetting(Format.f("Show only tasks with {0}",Item.EFFORT_REMAINING), new MyOnOffSwitch(parseIdMap2, () -> {
+            return filterSortDef.isShowWithRemainingOnly();
+        }, (b) -> {
+            filterSortDef.setShowWithRemainingOnly(b);
+        }), "**"));
+
         //Projects
 //        content.add(new SpanLabel("Projects")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
         content.add(layoutSetting("Show only Projects", new MyOnOffSwitch(parseIdMap2, () -> {
@@ -348,30 +377,23 @@ public class ScreenFilter extends MyForm {
 //                }, (b) -> {
 //                        filterSortDef.showProjectsOnly = b;
 //                }));
-        //Interrupt tasks
+
+//Interrupt tasks
 //       content.add(new SpanLabel("Interrupt tasks")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layoutSetting("Show only Interrupt tasks", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting(Format.f("Show only {0} tasks",Item.INTERRUPT_OR_INSTANT_TASK), new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowInterruptTasksOnly();
                 }, (b) -> {
                     filterSortDef.setShowInterruptTasksOnly(b);
                 }), "**"));
 
-        //Estimates all/with/without
-//        content.add(new SpanLabel("With estimates")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutSetting("Show only tasks with estimates", new MyOnOffSwitch(parseIdMap2, () -> {
-            return filterSortDef.isShowWithoutEstimatesOnly();
-        }, (b) -> {
-            filterSortDef.setShowWithoutEstimatesOnly(b);
-        }), "**"));
-
         //Actual all/with/withoutno/all
 //        content.add(new SpanLabel("With work time")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutSetting("Show only tasks with work time", new MyOnOffSwitch(parseIdMap2, () -> {
-            return filterSortDef.isShowWithActualsOnly();
-        }, (b) -> {
-            filterSortDef.setShowWithActualsOnly(b);
-        }), "**"));
+//        content.add(layoutSetting("Show only tasks with work time", new MyOnOffSwitch(parseIdMap2, () -> {
+//            return filterSortDef.isShowWithActualsOnly();
+//        }, (b) -> {
+//            filterSortDef.setShowWithActualsOnly(b);
+//        }), "**"));
 
         //Depending on tasks
 //        content.add(new SpanLabel("Tasks depending on other tasks")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,

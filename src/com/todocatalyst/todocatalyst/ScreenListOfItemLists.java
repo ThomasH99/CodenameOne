@@ -661,14 +661,25 @@ public class ScreenListOfItemLists extends MyForm {
                         Container southDetailsContainer = new Container(new FlowLayout(Container.RIGHT));
                         southDetailsContainer.setUIID("StatisticsGroupDetails");
                         southDetailsContainer.setName("southDetailsContainer");
+                        
 //                        long remainingEffort = itemList.getRemainingEffort();
                         long estimatedEffort = itemList.getEstimate(true);
 //                        Label estimateLabel = new Label("Estimate " + MyDate.formatDurationStd(estimatedEffort), "StatisticsDetail");
                         Label estimateLabel = new Label(MyDate.formatDurationStd(estimatedEffort), "StatisticsDetail");
-                        estimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+//                        estimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+                        estimateLabel.setFontIcon(Icons.myIconFont, Icons.iconEstimateCust);
                         estimateLabel.setName("estimateLabel");
-                        estimateLabel.setGap(GAP_LABEL_ICON);
+                        if(false) estimateLabel.setGap(GAP_LABEL_ICON); //setting this gap makes the icon too close to the text - WHY here and not elsewhere?
                         southDetailsContainer.addAll(estimateLabel);
+                        
+                        long actualEffort = ((ItemBucket) itemList).getActualTotal();
+//                        Label estimateLabel = new Label("Estimate " + MyDate.formatDurationStd(estimatedEffort), "StatisticsDetail");
+                        Label actualLabel = new Label(MyDate.formatDurationStd(actualEffort), "StatisticsDetail");
+//                        estimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+                        actualLabel.setFontIcon(Icons.myIconFont, Icons.iconActualFinalCust);
+                        actualLabel.setName("actualLabel");
+                        if(false) actualLabel.setGap(GAP_LABEL_ICON); //setting this gap makes the icon too close to the text - WHY here and not elsewhere?
+                        southDetailsContainer.addAll(actualLabel);
 
 //                        if (itemBucket.hashValue != null) {
                         if (false && itemBucket.hashValue instanceof ItemAndListCommonInterface) {
@@ -684,11 +695,12 @@ public class ScreenListOfItemLists extends MyForm {
                             durationLabel.setGap(GAP_LABEL_ICON);
                             southDetailsContainer.addAll(durationLabel);
                         }
-                        Label durationLabel = new Label(MyDate.formatDurationStd(WorkSlot.getWorkTimeSum(itemList.getWorkSlotsFromParseN())), "StatisticsDetail");
-                        durationLabel.setMaterialIcon(Icons.iconWorkSlot);
-                        durationLabel.setName("durationLabel");
-                        durationLabel.setGap(GAP_LABEL_ICON);
-                        southDetailsContainer.addAll(durationLabel);
+                        
+                        Label workTimeLabel = new Label(MyDate.formatDurationStd(WorkSlot.getWorkTimeSum(itemList.getWorkSlotsFromParseN())), "StatisticsDetail");
+                        workTimeLabel.setMaterialIcon(Icons.iconWorkSlot);
+                        workTimeLabel.setName("durationLabel");
+                        if(false) workTimeLabel.setGap(GAP_LABEL_ICON);
+                        southDetailsContainer.addAll(workTimeLabel);
 //                        southDetailsContainer.addAll(estimateLabel, durationLabel);
 //                        southDetailsContainer.setHidden(!showDetails); //hide details by default
                         mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);

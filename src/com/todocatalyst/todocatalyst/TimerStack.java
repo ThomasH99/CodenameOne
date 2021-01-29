@@ -3573,14 +3573,16 @@ class TimerStack {
                     //UI: It is OK to start timer on a completed task, it will simply add more time to actual
                     timerInstance.startTimer(true);
                     if (fullScreenTimer) {
-                        timerStartStopButton.setMaterialIcon(Icons.iconTimerPause);
+//                        timerStartStopButton.setMaterialIcon(Icons.iconTimerPause);
+                        timerStartStopButton.setFontIcon(Icons.myIconFont, Icons.iconTimerPauseCust);
                     }
                     timerStartStopButton.getParent().revalidateWithAnimationSafety();//this is enough to update the value on the screen
                     startFormUpdateTimers.actionPerformed(null);
                 } else {
                     timerInstance.stopTimer();
                     if (fullScreenTimer) {
-                        timerStartStopButton.setMaterialIcon(Icons.iconTimerStart);
+//                        timerStartStopButton.setMaterialIcon(Icons.iconTimerStart);
+                        timerStartStopButton.setFontIcon(Icons.myIconFont, Icons.iconTimerStartCust);
                     }
 //                    buzzerTimer.cancel();
                     stopUITimers.actionPerformed(null);
@@ -3605,7 +3607,8 @@ class TimerStack {
 
         if (fullScreenTimer) {
 
-            timerStartStopButton.setMaterialIcon(timerInstance.isRunning() ? Icons.iconTimerPause : Icons.iconTimerStart);
+//            timerStartStopButton.setMaterialIcon(timerInstance.isRunning() ? Icons.iconTimerPause : Icons.iconTimerStart);
+            timerStartStopButton.setFontIcon(Icons.myIconFont, timerInstance.isRunning() ? Icons.iconTimerPauseCust : Icons.iconTimerStartCust);
             Container timerBigTimerTopLevelContainer = new Container(new BorderLayout()); //top-level container for TimerScreen
 //            Container timerContainer = fullScreenTimer ? new Container(BoxLayout.y()) : new Container(new MyBorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER, MyBorderLayout.SIZE_EAST_BEFORE_WEST));
             Container timerContainer = new Container(BoxLayout.y());

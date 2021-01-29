@@ -204,7 +204,7 @@ public class ScreenMain extends MyForm {
 //            makeAndAddButtons(listOfAlarms, toolbar, cont);
 //        }
 //</editor-fold>
-        Command overdue = MyReplayCommand.create(SCREEN_OVERDUE_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainOverdue, (e) -> {
+        Command overdue = MyReplayCommand.create(SCREEN_OVERDUE_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainOverdueCust, Icons.myIconFont, (e) -> {
 //                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_DUE_DATE,
 //                            FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
 //                    new ScreenListOfItems(SCREEN_OVERDUE_TITLE, () -> new ItemList(SCREEN_OVERDUE_TITLE, DAO.getInstance().getOverdue(), filterSort, true), ScreenMain.this, (i) -> {
@@ -245,7 +245,7 @@ public class ScreenMain extends MyForm {
         makeAndAddButtons(today, toolbar, cont, SCREEN_TODAY_HELP);
 
         //TODO!!! add support for help text on these commands
-        Command next = MyReplayCommand.create(SCREEN_NEXT_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainNext, (e) -> {
+        Command next = MyReplayCommand.create(SCREEN_NEXT_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainNextCust, Icons.myIconFont,(e) -> {
 //                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
 //                            + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false, false);
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_NEXT_TITLE, () -> new ItemList(SCREEN_NEXT_TITLE, DAO.getInstance().getCalendar(), filterSort, true), ScreenMain.this, (i) -> {
@@ -282,7 +282,7 @@ public class ScreenMain extends MyForm {
         makeAndAddButtons(inbox, toolbar, cont, SCREEN_INBOX_HELP);
 
         Command lists = MyReplayCommand.create(SCREEN_LISTS_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/,
-                Icons.iconMainLists, (e) -> {
+                Icons.iconMainLists, Icons.myIconFont, (e) -> {
 //                new ScreenListOfItemLists("Lists", new ItemList(DAO.getInstance().getAllItemLists()), ScreenMain.this, (i)->{}).show();                     //null: do nothing, lists are saved if edited
 //                new ScreenListOfItemLists(SCREEN_LISTS_TITLE, DAO.getInstance().getAllItemLists(), ScreenMain.this, (i) -> {
 //                    new ScreenListOfItemLists(SCREEN_LISTS_TITLE, DAO.getInstance().getItemListList(), ScreenMain.this, (i) -> {
@@ -301,7 +301,8 @@ public class ScreenMain extends MyForm {
         makeAndAddButtons(categories, toolbar, cont, ScreenListOfCategories.SCREEN_HELP);
 
         if (true || Config.TEST) {
-            Command allTasks = MyReplayCommand.create(SCREEN_ALL_TASKS_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainAllTasks, (e) -> {
+            Command allTasks = MyReplayCommand.create(SCREEN_ALL_TASKS_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, 
+                    Icons.iconMainAllTasks, Icons.myIconFont, (e) -> {
                         FilterSortDef allTasksSystemFilter = DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString(), FilterSortDef.getDefaultFilter());
                         new ScreenListOfItems(ALL_TASKS,
                                 () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(false, false, true, false, false), allTasksSystemFilter, true),
@@ -311,7 +312,7 @@ public class ScreenMain extends MyForm {
             makeAndAddButtons(allTasks, toolbar, cont, SCREEN_ALL_TASKS_HELP);
         }
 
-        Command projects = MyReplayCommand.create(SCREEN_PROJECTS_TITLE, Icons.iconMainProjects, (e) -> {
+        Command projects = MyReplayCommand.create(SCREEN_PROJECTS_TITLE, Icons.iconMainProjectsCust, Icons.myIconFont, (e) -> {
             MyForm myForm = new ScreenListOfItems(SCREEN_PROJECTS_TITLE, "No projects", () -> new ItemList(DAO.getInstance().getAllProjects()),
                     ScreenMain.this, null,
                     ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES //| ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER //ScreenListOfItems.OPTION_NO_TIMER | 

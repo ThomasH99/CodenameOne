@@ -204,8 +204,10 @@ public class FilterSortDef extends ParseObject {
 
     public static String FILTER_SHOW_PROJECTS_ONLY = "Projects";
     public static String FILTER_SHOW_INTERRUPT_TASKS_ONLY = "InterruptTasks";
+    public static String FILTER_SHOW_STARRED_TASKS_ONLY = "Starred";
     public static String FILTER_SHOW_WITHOUT_ESTIMATES_ONLY = "WithoutEstimates";
     public static String FILTER_SHOW_WITH_ACTUALS_ONLY = "WithActuals";
+    public static String FILTER_SHOW_WITH_REMAINING_ONLY = "WithRemaining";
     public static String FILTER_SHOW_ALL = "All";
 
     public final static String FILTER_SORT_TODAY_VIEW = "TODAY_VIEW";
@@ -225,8 +227,10 @@ public class FilterSortDef extends ParseObject {
     private boolean showExpiresOnDate;
     private boolean showProjectsOnly;
     private boolean showInterruptTasksOnly;
+    private boolean showStarredTasksOnly;
     private boolean showWithoutEstimatesOnly;
     private boolean showWithActualsOnly;
+    private boolean showWithRemainingOnly;
 //</editor-fold>
 
     /**
@@ -793,8 +797,10 @@ public class FilterSortDef extends ParseObject {
 
         showProjectsOnly = filterOptions.indexOf(FILTER_SHOW_PROJECTS_ONLY) != -1;
         showInterruptTasksOnly = filterOptions.indexOf(FILTER_SHOW_INTERRUPT_TASKS_ONLY) != -1;
+        showInterruptTasksOnly = filterOptions.indexOf(FILTER_SHOW_STARRED_TASKS_ONLY) != -1;
         showWithoutEstimatesOnly = filterOptions.indexOf(FILTER_SHOW_WITHOUT_ESTIMATES_ONLY) != -1;
         showWithActualsOnly = filterOptions.indexOf(FILTER_SHOW_WITH_ACTUALS_ONLY) != -1;
+        showWithRemainingOnly = filterOptions.indexOf(FILTER_SHOW_WITH_REMAINING_ONLY) != -1;
 
 //        showInitialized = true;
     }
@@ -865,6 +871,7 @@ public class FilterSortDef extends ParseObject {
                 + (showExpiresOnDate ? FILTER_SHOW_EXPIRES_ON_DATE + " " : "")
                 + (showProjectsOnly ? FILTER_SHOW_PROJECTS_ONLY + " " : "")
                 + (showInterruptTasksOnly ? FILTER_SHOW_INTERRUPT_TASKS_ONLY + " " : "")
+                + (showInterruptTasksOnly ? FILTER_SHOW_STARRED_TASKS_ONLY + " " : "")
                 + (showWithoutEstimatesOnly ? FILTER_SHOW_WITHOUT_ESTIMATES_ONLY + " " : "")
                 + (showWithActualsOnly ? FILTER_SHOW_WITH_ACTUALS_ONLY + " " : "");
 //        put(PARSE_FILTER_OPTIONS, filterOptions);
@@ -1000,8 +1007,10 @@ public class FilterSortDef extends ParseObject {
                 && (showExpiresOnDate || item.getExpiresOnDate().getTime() == 0 || item.getExpiresOnDate().getTime() < MyDate.currentTimeMillis()) //before now <=> hideUntil date is already passed so show the item
                 && (!showProjectsOnly || item.isProject()) //before now <=> hideUntil date is already passed so show the item
                 && (!showInterruptTasksOnly || item.isInteruptOrInstantTask()) //before now <=> hideUntil date is already passed so show the item
+                && (!showStarredTasksOnly || item.isStarred()) //before now <=> hideUntil date is already passed so show the item
                 && (!showWithoutEstimatesOnly || !item.has(Item.PARSE_EFFORT_ESTIMATE)) //before now <=> hideUntil date is already passed so show the item
                 && (!showWithActualsOnly || item.has(Item.PARSE_ACTUAL_EFFORT)) //before now <=> hideUntil date is already passed so show the item
+                && (!showWithRemainingOnly || item.has(Item.PARSE_REMAINING_EFFORT_TOTAL)) //before now <=> hideUntil date is already passed so show the item
                 );
 //            return false;
     }
@@ -1047,11 +1056,17 @@ public class FilterSortDef extends ParseObject {
         if (fp.showInterruptTasksOnly) {
             query.whereEqualTo(Item.PARSE_INTERRUPT_OR_INSTANT_TASK, true);
         }
+        if (fp.showStarredTasksOnly) {
+            query.whereEqualTo(Item.PARSE_STARRED, true);
+        }
         if (fp.showWithoutEstimatesOnly) {
             query.whereDoesNotExist(Item.PARSE_EFFORT_ESTIMATE);
         }
         if (fp.showWithActualsOnly) {
             query.whereExists(Item.PARSE_ACTUAL_EFFORT); //Choice for task status will determine which tasks are shown
+        }
+        if (fp.showWithRemainingOnly) {
+            query.whereExists(Item.PARSE_REMAINING_EFFORT_TOTAL); //Choice for task status will determine which tasks are shown
         }
     }
 
@@ -1749,10 +1764,22 @@ public class FilterSortDef extends ParseObject {
     }
 
     /**
-     * @param showInterruptTasksOnly the showInterruptTasksOnly to set
+     * @param showStarredTasksOnly the showInterruptTasksOnly to set
      */
-    public void setShowInterruptTasksOnly(boolean showInterruptTasksOnly) {
-        this.showInterruptTasksOnly = showInterruptTasksOnly;
+    public void setShowInterruptTasksOnly(boolean showStarredTasksOnly) {
+        this.showInterruptTasksOnly = showStarredTasksOnly;
+        updateAndSaveFilterOptions();
+    }
+
+    public boolean isShowStarredTasksOnly() {
+        return showStarredTasksOnly;
+    }
+
+    /**
+     * @param showStarredTasksOnly the showInterruptTasksOnly to set
+     */
+    public void setShowStarredTasksOnly(boolean showStarredTasksOnly) {
+        this.showStarredTasksOnly = showStarredTasksOnly;
         updateAndSaveFilterOptions();
     }
 
@@ -1787,6 +1814,21 @@ public class FilterSortDef extends ParseObject {
      */
     public void setShowWithActualsOnly(boolean showWithActualsOnly) {
         this.showWithActualsOnly = showWithActualsOnly;
+        updateAndSaveFilterOptions();
+    }
+
+    /**
+     * @return the showWithRemainingOnly
+     */
+    public boolean isShowWithRemainingOnly() {
+        return showWithRemainingOnly;
+    }
+
+    /**
+     * @param showWithRemainingOnly the showWithActualsOnly to set
+     */
+    public void setShowWithRemainingOnly(boolean showWithRemainingOnly) {
+        this.showWithRemainingOnly = showWithRemainingOnly;
         updateAndSaveFilterOptions();
     }
 

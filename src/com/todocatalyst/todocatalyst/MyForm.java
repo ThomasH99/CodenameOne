@@ -567,6 +567,13 @@ public class MyForm extends Form {
         if (false) {
             setScrollVisible(true); //show scroll bar(?)
         }
+
+//        getUIManager().getLookAndFeel().setDefaultMenuTransitionIn( CommonTransitions.createSlide(CommonTransitions.SLIDE_VERTICAL, false, 200)); //PROBLEM: slides from top of screen, not from top of contentPane!!
+//        getUIManager().getLookAndFeel().setDefaultMenuTransitionOut( CommonTransitions.createSlide(CommonTransitions.SLIDE_VERTICAL, true, 200));
+        getUIManager().getLookAndFeel().setDefaultMenuTransitionIn(CommonTransitions.createSlide(CommonTransitions.SLIDE_HORIZONTAL, true, 200));
+//        getUIManager().getLookAndFeel().setDefaultMenuTransitionIn(new CommonTransitions.createSlideFadeTitle(true, 200) 
+//        getUIManager().getLookAndFeel().setDefaultMenuTransitionIn(CommonTransitions.createSlideFadeTitle(true, 200));
+        getUIManager().getLookAndFeel().setDefaultMenuTransitionOut(CommonTransitions.createSlide(CommonTransitions.SLIDE_HORIZONTAL, false, 200));
 //        getToolbar().setTitleCentered(true); //ensure title is centered even when icons are added
         if (false) { //NOT good UI since we have commands in the toolbar
             getToolbar().setScrollOffUponContentPane(MyPrefs.addNewCategoriesToBeginningOfCategoryList.getBoolean());
@@ -3429,8 +3436,9 @@ public class MyForm extends Form {
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, Character materialIcon) { //normal edit field with [>]
         return layoutN(fieldLabelTxt, field, help, null, true, false, true, true, false, materialIcon);
     }
+
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, Character icon, Font iconFont) { //normal edit field with [>]
-        return  new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, true, true, false, icon, iconFont);
+        return new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, true, true, false, icon, iconFont);
 //        return layoutN(fieldLabelTxt, field, help, null, true, false, true, true, false, icon);
     }
 
@@ -3526,6 +3534,13 @@ public class MyForm extends Form {
             boolean sizeWestBeforeEast, Character materialIcon) {
         return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable,
                 visibleEditButton, hiddenEditButton, sizeWestBeforeEast, materialIcon);
+    }
+
+    protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton,
+            boolean sizeWestBeforeEast, Character materialIcon, Font iconFont) {
+        return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable,
+                visibleEditButton, hiddenEditButton, sizeWestBeforeEast, materialIcon, iconFont);
     }
 ////<editor-fold defaultstate="collapsed" desc="comment">
 //    protected static Component layoutNXXX(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
@@ -4531,17 +4546,16 @@ public class MyForm extends Form {
 //            GetVal getDefaultValue, GetBool isInheritedN, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2) {
 //
 //    }
-     static void initField(String fieldIdentifier, Component field, GetVal getOrg, PutVal putOrgN, GetVal getFieldN, PutVal putFieldN, Object undefinedValue,
-            GetVal getDefaultValue, GetBool isInheritedN, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2 ) {
-          initField(fieldIdentifier, field, getOrg, putOrgN, getFieldN, putFieldN, undefinedValue, getDefaultValue, isInheritedN, previousValues, parseIdMap2, null);
-     }
-     
+    static void initField(String fieldIdentifier, Component field, GetVal getOrg, PutVal putOrgN, GetVal getFieldN, PutVal putFieldN, Object undefinedValue,
+            GetVal getDefaultValue, GetBool isInheritedN, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2) {
+        initField(fieldIdentifier, field, getOrg, putOrgN, getFieldN, putFieldN, undefinedValue, getDefaultValue, isInheritedN, previousValues, parseIdMap2, null);
+    }
+
 //      void initField(String fieldIdentifier, Component field, GetVal getOrg, PutVal putOrgN, GetVal getFieldN, PutVal putFieldN, Object undefinedValue,
 //            GetVal getDefaultValue, GetBool isInheritedN, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2 ) {
 //          initField(fieldIdentifier, field, getOrg, putOrgN, getFieldN, putFieldN, undefinedValue, getDefaultValue, isInheritedN, previousValues, parseIdMap2, refresh);
 //     }
-     
-     static void initField(String fieldIdentifier, Component field, GetVal getOrg, PutVal putOrgN, GetVal getFieldN, PutVal putFieldN, Object undefinedValue,
+    static void initField(String fieldIdentifier, Component field, GetVal getOrg, PutVal putOrgN, GetVal getFieldN, PutVal putFieldN, Object undefinedValue,
             GetVal getDefaultValue, GetBool isInheritedN, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2, List<Runnable> refresh) {
         //initialize 
         if (putFieldN != null && getOrg.getVal() != null) {

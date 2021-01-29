@@ -6363,6 +6363,9 @@ public class DAO {
                 Item.PARSE_SNOOZED_TYPE,
                 Item.PARSE_SNOOZE_DATE,
                 Item.PARSE_STARRED,
+                Item.PARSE_TEMPLATE,
+//                Item.PARSE_UPDATED_AT, //NOT fetched explicitedly since always included
+//                Item.PARSE_CREATED_AT, //NOT fetched explicitedly since always included
                 Item.PARSE_STARTED_ON_DATE,
                 Item.PARSE_START_BY_DATE,
                 Item.PARSE_STATUS,

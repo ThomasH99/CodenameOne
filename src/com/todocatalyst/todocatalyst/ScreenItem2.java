@@ -1976,7 +1976,8 @@ public class ScreenItem2 extends MyForm {
                 () -> status.getStatus().toString(), //status.getStatus(), 
                 (enumStr) -> status.setStatus(ItemStatus.valueOf((String) enumStr)));
 //        mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP, null, false, false, false, true));
-        mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP, null, false, false, false, true, false, hideIcons ? null : Icons.iconItemStatusIcon));
+        mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP, null, false, false, false, true, false, hideIcons ? null : Icons.iconItemStatusIconLabelCust, Icons.myIconFont));
+//        mainCont.add(layoutN(Item.STATUS, status, Item.STATUS_HELP, null, false, false, false, true, false, hideIcons ? null : Icons.iconItemStatusIconLabelCust));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        parseIdMap2.put(status, () -> {
@@ -2125,6 +2126,34 @@ public class ScreenItem2 extends MyForm {
 
         dueDate = new MyDateAndTimePicker(() -> makeDefaultDueDate());
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        cont.add(new Label("Due")).add(dueDate);
+//        mainCont.add(new Label("Due")).add(LayeredLayout.encloseIn(dueDate, FlowLayout.encloseRightMiddle(new Button(Command.create(null,Icons.iconCloseCircle,(e)->{dueDate.setDate(new Date(0));})))));
+//        mainCont.add(new Label(Item.DUE_DATE)).add(addDatePickerWithClearButton(dueDate));
+//        mainCont.add(new Label(Item.DUE_DATE)).add(dueDate.makeContainerWithClearButton());
+//        mainCont.add(layout(Item.DUE_DATE, dueDate.makeContainerWithClearButton(), "**"));
+//        mainCont.add(initField(Item.DUE_DATE, Item.DUE_DATE_HELP, dueDate, Item.PARSE_DUE_DATE, () -> item.getDueDateD(), (t) -> item.setDueDate((Date) t),
+//</editor-fold>
+        initField(Item.PARSE_DUE_DATE, dueDate,
+                () -> itemCopy.getDueDate(),
+                //<editor-fold defaultstate="collapsed" desc="comment">
+                //                () -> {
+                //                    if (dueDateEditedInRepeatRuleScreen != null) {
+                //                        Date temp = dueDateEditedInRepeatRuleScreen;
+                //                        dueDateEditedInRepeatRuleScreen = null;
+                //                        return temp;
+                //                    } else return item.getDueDateD();
+                //                },
+                //</editor-fold>
+                (d) -> itemOrg.setDueDate((Date) d),
+                () -> dueDate.getDate(),
+                (d) -> dueDate.setDate((Date) d),
+                () -> itemCopy.isDueDateInherited(dueDate.getDate()));
+//                new Date(0),
+//                ()->makeDefaultDueDate());
+        mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP, hideIcons ? null : Icons.iconSetDueDateToTodayFontImageMaterial));
+//        updateUIIDForInherited(dueDate, itemCopy.isDueDateInherited(dueDate.getDate())); //NB! MUST do *after* layoutN() which sets the UIID
+
         //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyDateAndTimePicker alarmDate = new MyDateAndTimePicker("<click to set an alarm>", parseIdMap, item, Item.PARSE_ALARM_DATE);
 //        MyDateAndTimePicker alarmDate = new MyDateAndTimePicker("<click to set an alarm>", parseIdMap2, () -> item.getAlarmDateD(), (d) -> item.setAlarmDate(d));
@@ -2171,34 +2200,6 @@ public class ScreenItem2 extends MyForm {
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(addDatePickerWithClearButton(startByDate));
 //        timeCont.add(new Label(Item.START_BY_TIME)).add(startByDate.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.START_BY_TIME, startByDate.makeContainerWithClearButton(), "**"));
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        cont.add(new Label("Due")).add(dueDate);
-//        mainCont.add(new Label("Due")).add(LayeredLayout.encloseIn(dueDate, FlowLayout.encloseRightMiddle(new Button(Command.create(null,Icons.iconCloseCircle,(e)->{dueDate.setDate(new Date(0));})))));
-//        mainCont.add(new Label(Item.DUE_DATE)).add(addDatePickerWithClearButton(dueDate));
-//        mainCont.add(new Label(Item.DUE_DATE)).add(dueDate.makeContainerWithClearButton());
-//        mainCont.add(layout(Item.DUE_DATE, dueDate.makeContainerWithClearButton(), "**"));
-//        mainCont.add(initField(Item.DUE_DATE, Item.DUE_DATE_HELP, dueDate, Item.PARSE_DUE_DATE, () -> item.getDueDateD(), (t) -> item.setDueDate((Date) t),
-//</editor-fold>
-        initField(Item.PARSE_DUE_DATE, dueDate,
-                () -> itemCopy.getDueDate(),
-                //<editor-fold defaultstate="collapsed" desc="comment">
-                //                () -> {
-                //                    if (dueDateEditedInRepeatRuleScreen != null) {
-                //                        Date temp = dueDateEditedInRepeatRuleScreen;
-                //                        dueDateEditedInRepeatRuleScreen = null;
-                //                        return temp;
-                //                    } else return item.getDueDateD();
-                //                },
-                //</editor-fold>
-                (d) -> itemOrg.setDueDate((Date) d),
-                () -> dueDate.getDate(),
-                (d) -> dueDate.setDate((Date) d),
-                () -> itemCopy.isDueDateInherited(dueDate.getDate()));
-//                new Date(0),
-//                ()->makeDefaultDueDate());
-        mainCont.add(layoutN(Item.DUE_DATE, dueDate, Item.DUE_DATE_HELP, hideIcons ? null : Icons.iconSetDueDateToTodayFontImageMaterial));
-//        updateUIIDForInherited(dueDate, itemCopy.isDueDateInherited(dueDate.getDate())); //NB! MUST do *after* layoutN() which sets the UIID
-
 //        hi.add(LayeredLayout.encloseIn(settingsLabel, FlowLayout.encloseRight(close))) //https://github.com/codenameone/CodenameOne/wiki/Basics---Themes,-Styles,-Components-&-Layouts#layered-layout
         //FINISH_TIME
 //        WorkTimeSlices workTime = item.getAllocatedWorkTimeN();
@@ -3038,7 +3039,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> dateSetWaitingDate.getDate(),
                 (s) -> dateSetWaitingDate.setDate((Date) s));
 
-        timeCont.add(layoutN(Item.DATE_WHEN_SET_WAITING, dateSetWaitingDate, Item.DATE_WHEN_SET_WAITING_HELP, hideIcons ? null : Icons.iconSetWaitingDateMaterial));
+        timeCont.add(layoutN(Item.DATE_WHEN_SET_WAITING, dateSetWaitingDate, Item.DATE_WHEN_SET_WAITING_HELP, hideIcons ? null : Icons.iconSetWaitingDateCust, Icons.myIconFont));
 
         if (false) { //not meaningful to change status when changing this date
             dateSetWaitingDate.addActionListener((e) -> {
@@ -3126,7 +3127,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        priority = new MyComponentGroup(new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, true);
         priority = new MyComponentGroup(new Integer[]{1, 2, 3, 4, 5, 6, 7, 8, 9},
                 null, //new String[]{"1", "2", "3", "4", "5", "6", "7", "8", "9"}, 
-                new char[]{0x43, '2', '3', '4', '5', '6', '7', '8', '9', ':', ';'}, Icons.myIconFont, true);
+//                new char[]{'<', '3', '4', '5', '6', '7', '8', '9', ':', ';'}, Icons.myIconFont, true);
+                new char[]{ '3', '4', '5', '6', '7', '8', '9', ':', ';'}, Icons.myIconFont, true);
         initField(Item.PARSE_PRIORITY, priority,
                 () -> itemCopy.getPriority(),
                 (t) -> itemOrg.setPriority(t != null ? (int) t : 0),
@@ -3253,7 +3255,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //</editor-fold>
 //        dreadFun = new MyComponentGroup(DreadFunValue.getNameList(), DreadFunValue.getDescriptionList(), true);
         dreadFun = new MyComponentGroup(DreadFunValue.getNameList(), DreadFunValue.getDescriptionList(),
-                DreadFunValue.getIconList(), Challenge.getIconFont(), true);
+                DreadFunValue.getIconList(), DreadFunValue.getIconFont(), true);
         initField(Item.PARSE_DREAD_FUN_VALUE, dreadFun,
                 () -> itemCopy.getDreadFunValueN() != null ? itemCopy.getDreadFunValueN().name() : null,
                 (enumName) -> itemOrg.setDreadFunValue(enumName != null ? (DreadFunValue.valueOf((String) enumName)) : null),
@@ -3770,7 +3772,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            statusCont.add(layout(Item.UPDATED_DATE_SUBTASKS, lastModifiedDateSubtasks, "**", true, true, true));
 //            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true, true, true));
 //</editor-fold>
-            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true, hideIcons ? null : Icons.iconModifiedDate));
+            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true, hideIcons ? null : Icons.iconModifiedDateCust, Icons.myIconFont));
         } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "<date when modified>" : L10NManager.getInstance().formatDateShortStyle(new Date(item.getLastModifiedDate())));
@@ -3781,7 +3783,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             Label lastModifiedDate = new Label(itemOrg.getLastModifiedDate() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getLastModifiedDate()));
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
 //            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**", true, true, true));
-            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, hideIcons ? null : Icons.iconModifiedDate));
+            statusCont.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, hideIcons ? null : Icons.iconModifiedDateCust, Icons.myIconFont));
         }
 
         statusCont.add(makeSpacerThin());

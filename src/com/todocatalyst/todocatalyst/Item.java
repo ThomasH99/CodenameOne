@@ -881,7 +881,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String EARNED_VALUE_PER_HOUR = "Value/hour"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
     //Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_VALUE + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."
     final static String EARNED_VALUE_PER_HOUR_HELP = "Value/hour**"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
-    final static String EARNED_VALUE = "Value";
+    final static String EARNED_VALUE = "Task worth"; //"Value";
 //    final static String EARNED_VALUE_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate "+EARNED_POINTS_PER_HOUR+" which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
     final static String EARNED_VALUE_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate [EARNED_POINTS_PER_HOUR] which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
     //"Earned value (in currency or points)"
