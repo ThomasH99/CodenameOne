@@ -53,7 +53,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         }
 //         previousValues = new HashMap<Object, Object>(); //implicit
         this.myForm = myForm;
-        
+
         this.scrollListenerActive = activateScrollPositionSave;
         if (scrollListenerActive && this.myForm != null) {
             saveScrollTimer = new UITimer(() -> {
@@ -64,7 +64,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
                 put(SCROLL_VALUE_KEY, scrollY); //only save scroll position after timeout
 //                saveFile();
             });
-            
+
             Component scrollable = this.myForm.findScrollableContYChild();
             if (scrollable != null) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -88,26 +88,28 @@ public class SaveEditedValuesLocally {//extends HashMap {
             this.filename = PREFIX + filename;
             if (Storage.getInstance().exists(this.filename)) {
 //            while (Storage.getInstance().exists(this.filename)) {
-                previousValues.putAll((Map) Storage.getInstance().readObject(this.filename)); //merge values
-//                uniquePostFix += "+1";
+                Map s = (Map) Storage.getInstance().readObject(this.filename);
+                if (s instanceof Map) { //also checks for null
+                    previousValues.putAll((Map) s); //merge values
+                }//                uniquePostFix += "+1";
 //                this.filename = PREFIX + filename + uniquePostFix;
             }
         }
         put(EDIT_SESSION_START_TIME, new MyDate());
     }
-    
+
     SaveEditedValuesLocally(String filename) {
         this(null, filename, false);
     }
-    
+
     SaveEditedValuesLocally() {
         this(null, null, false);
     }
-    
+
     public String toString() {
         return "Hash={" + previousValues + "}, file=" + filename;
     }
-    
+
     public void setListenToYScrollComponent(Component scrollableN) {
         if (lastScrollableComponent != null && lastScrollListener != null) {
             lastScrollableComponent.removeScrollListener(lastScrollListener);
@@ -128,11 +130,11 @@ public class SaveEditedValuesLocally {//extends HashMap {
             scrollableN.addScrollListener(lastScrollListener);
         }
     }
-    
+
     public void setListenToYScrollComponent(MyForm form) {
         setListenToYScrollComponent(form.findScrollableContYChild());
     }
-    
+
     public void setListenToYScrollComponent() {
 //        if (myForm!=null)
         setListenToYScrollComponent(myForm.findScrollableContYChild());
@@ -225,43 +227,43 @@ public class SaveEditedValuesLocally {//extends HashMap {
             return null;
         }
     }
-    
+
     public void putNotZero(Object key, long value) {
         if (value != 0) {
             put(key, value);
         }
     }
-    
+
     public void putNotZero(Object key, String value) {
         if (value != null && value.length() != 0) {
             put(key, value);
         }
     }
-    
+
     public void putNotZero(Object key, double value) {
         if (value != 0) {
             put(key, value);
         }
     }
-    
+
     public void putNotZero(Object key, boolean value) {
         if (value) {
             put(key, value);
         }
     }
-    
+
     public void putNotZero(Object key, Date value) {
         if (value.getTime() != 0) {
             put(key, value);
         }
     }
-    
+
     public void putNotZero(Object key, Object value) {
         if (value != null) {
             put(key, value);
         }
     }
-    
+
     public Object get(Object key) {
         if (previousValues != null) {
             return previousValues.get(key);
@@ -269,7 +271,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
             return null;
         }
     }
-    
+
     public Object get(Object key, Object defaultValue) {
         if (previousValues != null) {
             Object val = previousValues.get(key);
@@ -278,7 +280,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
             return null;
         }
     }
-    
+
     public Object remove(Object key) {
         if (previousValues != null) {
             Object previousValue = previousValues.remove(key);
@@ -288,7 +290,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
             return null;
         }
     }
-    
+
     public void removePinchInsertKeys() {
         remove(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY); //delete the marker on exit
         remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //delete the marker on exit
@@ -296,7 +298,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         remove(MyForm.SAVE_LOCALLY_REF_ELT_PARSE_CLASS); //delete the marker on exit
         remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //delete the marker on exit
     }
-    
+
     public boolean containsKey(Object key) {
         if (previousValues != null) {
             return previousValues.containsKey(key);
@@ -304,7 +306,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
             return false;
         }
     }
-    
+
     public void deleteFile() {
 //        if (previousValues != null && filename != null) {
         if (filename != null) {
@@ -348,7 +350,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         saveFile();
 //        }
     }
-    
+
     private HashMap<Object, Object> getValues() {
         return previousValues;
     }
@@ -405,7 +407,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         }
 //        saveFile(); //saved in put above
     }
-    
+
 //    public void putCategories(List<Category> categories) {
 ////        Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
 //        if (categories == null || categories.size() == 0) {
@@ -423,7 +425,6 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //            return new ArrayList();
 //        }
 //    }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void putOwnerXXX(ItemAndListCommonInterface owner) {
 ////        Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
@@ -450,7 +451,6 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //            put(key, objIdList);
 //        }
 //    }
-    
 //    public void putOwners(List<ItemAndListCommonInterface> owners) {
 ////<editor-fold defaultstate="collapsed" desc="comment">
 ////        if (owners == null) {
@@ -465,7 +465,6 @@ public class SaveEditedValuesLocally {//extends HashMap {
 ////</editor-fold>
 //        putListOfElements(Item.PARSE_OWNER_ITEM, owners);
 //    }
-    
 //    public void putOwner(ItemAndListCommonInterface owner) {
 //        putOwners(Arrays.asList(owner));
 //    }
@@ -479,7 +478,6 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //                : null;
 //    }
 //</editor-fold>
-
     /**
      * returns null if no list was previously defined, otherwise an empty list
      * if previous owner was removed, or a list containing the previously
@@ -518,7 +516,6 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //        }
 ////        return getListOfElementsN(Item.PARSE_OWNER_ITEM);
 //    }
-
     /**
      * shortcut to convert a list of subtasks/Items to a list of their ObjectIds
      * and put that
@@ -548,7 +545,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
             }
         }
     }
-    
+
 //    public void putSubtaskObjdIdsListxxx(List<String> subtasksObjIds) {
 //        if (subtasksObjIds == null) {
 //            remove(Item.PARSE_SUBTASKS);
@@ -556,7 +553,6 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //            put(Item.PARSE_SUBTASKS, subtasksObjIds);
 //        }
 //    }
-
     /**
      * returns null if no edits were done, and empty list if all subtasks were
      * deleted!!
@@ -582,7 +578,6 @@ public class SaveEditedValuesLocally {//extends HashMap {
 ////        return getListOfElementsN(Item.PARSE_SUBTASKS);
 ////</editor-fold>
 //    }
-
     /**
      * returns null if no edits were done, and empty list if all subtasks were
      * deleted!!
@@ -594,26 +589,27 @@ public class SaveEditedValuesLocally {//extends HashMap {
 ////        return ids != null ? ids : new ArrayList();
 //        return ids;
 //    }
-
 //    public void removeOwnerXXX() {
 //        remove(Item.PARSE_OWNER_ITEM);
 //    }
 //    public void removeOwners() {
 //        remove(Item.PARSE_OWNER_ITEM);
 //    }
-    
     public Date getEditSessionStartTime() {
         return (Date) get(EDIT_SESSION_START_TIME);
     }
-    ParseObject element ;
+    ParseObject element;
+
     public void setElementToSaveLocally(ParseObject element) {
-        this.element=element;
+        this.element = element;
     }
+
     public void saveElementToSaveLocally() {
-        put("Element",element);
+        put("Element", element);
     }
-    public ParseObject getElementToSaveLocally( ) {
-        return (ParseObject)get("Element");
+
+    public ParseObject getElementToSaveLocally() {
+        return (ParseObject) get("Element");
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

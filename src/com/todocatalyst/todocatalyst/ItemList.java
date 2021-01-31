@@ -1742,7 +1742,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
     public FilterSortDef getFilterSortDefN() {
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
-        if (filterSortDef != null&&!isNoSave()) { //don't try to fetch filters for noSave lists
+        if (filterSortDef != null && !isNoSave()) { //don't try to fetch filters for noSave lists
             filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
         }
         return filterSortDef;

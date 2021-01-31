@@ -1346,17 +1346,17 @@ public class MyTree2 extends ContainerScrollY {
             if (newStr != null && !newStr.equals(previousStickyStr)) {
                 stringPut.put(newStr); //store to compare next time
 //                StickyHeader stickyHeader = new StickyHeader("StickyHeader", "StickyHeaderIcon"); //TODO!! define separate style for stickyheaders
-                if (false) { //disable stickyheaders until there is a version that works, unitl then just use labels!
+                if (true) { //disable stickyheaders until there is a version that works, unitl then just use labels!
                     StickyHeader stickyHeader = new StickyHeader("StickyHeader"); //TODO!! define separate style for stickyheaders
 //                Label stickyHeaderLabel = new Label(newStr, "StickyHeaderLabel");
 //                stickyHeader.add(stickyHeaderLabel);
                     stickyHeader.setText(newStr);
                     return stickyHeader;
+                } else {
+                    Label stickyHeader = new Label("", "StickyHeader"); //TODO!! define separate style for stickyheaders
+                    stickyHeader.setText(newStr);
+                    return stickyHeader;
                 }
-            } else {
-                Label stickyHeader = new Label("", "StickyHeader"); //TODO!! define separate style for stickyheaders
-                stickyHeader.setText(newStr);
-                return stickyHeader;
             }
 
             return null;

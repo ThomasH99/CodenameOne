@@ -172,6 +172,8 @@ public class ScreenListOfItems extends MyForm {
 
     final static int OPTION_NO_DELETE_MENU = OPTION_NO_PINCHINSERT * 2;
     private boolean optionNoDelete;
+    final static int OPTION_NON_EDITABLE_LIST = OPTION_NO_PINCHINSERT * 2;
+    private boolean optionNoneEditableList;
 
     final static int OPTION_LAST_TO_CHECK_IF_ALL_BITS_ARE_USED = OPTION_NO_DELETE_MENU * 2;
 //    boolean optionSingleSelectMode;
@@ -195,6 +197,7 @@ public class ScreenListOfItems extends MyForm {
         this.optionNoInlineInsertContInEmptyList = (options & OPTION_NO_INLINEINSERT_EMPTYLIST) != 0;
         this.optionNoPinchInsert = (options & OPTION_NO_PINCHINSERT) != 0;
         this.optionNoDelete = (options & OPTION_NO_DELETE_MENU) != 0;
+        this.optionNoneEditableList = (options & OPTION_NON_EDITABLE_LIST) != 0;
 //        this.optionMultipleSelectMode = (options & OPTION_MULTIPLE_SELECT_MODE) != 0;
     }
 
@@ -359,7 +362,7 @@ public class ScreenListOfItems extends MyForm {
         if (false) {
             setScrollVisible(true); //UI: show scrollbar(?)
         }//        super(title, previousForm, null);'
-            getContentPane().setScrollVisible(true); //UI: https://stackoverflow.com/questions/36842004/cant-get-setscrollvisible-to-work
+        getContentPane().setScrollVisible(true); //UI: https://stackoverflow.com/questions/36842004/cant-get-setscrollvisible-to-work
         UIManager.getInstance().getLookAndFeel().setFadeScrollBar(true);
 //        UIManager.getInstance().getLookAndFeel().setFadeScrollBarSpeed(300);
         UIManager.getInstance().getLookAndFeel().setFadeScrollEdge(true);
@@ -533,6 +536,8 @@ public class ScreenListOfItems extends MyForm {
 //        setupList();
 //</editor-fold>
         addCommandsToToolbar(getToolbar());
+        getToolbar().setScrollOffUponContentPane(MyPrefs.scrollToolbarOffScreenInTaskLists.getBoolean()); //see https://github.com/codenameone/CodenameOne/issues/2295
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                removeShowListener(startAsyncListener);
 //        startAsyncListener = (e) -> {
@@ -780,7 +785,7 @@ public class ScreenListOfItems extends MyForm {
 //</editor-fold>
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
-        if (false) { //works, but overlaps with SmallTimer AND with last element in long list (need white space after)
+        if (false) { //works, but overlaps with SmallTimer AND with last element in long list (need to enable white space after the list is scrolled up)
             FloatingActionButton fab = FloatingActionButton.createFAB(FontImage.MATERIAL_ADD);
             FloatingActionButton subfabStartTimer = fab.createSubFAB(Icons.iconLaunchTimer, "");
             FloatingActionButton subfabAddTaskToList = fab.createSubFAB(FontImage.MATERIAL_IMPORT_CONTACTS, "");
@@ -1008,7 +1013,7 @@ public class ScreenListOfItems extends MyForm {
         if (!optionTemplateEditMode) {
 //            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "Add from template", Icons.iconAddFromTemplate, (e) -> {
 
-            if (!optionNoNewFromTemplate) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
+            if (!optionNoNewFromTemplate&&!optionNoneEditableList) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
                 //INSERT TEMPLATE(S!) UNDER A PROJECT OR IN A LIST
                 toolbar.addCommandToOverflowMenu(CommandTracked.create("Insert template", Icons.iconAddFromTemplate, (e) -> {
                     //TODO!! Add "don't show again + setting to all these info popups
@@ -1661,6 +1666,7 @@ public class ScreenListOfItems extends MyForm {
 
                             //TODO!! put the selectionCommands into a separate menu (like overflow menu, with same icon as the selection symbol?)
                             toolbar.addCommandToOverflowMenu(cmdSetAnything);
+                            if(!optionNoneEditableList)
                             toolbar.addCommandToOverflowMenu(cmdMoveSelectedToTopOfList);
                             toolbar.addCommandToOverflowMenu(cmdSelectAll);
                             toolbar.addCommandToOverflowMenu(cmdUnselectAll);
@@ -2671,52 +2677,60 @@ public class ScreenListOfItems extends MyForm {
 //        } else {
 //            status = new MyCheckBox(item.getStatus(), (oldStatus, newStatus) -> {
         if (!item.isTemplate()) {
-            status.setStatusChangeHandler((oldStatus, newStatus) -> {
-                if (newStatus != oldStatus && item.confirmUpdateOfSubtasks(oldStatus, newStatus)) {
+            if (false) {
+                status.setStatusChangeHandler((oldStatus, newStatus) -> {
+                    if (newStatus != oldStatus && item.confirmUpdateOfSubtasks(oldStatus, newStatus)) {
 //                if (false) { //stop timer in Item.save() - once all changes to status have been taken into account (whether Done/Cancel/SoftDelete
 //                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item); //call this here to avoid triggering if status is changed from within the Timer
 //                }
-                    boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item, false, true, true); //call this here to avoid triggering if status is changed from within the Timer
+                        boolean wasTimerRunningForTheTask = TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(item, false, true, true); //call this here to avoid triggering if status is changed from within the Timer
 //                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
 
-                    //if setting Done, ask if set actual
+                        //if setting Done, ask if set actual
 //                if (((newStatus == ItemStatus.DONE || newStatus == ItemStatus.WAITING)
 //                        && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.WAITING))
 //                        && !wasTimerRunningForTheTask
 //        &&(MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZeroXXX.getBoolean() && item.getActual() == 0)
 //                        && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean()) {
-                    if (((newStatus == ItemStatus.DONE && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean())
-                            || (newStatus == ItemStatus.WAITING && MyPrefs.askToEnterActualIfMarkingTaskWaitingOutsideTimer.getBoolean()))
-                            && !wasTimerRunningForTheTask) {
-                        Long newActual = showDialogUpdateActualTimeIfAppropriate(item.getActualForTaskItself());
-                        if (newActual != null) {
-                            item.setActualForTaskItself(newActual, false); //false, since this dialog is ONLY called when setting a task status, so no reason to change due to Actual
+                        if (((newStatus == ItemStatus.DONE && MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer.getBoolean())
+                                || (newStatus == ItemStatus.WAITING && MyPrefs.askToEnterActualIfMarkingTaskWaitingOutsideTimer.getBoolean()))
+                                && !wasTimerRunningForTheTask) {
+                            Long newActual = showDialogUpdateActualTimeIfAppropriate(item.getActualForTaskItself());
+                            if (newActual != null) {
+                                item.setActualForTaskItself(newActual, false); //false, since this dialog is ONLY called when setting a task status, so no reason to change due to Actual
+                            }
                         }
-                    }
 
-                    //if setting Waiting, ask if set waiting date and/or waiting alarm
-                    if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) { //DEACTIVATE, waiting for proper Done/Retrospective screen
-                        showDialogSetWaitingDateAndAlarmIfAppropriate(item); //only call if we're changing TO Waiting status
-                    }
-
+                        //if setting Waiting, ask if set waiting date and/or waiting alarm
+                        if (newStatus == ItemStatus.WAITING && oldStatus != ItemStatus.WAITING) { //DEACTIVATE, waiting for proper Done/Retrospective screen
+                            showDialogSetWaitingDateAndAlarmIfAppropriate(item); //only call if we're changing TO Waiting status
+                        }
 //                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //keepPos since may be filtered after status change
 //                myForm.setKeepPos(); //keepPos since may be filtered after status change
 //                item.setStatus(newStatus);
-                    item.setStatus(newStatus, true, true, true, new MyDate(), true);
+                        item.setStatus(newStatus, true, true, true, new MyDate(), true);
 //                        if (refreshOnItemEdits != null) {
 //                            refreshOnItemEdits.launchAction();
 //                        }
 //                DAO.getInstance().saveNew(true, item);
 //                DAO.getInstance().saveNew(item);
 //                DAO.getInstance().saveNewTriggerUpdate();
-                    DAO.getInstance().saveToParseNow(item);
-                    myForm.refreshAfterEdit(); //refresh after save as it may update sub/supertasks etc
-                    //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
+                        DAO.getInstance().saveToParseNow(item);
+                        myForm.refreshAfterEdit(); //refresh after save as it may update sub/supertasks etc
+                        //TODO!!! optimize! Right now, refreshes entire Tree when anything in the tree changes
 //                    item.addDataChangeListener((type, index) -> {if (type == DataChangedListener.CHANGED) {ItemContainer.TreeItemList2.getMyTreeTopLevelContainer(topContainer.getParent()).refreshTimersFromParseServer();}});
-                } else {
-                    status.setStatus(oldStatus, false); //set status back to old value
-                }
-            });
+                        return true;
+                    } else {
+//                        status.setStatus(oldStatus, false); //set status back to old value
+                        return false;
+                    }
+                });
+            } else {
+                status.setStatusChangeHandler((oldStatus, newStatus) -> {
+                    item.setStatus(newStatus);
+                    return true;
+                });
+            }
         }
         status.setUIID("ListOfItemsMyCheckBox");
         if (Config.TEST) {
@@ -3040,7 +3054,7 @@ public class ScreenListOfItems extends MyForm {
 //            priorityLabel = new Label("" + item.getPriority());
 //            priorityLabel = new Label(Icons.myIconFont, char new Character(Character.valueOf('0') + item.getPriority());
             priorityLabel = new Label();
-            priorityLabel.setFontIcon(Icons.myIconFont, (char) (((int) '0') + item.getPriority()));
+            priorityLabel.setFontIcon(Icons.myIconFont, (char) (((int) '2') + item.getPriority()));
             if (false && showInDetails) {
                 southDetailsContainer.add(priorityLabel);
             }
@@ -3052,19 +3066,29 @@ public class ScreenListOfItems extends MyForm {
                 priorityLabel.setName("Priority");
             }
         }
+
         //IMPORTANCE/URGENCY
         Label impUrgLabel = null; // = new Label();
-        String impUrgStr = item.getImpUrgPrioValueAsString();
-        if (!impUrgStr.isEmpty()) {
-            impUrgLabel = new Label(impUrgStr, "ListOfItemsImpUrg");
+        if (false) {
+            String impUrgStr = item.getImpUrgPrioValueAsStringXXX();
+            if (!impUrgStr.isEmpty()) {
+                impUrgLabel = new Label(impUrgStr, "ListOfItemsImpUrg");
 //            impUrgLabel.setMaterialIcon(Icons.iconxxx);
-            if (Config.TEST) {
-                impUrgLabel.setName("ImpUrg");
-            }
-            impUrgLabel.setGap(GAP_LABEL_ICON);
+                if (Config.TEST) {
+                    impUrgLabel.setName("ImpUrg");
+                }
+                impUrgLabel.setGap(GAP_LABEL_ICON);
 //        impUrgLabel.setUIID("ListOfItemsImpUrg");
-            if (false && showInDetails) {
-                southDetailsContainer.add(impUrgLabel);
+                if (false && showInDetails) {
+                    southDetailsContainer.add(impUrgLabel);
+                }
+            }
+        } else {
+            Character icon = item.getImpUrgIcon();
+            if (icon != null) {
+                impUrgLabel = new Label("", "ListOfItemsImpUrg");
+                impUrgLabel.setFontIcon(HighMediumLow.getIconFont(), icon);
+                impUrgLabel.setGap(GAP_LABEL_ICON);
             }
         }
 
@@ -3220,7 +3244,7 @@ public class ScreenListOfItems extends MyForm {
 //            startByLabel = new\ Label("S:" + MyDate.formatDateNew(item.getStartByDateD()), "ItemDetailsLabel");
             startByLabel = new Label(MyDate.formatDateSmart(item.getStartByDateD()), "ItemDetailsLabel");
 //            startByLabel.setMaterialIcon(Icons.iconStartByDate);
-            startByLabel.setFontIcon(Icons.myIconFont,Icons.iconStartByDateCust);
+            startByLabel.setFontIcon(Icons.myIconFont, Icons.iconStartByDateCust);
             startByLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 startByLabel.setName("StartBy");
@@ -3274,7 +3298,7 @@ public class ScreenListOfItems extends MyForm {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            effortEstimateLabel = new Label("E:" + MyDate.formatDurationShort(item.getEstimate()), "ItemEffortEstimateLabel");
 //            effortEstimateLabel = new Label("E" + MyDate.formatDurationShort(item.getEstimateTotal()), "ItemEffortEstimateLabel");
-            effortEstimateLabel = new Label(MyDate.formatDurationShort(item.getEstimateTotal()), "ItemEffortEstimateLabel");
+            effortEstimateLabel = new Label(MyDate.formatDurationShort(item.getEstimateTotal(), true), "ItemEffortEstimateLabel");
 //            effortEstimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
             effortEstimateLabel.setFontIcon(Icons.myIconFont, Icons.iconEstimateCust);
             effortEstimateLabel.setGap(GAP_LABEL_ICON);

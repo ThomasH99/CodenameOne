@@ -11,13 +11,12 @@ import com.codename1.ui.Font;
  *
  * @author thomashjelm
  */
-public enum HighMediumLow {
+public enum Importance {
     //internationalize: http://programmers.stackexchange.com/questions/256806/best-approach-for-multilingual-java-enum
 //    HIGH("High"), MEDIUM("Medium"), LOW("Low");
-    HIGH("High"), MEDIUM("Medium"), LOW("Low");
-//    HIGH("High"), LOW("Low");
+    HIGH("High"),  LOW("Low");
 
-    HighMediumLow(String description) {
+    Importance(String description) {
         this.description = description;
     }
 
@@ -27,17 +26,17 @@ public enum HighMediumLow {
 
     static String[] getDescriptionList() {
 //        return new String[]{LOW.getDescription(), MEDIUM.getDescription(), HIGH.getDescription()};
-        return new String[]{LOW.getDescription(), HIGH.getDescription()};
+        return new String[]{LOW.getDescription(),  HIGH.getDescription()};
     }
 
     static int[] getDescriptionOrdinals() {
 //        return new int[]{LOW.ordinal(), MEDIUM.ordinal(), HIGH.ordinal()};
-        return new int[]{LOW.ordinal(), HIGH.ordinal()};
+        return new int[]{LOW.ordinal(),  HIGH.ordinal()};
     }
 
     static String[] getNameList() {
 //        return new String[]{LOW.name(), MEDIUM.name(), HIGH.name()};
-        return new String[]{LOW.name(), HIGH.name()};
+        return new String[]{LOW.name(),  HIGH.name()};
     }
 
 //        public String toString() { //toString() by default returns .name() which is the fixed ('internal') name of the enum
@@ -50,69 +49,43 @@ public enum HighMediumLow {
      * @return enum or null if no enum value corresponds to the description
      * string
      */
-    static HighMediumLow getValue(String description) {
+    static Importance getValue(String description) {
         String[] descList = getDescriptionList();
         for (int i = 0, size = getDescriptionList().length; i < size; i++) {
             if (descList[i].equals(description)) {
-                return HighMediumLow.values()[getDescriptionOrdinals()[i]]; //values() return an array of the ordinals
+                return Importance.values()[getDescriptionOrdinals()[i]]; //values() return an array of the ordinals
             }
         }
         return null;
     }
 
     private final String description;
-
-    static char[] getImportanceIconList() {
+    
+    static char[] getIconList() {
 //            return new String[]{VERY_EASY.getDescription(), EASY.getDescription(), AVERAGE.getDescription(), HARD.getDescription(), VERY_HARD.getDescription()};
 //        return new String[]{VERY_EASY.name(), EASY.name(), AVERAGE.name(), HARD.name(), VERY_HARD.name()};
         return new char[]{Icons.iconImportanceLowCust, Icons.iconImportanceHighCust};
-    }
-
-    static char[] getUrgencyIconList() {
-//            return new String[]{VERY_EASY.getDescription(), EASY.getDescription(), AVERAGE.getDescription(), HARD.getDescription(), VERY_HARD.getDescription()};
-//        return new String[]{VERY_EASY.name(), EASY.name(), AVERAGE.name(), HARD.name(), VERY_HARD.name()};
-        return new char[]{Icons.iconUrgencyLowCust, Icons.iconUrgencyHighCust};
     }
 
     static Font getIconFont() {
         return Icons.myIconFont;
     }
 
-    char getImportanceIcon() {
-        switch (this) {
-            case LOW:
-                return Icons.iconImportanceLowCust;
-            case HIGH:
-                return Icons.iconImportanceHighCust;
-        }
-        return '?';
-    }
-
-    char getUrgencyIcon() {
-        switch (this) {
-            case LOW:
-                return Icons.iconUrgencyLowCust;
-            case HIGH:
-                return Icons.iconUrgencyHighCust;
-        }
-        return '?';
-    }
-
-    static char getImportanceUrgencyIcon(HighMediumLow importance, HighMediumLow urgency) {
-        if (importance == HIGH) {
-            if (urgency == HIGH) {
-                return Icons.iconImpHighUrgHigh;
-            } else {
-                return Icons.iconImpHighUrgLow;
-            }
-        } else { //importance==LOW
-            if (urgency == HIGH) {
-                return Icons.iconImpLowUrgHigh;
-            } else {
-                return Icons.iconImpLowUrgLow;
-            }
-            
-        }
-    }
-
+//    char getIcon() {
+//        switch (this) {
+//            case VERY_EASY:
+//                return Icons.iconChallengeVeryEasy;
+//            case EASY:
+////                return Icons.iconChallengeEasy;
+//                return Icons.iconChallengeEasyCust;
+//            case AVERAGE:
+//                return Icons.iconChallengeAverage;
+//            case HARD:
+////                return Icons.iconChallengeHard;
+//                return Icons.iconChallengeHardCust;
+//            case VERY_HARD:
+//                return Icons.iconChallengeVeryHard;
+//        }
+//        return '?';
+//    }
 }

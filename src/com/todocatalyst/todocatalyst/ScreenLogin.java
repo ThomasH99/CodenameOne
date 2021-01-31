@@ -57,6 +57,10 @@ public class ScreenLogin extends MyForm {
 //    private final static String welcome2 = "For demanding users who need the features no other todo apps offer. See how new tasks impacts your deadlines or commitments. Be efficient.";
 //    private final static String welcome3 = "Master priorities. Master time. \nTime-saving features like templates, copy-paste, multiple selections, ...";
 //    private final static String welcome4 = "Time-saving features like templates, copy-paste, multiple selections, ...";
+    
+    TextField email ;
+
+        TextField password;
     public ScreenLogin() {
         //TODO change login screen to show 2 text/ad screens, swipe them left to get to login fields (like ?? app)
         super("Login", null, () -> {
@@ -126,7 +130,7 @@ public class ScreenLogin extends MyForm {
 //                }
 //            }
 //</editor-fold>
-        new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+        new ScreenMain(this).show(); //if pb with Timer relaunch, go to main screen instead
 
     }
 
@@ -227,14 +231,14 @@ public class ScreenLogin extends MyForm {
         //hide titlebar: http://stackoverflow.com/questions/42871223/how-do-i-hide-get-rid-the-title-bar-on-a-form-codename-one
 //        getToolbar().setUIID("Container");
 //        getToolbar().hideToolbar();
-        TextField email = new TextField("", "Email", 20, TextArea.EMAILADDR);
+         email = new TextField("", "Email", 20, TextArea.EMAILADDR);
 //        NTextField email = new NTextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
 //        TextField email = new TextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
         if (MyPrefs.loginStoreEmail.getBoolean()) {
             email.setText(MyPrefs.loginEmail.getString());
         }
 
-        TextField password = new TextField("", "Password", 20, TextArea.PASSWORD);
+         password = new TextField("", "Password", 20, TextArea.PASSWORD);
 //        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        TextComponentPassword password = new TextComponentPassword(); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        password.constraint(TextArea.PASSWORD);
@@ -325,7 +329,7 @@ public class ScreenLogin extends MyForm {
             if ((errorMsg = createAccount(cleanEmail)) == null) {
                 MyPrefs.setString(MyPrefs.loginEmail, cleanEmail); //store email for future use
                 MyPrefs.setBoolean(MyPrefs.loginStoreEmail, true); //store email for future use
-                new ScreenMain().show();
+                new ScreenMain(this).show();
             } else {
                 Dialog.show("", errorMsg, "OK", null);
             }
@@ -341,7 +345,7 @@ public class ScreenLogin extends MyForm {
                     MyPrefs.setString(MyPrefs.loginEmail, cleanEmail); //store email for future use
                     MyPrefs.setBoolean(MyPrefs.loginStoreEmail, true); //store email for future use
                 }
-                new ScreenMain().show();
+                new ScreenMain(this).show();
             } else {
                 Dialog.show("", errorMsg, "OK", null);
             }
@@ -819,7 +823,7 @@ public class ScreenLogin extends MyForm {
         return Storage.getInstance().writeObject(CURRENT_USER_SESSION_TOKEN, sessionToken);
     }
 
-    static String fetchCurrentUserSessionToStorage() {
+    static String fetchCurrentUserSessionFromStorage() {
         String sessionTokenN = (String) Storage.getInstance().readObject(CURRENT_USER_SESSION_TOKEN);
         return sessionTokenN;
     }
@@ -840,7 +844,7 @@ public class ScreenLogin extends MyForm {
 
     static public ParseUser getLastUserSessionFromStorage() {
 //        String sessionTokenN = (String) Storage.getInstance().readObject(CURRENT_USER_SESSION_TOKEN);
-        String sessionTokenN = fetchCurrentUserSessionToStorage();
+        String sessionTokenN = fetchCurrentUserSessionFromStorage();
         Log.p("Retrieved Sessiontoken=" + sessionTokenN != null ? sessionTokenN : "<null>");
         if (sessionTokenN == null || sessionTokenN.equals("")) {
             return null;

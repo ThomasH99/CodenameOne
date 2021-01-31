@@ -168,8 +168,20 @@ public class Icons {
     
     final static char[] iconPriorities = new char[]{FontImage.MATERIAL_PRIORITY_HIGH}; //TODO: custom icon
     
-    final static char iconImportance =FontImage.MATERIAL_GRID_ON; // FontImage.MATERIAL_ISO; //TODO: custom icon
-    final static char iconUrgency = FontImage.MATERIAL_APPS; //TODO: custom icon
+    final static char iconImportanceLabel =FontImage.MATERIAL_PRIORITY_HIGH;//MATERIAL_NEW_RELEASES MATERIAL_GRID_ON; // FontImage.MATERIAL_ISO; //TODO: custom icon
+    final static char iconUrgencyLabel = FontImage.MATERIAL_SPEED; //FontImage.MATERIAL_APPS; //TODO: custom icon
+    final static char iconImportanceLowCust = '\\'; 
+    final static char iconImportanceHighCust = 'Z'; 
+    final static char iconUrgencyLowCust = 'Y'; 
+    final static char iconUrgencyHighCust = 'X'; 
+    final static char iconImpHighUrgHigh = 'T'; //symbols with only white square
+    final static char iconImpHighUrgLow = 'U'; 
+    final static char iconImpLowUrgHigh = 'V'; 
+    final static char iconImpLowUrgLow = 'W'; 
+//    final static char iconImpHighUrgHigh = 0xae; //symbols with white square and symbol inside (to test)
+//    final static char iconImpHighUrgLow = 0xaf; 
+//    final static char iconImpLowUrgHigh = 0xb0; 
+//    final static char iconImpLowUrgLow = 0xb1; 
 
     final static char iconEditFilterSort = FontImage.MATERIAL_IMPORT_EXPORT; //MATERIAL_REORDER; //MATERIAL_LOW_PRIORITY;
     final static char iconFilter = FontImage.MATERIAL_FILTER_LIST;
@@ -378,7 +390,7 @@ public class Icons {
 //    final static Image iconWorkSlotLabelStyle = FontImage.createMaterial(iconWorkSlot, labelStyle);
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_DONE, labelStyle);
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_EVENT, labelStyle);
-    final static char iconFinishDate = FontImage.MATERIAL_EVENT_AVAILABLE;
+    final static char iconFinishDate = FontImage.MATERIAL_VERIFIED; //EVENT_AVAILABLE;
     final static char iconFinishDateCust = 'i';
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_EVENT_AVAILABLE, labelStyle);
 
@@ -386,7 +398,7 @@ public class Icons {
     final static char iconEstimateMaterial = FontImage.MATERIAL_HOURGLASS_FULL;
     final static char iconEstimateCust = '(';
     final static char iconEstimatePrjCust = ')';
-    final static char iconEstimateSubCust = '%';
+    final static char iconEstimateSubCust = '\'';
     
     
     

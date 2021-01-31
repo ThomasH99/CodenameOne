@@ -3242,40 +3242,46 @@ class TimerStack {
             cmdGotoFullScreenTimer = myForm.getBigTimerReplayCmd();
         }
 
-        status.setStatusChangeHandler((oldStatus, newStatus) -> {
-            if (newStatus != oldStatus && timedItem.confirmUpdateOfSubtasks(oldStatus, newStatus)) { //if changing many subtask status, ask for confirmation
-                timedItem.setStatus(status.getStatus()); //must do *before* calling commands, otherwise removeFromCache will show old value!
-                switch (newStatus) {
-                    case DONE:
-                        cmdSetCompletedAndGotoNextTaskOrExit.actionPerformed(null);
-                        break;
-                    case WAITING:
-                        cmdSetTaskWaitingAndGotoNextTaskOrExit.actionPerformed(null);
-                        break;
-                    case CANCELLED:
+        if (true) {
+            status.setStatusChangeHandler((oldStatus, newStatus) -> {
+                if (newStatus != oldStatus && timedItem.confirmUpdateOfSubtasks(oldStatus, newStatus)) { //if changing many subtask status, ask for confirmation
+                    timedItem.setStatus(status.getStatus()); //must do *before* calling commands, otherwise removeFromCache will show old value!
+                    switch (newStatus) {
+                        case DONE:
+                            cmdSetCompletedAndGotoNextTaskOrExit.actionPerformed(null);
+                            break;
+                        case WAITING:
+                            cmdSetTaskWaitingAndGotoNextTaskOrExit.actionPerformed(null);
+                            break;
+                        case CANCELLED:
 //                    processCurrentItemAndLaunchNextOrExit(null, false, true, false, false); //TODO!!! when cancelling a task, should we still store the time stored?
-                        cmdSetTaskCancelledAndGotoNextTaskOrExit.actionPerformed(null);
-                        break;
-                    case ONGOING:
-                        //do nothing - should already be set to Ongoing when starting timer //TODO!!! not if long time is set before making 
-                        cmdSetTaskOngoingAndGotoNextTaskOrExit.actionPerformed(null);
-                        break;
-                    case CREATED:
-                    //do nothing - user forces status back to empty checkbox
-                }
-                //moved from status.actionListener: 
+                            cmdSetTaskCancelledAndGotoNextTaskOrExit.actionPerformed(null);
+                            break;
+                        case ONGOING:
+                            //do nothing - should already be set to Ongoing when starting timer //TODO!!! not if long time is set before making 
+                            cmdSetTaskOngoingAndGotoNextTaskOrExit.actionPerformed(null);
+                            break;
+                        case CREATED:
+                        //do nothing - user forces status back to empty checkbox
+                    }
+                    //moved from status.actionListener: 
 //                timedItem.setStatus(status.getStatus());
 //                if (false) {
 //                    DAO.getInstance().saveInBackground(timedItem); //done in the commands
 //                }
-            } else {
-                status.setStatus(oldStatus, false); //if user regrest changing status of so many subtasks, change visible status back again
-            }
-            Form form = Display.getInstance().getCurrent();
-            if (form instanceof MyForm) {
-                ((MyForm) form).refreshAfterEdit();
-            }
-        });
+                    Form form = Display.getInstance().getCurrent();
+                    if (form instanceof MyForm) {
+                        ((MyForm) form).refreshAfterEdit();
+                    }
+                    return true;
+                } else {
+                    return false;
+//                    status.setStatus(oldStatus, false); //if user regrest changing status of so many subtasks, change visible status back again
+                }
+            });
+        } else {
+            status.setStatusChangeHandler((oldStatus, newStatus) -> true);
+        }
 
 //            Container contentPane = fullScreenTimer ? new Container(BoxLayout.y()) : new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
 //        Container contentPane = fullScreenTimer ? new Container(BoxLayout.y()) : new Container(new MyBorderLayout(MyBorderLayout.CENTER_BEHAVIOR_CENTER));

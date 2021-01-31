@@ -49,12 +49,14 @@ public class StickyHeader extends Button implements ScrollListener {
     private boolean needToCheck = false;
     private static String KEY_STICKY = "sticky";
     boolean longPress = false;
+    private boolean DEACTIVATE_STICKYNESS = true;
 
     public StickyHeader() {
         super();
         setTextPosition(LEFT);
-        setGrabsPointerEvents(true);  //prevent event to be send to component *below* stickyHeader (below glasspane)? 
-//        setLayout(BorderLayout.center());
+        if (false) {
+            setGrabsPointerEvents(true);  //prevent event to be send to component *below* stickyHeader (below glasspane)? 
+        }//        setLayout(BorderLayout.center());
 //        hideShowButton.setCommand(Command.createMaterial("", FontImage.MATERIAL_EXPAND_LESS, (ev) -> {
 //        hideShowButton.setCommand(Command.createMaterial("", Icons.iconCollapseListStickyHeader, (ev) -> {
         setCommand(Command.createMaterial("", Icons.iconCollapseListStickyHeader, (ev) -> {
@@ -171,30 +173,33 @@ public class StickyHeader extends Button implements ScrollListener {
 
     @Override
     public void scrollChanged(int scrollX, int scrollY, int oldscrollX, int oldscrollY) {
-        int position = getParent().getAbsoluteY() + scrollY - getAbsoluteY();
-        if (position >= 0) {
-            if (previousPosition < 0) {
-                needToCheck = true;
+        if (!DEACTIVATE_STICKYNESS) {
+            int position = getParent().getAbsoluteY() + scrollY - getAbsoluteY();
+            if (position >= 0) {
+                if (previousPosition < 0) {
+                    needToCheck = true;
+                }
+            } else {
+                if (previousPosition > 0) {
+                    needToCheck = true;
+                }
             }
-        } else {
-            if (previousPosition > 0) {
-                needToCheck = true;
+            if (scrollY - oldscrollY >= 0) {
+                if (needToCheck) {
+                    pushToHeader();
+                }
+            } else {
+                ArrayList stack = (ArrayList) getParent().getClientProperty(KEY_STICKY);
+                if (stack != null && !stack.isEmpty() && stack.get(0) == this && position < 0) {
+                    popFromHeader();
+                }
             }
+            previousPosition = position;
+            needToCheck = false;
         }
-        if (scrollY - oldscrollY >= 0) {
-            if (needToCheck) {
-                pushToHeader();
-            }
-        } else {
-            ArrayList stack = (ArrayList) getParent().getClientProperty(KEY_STICKY);
-            if (stack != null && !stack.isEmpty() && stack.get(0) == this && position < 0) {
-                popFromHeader();
-            }
-        }
-        previousPosition = position;
-        needToCheck = false;
     }
 
+    @Override
     void paintGlassImpl(Graphics g) {
     }
 

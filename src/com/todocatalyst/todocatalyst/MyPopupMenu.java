@@ -115,7 +115,7 @@ class MyPopupMenu extends Dialog {
 //        Command result = dlg.showStretched(BorderLayout.SOUTH, true);
         Command choice = showStretched(BorderLayout.SOUTH, true);
 //        if (choice != null && choice != cancelCmd) {
-        if (choice != null ) {
+        if (false&&choice != null ) { //NO need to run actionPerformed here, it's already done by added buttons
             choice.actionPerformed(null);
         }
 //                        pop.addActionListener(e -> {

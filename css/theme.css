@@ -332,12 +332,14 @@ Dialog {
 DialogTitle {
     cn1-derive: Title;
     color: white;
-    font: bold;
-    font-size: 140%;
+    /*font: bold;*/
+    /*font-size: 140%;*/
     background: darkgray;
 }
 DialogContentPane {
     cn1-derive: Title;
+    margin: 3mm;
+    padding: 1mm;
 }
 DialogBody {
     cn1-derive: Title;
@@ -366,15 +368,15 @@ StatusBarZeroSize {
     /*color: blue;/**/
     /*padding-top: 2mm;  /*no longer needed on iphone 10 with safeArea*/
     /*    padding-bottom: 3mm; */
-/*    margin: 0;
-    padding: 0;
-    background-color: transparent; BLOCK all this to just use a normal StatusBar*/
+    /*    margin: 0;
+        padding: 0;
+        background-color: transparent; BLOCK all this to just use a normal StatusBar*/
 }
 
 StatusBarButton { /*the 'virtual' button in the statusbar that catches clicks to scroll to top/bottom/swithc position */
     cn1-derive: StatusBar;
-    /*padding: 3mm 0mm;*/ /*try without any sizing to see if default size makes it work on iPhone*/
-    background-color: blue;
+    padding: 4mm 0mm; /*try without any sizing to see if default size makes it work on iPhone*/
+    /*background-color: blue;*/
 }
 
 Toolbar {
@@ -496,7 +498,7 @@ TextHintSearch {
 LoginForm {
     cn1-derive: Form;
     /*background-image: "andrew-buchanan-1377212-unsplash.jpg"; /**/
-    background-image: "andrew-edit1.jpg"; /**/
+    /*background-image: "andrew-edit1.jpg"; */
 }
 
 TextComponentField {
@@ -620,8 +622,9 @@ ScreenItemComment {
     padding: 2mm 3mm 2mm 3mm;
     /*border: 0mm solid red;/**/
     margin: 0mm;
-    font-family :  "native:MainLight";/**/
-    color: darkslategray;/**/
+    font-size: 80%;
+    /*font-family :  "native:MainLight";/**/
+    color: black; /*darkslategray;/**/
     /*font-size: 90%;/**/
     /*margin: 2px 0mm 0 0mm;/**/
 }
@@ -1586,7 +1589,7 @@ CategoryContainer { /*inside swipeable*/
 CategoryListContainer {
     cn1-derive: BaseListElementContainer; 
     /*border-top: 1pt solid darkgrey;*/
-       border-bottom: 1px solid darkgray; /*darkslategray/black: too dark, 4px solid blueviolet; /*lightgrey; */
+    border-bottom: 1px solid darkgray; /*darkslategray/black: too dark, 4px solid blueviolet; /*lightgrey; */
 
     /*border-bottom: 1pt solid darkgrey;*/
     /*background: #d1eded;*/
@@ -1838,8 +1841,8 @@ SwipeButtonStarInactive {
 SwipeButtonStarActive {
     cn1-derive: SwipeButtonCommonBase;
     /*background-color:blue;*/
-    background-color:blueviolet;
-    color:red;
+    background-color:yellow; /*blueviolet;*/
+    color:black; /*red;*/
 }
 
 SwipeButtonTimer {
@@ -2205,7 +2208,7 @@ ToggleButtonOnly {
        padding: 1mm;*/
 }
 
-ToggleButtonLast {
+ToggleButtonLast { 
     cn1-derive: ToggleButton;
     border-radius: 0mm 1mm 1mm 0mm; 
     /*      border-top-left-radius: 1mm;
@@ -2214,24 +2217,34 @@ ToggleButtonLast {
         border-bottom-right-radius: 1mm;*/
 }
 
-GroupElement{
-    cn1-derive: ToggleButton;
+GroupElement{   
+    /*cn1-derive: ToggleButton;*/
+    cn1-derive: LabelValue; 
+    border: 1px solid #007AFF;
+    margin: 0mm;/**/
+    /*    margin-bottom: 0px;*/
+    padding: 1mm;
+    border-radius: 0mm 0mm 0mm 0mm;
+
 }
 
 GroupElementFirst{
     cn1-derive: ToggleButton;
-    border-top-left-radius: 1mm;
-    border-top-right-radius:  1mm;/*TEMP DISABLED*/
-
+    /*    border-top-left-radius: 1mm;
+        border-top-right-radius:  1mm;TEMP DISABLED*/
+    border-radius: 2mm 2mm 0mm 0mm;
 }
 GroupElementLast{
     cn1-derive: ToggleButton;
-    border-bottom-right-radius: 1mm;
-    border-bottom-left-radius:  1mm;/* TEMP DISABLED*/
+    /*    border-bottom-right-radius: 1mm;
+        border-bottom-left-radius:  1mm; TEMP DISABLED*/
+    border-radius: 0mm 0mm 2mm 2mm;
 
 }
 GroupElementOnly{
     cn1-derive: ToggleButtonOnly;
+    border-radius: 2mm 2mm 2mm 2mm;
+
 }
 
 
@@ -2253,31 +2266,34 @@ ButtonGroup { /*popup menu to select item status */
     font-family :  "native:MainRegular";
     font-size: 140%;
     color: darkgrey;
-    background: white;
     padding: 1mm;
+    margin: 1mm;
     /*background: green;*/
 }
 
 ButtonGroupFirst {
     cn1-derive: ButtonGroup;
+    background: white;
     border-top-left-radius: 1mm;
     border-top-right-radius: 1mm;/*TEMP DISABLED*/
 }
 
 ButtonGroupLast {
     cn1-derive: ButtonGroup;
+    background: white;
     border-bottom-right-radius: 1mm;
     border-bottom-left-radius: 1mm;/*TEMP DISABLED*/
 }
 
-ButtonGroupOnly {
+ButtonGroupOnly { 
     cn1-derive: ButtonGroup;
+    background: white;
     border-top-left-radius: 1mm;
     border-top-right-radius:  1mm;
     border-bottom-right-radius: 1mm;
     border-bottom-left-radius:  1mm;/*TEMP DISABLED*/
-    /*    margin: 2mm;
-        padding: 2mm;*/
+    margin: 2mm;
+    padding: 2mm; 
 }
 
 ManualSorting {
@@ -2323,7 +2339,7 @@ Menu{
 Command { 
     cn1-derive: Label;
     padding: 0mm 0mm 0mm 1mm;
-        border-bottom: 1px solid darkgray;
+    border-bottom: 1px solid darkgray;
 
     /*color: green;*/
 }

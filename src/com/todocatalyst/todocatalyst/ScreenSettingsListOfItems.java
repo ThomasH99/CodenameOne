@@ -83,8 +83,10 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
         addSettingTitle(content, "Settings shared for all task lists:");
 
         addSettingBoolean(content, parseIdMap2, MyPrefs.showDetailsForAllTasks);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenInTaskLists);
 //        cont.setScrollableY(true);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone);
+ 
+addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone);
         if (Config.TEST) {
             addSettingExplanation(content, "Test text to show a fairly long explanation for an individual setting");
         }
@@ -110,7 +112,7 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
 
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.hideStickyHeadersForSortedLists);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenOnScrollingUp);
+        if(false)addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenOnScrollingUp);
         addSettingBoolean(content, parseIdMap2, MyPrefs.titleAutoSize);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropLeftDropZoneWidth, 0, 30, 1);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropRightDropZoneWidth, 0, 30, 1);

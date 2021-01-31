@@ -214,6 +214,7 @@ public class FilterSortDef extends ParseObject {
 //    public final static String FILTER_SORT_OWNER = "SORT_ON_OWNER";
 
 //    private boolean showInitialized; // = false;
+    private boolean initialized; // = true;
     private boolean showAll; // = true;
 //    private boolean showDefault;// = true;
     private boolean showNewTasks;// = true;
@@ -231,6 +232,8 @@ public class FilterSortDef extends ParseObject {
     private boolean showWithoutEstimatesOnly;
     private boolean showWithActualsOnly;
     private boolean showWithRemainingOnly;
+    private boolean showChallengeEasy;
+    private boolean showChallengeHard;
 //</editor-fold>
 
     /**
@@ -783,24 +786,24 @@ public class FilterSortDef extends ParseObject {
 //            filterOptions = ""; //reset all options
 //        }
 
-        showAll = filterOptions.indexOf(FILTER_SHOW_ALL) != -1; // NB. String.contains not implemented for CN1
+        showAll = filterOptions.contains(FILTER_SHOW_ALL); // NB. String.contains not implemented for CN1
 
-        showNewTasks = filterOptions.indexOf(FILTER_SHOW_NEW_TASKS) != -1 || showAll;
-        showOngoingTasks = filterOptions.indexOf(FILTER_SHOW_ONGOING_TASKS) != -1 || showAll;
-        showWaitingTasks = filterOptions.indexOf(FILTER_SHOW_WAITING_TASKS) != -1 || showAll;
-        showDoneTasks = filterOptions.indexOf(FILTER_SHOW_DONE_TASKS) != -1 || showAll;
-        showDoneTillMidnight = filterOptions.indexOf(FILTER_SHOW_DONE_TILL_MIDNIGHT) != -1 || showAll;
-        showCancelledTasks = filterOptions.indexOf(FILTER_SHOW_CANCELLED_TASKS) != -1 || showAll;
-        showBeforeHideUntilDate = filterOptions.indexOf(FILTER_SHOW_BEFORE_HIDE_UNTILDATE) != -1 || showAll;
-        showDependingOnUndoneTasks = filterOptions.indexOf(FILTER_SHOW_TASKS_THAT_DEPEND_ON_UNDONE_TASKS) != -1 || showAll;
-        showExpiresOnDate = filterOptions.indexOf(FILTER_SHOW_EXPIRES_ON_DATE) != -1 || showAll;
+        showNewTasks = filterOptions.contains(FILTER_SHOW_NEW_TASKS) || showAll;
+        showOngoingTasks = filterOptions.contains(FILTER_SHOW_ONGOING_TASKS) || showAll;
+        showWaitingTasks = filterOptions.contains(FILTER_SHOW_WAITING_TASKS) || showAll;
+        showDoneTasks = filterOptions.contains(FILTER_SHOW_DONE_TASKS) || showAll;
+        showDoneTillMidnight = filterOptions.contains(FILTER_SHOW_DONE_TILL_MIDNIGHT) || showAll;
+        showCancelledTasks = filterOptions.contains(FILTER_SHOW_CANCELLED_TASKS) || showAll;
+        showBeforeHideUntilDate = filterOptions.contains(FILTER_SHOW_BEFORE_HIDE_UNTILDATE) || showAll;
+        showDependingOnUndoneTasks = filterOptions.contains(FILTER_SHOW_TASKS_THAT_DEPEND_ON_UNDONE_TASKS) || showAll;
+        showExpiresOnDate = filterOptions.contains(FILTER_SHOW_EXPIRES_ON_DATE) || showAll;
 
-        showProjectsOnly = filterOptions.indexOf(FILTER_SHOW_PROJECTS_ONLY) != -1;
-        showInterruptTasksOnly = filterOptions.indexOf(FILTER_SHOW_INTERRUPT_TASKS_ONLY) != -1;
-        showInterruptTasksOnly = filterOptions.indexOf(FILTER_SHOW_STARRED_TASKS_ONLY) != -1;
-        showWithoutEstimatesOnly = filterOptions.indexOf(FILTER_SHOW_WITHOUT_ESTIMATES_ONLY) != -1;
-        showWithActualsOnly = filterOptions.indexOf(FILTER_SHOW_WITH_ACTUALS_ONLY) != -1;
-        showWithRemainingOnly = filterOptions.indexOf(FILTER_SHOW_WITH_REMAINING_ONLY) != -1;
+        showProjectsOnly = filterOptions.contains(FILTER_SHOW_PROJECTS_ONLY);
+        showInterruptTasksOnly = filterOptions.contains(FILTER_SHOW_INTERRUPT_TASKS_ONLY);
+        showInterruptTasksOnly = filterOptions.contains(FILTER_SHOW_STARRED_TASKS_ONLY);
+        showWithoutEstimatesOnly = filterOptions.contains(FILTER_SHOW_WITHOUT_ESTIMATES_ONLY);
+        showWithActualsOnly = filterOptions.contains(FILTER_SHOW_WITH_ACTUALS_ONLY);
+        showWithRemainingOnly = filterOptions.contains(FILTER_SHOW_WITH_REMAINING_ONLY);
 
 //        showInitialized = true;
     }
@@ -991,6 +994,10 @@ public class FilterSortDef extends ParseObject {
 //        if (false) {
 //            saveBoolsToParse();
 //        }
+        if (!initialized) {
+            setFilterBoolsFromOptionsString(getFilterOptionsFromParse());
+            initialized = true;
+        }
         ItemStatus status = item.getStatus();
         return showAll
                 || ((status != ItemStatus.CREATED || showNewTasks)
@@ -1011,7 +1018,8 @@ public class FilterSortDef extends ParseObject {
                 && (!showWithoutEstimatesOnly || !item.has(Item.PARSE_EFFORT_ESTIMATE)) //before now <=> hideUntil date is already passed so show the item
                 && (!showWithActualsOnly || item.has(Item.PARSE_ACTUAL_EFFORT)) //before now <=> hideUntil date is already passed so show the item
                 && (!showWithRemainingOnly || item.has(Item.PARSE_REMAINING_EFFORT_TOTAL)) //before now <=> hideUntil date is already passed so show the item
-                );
+                && (!showChallengeEasy || Objects.equals(item.getChallengeN(), Challenge.EASY))
+                && (!showChallengeHard || Objects.equals(item.getChallengeN(), Challenge.HARD)));
 //            return false;
     }
 

@@ -319,11 +319,11 @@ public class MyForm extends Form {
     static final String SCREEN_PROJECTS_HELP = "Projects";
     static final String SCREEN_TEMPLATES_TITLE = "Templates";
     static final String SCREEN_TEMPLATES_HELP = "Templates";
-    static final String SCREEN_COMPLETION_LOG_TITLE = "Completed tasks"; //"Log"; // "Work og", "Completion log", "Completed tasks"
-    static final String SCREEN_COMPLETION_LOG_HELP = "Completed tasks"; //"Log"; // "Work og", "Completion log", "Completed tasks"
+    static final String SCREEN_COMPLETION_LOG_TITLE = "Completed"; //"Completed tasks""Log"; // "Work og", "Completion log", "Completed tasks"
+    static final String SCREEN_COMPLETION_LOG_HELP = "Your Log book of recent completed tasks"; //"Log"; // "Work og", "Completion log", "Completed tasks"
     static final String SCREEN_TEMPLATE_PICKER = "Select Template";
-    static final String SCREEN_CREATION_LOG_TITLE = "Task history"; //"Diary"; // "Log book", "Creation log", "Created tasks"
-    static final String SCREEN_CREATION_LOG_HELP = "Diary"; // "Log book", "Creation log", "Created tasks"
+    static final String SCREEN_CREATION_LOG_TITLE = "Created"; //"Task history""Diary"; // "Log book", "Creation log", "Created tasks"
+    static final String SCREEN_CREATION_LOG_HELP = "Your Diary of every created task"; // "Log book", "Creation log", "Created tasks"
     static final String SCREEN_NEXT_TITLE = "Next"; // "What's next", "Calendar"
     static final String SCREEN_NEXT_HELP = "Have a look at what's up the next month";
     static final String SCREEN_TODAY_TITLE = "Today"; // "Creation log", "Created tasks"
@@ -582,7 +582,9 @@ public class MyForm extends Form {
             getAnimationManager().onTitleScrollAnimation(title2);
         } else if (true || Config.TEST) { //TODO!!!! Not sure this is a good idea since it makes the menu and Back button disappear --> maybe 
             //this only works if contentPane is scrollableY (and not BorderLayout as now)
-            getToolbar().setScrollOffUponContentPane(MyPrefs.scrollToolbarOffScreenOnScrollingUp.getBoolean()); //see https://github.com/codenameone/CodenameOne/issues/2295
+            if (false) { //works, more or less, but disturbing, and should only be activated on screens where space is really needed!
+                getToolbar().setScrollOffUponContentPane(MyPrefs.scrollToolbarOffScreenOnScrollingUp.getBoolean()); //see https://github.com/codenameone/CodenameOne/issues/2295
+            }
         }
 
         initMyStatusBar(); //initialize statusbar to jump to top/bottom/switch position on doubletap
@@ -2364,7 +2366,7 @@ public class MyForm extends Form {
             } else {
                 myForm.previousValues.remove(MySearchCommand.SEARCH_TEXT_KEY);
             }
-            if (compList != null) {
+            if (compList != null && itemListOrg.size() > 0) { //disable on empty lists
                 int labelCount = 0;
                 int nonLabelCount = 0;
                 boolean searchOnLowerCaseOnly;
@@ -4245,25 +4247,25 @@ public class MyForm extends Form {
     void initField(String identifier, Component field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField) {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
-        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, previousValues, parseIdMap2);
+        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, previousValues, parseIdMap2, refresh);
     }
 
     void initField(String identifier, Component field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited) {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
-        initField(identifier, field, getVal, putVal, getField, putField, null, null, isInherited, previousValues, parseIdMap2);
+        initField(identifier, field, getVal, putVal, getField, putField, null, null, isInherited, previousValues, parseIdMap2, refresh);
     }
 
     void initField(String identifier, Component field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, Object undefinedValue, GetVal defaultValue) {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
-        initField(identifier, field, getVal, putVal, getField, putField, undefinedValue, defaultValue, null, previousValues, parseIdMap2);
+        initField(identifier, field, getVal, putVal, getField, putField, undefinedValue, defaultValue, null, previousValues, parseIdMap2, refresh);
     }
 
     void initField(String identifier, Component field, GetVal getVal, PutVal putVal, GetVal getField, PutVal putField, GetBool isInherited, Object undefinedValue, GetVal defaultValue) {
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, null, null);
 //        initField(identifier, field, getVal, putVal, getField, putField, null, null, previousValues, parseIdMap2);
-        initField(identifier, field, getVal, putVal, getField, putField, undefinedValue, defaultValue, isInherited, previousValues, parseIdMap2);
+        initField(identifier, field, getVal, putVal, getField, putField, undefinedValue, defaultValue, isInherited, previousValues, parseIdMap2, refresh);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -4282,12 +4284,11 @@ public class MyForm extends Form {
 //        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, isInherited, actionListener, previousValues, parseIdMap2);
 //    }
 //</editor-fold>
-    static void initField(String fieldIdentifier, Component field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
-            SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2) {
-//        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues, parseIdMap2);
-        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, null, previousValues, parseIdMap2);
-    }
-
+//    static void initField(String fieldIdentifier, Component field, GetVal getOrg, PutVal putOrg, GetVal getField, PutVal putField,
+//            SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2) {
+////        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, previousValues, parseIdMap2);
+//        initField(fieldIdentifier, field, getOrg, putOrg, getField, putField, null, null, null, previousValues, parseIdMap2);
+//    }
     private static String INHERITED = "Inherited";
     private static int INHERITED_LEN = INHERITED.length();
 
@@ -4548,7 +4549,16 @@ public class MyForm extends Form {
 //    }
     static void initField(String fieldIdentifier, Component field, GetVal getOrg, PutVal putOrgN, GetVal getFieldN, PutVal putFieldN, Object undefinedValue,
             GetVal getDefaultValue, GetBool isInheritedN, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2) {
-        initField(fieldIdentifier, field, getOrg, putOrgN, getFieldN, putFieldN, undefinedValue, getDefaultValue, isInheritedN, previousValues, parseIdMap2, null);
+        initField(fieldIdentifier, field, getOrg, putOrgN, getFieldN, putFieldN, undefinedValue, getDefaultValue, isInheritedN,
+                previousValues, parseIdMap2, null);
+    }
+
+    public void refreshFields() {
+        if (refresh != null) {
+            for (Runnable r : refresh) {
+                r.run();
+            }
+        }
     }
 
 //      void initField(String fieldIdentifier, Component field, GetVal getOrg, PutVal putOrgN, GetVal getFieldN, PutVal putFieldN, Object undefinedValue,
@@ -4591,11 +4601,12 @@ public class MyForm extends Form {
                     if (false && f != null) {
                         f.refreshAfterEdit(); //refrehs to updated any values impacted by this set, e.g. Item derived values
                     }
-                    if (((MyForm) field.getComponentForm()).refresh != null) {
+                    if (false && ((MyForm) field.getComponentForm()).refresh != null) {
                         for (Runnable r : ((MyForm) field.getComponentForm()).refresh) {
                             r.run();
                         }
                     }
+                    f.refreshFields();
                 }                //save updated element locally
                 if (previousValues != null) {
                     previousValues.saveElementToSaveLocally();
@@ -4607,10 +4618,12 @@ public class MyForm extends Form {
 
             //add change listenerlisten to changes an update+save if edited to different value than item.orgValue
             if (field instanceof TextArea) {
+                ((TextArea) field).addActionListener((e) -> updateElement.actionPerformed(null));
 //                ((TextArea) field).addDataChangedListener((type, index) -> updateElement.actionPerformed(null));
-                ((TextArea) field).setDoneListener((e) -> updateElement.actionPerformed(null));
+//                ((TextArea) field).setDoneListener((e) -> updateElement.actionPerformed(null));
             } else if (field instanceof Button) {
                 ((Button) field).addActionListener(updateElement);
+//                ((Picker) field).addActionListener(updateElement);
             } else if (field instanceof SpanButton) {
                 ((SpanButton) field).addActionListener(updateElement);
             } else if (field instanceof Switch) {
@@ -4673,14 +4686,15 @@ public class MyForm extends Form {
                     selectedObjects = new ListSelector(
                             DAO.getInstance().fetchListOfItemsFromListOfGuids((List<String>) previousValues.get(ListSelector.CLASS_NAME)),
                             true, Integer.MAX_VALUE, true,
-                            (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedGuids()), true, referenceSet); //put: save selected values locally
+                            (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedGuids()), 
+                            true, referenceSet); //put: save selected values locally
 //                    selectedObjects = (ListSelector) previousValues.get(ListSelector.CLASS_NAME); //reuse locally saved selected values if any
 //                    List<String> objIds = (List<String>) previousValues.get(ListSelector.CLASS_NAME); //reuse locally saved selected values if any
 //                    for (String objId : objIds) {
 //                        selectedObjects.select(DAO.getInstance().fetchItem(objId));
 //                    }
                 } else {
-                    assert (selectedObjects == null);
+                    ASSERT.that(selectedObjects == null);
                     selectedObjects = new ListSelector(null, true, Integer.MAX_VALUE, true,
                             (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedGuids()), true, referenceSet); //put: save selected values locally
                 }
@@ -4688,6 +4702,7 @@ public class MyForm extends Form {
         } else {
             oldSelectedObjects = selectedObjects; //UI:store selection so it isn't lost between selection sessions
             selectedObjects = null;
+            previousValues.remove(ListSelector.CLASS_NAME); //remove old values from local storage
         }
     }
 

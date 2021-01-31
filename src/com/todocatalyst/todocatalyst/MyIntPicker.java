@@ -37,7 +37,7 @@ class MyIntPicker extends Picker {
             this.intMax = maxValue;
         }
 //            int defaultSelectedValue = get.get();
-        ASSERT.that(minValue < maxValue && step != 0 && value >= minValue && value <= maxValue && (value - minValue) % step == 0,
+        ASSERT.that(minValue <= maxValue && step != 0 && value >= minValue && value <= maxValue && (value - minValue) % step == 0,
                 "wrong init values, minValue=" + minValue + ", maxValue=" + maxValue + ", value=" + value + ", step=" + step);
         this.setType(Display.PICKER_TYPE_STRINGS);
         int i = minValue;

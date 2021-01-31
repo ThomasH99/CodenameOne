@@ -562,6 +562,9 @@ public class MyPrefs {
     static PrefEntry scrollToolbarOffScreenOnScrollingUp
             = new PrefEntry("Hide the toolbar at top of the screen when scrolling a screen down", "scrollToolbarOffScreenOnScrollingUp",
                     prod ? true : true, "**"); //TODO: but not working?!
+    static PrefEntry scrollToolbarOffScreenInTaskLists
+            = new PrefEntry("Hide the screen title when scrolling", "scrollToolbarOffScreenInTaskLists",
+                    prod ? false : true, "**"); //TODO: but not working?!
     static PrefEntry firstDoubleTapScrollsToBottomOfScreen
             = new PrefEntry("First statusbar doubletap scrolls to bottom of list instead of top",
                     "firstDoubleTapScrollsToBottomOfScreen", prod ? true : true, "First time the status bar of a scrolled task list is doubleHide the toolbar at top of the screen when scrolling a screen down");

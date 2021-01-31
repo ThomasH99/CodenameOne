@@ -381,6 +381,9 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //        Resources theme = UIManager.initFirstTheme("/theme");
 //        Resources theme = null;
 //</editor-fold>
+        Log.p("Default value for Storage.getInstance().isNormalizeNames() = " + Storage.getInstance().isNormalizeNames());
+        Storage.getInstance().setNormalizeNames(true); //is on default, but set it just in case
+
         Log.getInstance().setFileWriteEnabled(true);
         Log.setLevel(Log.DEBUG);
         Log.setReportingLevel(Log.REPORTING_DEBUG);
@@ -410,11 +413,12 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                 Log.p(" - Replay delete FAILED");
 //                Log.p("Replay info NOT successfully deleted");
             }
-            Log.p("Deleting ALL STORAGE (except user token");
-            String userToken = ScreenLogin.fetchCurrentUserSessionToStorage(); //avoid user token being deleted (which would force user to log in again)
-            //TODO also reset cache to ensure a complete reset
-            Storage.getInstance().clearStorage();
-            ScreenLogin.saveCurrentUserSessionToStorage(userToken);
+//            Log.p("Deleting ALL STORAGE (except user token");
+//            String userToken = ScreenLogin.fetchCurrentUserSessionToStorage(); //avoid user token being deleted (which would force user to log in again)
+//            //TODO also reset cache to ensure a complete reset
+//            Storage.getInstance().clearStorage();
+//            ScreenLogin.saveCurrentUserSessionToStorage(userToken);
+            DAO.getInstance().resetAndDeleteAndReloadAllCachedData();
         } else {
             Log.p("Time since last restart=" + MyDate.formatDurationStd(timeSinceLastInit) + " - NO ACTION taken");
         }

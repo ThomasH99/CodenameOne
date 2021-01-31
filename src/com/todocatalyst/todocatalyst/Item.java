@@ -1518,7 +1518,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             } else {
 //                ASSERT.that(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null),
 //                        () -> "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
-                ASSERT.that(newOwner == null ||oldOwner == null || Objects.equals(newOwner, oldOwner)
+                ASSERT.that(newOwner == null || oldOwner == null || Objects.equals(newOwner, oldOwner)
                         || (newOwner != null && Objects.equals(newOwner.getObjectIdP(), oldOwner.getObjectIdP())),
                         () -> "overwriting non-null owner, oldOwner=" + oldOwner + ", newOwner=" + newOwner);
             }
@@ -3753,35 +3753,58 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        } else {
 //            return 0;
 //        }
-        if (imp != null && urg != null) {
-            switch (imp) {
-                case HIGH:
-                    switch (urg) {
-                        case HIGH:
-                            return 9;
-                        case MEDIUM:
-                            return 8;
-                        case LOW:
-                            return 5;
-                    }
-                case MEDIUM:
-                    switch (urg) {
-                        case HIGH:
-                            return 7;
-                        case MEDIUM:
-                            return 6;
-                        case LOW:
-                            return 4;
-                    }
-                case LOW:
-                    switch (urg) {
-                        case HIGH:
-                            return 3;
-                        case MEDIUM:
-                            return 2;
-                        case LOW:
-                            return 1;
-                    }
+        if (false) {
+            if (imp != null && urg != null) {
+                switch (imp) {
+                    case HIGH:
+                        switch (urg) {
+                            case HIGH:
+                                return 9;
+                            case MEDIUM:
+                                return 8;
+                            case LOW:
+                                return 5;
+                        }
+                    case MEDIUM:
+                        switch (urg) {
+                            case HIGH:
+                                return 7;
+                            case MEDIUM:
+                                return 6;
+                            case LOW:
+                                return 4;
+                        }
+                    case LOW:
+                        switch (urg) {
+                            case HIGH:
+                                return 3;
+                            case MEDIUM:
+                                return 2;
+                            case LOW:
+                                return 1;
+                        }
+                }
+            }
+        } else {
+            if (imp != null && urg != null) {
+                switch (imp) {
+                    case HIGH:
+                        switch (urg) {
+                            case HIGH:
+                                return 4;
+                            case LOW:
+                            case MEDIUM:
+                                return 3;
+                        }
+                    case LOW:
+                    case MEDIUM:
+                        switch (urg) {
+                            case HIGH:
+                                return 2;
+                            case LOW:
+                                return 1;
+                        }
+                }
             }
         }
         return 0;
@@ -3793,7 +3816,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
-    public String getImpUrgPrioValueAsString() {
+    public String getImpUrgPrioValueAsStringXXX() {
 //        return getImpUrgPrioValue() != 0 ? getImportanceN().getDescription().substring(0, 1) + "/" + getUrgencyN().getDescription().substring(0, 1) : getPriority() != 0 ? getPriority() + "" : " ";
 //        return getImpUrgPrioValue() != 0 ? getImportanceN().getDescription().substring(0, 1) + "/" + getUrgencyN().getDescription().substring(0, 1) : "";
         String impStr = getImportanceN() != null ? getImportanceN().getDescription().substring(0, 1) : "";
@@ -3802,6 +3825,24 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return (impStr.length() > 0 ? impStr : "-") + "/" + (urgStr.length() > 0 ? urgStr : "-");
         } else {
             return "";
+        }
+    }
+
+    public Character getImpUrgIcon() {
+        HighMediumLow importance = getImportanceN();
+        HighMediumLow urgency = getUrgencyN();
+        if (importance == null) {
+            if (urgency == null) {
+                return null;
+            } else {
+                return urgency.getUrgencyIcon();
+            }
+        } else { //importance!=null
+            if (urgency == null) {
+                return importance.getImportanceIcon();
+            } else {
+                return HighMediumLow.getImportanceUrgencyIcon(importance, urgency);
+            }
         }
     }
 
@@ -5735,6 +5776,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (newStatus == oldStatus) {
             return;
         }
+        if (false && isProject() && !confirmUpdateOfSubtasks(oldStatus, newStatus)) { //false: too late to make decision here, move to statusChangeHandlers
+            return;
+        }
 
         if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
             mustUpdateAlarmsXXXNotUsed = true; //update alarms
@@ -5747,7 +5791,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (!isProject()) {
 //            setStatusInParse(newStatus); //must set *before* updating supertasks
 //        } else {
-        if (isProject() && updateSubtasks) {
+        if (isProject() && updateSubtasks && confirmUpdateOfSubtasks(oldStatus, newStatus)) {
             //when changing the status of a project, only the status of the subtasks are changed(??)
 //            boolean doneProject = (oldStatus == ItemStatus.DONE);
 //            int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
@@ -7236,10 +7280,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (MyPrefs.automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining.getBoolean()
                     && effortEstimateProjectTaskItselfMillis > 0
                     && getRemainingForTaskItselfFromParse() == 0) {
-                setRemainingForTaskItself(Math.max(0,effortEstimateProjectTaskItselfMillis - getActualForTaskItself()), false); //TODO actualEffort should be set *before* effort estimate for this to work
+                setRemainingForTaskItself(Math.max(0, effortEstimateProjectTaskItselfMillis - getActualForTaskItself()), false); //TODO actualEffort should be set *before* effort estimate for this to work
             } else if (MyPrefs.automaticallyIncreaseRemainingIfNewEffortEstimateIsHigherThanPreviousRemainingPlusActual.getBoolean()
                     && effortEstimateProjectTaskItselfMillis > getRemainingTotalFromParse() + getActualTotal()) { // *increase* remaining //UI:
-                setRemainingForTaskItself(Math.max(0,effortEstimateProjectTaskItselfMillis - getActualTotal()), false); //false to avoid circular updates between setEstimate() and setRemaining()
+                setRemainingForTaskItself(Math.max(0, effortEstimateProjectTaskItselfMillis - getActualTotal()), false); //false to avoid circular updates between setEstimate() and setRemaining()
             }
         }
 

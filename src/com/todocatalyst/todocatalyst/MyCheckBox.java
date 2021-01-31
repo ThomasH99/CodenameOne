@@ -32,7 +32,15 @@ public class MyCheckBox extends Button {
     interface ProcessItemStatusChange {
 
 //        void process(Item item, ItemStatus newStatus);
-        void processNewStatusValue(ItemStatus oldStatus, ItemStatus newStatus);
+        /**
+         * return true if change is maintained, false if the change shall be
+         * ignored (e.g. changing too many subtasks and therefore cancelling)
+         *
+         * @param oldStatus
+         * @param newStatus
+         * @return
+         */
+        boolean processNewStatusValue(ItemStatus oldStatus, ItemStatus newStatus);
     }
 
 //    interface IsItemOngoing {
@@ -51,7 +59,7 @@ public class MyCheckBox extends Button {
 //    private static Image[] iconsPopup; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
 //    private static char[] iconsPopup; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
     private static char[] iconsPopupChar; // = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
-
+    private boolean longPressed; //used to detect longPress and ignore the associated, unavoidable, shortPress event = actionEvent
 //    private Dialog d;
     /**
      * activate menu to choose status on a single click
@@ -190,31 +198,40 @@ public class MyCheckBox extends Button {
 //Handle single-click
         if (!inactive) {
             addActionListener((evt) -> {
-                if (this.activateFullMenuOnSingleClick) {
-                    selectNewStatusOnSingleClick();
+                if (longPressed) { //ignore actionevent after longpress
+                    longPressed = false;
                 } else {
-                    //TODO!! move below logic into static method in Item to avoid duplication
+                    if (this.activateFullMenuOnSingleClick) {
+                        selectNewStatusOnSingleClick();
+                    } else {
+                        //TODO!! move below logic into static method in Item to avoid duplication
 //                ItemStatus itemStatus = itemStatus.getStatus();
 //                    switch (MyCheckBox.this.itemStatus) { //OLD STATUS
-                    switch (itemStatus) { //OLD STATUS
-                        case CREATED:
-                        case WAITING:
-                        case ONGOING:
-                            setStatus(ItemStatus.DONE);
-                            break;
-                        case DONE:
-                        case CANCELLED:
+                        switch (itemStatus) { //OLD STATUS
+                            case CREATED:
+                            case WAITING:
+                            case ONGOING:
+                                setStatus(ItemStatus.DONE);
+                                break;
+                            case DONE:
+                            case CANCELLED:
 //                            if (MyCheckBox.this.itemOngoing.isOngoing()) { //NO LONGER necessary to check if item is ongoing, it will be handled in setStatus (setting to Ongoing)
 //                                setStatus(ItemStatus.ONGOING);
 //                            } else {
 //                                setStatus(ItemStatus.CREATED);
 //                            }
-                            setStatus(ItemStatus.CREATED);
-                            break;
-                        default:
-                            assert false : "unknown ItemStatus=" + itemStatus;
+                                setStatus(ItemStatus.CREATED);
+                                break;
+                            default:
+                                assert false : "unknown ItemStatus=" + itemStatus;
+                        }
                     }
                 }
+            });
+            addLongPressListener((evt) -> {
+                longPressed = true;
+                selectNewStatusOnSingleClick();
+//                fireActionEvent(-1, -1); //trigger action event
             });
         }
     }
@@ -261,12 +278,14 @@ public class MyCheckBox extends Button {
         //run statusChangeHandler.process *first* before changing status to have access to old status value
         if (itemStatus != this.itemStatus) {
             ItemStatus oldStatus = this.itemStatus;
-            this.itemStatus = itemStatus; //update before making call below to avoid infinite loop
-            if (!inactive && runStatusChangeHandler && statusChangeHandler != null) {
-                statusChangeHandler.processNewStatusValue(oldStatus, itemStatus);
+//            this.itemStatus = itemStatus; //update before making call below to avoid infinite loop
+//            if (!inactive && runStatusChangeHandler && statusChangeHandler != null) {
+//                statusChangeHandler.processNewStatusValue(oldStatus, itemStatus);
+//            }
+            if (statusChangeHandler == null || statusChangeHandler.processNewStatusValue(oldStatus, itemStatus)) {
+                this.itemStatus = itemStatus; //update before making call below to avoid infinite loop
+                setStatusIcon(itemStatus);
             }
-//            setIcon(ItemStatus.icons[itemStatus.ordinal()]);
-            setStatusIcon(itemStatus);
             repaint();
         }
     }
@@ -281,10 +300,6 @@ public class MyCheckBox extends Button {
      * @param itemStatus
      */
     void setStatusIcon(ItemStatus itemStatus) {
-//        setIcon(ItemStatus.icons[itemStatus.ordinal()]);
-//        setIcon(ItemStatus.getStatusIcon(itemStatus));
-//        setIcon(iconsSingleStatus[itemStatus.ordinal()]);
-//        setMaterialIcon(iconsPopupChar[itemStatus.ordinal()]);
         setFontIcon(Icons.myIconFont, iconsPopupChar[itemStatus.ordinal()]);
     }
 
@@ -292,38 +307,51 @@ public class MyCheckBox extends Button {
         return itemStatus;
     }
 
-    private Button create(String cmdName, Image materialIcon, final ActionListener ev) {
-        Button b = new Button(new Command(cmdName) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                if (!inactive) {
-                    ev.actionPerformed(evt);
-                }
-            }
-        });
-//        b.setUIID();
-        b.setIcon(materialIcon);
+    private Button create(String cmdName, Image icon, final ActionListener ev) {
+        Command c = Command.create(cmdName, icon, ev);
+        Button b = new Button(c);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        Button b = new Button(new Command(cmdName) {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                if (!inactive) {
+//                    ev.actionPerformed(evt);
+//                }
+//            }
+//        });
+////        b.setUIID();
+//        b.setIcon(icon);
 //        return c;
+//</editor-fold>
         return b;
     }
 
     private Button create(String cmdName, char materialIcon, final ActionListener ev) {
-        Button b = new Button(new Command(cmdName) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                if (!inactive) {
-                    ev.actionPerformed(evt);
-                }
-            }
-        });
-//        b.setUIID();
-//        b.setIcon(materialIcon);
-//        b.setMaterialIcon(materialIcon);
-        b.setFontIcon(Icons.myIconFont, materialIcon);
-//        return c;
+        Command c = Command.createMaterial(cmdName, materialIcon, ev);
+        c.setIconFont(Icons.myIconFont);
+        Button b = new Button(c);
+//        b.setFontIcon(Icons.myIconFont, materialIcon);
         return b;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private Button createOLD(String cmdName, char materialIcon, final ActionListener ev) {
+//        Button b = new Button(new Command(cmdName) {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                if (!inactive) {
+//                    ev.actionPerformed(evt);
+//                }
+//            }
+//        });
+////        b.setUIID();
+////        b.setIcon(materialIcon);
+////        b.setMaterialIcon(materialIcon);
+//        b.setFontIcon(Icons.myIconFont, materialIcon);
+////        return c;
+//        return b;
+//    }
+//</editor-fold>
     private void selectNewStatusOnSingleClick() {
         //TODO move this logic to Item.xxx
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -344,25 +372,9 @@ public class MyCheckBox extends Button {
 //                    this.singleIconStyle = s;
 //                }
 //</editor-fold>
-        MyPopupMenu d = new MyPopupMenu(groupStyleUIID, create("Cancel", null, (e) -> {
-        }),
-                //<editor-fold defaultstate="collapsed" desc="comment">
-                //                Command.create(ItemStatus.CREATED.getName(), ItemStatus.icons[ItemStatus.CREATED.ordinal()], (e) -> {
-                //                    setStatus(ItemStatus.CREATED);
-                //                }),
-                //                Command.create(ItemStatus.ONGOING.getName(), ItemStatus.icons[ItemStatus.ONGOING.ordinal()], (e) -> {
-                //                    setStatus(ItemStatus.ONGOING);
-                //                }),
-                //                Command.create(ItemStatus.WAITING.getName(), ItemStatus.icons[ItemStatus.WAITING.ordinal()], (e) -> {
-                //                    setStatus(ItemStatus.WAITING);
-                //                }),
-                //                Command.create(ItemStatus.DONE.getName(), ItemStatus.icons[ItemStatus.DONE.ordinal()], (e) -> {
-                //                    setStatus(ItemStatus.DONE);
-                //                }),
-                //                Command.create(ItemStatus.CANCELLED.getName(), ItemStatus.icons[ItemStatus.CANCELLED.ordinal()], (e) -> {
-                //                    setStatus(ItemStatus.CANCELLED);
-                //                }));
-                //</editor-fold>
+        MyPopupMenu d = new MyPopupMenu(groupStyleUIID,
+                create("Cancel", null, (e) -> {
+                }),
                 create(ItemStatus.CREATED.getName(), iconsPopupChar[ItemStatus.CREATED.ordinal()], (e) -> {
                     setStatus(ItemStatus.CREATED);
                 }),
@@ -380,7 +392,6 @@ public class MyCheckBox extends Button {
                 }));
         d.popup(); //showDialog(x) = x is the component the dialog will 'point' to
     }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void selectNewStatusOLD() {
 //        //TODO move this logic to Item.xxx
@@ -415,82 +426,85 @@ public class MyCheckBox extends Button {
 //        d.showPopupDialog(this); //showDialog(x) = x is the component the dialog will 'point' to
 //    }
 //</editor-fold>
-    @Override
-    public void longPointerPress(int x, int y) {
-        super.longPointerPress(x, y);
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        ItemStatus status = item.getStatus();
-//                MyStringPicker selectStatus = new MyStringPicker(ItemStatus.CANCELLED, parseIdMap, get, set);
-//                switch (status) {
-//                    case STATUS_CREATED:
-//                }
-//TODO simplify code below to have only one command
-//        Command setWaiting = Command.create(ItemStatus.WAITING.getDescription(), Icons.iconCheckboxWaiting, (e) -> {
-//            ItemStatus oldStatus = item.getStatus();
-//            item.setStatus(ItemStatus.WAITING);
-//            statusChangeHandler.process(item, oldStatus, oldStatus);
-//            if (saveOnChange) {
-//                DAO.getInstance().save(item);
-//            }
-//            setIcon(Icons.iconCheckboxWaiting);
-//        });
-//        Command setOngoing = Command.create(ItemStatus.ONGOING.getDescription(), Icons.iconCheckboxOngoingLabelStyle, (e) -> {
-//            item.setStatus(ItemStatus.ONGOING);
-//            if (saveOnChange) {
-//                DAO.getInstance().save(item);
-//            }
-//            setIcon(Icons.iconCheckboxOngoingLabelStyle);
-//        });
-//        Command setCancelled = Command.create(ItemStatus.CANCELLED.getDescription(), Icons.iconCheckboxCancelled, (e) -> {
-//            item.setStatus(ItemStatus.CANCELLED);
-//            if (saveOnChange) {
-//                DAO.getInstance().save(item);
-//            }
-//            setIcon(Icons.iconCheckboxCancelled);
-//        });
-////                Container dialogBody = new Container().add(new Button("test")).add(create);
-//        final ActionListener al = new ActionListener() {
-//            @Override
-//            public void actionPerformed(ActionEvent evt) {
-//
-//                d.dispose();
-//            }
-//        };
+//    @Override
+//    public void longPointerPressXXX(int x, int y) {
+////        super.longPointerPress(x, y);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        ItemStatus status = item.getStatus();
+////                MyStringPicker selectStatus = new MyStringPicker(ItemStatus.CANCELLED, parseIdMap, get, set);
+////                switch (status) {
+////                    case STATUS_CREATED:
+////                }
+////TODO simplify code below to have only one command
+////        Command setWaiting = Command.create(ItemStatus.WAITING.getDescription(), Icons.iconCheckboxWaiting, (e) -> {
+////            ItemStatus oldStatus = item.getStatus();
+////            item.setStatus(ItemStatus.WAITING);
+////            statusChangeHandler.process(item, oldStatus, oldStatus);
+////            if (saveOnChange) {
+////                DAO.getInstance().save(item);
+////            }
+////            setIcon(Icons.iconCheckboxWaiting);
+////        });
+////        Command setOngoing = Command.create(ItemStatus.ONGOING.getDescription(), Icons.iconCheckboxOngoingLabelStyle, (e) -> {
+////            item.setStatus(ItemStatus.ONGOING);
+////            if (saveOnChange) {
+////                DAO.getInstance().save(item);
+////            }
+////            setIcon(Icons.iconCheckboxOngoingLabelStyle);
+////        });
+////        Command setCancelled = Command.create(ItemStatus.CANCELLED.getDescription(), Icons.iconCheckboxCancelled, (e) -> {
+////            item.setStatus(ItemStatus.CANCELLED);
+////            if (saveOnChange) {
+////                DAO.getInstance().save(item);
+////            }
+////            setIcon(Icons.iconCheckboxCancelled);
+////        });
+//////                Container dialogBody = new Container().add(new Button("test")).add(create);
+////        final ActionListener al = new ActionListener() {
+////            @Override
+////            public void actionPerformed(ActionEvent evt) {
+////
+////                d.dispose();
+////            }
+////        };
+////</editor-fold>
+//        if (!inactive) {
+//            selectNewStatusOnSingleClick();
+//            fireActionEvent(-1, -1); //trigger action event
+//        }
+//        super.longPointerPress(x, y); //do *after* the above
+////        fireActionEvent(x, y); //ensure that longPress to select any new status will trigger updates //NECESSARY? Or will the pointerReleased trigger a normal actionEvent?
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        d = new Dialog("Select");
+////        d.setLayout(BoxLayout.y());
+//////        d.setAutoDispose(true);
+////        d.addComponent(new Button(Command.create(ItemStatus.CREATED.shortName, ItemStatus.icons[ItemStatus.CREATED.ordinal()], (e) -> {
+////            setStatus(ItemStatus.CREATED);
+//////            d.dispose();
+////        })));
+////        d.addComponent(new Button(Command.create(ItemStatus.ONGOING.shortName, ItemStatus.icons[ItemStatus.ONGOING.ordinal()], (e) -> {
+////            statusChangeHandler.process(item, ItemStatus.ONGOING);
+//////            d.dispose();
+////        })));
+////        d.addComponent(new Button(Command.create(ItemStatus.WAITING.shortName, ItemStatus.icons[ItemStatus.WAITING.ordinal()], (e) -> {
+////            statusChangeHandler.process(item, ItemStatus.WAITING);
+//////            d.dispose();
+////        })));
+////        d.addComponent(new Button(Command.create(ItemStatus.DONE.shortName, ItemStatus.icons[ItemStatus.DONE.ordinal()], (e) -> {
+////            statusChangeHandler.process(item, ItemStatus.DONE);
+//////            d.dispose();
+////        })));
+////        d.addComponent(new Button(Command.create(ItemStatus.CANCELLED.shortName, ItemStatus.icons[ItemStatus.CANCELLED.ordinal()], (e) -> {
+////            statusChangeHandler.process(item, ItemStatus.CANCELLED);
+//////            setStatus(ItemStatus.CANCELLED);
+//////            d.dispose();
+////        })));
+////        d.showPopupDialog(this); //showDialog(x) = x is the component the dialog will 'point' to
+////                Command userChoice = Dialog.show("Task state", dialogBody, new Command[]{setOngoing, setWaiting, setCancelled}, Dialog.TYPE_CONFIRMATION, null); //TODO!!!! make Dialog a nice popup
+////                userChoice.actionPerformed(null);
+////                Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
+////</editor-fold>
+//    }
 //</editor-fold>
-        if (!inactive) {
-            selectNewStatusOnSingleClick();
-        }
-//        fireActionEvent(x, y); //ensure that longPress to select any new status will trigger updates //NECESSARY? Or will the pointerReleased trigger a normal actionEvent?
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        d = new Dialog("Select");
-//        d.setLayout(BoxLayout.y());
-////        d.setAutoDispose(true);
-//        d.addComponent(new Button(Command.create(ItemStatus.CREATED.shortName, ItemStatus.icons[ItemStatus.CREATED.ordinal()], (e) -> {
-//            setStatus(ItemStatus.CREATED);
-////            d.dispose();
-//        })));
-//        d.addComponent(new Button(Command.create(ItemStatus.ONGOING.shortName, ItemStatus.icons[ItemStatus.ONGOING.ordinal()], (e) -> {
-//            statusChangeHandler.process(item, ItemStatus.ONGOING);
-////            d.dispose();
-//        })));
-//        d.addComponent(new Button(Command.create(ItemStatus.WAITING.shortName, ItemStatus.icons[ItemStatus.WAITING.ordinal()], (e) -> {
-//            statusChangeHandler.process(item, ItemStatus.WAITING);
-////            d.dispose();
-//        })));
-//        d.addComponent(new Button(Command.create(ItemStatus.DONE.shortName, ItemStatus.icons[ItemStatus.DONE.ordinal()], (e) -> {
-//            statusChangeHandler.process(item, ItemStatus.DONE);
-////            d.dispose();
-//        })));
-//        d.addComponent(new Button(Command.create(ItemStatus.CANCELLED.shortName, ItemStatus.icons[ItemStatus.CANCELLED.ordinal()], (e) -> {
-//            statusChangeHandler.process(item, ItemStatus.CANCELLED);
-////            setStatus(ItemStatus.CANCELLED);
-////            d.dispose();
-//        })));
-//        d.showPopupDialog(this); //showDialog(x) = x is the component the dialog will 'point' to
-//                Command userChoice = Dialog.show("Task state", dialogBody, new Command[]{setOngoing, setWaiting, setCancelled}, Dialog.TYPE_CONFIRMATION, null); //TODO!!!! make Dialog a nice popup
-//                userChoice.actionPerformed(null);
-//                Log.p("longPointerPress x=" + x + ", y=" + y + " on [" + this + "]");
-//</editor-fold>
-    }
-
 }
