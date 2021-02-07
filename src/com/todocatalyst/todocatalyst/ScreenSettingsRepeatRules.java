@@ -35,13 +35,14 @@ public class ScreenSettingsRepeatRules extends ScreenSettingsCommon {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
         parseIdMap2=null; //not used by settings anymore, can be removed!
-        addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.repeatInsertNewRepeatTaskAfterJustCompletedTask);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.repeatInsertNewRepeatTaskAfterLatestRepeatInstance);
         addSettingBoolean(content, parseIdMap2, MyPrefs.repeatReuseAlreadyGeneratedInstancesWhenUpdatingARepeatRule);
         addSettingBoolean(content, parseIdMap2, MyPrefs.repeatSetRelativeFieldsWhenCreatingRepeatInstances);
         if (false) {
             addSettingInt(content, parseIdMap2, MyPrefs.maxNumberRepeatInstancesToDeleteWithoutConfirmation, 1, 1000, 1);
             addSettingBoolean(content, parseIdMap2, MyPrefs.repeatHidePreviousTasksDetails);
-            addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewRepeatInstancesInStartOfLists);
+//            addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewRepeatInstancesInStartOfLists);
 //            addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberOfRepeatsToGenerate, 0, 52, 1);
             addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxNumberFutureInstancesToGenerateAhead, 0, 30, 1);
             addSettingInt(content, parseIdMap2, MyPrefs.repeatMaxInterval, 0, 731, 1);

@@ -1069,6 +1069,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
             remove(PARSE_ITEMS); //if setting a list to null or setting an empty list, then simply delete the field
         }
+        cachedList=itemList;
 //        cachedList = null; //reset
 //        filteredSortedList = null; //reset
     }
@@ -1138,6 +1139,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
     }
 
+    private List cachedList;
+
     /**
      * returns the full (manually sorted) list, with no sorting or filtering
      *
@@ -1156,16 +1159,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             Log.p("Calling getListFull() for list=" + this.getText());// + "; filter=" + getFilterSortDef());
         }
 
-        List<E> list = getList(PARSE_ITEMS);
+        if (cachedList == null) {
+
+//        List<E> list = getList(PARSE_ITEMS);
+            cachedList = getList(PARSE_ITEMS);
 
 //            List<E> list = getList(PARSE_ITEMLIST);
 //            if (list != null) {
-        if (list != null) {
+            if (cachedList != null) {
 //                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list); //optimization?? heavy operation, any way (OTHER than caching which does work
-            if (Config.CHECK_OWNERS) {
-                checkOwners(list);
-            }
+                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(cachedList); //optimization?? heavy operation, any way (OTHER than caching which does work
+                if (Config.CHECK_OWNERS) {
+                    checkOwners(cachedList);
+                }
 //        {
 //            for (E elt : cachedList) {
 //                Item item = (Item)elt;
@@ -1185,12 +1191,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //        }
 //            return list;
-        } else {
+            } else {
 //            return null; //returning null would mean every user must check for null and create a list. And returning a new empty ArrayList and saving it doesn't have any side-effect since a new empty list isn't actually saved
 //                return new ArrayList();
-            list = new ArrayList();
+                cachedList = new ArrayList();
+            }
         }
-        return list;
+//        return list;
+        return cachedList;
     }
 
 //    @Override
@@ -4136,7 +4144,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             if (st != null) {
                 filterSortDef = getSystemDefaultFilter(st);
                 setFilterSortDef(filterSortDef);
-                DAO.getInstance().saveNew((ParseObject) this);
+//                DAO.getInstance().saveNew((ParseObject) this);
+                DAO.getInstance().saveToParseNow((ParseObject) this);
             }
         }
         return filterSortDef;

@@ -802,6 +802,7 @@ public class MyForm extends Form {
         } else {
 //        Label titleComponent = new Label(getTitle(),"FormTitle") {
             Button titleComponent = new Button(title, "FormTitle");
+            
             if (false) {
                 titleComponent = new Button(title, "FormTitle") {
 
@@ -894,6 +895,7 @@ public class MyForm extends Form {
             titleComponent.setVerticalAlignment(Component.CENTER);
             getToolbar().setTitleComponent(titleComponent);
             getToolbar().setTitleCentered(true);
+            titleComponent.repaint();
         }
     }
 
@@ -2485,7 +2487,9 @@ public class MyForm extends Form {
      * override in forms to do actual save of edited value
      */
     protected void updateOnExit() {
-        parseIdMap2.update(true);
+        if (parseIdMap2 != null) {
+            parseIdMap2.update(true);
+        }
         if (getUpdateActionOnDone() != null) {
             getUpdateActionOnDone().run();
         }
@@ -4686,7 +4690,7 @@ public class MyForm extends Form {
                     selectedObjects = new ListSelector(
                             DAO.getInstance().fetchListOfItemsFromListOfGuids((List<String>) previousValues.get(ListSelector.CLASS_NAME)),
                             true, Integer.MAX_VALUE, true,
-                            (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedGuids()), 
+                            (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedGuids()),
                             true, referenceSet); //put: save selected values locally
 //                    selectedObjects = (ListSelector) previousValues.get(ListSelector.CLASS_NAME); //reuse locally saved selected values if any
 //                    List<String> objIds = (List<String>) previousValues.get(ListSelector.CLASS_NAME); //reuse locally saved selected values if any
@@ -4952,16 +4956,16 @@ public class MyForm extends Form {
 //</editor-fold>
 
 //    MyDragAndDropSwipeableContainer findMyDDCont(ItemAndListCommonInterface refElement){
-    private MyDragAndDropSwipeableContainer findMyDDContWithObjIdN(Component comp, String refObjId) {
+    private MyDragAndDropSwipeableContainer findMyDDContWithGuidN(Component comp, String refGuid) {
 //        Container cont = getContentPane();
 //        if (comp instanceof MyDragAndDropSwipeableContainer && ((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP().equals(refObjId))
-        if (comp instanceof MyDragAndDropSwipeableContainer && refObjId.equals(((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP())) {
+        if (comp instanceof MyDragAndDropSwipeableContainer && refGuid.equals(((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getGuid())) {
             return (MyDragAndDropSwipeableContainer) comp;
         } else if (comp instanceof Container) {
             Component c = null;
             Container cont = (Container) comp;
             for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
-                c = findMyDDContWithObjIdN(cont.getComponentAt(i), refObjId);
+                c = findMyDDContWithGuidN(cont.getComponentAt(i), refGuid);
                 if (c instanceof MyDragAndDropSwipeableContainer) {
                     return (MyDragAndDropSwipeableContainer) c;
                 }
@@ -4970,17 +4974,17 @@ public class MyForm extends Form {
         return null;
     }
 
-    private MyDragAndDropSwipeableContainer findMyDDContWithObjIdN(List<Component> compList, String refObjId) {
+    private MyDragAndDropSwipeableContainer findMyDDContWithGuidN(List<Component> compList, String refGuid) {
 //        Container cont = getContentPane();
 //        if (comp instanceof MyDragAndDropSwipeableContainer && ((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP().equals(refObjId))
         for (Component comp : compList) {
-            if (comp instanceof MyDragAndDropSwipeableContainer && refObjId.equals(((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getObjectIdP())) {
+            if (comp instanceof MyDragAndDropSwipeableContainer && refGuid.equals(((MyDragAndDropSwipeableContainer) comp).getDragAndDropObject().getGuid())) {
                 return (MyDragAndDropSwipeableContainer) comp;
             } else if (comp instanceof Container) {
                 Component c = null;
                 Container cont = (Container) comp;
                 for (int i = cont.getComponentCount() - 1; i >= 0; i--) {
-                    c = findMyDDContWithObjIdN(cont.getComponentAt(i), refObjId);
+                    c = findMyDDContWithGuidN(cont.getComponentAt(i), refGuid);
                     if (c instanceof MyDragAndDropSwipeableContainer) {
                         return (MyDragAndDropSwipeableContainer) c;
                     }
@@ -5097,7 +5101,7 @@ public class MyForm extends Form {
                     refElement = null; //needed to only initialize once to use in lambda expression below
                 }
 
-                MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithObjIdN(getContentPane().getChildrenAsList(true), refEltGuid);
+                MyDragAndDropSwipeableContainer myDDContN = findMyDDContWithGuidN(getContentPane().getChildrenAsList(true), refEltGuid);
                 if (Config.TEST) {
                     ASSERT.that(myDDContN != null, "no MyDragAndDropSwipeableContainer found for refEltObjId=" + refEltGuid + ", eltParseClass=" + refClass + ", insertAfter=" + insertBefore);
                 }

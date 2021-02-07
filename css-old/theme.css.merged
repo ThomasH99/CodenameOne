@@ -1,3 +1,5 @@
+
+/* /Users/thomashjelm/NetBeansProjects/todocatalyst/css/theme.css */
 /*
 https://www.codenameone.com/manual/css.html
 https://stackoverflow.com/questions/46617128/css-defined-style-not-always-abode-in-codename-one
@@ -25,37 +27,6 @@ border: 1px #3399ff  cn1-round-border;
 text-align:center;
 margin:2mm;
 padding:3mm;
-}
-
-Cool buttons: https://www.codenameone.com/blog/rounded-corners-shadows-and-gradients-with-css.html
-Round1 {
-    width: 40pt;
-    height: 40pt;
-    border-radius: 20pt;
-    border: 1pt solid black;
-    text-align: center;
-}
-Round1InnerShadow {
-    cn1-derive: Round1;
-    box-shadow: inset 0px 0px 21pt 10pt rgba(61,59,61,0.48);
-    border: 1pt solid transparent;
-}
-Round1OuterShadow {
-    cn1-derive: Round1;
-    box-shadow: 5pt 5pt 10pt 0px rgba(61,59,61,0.48);
-    border-radius: 5pt;
-    border: 1pt solid #ccc;
-    padding-bottom: 2mm;
-    padding-top: 1mm;
-}
-Round1Gradient {
-    cn1-derive: Round1OuterShadow;
-    background: linear-gradient(to bottom,
-        rgba(242,246,248,1) 0%,
-        rgba(216,225,231,1) 50%,
-        rgba(181,198,208,1) 51%,
-        rgba(224,239,249,1) 100%
-    );
 }
 
 RoundBorderFilled {
@@ -221,7 +192,7 @@ MyIcon {
 #Constants {
     /*includeNativeBool: true;*/ 
     ComponentGroupBool: true;
-    labelGap: 1;   
+    labelGap: 1;
 
     overflowImageSize: "5.0"; /*tried w 6.0, a tad big*/
     menuImageSize:"5.0";
@@ -279,8 +250,8 @@ Label {
 
     /*text-align: left; /**/
     /* font-size: 80%;*/
-    color: black;
-    background: transparent;
+    color: blue; 
+    background: transparent; /**/
     /*background-color: #3399ff;*/
     /*padding:0mm 3mm 0 0mm; top+bottom right+left*/
     /*    padding-top: 1mm; 
@@ -311,7 +282,7 @@ ExpandableContainer{ /*used eg to show past/future repeat instances in ScreenRep
     cn1-derive: StickyHeader;
 }
 
-Button {  
+Button {
     cn1-derive: Default;
     /*border: 1pt solid gray;*/
     text-align: center;
@@ -323,26 +294,9 @@ Button {
     background-color: gray;
 }*/
 
-MyButton {     
+MyButton {
     cn1-derive: Button;
-    background-color: blue; 
-}
-
-BigButton {     
-    cn1-derive: Button;
-    /*background-color: var(--ios-blue); /*blue; /**/
-    color: white;
-    text-align: center;
-    margin: 2mm;
-    padding: 2mm;
-    border-radius: 2mm;
-    background: var(--ios-blue);/*lightskyblue; /**/
-    
-    /*box-shadow: 5pt 5pt 10pt 0px rgba(61,59,61,0.48);
-    border-radius: 5pt;
-    border: 1pt solid #ccc;
-    padding-bottom: 2mm;
-    padding-top: 1mm;*/
+    background-color: blue;
 }
 
 /*TextFieldXXX  {
@@ -1068,12 +1022,12 @@ BigTimerInterruptIcon{
     text-align: center;
 }
 BigTimerCmdButton{
-    cn1-derive: BigButton;
-/*    text-align: center;
+    cn1-derive: Button;
+    text-align: center;
     margin: 1mm;
     padding: 1mm;
     border-radius: 1mm;
-    background: lightskyblue; */
+    background: lightskyblue; 
 }
 BigTimerExit { 
     cn1-derive: BigTimerCmdButton;
@@ -1089,9 +1043,9 @@ BigTimerNext {
 }
 BigTimerCompleted {
     cn1-derive: BigTimerCmdButton;
-/*    margin-top: 2mm; 
+    margin-top: 2mm; 
     padding-top: 2mm;
-    padding-bottom: 2mm;*/
+    padding-bottom: 2mm;
     /*padding: 2mm;*/
     /*border: 1pt darkgrey solid;*/ 
     /*background: lightskyblue;*/ 
@@ -1237,9 +1191,6 @@ MainContentPane {
 
 
 MainMenuCommand {
-    cn1-derive: BigButton;
-}
-MainMenuCommandXXX {
     cn1-derive: Label;
     /*->font-family :  "native:MainLight";*/
     font-size: var(--font-size-big); /*120%;*/
@@ -2408,3 +2359,5 @@ Command {
 CommandList{ 
     color: red;
 }
+
+/* End /Users/thomashjelm/NetBeansProjects/todocatalyst/css/theme.css */

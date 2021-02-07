@@ -650,13 +650,21 @@ public class MyPrefs {
                     "This ensures that any recorded work time is not lost, e.g. for statistics**"); //TODO: what happens if the max is reached? Will the algorithms still work?
     static PrefEntry repeatShowInternalDataInRepeatScreen
             = new PrefEntry("Show internal RepeatRule data", "repeatShowInternalDataInRepeatScreen", prod ? false : true, "**");
-    static PrefEntry repeatInsertAfterLastDueDateInstanceInsteadOfJustCompleted
-            = new PrefEntry("Show internal RepeatRule data", "repeatInsertAfterLastDueDateInstanceInsteadOfJustCompleted", prod ? false : true, "**");
-    static PrefEntry insertNewRepeatInstancesInStartOfLists
-            = new PrefEntry("not used in code yet**", "insertNewRepeatInstancesInStartOfLists", prod ? false : false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
-    static PrefEntry insertNewRepeatInstancesJustAfterRepeatOriginator
-            = new PrefEntry("Insert new repeat instances after the original ",
-                    "insertNewRepeatInstancesJustAfterRepeatOriginator", prod ? false : true, "Always insert new repeat tasks after the repeating task instead of beginning/end of list"); //"at the end"
+//    static PrefEntry repeatInsertAfterLastDueDateInstanceInsteadOfJustCompleted
+//            = new PrefEntry("Insert new repeating tasks after just completed task", "repeatInsertAfterLastDueDateInstanceInsteadOfJustCompleted", prod ? false : true, "**");
+//    static PrefEntry repeatInsertAfterLastGeneratedRepeatInstance
+//            = new PrefEntry("Show internal RepeatRule data", "repeatInsertAfterLastGeneratedRepeatInstance", prod ? false : true, "**");
+    static PrefEntry repeatInsertNewRepeatTaskAfterJustCompletedTask
+            = new PrefEntry("Insert new repeating tasks after just completed task", "repeatInsertNewRepeatTaskAfterJustCompletedTask", 
+                    prod ? false : false, "**");
+    static PrefEntry repeatInsertNewRepeatTaskAfterLatestRepeatInstance
+            = new PrefEntry("Insert new repeat task after last repeat instance", "repeatInsertNewRepeatTaskAfterLatestRepeatInstance", 
+                    prod ? false : false, "**");
+//    static PrefEntry insertNewRepeatInstancesInStartOfLists
+//            = new PrefEntry("not used in code yet**", "insertNewRepeatInstancesInStartOfLists", prod ? false : false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
+//    static PrefEntry insertNewRepeatInstancesJustAfterRepeatOriginator
+//            = new PrefEntry("Insert new repeat instances after the original ",
+//                    "insertNewRepeatInstancesJustAfterRepeatOriginator", prod ? false : true, "Always insert new repeat tasks after the repeating task instead of beginning/end of list"); //"at the end"
     static PrefEntry repeatOnCompletionFromDueDateIfLaterThanCompletedDate
             = new PrefEntry("Repeat from Completed date will repeat from Due date for tasks completed before due date",
                     "repeatOnCompletionFromDueDateIfLaterThanCompletedDate", prod ? true : true, "**"); //"at the end"

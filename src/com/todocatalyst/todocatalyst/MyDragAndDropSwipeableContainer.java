@@ -5397,8 +5397,14 @@ before getting to here, we've already covered the following cases where both bef
 //                    Log.p("***MyDragAndD.dragFinished: no parent() for dropPlaceholder=" + dropPlaceholder.getName());
 //                }
 //</editor-fold>
-            dropPlaceholder.remove(); //remove the old placeholder ( not done in successful drop)
+            if (true) {
+                Label temp = new Label(dragImage2);
+                compToAnimate.replace(dropPlaceholder, temp,null); //simply insert dragged image until list is redrawn (with new values for dragged and following list elements)
+                temp.repaint();
+            } else {
+                dropPlaceholder.remove(); //remove the old placeholder ( not done in successful drop)
             dropPlaceholder = null;
+            }
 //            animate = true;
         }
         //always removeFromCache (eg if dropped outside a droptarget)

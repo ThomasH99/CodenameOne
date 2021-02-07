@@ -1013,7 +1013,7 @@ public class ScreenListOfItems extends MyForm {
         if (!optionTemplateEditMode) {
 //            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "Add from template", Icons.iconAddFromTemplate, (e) -> {
 
-            if (!optionNoNewFromTemplate&&!optionNoneEditableList) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
+            if (!optionNoNewFromTemplate && !optionNoneEditableList) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
                 //INSERT TEMPLATE(S!) UNDER A PROJECT OR IN A LIST
                 toolbar.addCommandToOverflowMenu(CommandTracked.create("Insert template", Icons.iconAddFromTemplate, (e) -> {
                     //TODO!! Add "don't show again + setting to all these info popups
@@ -1059,7 +1059,10 @@ public class ScreenListOfItems extends MyForm {
                                         }
                                     }
                                     itemListOrItemOrg.addToList(templateCopy); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
-                                }//                                DAO.getInstance().saveNew(newSubtask); //save new subtasks (will be deleted again if Cancel
+//                                    DAO.getInstance().saveNew(templateCopy); //save new subtasks (will be deleted again if Cancel
+                                    DAO.getInstance().saveToParseNow(templateCopy); //save new subtasks (will be deleted again if Cancel
+                                }
+//                                DAO.getInstance().saveNew(newSubtask); //save new subtasks (will be deleted again if Cancel
                             }
 //                            DAO.getInstance().saveNew(newTemplateCopies, false);
 //                            DAO.getInstance().saveNew(newTemplateCopies);
@@ -1666,8 +1669,9 @@ public class ScreenListOfItems extends MyForm {
 
                             //TODO!! put the selectionCommands into a separate menu (like overflow menu, with same icon as the selection symbol?)
                             toolbar.addCommandToOverflowMenu(cmdSetAnything);
-                            if(!optionNoneEditableList)
-                            toolbar.addCommandToOverflowMenu(cmdMoveSelectedToTopOfList);
+                            if (!optionNoneEditableList) {
+                                toolbar.addCommandToOverflowMenu(cmdMoveSelectedToTopOfList);
+                            }
                             toolbar.addCommandToOverflowMenu(cmdSelectAll);
                             toolbar.addCommandToOverflowMenu(cmdUnselectAll);
                             toolbar.addCommandToOverflowMenu(cmdInvertSelection);
@@ -2728,6 +2732,8 @@ public class ScreenListOfItems extends MyForm {
             } else {
                 status.setStatusChangeHandler((oldStatus, newStatus) -> {
                     item.setStatus(newStatus);
+                    myForm.refreshAfterEdit(); //refresh after save as it may update sub/supertasks etc
+                    DAO.getInstance().saveToParseNow(item);
                     return true;
                 });
             }

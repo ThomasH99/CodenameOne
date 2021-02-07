@@ -2266,7 +2266,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
 
-        if (delta != 0) {
+        if (delta != 0) { //only do updates if new due date is different from old one
 
             setDueDate(newDueDateTime);
 
@@ -2703,13 +2703,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
 //    List<Item> getList() {
 //    @Override
+    private List cachedList;
+
     @Override
 //    public List<Item> getList() {
     public List getListFull() {
-        List<Item> list = getList(PARSE_SUBTASKS);
 
-        if (list != null) {
-            DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(list);
+        if (cachedList == null) {
+//            List<Item> list = getList(PARSE_SUBTASKS);
+            cachedList = getList(PARSE_SUBTASKS);
+
+            if (cachedList != null) {
+                DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(cachedList);
 //            if (Config.CHECK_OWNERS && list != null) {
 //                for (Item item : list) {
 //                    ASSERT.that(item.getOwner() == this||(item.getOwner() instanceof ItemList && item.getOwner().isNoSave()), "ERROR in owner: Item=" + item.toString(false)
@@ -2720,29 +2725,33 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                            + ", should be=" + this.toString(false));
 //                }
 //            }
-            if (Config.REPAIR) {
-                for (Item i : list) {
-                    if (i.getOwnerItem() == null) {
-                        ASSERT.that(false, () -> "FIXED - subtask with NULL owner, item=" + i + "; owner=\"" + this.getText() + "\" [" + this.getObjectIdP() + "/" + this.getGuid() + "]");
-                        i.setOwnerItem(this);
-                        DAO.getInstance().saveToParseNow(i);
-                    } else if (i.getOwnerItem() != this) {
-                        ASSERT.that(false, () -> "FIXED - subtask NOT having owner as owner, item=" + i
-                                + "; CURRENT owner=[" + i.getOwner().getText() + "\" [" + i.getOwner().getObjectIdP() + "/" + i.getOwner().getGuid() + "]"
-                                + "; ACTUAL owner=\"" + this.getText() + "\" [" + this.getObjectIdP() + "/" + this.getGuid() + "]");
-                        i.setOwnerItem(this);
-                        DAO.getInstance().saveToParseNow(i);
+                if (Config.REPAIR) {
+                    for (Item i : (List<Item>) cachedList) {
+                        if (i.getOwnerItem() == null) {
+                            ASSERT.that(false, () -> "FIXED - subtask with NULL owner, item=" + i + "; owner=\"" + this.getText() + "\" [" + this.getObjectIdP() + "/" + this.getGuid() + "]");
+                            i.setOwnerItem(this);
+                            DAO.getInstance().saveToParseNow(i);
+                        } else if (i.getOwnerItem() != this) {
+                            ASSERT.that(false, () -> "FIXED - subtask NOT having owner as owner, item=" + i
+                                    + "; CURRENT owner=[" + i.getOwner().getText() + "\" [" + i.getOwner().getObjectIdP() + "/" + i.getOwner().getGuid() + "]"
+                                    + "; ACTUAL owner=\"" + this.getText() + "\" [" + this.getObjectIdP() + "/" + this.getGuid() + "]");
+                            i.setOwnerItem(this);
+                            DAO.getInstance().saveToParseNow(i);
+                        }
                     }
-                }
 //                checkOwners(list);
+                }
+                if (Config.CHECK_OWNERS) {
+                    checkOwners(cachedList);
+                }
+//                cachedList = list;
+//            return cachedList; //list;
+            } else {
+                cachedList = new ArrayList();
+//            return cachedList;
             }
-            if (Config.CHECK_OWNERS) {
-                checkOwners(list);
-            }
-            return list;
-        } else {
-            return new ArrayList();
         }
+        return cachedList;
     }
 
     /**
@@ -3050,6 +3059,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 subtask.updateRepeatRule(); //
             }
         }
+        cachedList=listOfSubtasks;
 //        updateAllValuesDerivedFromSubtasksWhenSubtaskListChange(firstTimeAddOfSubtasks); //update eg if added first subtasks, meaning ActualEffort must be updated
         updateAllValuesDerivedFromSubtasks(); //update eg if added first subtasks, meaning ActualEffort must be updated
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -4172,7 +4182,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         AlarmRecord alarmRecord;
         Date date;
 //        if ((date = getSnoozeDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
-        if ((alarmRecord = getSnoozeAlarmRecord()) != null && (alarmRecord == null || alarmRecord.alarmTime.getTime() >= onOrAfterDate.getTime())) {
+        if ((alarmRecord = getSnoozeAlarmRecordN()) != null && (alarmRecord == null || alarmRecord.alarmTime.getTime() >= onOrAfterDate.getTime())) {
 //            list.add(new AlarmRecord(date, com.todocatalyst.todocatalyst.AlarmType.snooze));
             list.add(alarmRecord);
         }
@@ -4213,7 +4223,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return list.isEmpty() ? null : list.get(0).alarmTime;
     }
 
-    public void updateNextcomingAlarm() {
+    public void updateNextcomingAlarmOLD() {
         Date date = getNextcomingAlarmN(); //List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
         setNextcomingAlarmDate(date);
         Date oldVal = getDate(PARSE_NEXTCOMING_ALARM);
@@ -4224,6 +4234,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             remove(PARSE_NEXTCOMING_ALARM);
         }
+    }
+
+    public void updateNextcomingAlarm() {
+        Date date = getNextcomingAlarmN(); //List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
+        setNextcomingAlarmDate(date);
+//        Date oldVal = getDate(PARSE_NEXTCOMING_ALARM);
+//        if (date != null && date.getTime() != 0) { //list.isEmpty()) {
+//            if (!Objects.equals(oldVal, date)) {
+//                put(PARSE_NEXTCOMING_ALARM, date); //list.get(0).alarmTime);
+//            }
+//        } else {
+//            remove(PARSE_NEXTCOMING_ALARM);
+//        }
     }
 ///<editor-fold defaultstate="collapsed" desc="comment">
 //    private void updateFirstAlarmOLD() {
@@ -4649,7 +4672,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     } else {
                         oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRuleN); //update existing rule with updated values
                     }
-                    newRepeatRuleN.setUpdatePending(!isTemplate());
+                    oldRepeatRule.setUpdatePending(!isTemplate());
                     setRepeatRuleInParse(oldRepeatRule); //set to ensure it is saved
                 }
             }
@@ -6896,7 +6919,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            remove(PARSE_SNOOZE_DATE);
 //        }
 //    }
-    public AlarmRecord getSnoozeAlarmRecord() {
+    public AlarmRecord getSnoozeAlarmRecordN() {
         Date date = getDate(PARSE_SNOOZE_DATE);
         String type = getString(PARSE_SNOOZED_TYPE);
         if (Config.TEST && type == null) {
@@ -7613,10 +7636,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @param remainingEffortProjectTaskItselfMillis
      * @param autoUpdateEffortEstimate
-     * @param firstTimeAddOfSubtasks true the first time subtasks are added to a
-     * task (making it a project) - used to update projectRemaining to 0
+     * @param firstTimeAddOfSubtasksXXX true the first time subtasks are added
+     * to a task (making it a project) - used to update projectRemaining to 0
      */
-    public void setRemainingForTaskItself(long remainingEffortProjectTaskItselfMillis, boolean autoUpdateEffortEstimate, boolean firstTimeAddOfSubtasks) {
+    public void setRemainingForTaskItself(long remainingEffortProjectTaskItselfMillis, boolean autoUpdateEffortEstimate, boolean firstTimeAddOfSubtasksXXX) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long oldEffortTotal = getRemainingEffort();
 ////        long prevRemaining = getRemainingEffortFromParse();
@@ -7660,7 +7683,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue()); //set default value (again)
 //            }
 //</editor-fold>
-            if (firstTimeAddOfSubtasks) {
+            if (firstTimeAddOfSubtasksXXX) {
                 setRemainingForTaskInParse(0); //delete any default value
                 if (oldRemainingPrjTaskItself > 0 && MyPrefs.addCommentWhenRemaningIsSetToZeroWhenTaskBecomesProject.getBoolean()) {
                     addToCommentDefaultPosition(Format.f("{0 remaining} was {1 old remaining} when task was changed to a project", Item.EFFORT_REMAINING, MyDate.formatDuration(oldRemainingPrjTaskItself)));
@@ -8163,22 +8186,52 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         long oldActualThisTask = getActualForTaskItself(); //adjust totoal effort, avoids recalculating sum of subtasks
         long oldActualTotal = getActualTotal();
 
+        if (autoUpdateStatusAndStartedOnDate) {
+            if (actualEffortTaskItselfMillis > 0) { //if user has changed actual
+                if (getStatus() == ItemStatus.CREATED) { //only if Created, otherwiwe e.g. DONE may get set back to Ongoing!
+                    setStatus(ItemStatus.ONGOING, true);
+                }
+//                if (false && getStartedOnDateD().getTime() == 0) { //updated via setStatus(ItemStatus.ONGOING, true)
+//                    setStartedOnDate(new MyDate());
+//                }
+            } else { // actual effort set to 0
+                if (getStatus() == ItemStatus.ONGOING) {
+                    setStatus(ItemStatus.CREATED, true, true, true, new MyDate()); //if setting actual to 0, set status back to Created (or for projects: whatever is appropriate based on the subtasks
+                }//                    if (false) {
+//                        if (!isProject()) {
+//                            if (getStatus() == ItemStatus.ONGOING) {
+//                                setStatus(ItemStatus.CREATED, false); //if setting actual to 0, set status back to Created
+//                            }
+//                            setStartedOnDate(new MyDate(0));
+//                        } else {
+//                            if (!areAnySubtasksOngoingOrDone()) { //UI: OK that a project is set ongoing when time is recorded directly on it,even if subtasks are not //if some subtasks are ongoing or done
+//                                if (getStatus() == ItemStatus.ONGOING) {
+//                                    setStatus(ItemStatus.CREATED, false);
+//                                }
+//                            }
+////                    if (startedOnDate.getDate().getTime() == 0) 
+//                            setStartedOnDate(new MyDate(0)); //TODO: always set back to zero? What is set manually for some other reason?
+//                        }
+//                    }
+            }
+        }
+
         setActualForTaskItselfInParse(actualEffortTaskItselfMillis);
 //        setActualTotal(oldActualTotal + (actualEffortTaskItselfMillis - oldActualThisTask), autoUpdateStatusAndStartedOnDate); //NB: Only works if already initiated
         setActualTotal(actualEffortTaskItselfMillis + getActualForSubtasks(), true); //adjust totoal effort, avoids recalculating sum of subtasks
     }
+    //    private void updateActualOnSubtaskChange(long oldTotalActual, long newTotalActual) {
+    //        setActualImpl(getActual() - oldTotalActual + newTotalActual, true);
+    //    }
 
-//    private void updateActualOnSubtaskChange(long oldTotalActual, long newTotalActual) {
-//        setActualImpl(getActual() - oldTotalActual + newTotalActual, true);
-//    }
     /**
      * update actual for a project when Actual for one single subtask change
      *
      * @param subTaskIncrease
      */
-//    private void updateActualOnSubtaskChange(long subTaskIncrease) {
-//        setActualImpl(getActual() + subTaskIncrease, true);
-//    }
+    //    private void updateActualOnSubtaskChange(long subTaskIncrease) {
+    //        setActualImpl(getActual() + subTaskIncrease, true);
+    //    }
     /**
      * recalculate actual for a project, eg when there any kind of change in the
      * subtasks
@@ -9919,7 +9972,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     /**
      * update (execute) the repeatRule, e.g. when a new created item is inserted
-     * into its owner
+     * into its owner. Called after inserting new instances with repeatRules**
      */
     public void updateRepeatRule() {
         //2. Once subtasks' inherited values or pushed values (eg Status) are updated, calculate the repeatRule
@@ -10665,8 +10718,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
 
-        if (alarmType.isSnooze() && MyPrefs.alarmShowSnoozeUntilTimeAtEndOfNotificationText.getBoolean() && getSnoozeAlarmRecord().alarmTime.getTime() != 0) {
-            s += (s.isEmpty() ? "" : "\n") + Item.SNOOZED_TILL + ": " + MyDate.formatDateTimeNew(getSnoozeAlarmRecord().alarmTime.getTime());
+        if (alarmType.isSnooze() && MyPrefs.alarmShowSnoozeUntilTimeAtEndOfNotificationText.getBoolean() && getSnoozeAlarmRecordN().alarmTime.getTime() != 0) {
+            s += (s.isEmpty() ? "" : "\n") + Item.SNOOZED_TILL + ": " + MyDate.formatDateTimeNew(getSnoozeAlarmRecordN().alarmTime.getTime());
         }
 
         return s;

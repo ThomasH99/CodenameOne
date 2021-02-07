@@ -168,7 +168,7 @@ public class Icons {
     
     final static char[] iconPriorities = new char[]{FontImage.MATERIAL_PRIORITY_HIGH}; //TODO: custom icon
     
-    final static char iconImportanceLabel =FontImage.MATERIAL_PRIORITY_HIGH;//MATERIAL_NEW_RELEASES MATERIAL_GRID_ON; // FontImage.MATERIAL_ISO; //TODO: custom icon
+    final static char iconImportanceLabel =FontImage.MATERIAL_ERROR_OUTLINE; //PRIORITY_HIGH;//MATERIAL_NEW_RELEASES MATERIAL_GRID_ON; // FontImage.MATERIAL_ISO; //TODO: custom icon
     final static char iconUrgencyLabel = FontImage.MATERIAL_SPEED; //FontImage.MATERIAL_APPS; //TODO: custom icon
     final static char iconImportanceLowCust = '\\'; 
     final static char iconImportanceHighCust = 'Z'; 
@@ -390,7 +390,7 @@ public class Icons {
 //    final static Image iconWorkSlotLabelStyle = FontImage.createMaterial(iconWorkSlot, labelStyle);
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_DONE, labelStyle);
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_EVENT, labelStyle);
-    final static char iconFinishDate = FontImage.MATERIAL_VERIFIED; //EVENT_AVAILABLE;
+    final static char iconFinishDate = FontImage.MATERIAL_VERIFIED_USER; //MATERIAL_VERIFIED-too rough edges; EVENT_AVAILABLE;
     final static char iconFinishDateCust = 'i';
 //    final static Image iconFinishDate = FontImage.createMaterial(FontImage.MATERIAL_EVENT_AVAILABLE, labelStyle);
 

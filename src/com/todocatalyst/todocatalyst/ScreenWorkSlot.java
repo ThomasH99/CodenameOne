@@ -761,7 +761,7 @@ public class ScreenWorkSlot extends MyForm {
                         } else {//if RR was NOT edited, but workslot (potentially) was, updated already generated instances
                             RepeatRuleParseObject repeatRule = workSlot.getRepeatRuleN();
                             if (repeatRule != null) {
-                                repeatRule.updateWorkslotInstancesWhenWorkSlotModified(workSlot);
+                                repeatRule.updateWorkslotInstancesWhenWorkSlotModifiedXXX(workSlot);
                             }
                         }
 

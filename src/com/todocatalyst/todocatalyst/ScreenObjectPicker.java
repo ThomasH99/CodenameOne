@@ -72,9 +72,9 @@ public class ScreenObjectPicker<E> extends MyForm {
     private Container listCont;
     private String errorMsgInSelection;
 
-    class SelectionState {
-
-    }
+//    class SelectionState {
+//
+//    }
 
     /**
      *
