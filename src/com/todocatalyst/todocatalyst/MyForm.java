@@ -157,6 +157,7 @@ public class MyForm extends Form {
     private MySearchCommand searchCmd;
 
     static int GAP_LABEL_ICON = 0; //in pixels!
+    static int GAP_LABEL_ICON_LARGE = 3; //in pixels!
 
     protected Container newContentContainer; //used to access a just created new contentPane container (before it has been fully added)
 
@@ -332,10 +333,10 @@ public class MyForm extends Form {
     static final String SCREEN_OVERDUE_HELP = "Overdue tasks, you probably want to deal with these before moving on to other tasks"; // "Creation log", "Created tasks"
     static final String SCREEN_TUTORIAL = "Tutorial";
     static final String SCREEN_TUTORIAL_HELP = "Tutorial";
-    static final String SCREEN_TOUCHED = "Touched";
+    static final String SCREEN_TOUCHED = "Edited"; //"Touched";
     static final String SCREEN_TOUCHED_HELP = "Touched";
     static final String SCREEN_TOUCHED_24H = "Touched last 24h";
-    static final String SCREEN_STATISTICS = "Achievements"; //"Statistics", "History"
+    static final String SCREEN_STATISTICS = "Accomplished"; //"Achievements"; //"Statistics", "History"
     static final String SCREEN_IMPROVE = "Improve"; //how to improve, more precise estimates, analysis per type of tasks (respect due date, estimates, split up, allow to become interrupted, ...)
     static final String SCREEN_IMPROVE_HELP = "Shows you insights on how well you do and gives feedback on how you may improve. COMING..."; //how to improve, more precise estimates, analysis per type of tasks (respect due date, estimates, split up, allow to become interrupted, ...)
     static final String SETTINGS_SCREEN_TITLE = "Settings for "; //"Statistics", "History"
@@ -678,10 +679,6 @@ public class MyForm extends Form {
     boolean longStatusBarPress;
 
     void initMyStatusBar() {
-        //NB!! the code below relies on internal implementation sdetails in CN1 Toolbar.initTitleBarStatus() so it may break if that code changes!!
-        Layout statusBarLayout = (BorderLayout) getToolbar().getLayout();
-        Container statusBar = (Container) ((BorderLayout) getToolbar().getLayout()).getNorth();
-        statusBar.setUIID("StatusBarZeroSize");
 //        Button bar = new Button("", "FormTitle") {
         Button statusBarButton = new Button("", "StatusBarButton") {
 
@@ -750,6 +747,7 @@ public class MyForm extends Form {
             @Override
             public void longPointerPress(int x, int y) {
                 //orginal code from Component.longPointerPress(int x, int y)
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                if (longPressListeners != null && longPressListeners.hasListeners()) {
 //                    ActionEvent ev = new ActionEvent(this, ActionEvent.Type.LongPointerPress, x, y);
 //                    longPressListeners.fireActionEvent(ev);
@@ -757,21 +755,48 @@ public class MyForm extends Form {
 //                        return;
 //                    }
 //                }
+//</editor-fold>
                 ContainerScrollY cont = findScrollableContYChild(getComponentForm());
                 if (cont != null) {
                     longStatusBarPress = true;
                     prevScrollPos = cont.getScrollY();
-                    int idx = cont.getComponentCount() - 1;
-                    if (idx >= 0) {
-                        Component lastComp = cont.getComponentAt(idx); //scroll list to bottom
-                        if (lastComp != null) {
-                            cont.scrollComponentToVisible(lastComp);
+                    if (false) {
+                        int idx = cont.getComponentCount() - 1;
+                        if (idx >= 0) {
+                            Component lastComp = cont.getComponentAt(idx); //scroll list to bottom
+                            if (lastComp != null) {
+                                cont.scrollComponentToVisible(lastComp);
+                            }
+                        }
+//                    } else {
+//                        Form f=getComponentForm();
+//                
+//                        Container nextComp=getComponentForm();
+//                        Component lastComp=null;
+//                        do{
+//                nextComp=f.findNextFocusVertical(true); {
+//                            if(nextComp!=null)
+//                lastComp=nextComp;
+//                        } while (next!=null);
+//                        cont.setScrollYPublic(cont.getHeight());
+                    } else {
+//                        cont.setScrollYPublic(Integer.MAX_VALUE); //scrolls content completely out of screen (nothing visible)
+//                        cont.setScrollYPublic(getComponentForm().getHeight()); //doesn't scroll all the way down
+                        Component lastElt = findLastElementInScrollableContY(cont);
+                        if (lastElt != null) {
+                            cont.scrollComponentToVisible(lastElt);
                         }
                     }
                 }
             }
         };
+
         statusBarButton.setShowEvenIfBlank(true);
+
+        //NB!! the code below relies on internal implementation sdetails in CN1 Toolbar.initTitleBarStatus() so it may break if that code changes!!
+//        Layout statusBarLayout = (BorderLayout) getToolbar().getLayout();
+        Container statusBar = (Container) ((BorderLayout) getToolbar().getLayout()).getNorth();
+        statusBar.setUIID("StatusBarZeroSize");
         statusBar.setLayout(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
         statusBar.add(BorderLayout.CENTER, statusBarButton);
         if (false) {
@@ -802,7 +827,7 @@ public class MyForm extends Form {
         } else {
 //        Label titleComponent = new Label(getTitle(),"FormTitle") {
             Button titleComponent = new Button(title, "FormTitle");
-            
+
             if (false) {
                 titleComponent = new Button(title, "FormTitle") {
 
@@ -893,9 +918,10 @@ public class MyForm extends Form {
             titleComponent.setAutoSizeMode(MyPrefs.titleAutoSize.getBoolean());
 //        titleComponent.setMinAutoSize(2); //TODO!!!!! pull request to add this to CN1
             titleComponent.setVerticalAlignment(Component.CENTER);
-            getToolbar().setTitleComponent(titleComponent);
             getToolbar().setTitleCentered(true);
-            titleComponent.repaint();
+            getToolbar().setTitleComponent(titleComponent);
+//            titleComponent.repaint();
+            getToolbar().revalidate();
         }
     }
 
@@ -1300,10 +1326,10 @@ public class MyForm extends Form {
 
             new PickerDialog("Set Waiting", "Waiting tasks are automatically hidden until the set date.",
                     Format.f("Set a {0}", Item.WAIT_UNTIL_DATE),
-                    item.getWaitingTillDate(),
+                    item.getWaitUntilDate(),
                     new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemWaitingDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS),
                     Format.f("Set a {0}", Item.WAITING_ALARM_DATE), item.getWaitingAlarmDate(),
-                    d -> item.setWaitingTillDate(d), d -> item.setWaitingAlarmDate(d),
+                    d -> item.setWaitUntilDate(d), d -> item.setWaitingAlarmDate(d),
                     (d) -> d != null && d.getTime() != 0
                     //if a waiting date is defined, set alarm default days before, 
                     //UI: it is OK to set WaitingDate in the past (item will not be hidden), or alarmDate in the past (alarm will just never be activated)
@@ -2372,7 +2398,7 @@ public class MyForm extends Form {
                 int labelCount = 0;
                 int nonLabelCount = 0;
                 boolean searchOnLowerCaseOnly;
-                Component lastLabel = null;
+                Component prevLabel = null;
                 boolean hide;
                 searchOnLowerCaseOnly = text.equals(text.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
                 for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
@@ -2383,15 +2409,15 @@ public class MyForm extends Form {
                         firstVisibleComp = comp;
                     }
                     if (comp instanceof Label || comp instanceof StickyHeader) {
-                        if (lastLabel != null) {
-                            lastLabel.setHidden(nonLabelCount == 0); //UI: hide previous label if nothing is shown after it
+                        if (prevLabel != null) {
+                            prevLabel.setHidden(nonLabelCount == 0); //UI: hide previous label if nothing is shown after it
                             if (nonLabelCount != 0 && firstVisibleComp == null) {
                                 firstVisibleComp = comp;
                             }
                         }
                         nonLabelCount = 0; //reset count on every Label
                         labelCount++; //hack: StickyHeaders are Labels, so count them and add to count
-                        lastLabel = comp;
+                        prevLabel = comp;
 //                    } else if (comp instanceof InlineInsertNewContainer) {
 //                        comp.remove();
                     } else {
@@ -2409,8 +2435,12 @@ public class MyForm extends Form {
                         }
                     }
                 }
-                if (nonLabelCount == 0 && lastLabel != null) {
-                    lastLabel.setHidden(true); //hide previous label if nothing is shown after it
+                if (false) {
+                    if (nonLabelCount == 0 && prevLabel != null) {
+                        prevLabel.setHidden(true); //hide previous label if nothing is shown after it
+                    }
+                } else {
+                    prevLabel.setHidden(nonLabelCount == 0 && prevLabel != null); //hide/unhide previous label if nothing is shown after it
                 }
             } else { //compList==null - should never happen???!
                 for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
@@ -2601,7 +2631,7 @@ public class MyForm extends Form {
 
     public Command addStandardBackCommand() {
         Command backCmd = makeDoneUpdateWithParseIdMapCommand();
-        backCmd.putClientProperty("android:showAsAction", "withText");
+//        backCmd.putClientProperty("android:showAsAction", "withText");
 //            getToolbar().setBackCommand(makeDoneUpdateWithParseIdMapCommand(),Toolbar.BackCommandPolicy.AS_ARROW,MyPrefs.defaultIconSizeInMM.getFloat());
         getToolbar().setBackCommand(backCmd, Toolbar.BackCommandPolicy.AS_ARROW, MyPrefs.defaultIconSizeInMM.getFloat());
         return backCmd;
@@ -2660,7 +2690,7 @@ public class MyForm extends Form {
             }
             showPreviousScreen(true); //could probably be false, but just in case always refresh!
         }, "Cancel");
-        cmd.putClientProperty("android:showAsAction", "withText");
+//        cmd.putClientProperty("android:showAsAction", "withText");
         return cmd;
     }
 
@@ -3028,6 +3058,7 @@ public class MyForm extends Form {
 //         button..
 //        button.setIcon(FontImage.createMaterial(ItemStatus.iconCheckboxCreatedChar, UIManager.getInstance().getComponentStyle("ItemCommentIcon")));
         button.setMaterialIcon(Icons.iconCommentTimeStamp);
+        button.setGap(0);
         return button;
     }
 
@@ -3135,7 +3166,7 @@ public class MyForm extends Form {
     }
 
 //    protected static SpanButton addHelp(SpanButton comp, String helpText) {
-    protected static Component addHelp(Component comp, String helpText) {
+    protected static Component addHelpOLD(Component comp, String helpText) {
         if (helpText == null || helpText.length() == 0) {
             return comp;
         }
@@ -3163,6 +3194,43 @@ public class MyForm extends Form {
         return comp;
     }
 
+    protected static Component addHelp(Component comp, String helpText, String settingId) {
+        if (helpText == null || helpText.length() == 0) {
+            return comp;
+        }
+        Component helpTxt = new SpanLabel(helpText, "FieldHelpText");
+        String helpSettingId = settingId + "ShowHelp";
+        helpTxt.setHidden(!MyPrefs.getBoolean(helpSettingId));
+        Container helpCont = Container.encloseIn(BoxLayout.y(), comp, helpTxt);
+        ActionListener al = (e) -> {
+//            if (MyPrefs.getBoolean(helpSettingId)) {
+            MyPrefs.setBoolean(helpSettingId, !MyPrefs.getBoolean(helpSettingId));
+            helpTxt.setHidden(MyPrefs.getBoolean(helpSettingId));
+            helpCont.getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+//            }
+        };
+        if (comp instanceof SpanButton) {
+            if (MyPrefs.helpShowHelpOnLongPress.getBoolean()) {
+                ((SpanButton) comp).addLongPressListener(al);
+            } else {
+                ((SpanButton) comp).addActionListener(al);
+            }
+        } else if (comp instanceof Button) {
+            if (MyPrefs.helpShowHelpOnLongPress.getBoolean()) {
+                ((Button) comp).addLongPressListener(al);
+            } else {
+                ((Button) comp).addActionListener(al);
+            }
+//            ((Button) comp).addActionListener(al);
+//        } else if (comp instanceof MySpanButton) {
+//            ((MySpanButton) comp).addActionListener(al);
+        } else {
+            assert false : "Unknown type of help button, comp=" + comp;
+        }
+//        return comp;
+        return helpCont;
+    }
+
     protected static Component makeHelpButton(String label, String helpText) {
         return makeHelpButton(label, helpText, true);
     }
@@ -3171,7 +3239,52 @@ public class MyForm extends Form {
         return makeHelpButton(label, helpText, makeSpanButton, null, null);
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    protected static Component makeHelpButtonOLD(String label, String helpText, boolean makeSpanButton, Character materialIcon, Font iconFont) {
+//        if (label == null) {
+//            return null;
+//        }
+//        Component spanB;
+//        if (makeSpanButton) {
+//            SpanButton spanButton = new SpanButton(label, "ScreenItemFieldLabel");
+//            spanButton.setTextPosition(Component.RIGHT); //put icon on the left
+//            if (materialIcon != null) {
+//                if (iconFont != null) {
+//                    spanButton.setFontIcon(iconFont, materialIcon);
+//                } else {
+//                    spanButton.setMaterialIcon(materialIcon);
+//                }
+//            }
+//            spanButton.setUIID("Container"); //avoid adding additional white space by setting the Container UIID to LabelField
+//            spanButton.setName("FieldContHlpSpanBut-" + label); //avoid adding additional white space by setting the Container UIID to LabelField
+//            spanButton.setIconUIID("ScreenItemFieldIcon"); //avoid adding additional white space by setting the Container UIID to LabelField
+//            spanB = spanButton;
+//        } else {
+//            Button button = new Button(label, "ScreenItemFieldLabel");
+//            button.setName("FieldContHlpBut-" + label); //avoid adding additional white space by setting the Container UIID to LabelField
+//            button.setTextPosition(Component.RIGHT); //put icon on the left
+//            if (materialIcon != null) {
+//                if (iconFont != null) {
+//                    button.setFontIcon(iconFont, materialIcon);
+//                } else {
+//                    button.setMaterialIcon(materialIcon);
+//                }
+//            }
+//            spanB = button;
+//        }
+//
+//        if (helpText != null && !helpText.isEmpty()) {
+//            return addHelp(spanB, helpText);
+//        } else {
+//            return spanB;
+//        }
+//    }
+//</editor-fold>
     protected static Component makeHelpButton(String label, String helpText, boolean makeSpanButton, Character materialIcon, Font iconFont) {
+        return makeHelpButton(null, label, helpText, makeSpanButton, materialIcon, iconFont);
+    }
+
+    protected static Component makeHelpButton(String settingId, String label, String helpText, boolean makeSpanButton, Character materialIcon, Font iconFont) {
         if (label == null) {
             return null;
         }
@@ -3205,7 +3318,7 @@ public class MyForm extends Form {
         }
 
         if (helpText != null && !helpText.isEmpty()) {
-            return addHelp(spanB, helpText);
+            return addHelp(spanB, helpText, settingId);
         } else {
             return spanB;
         }
@@ -3395,14 +3508,14 @@ public class MyForm extends Form {
                 true, false, false, false);
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Picker field, String help, Character materialIcon, Font iconFont) {
-        return new EditFieldContainer(fieldLabelTxt, field, help,
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Picker field, String help, Character materialIcon, Font iconFont) {
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help,
                 (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null),
                 true, false, false, false, false, materialIcon, iconFont);
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Picker field, String help, Character materialIcon) {
-        return new EditFieldContainer(fieldLabelTxt, field, help,
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Picker field, String help, Character materialIcon) {
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help,
                 //<editor-fold defaultstate="collapsed" desc="comment">
                 //                field instanceof MyDurationPicker
                 //                        ? (() -> ((MyDurationPicker) field).swipeClear())
@@ -3411,7 +3524,7 @@ public class MyForm extends Form {
                 //                                : () -> ((MyDateAndTimePicker) field).swipeClear()),
                 //</editor-fold>
                 (field instanceof SwipeClear ? () -> ((SwipeClear) field).clearFieldValue() : null),
-                true, false, false, false, false, materialIcon);
+                true, false, false, false, false, materialIcon, null);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        return EditFieldContainer(fieldLabelTxt, field, help, field instanceof MyDurationPicker ? (() -> ((MyDurationPicker) field).swipeClear())
 //                : (field instanceof MyDatePicker ? () -> ((MyDatePicker) field).swipeClear() : () -> ((MyDateAndTimePicker) field).swipeClear()),
@@ -3439,12 +3552,14 @@ public class MyForm extends Form {
         return new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, false, true);
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Component field, String help, Character materialIcon) { //normal edit field with [>]
-        return layoutN(fieldLabelTxt, field, help, null, true, false, true, true, false, materialIcon);
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, Character materialIcon) { //normal edit field with [>]
+        return layoutN(settingId, fieldLabelTxt, field, help, null, true, false, true, true, false, materialIcon);
+//              return new EditFieldContainer(settingId,fieldLabelTxt, field, help, null, true, false, true, true, false, null);
+
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Component field, String help, Character icon, Font iconFont) { //normal edit field with [>]
-        return new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, true, true, false, icon, iconFont);
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, Character icon, Font iconFont) { //normal edit field with [>]
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, true, false, true, true, false, icon, iconFont);
 //        return layoutN(fieldLabelTxt, field, help, null, true, false, true, true, false, icon);
     }
 
@@ -3453,9 +3568,9 @@ public class MyForm extends Form {
         return new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, true, false, sizeWestBeforeEast, null);
     }
 
-    protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help, Character materialIcon) { //normal edit field with [>]
+    protected static Component layoutN(String settingId, boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help, Character materialIcon) { //normal edit field with [>]
 //        return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
-        return new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, true, false, sizeWestBeforeEast, materialIcon);
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, true, false, true, false, sizeWestBeforeEast, materialIcon, null);
     }
 
 //    protected static Component layoutN(boolean visibleEditButton, String fieldLabelTxt, Component field, String help) { //normal edit field with [>]
@@ -3465,23 +3580,28 @@ public class MyForm extends Form {
         return layoutN(fieldLabelTxt, onOffSwitch, help, null, true, false, false, true);
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable) {
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable) {
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, false, false);
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
-        return new EditFieldContainer(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false, false, null, null);
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable, Character materialIcon) {
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable, Character materialIcon) {
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, false, false);
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
-        return new EditFieldContainer(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false, materialIcon);
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false, false, materialIcon, null);
     }
+//    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable, Character materialIcon) {
+////        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, false, false);
+////        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
+//        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false, false, materialIcon, null);
+//    }
 
-    protected static Component layoutN(String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable, Character materialIcon, Font iconFont) {
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable, Character materialIcon, Font iconFont) {
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, false, false);
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
 //        return new EditFieldContainer(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false, materialIcon, iconFont);
-        return new EditFieldContainer(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false, materialIcon, iconFont);
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false, false, materialIcon, iconFont);
     }
 
     protected static Component layoutN(String fieldLabelTxt, Component field, String help,
@@ -3490,16 +3610,16 @@ public class MyForm extends Form {
         return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, null);
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Component field, String help,
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, Character materialIcon) {
 //        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
-        return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon);
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon, null);
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Component field, String help,
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, Character materialIcon, Font iconFont) {
 //        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
-        return new EditFieldContainer(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon, iconFont);
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon, iconFont);
     }
 
     protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help,
@@ -3519,10 +3639,10 @@ public class MyForm extends Form {
         return layoutN(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, false);
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, Character materialIcon) {
 //        return layoutN(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, false);
-        return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon);
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon, null);
     }
 
     protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
@@ -3535,17 +3655,17 @@ public class MyForm extends Form {
         return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, sizeWestBeforeEast, null);
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton,
             boolean sizeWestBeforeEast, Character materialIcon) {
-        return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable,
-                visibleEditButton, hiddenEditButton, sizeWestBeforeEast, materialIcon);
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable,
+                visibleEditButton, hiddenEditButton, sizeWestBeforeEast, materialIcon, null);
     }
 
-    protected static Component layoutN(String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
+    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, SwipeClear swipeClear,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton,
             boolean sizeWestBeforeEast, Character materialIcon, Font iconFont) {
-        return new EditFieldContainer(fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable,
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, swipeClear, wrapText, showAsFieldUneditable,
                 visibleEditButton, hiddenEditButton, sizeWestBeforeEast, materialIcon, iconFont);
     }
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -6180,7 +6300,11 @@ public class MyForm extends Form {
             if (false) { //if calling super.point... here, pinching will also scroll!
                 super.pointerDragged(x, y); //OK to have this call, not causing problems for above pinch logic??
             }
-            super.pointerDragged(xTop, yMin); //emulate a single finger to ensure scriolling up as inserting pichcontainer
+            if (false) {
+                super.pointerDragged(xTop, yMin); //emulate a single finger to ensure scriolling up as inserting pichcontainer
+            } else {
+                super.pointerDragged(x, y); //OK to have this call, not causing problems for above pinch logic??
+            }
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            super.pointerDragged(x, y); //leaving this call will make the screen scroll at the same time if the two fingers move
@@ -6342,6 +6466,30 @@ public class MyForm extends Form {
             }
         }
         return null;
+    }
+
+    public static Component findLastElementInScrollableContY(Container cont) {
+//        if (c instanceof ContainerScrollY) {
+//            return findLastElementInScrollableContY( c);
+//        }
+//        int count = cont.getComponentCount();
+        Component lastElt = null;
+        for (int iter = 0, count = cont.getComponentCount(); iter < count; iter++) {
+            Component comp = cont.getComponentAt(iter);
+//            if (lastElt == null) {
+//                lastElt = comp; //initialize
+//            }
+            if (comp instanceof Container) {
+                Component l = findLastElementInScrollableContY((Container) comp);
+                if (l != null) {
+                    comp = l;
+                }
+            }
+            if (lastElt == null || comp.getY() > lastElt.getY()) {
+                lastElt = comp;
+            }
+        }
+        return lastElt;
     }
 
     public ContainerScrollY findScrollableContYChild() {

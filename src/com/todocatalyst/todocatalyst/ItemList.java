@@ -1069,7 +1069,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         } else { // !has(PARSE_ITEMLIST) && ((itemList == null || itemList.isEmpty()))
             remove(PARSE_ITEMS); //if setting a list to null or setting an empty list, then simply delete the field
         }
-        cachedList=itemList;
+        cachedList = itemList;
 //        cachedList = null; //reset
 //        filteredSortedList = null; //reset
     }
@@ -3886,6 +3886,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     @Override
 //    public WorkSlotList getWorkSlotListN(boolean refreshWorkSlotListFromDAO) {
     public List<WorkSlot> getWorkSlotsFromParseN() {
+        if (workslotsCached == null) {
+            List<WorkSlot> workslots = getList(PARSE_WORKSLOTS);
+            if (workslots != null) {
+                workslotsCached = DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(workslots);
+                if (Config.CHECK_OWNERS) {
+                    checkOwners(workslots);
+                }
+            }
+        }
+        return workslotsCached;
+    }
+
+    public List<WorkSlot> getWorkSlotsFromParseNOLD() {
 //        if (workSlotListBuffer == null || refreshWorkSlotListFromDAO) {
 //            workSlotListBuffer = DAO.getInstance().getWorkSlotsN(this);
 //        }
@@ -3925,6 +3938,21 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    public void setWorkSlotList(List<WorkSlot> workSlotList) {
     @Override
     public void setWorkSlotsInParse(List workSlots) {
+        if (workSlots != null && workSlots.size() > 0) {
+            if (false) { //done in WorkSlotList            
+                WorkSlot.sortWorkSlotList(workSlots);
+            }
+            put(PARSE_WORKSLOTS, workSlots);
+        } else {
+            remove(PARSE_WORKSLOTS);
+        }
+        workslotsCached = workSlots;
+        if (false) { //done in WorkSlotList
+            resetWorkTimeDefinition(); //need to reset this each time the WorkSlot list is changed
+        }
+    }
+
+    public void setWorkSlotsInParseOLD(List workSlots) {
         //TODO currently not stored in ItemList but get from DAO
 //        workSlotListBuffer = null;
 //        workSlotListBuffer = workSlotList;

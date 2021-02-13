@@ -162,6 +162,11 @@ class TimerStack {
 //</editor-fold>
     }
 
+    void refreshTimersFromParse() {
+        INSTANCE = null;
+//        getInstance(); //next call from MyFrom.refreshAfterEdit() will read in new instance
+    }
+
     public String toString() {
         String s = "[";
         for (int i = activeTimers.size() - 1; i >= 0; i--) {
@@ -2591,6 +2596,7 @@ class TimerStack {
 //        MyTextArea comment = new MyTextArea(Item.COMMENT, 20, 2, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
         MyTextField comment = new MyTextField(Item.COMMENT, 20, 2, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
         comment.setUIID("BigTimerComment");
+        comment.putClientProperty("iosHideToolbar", Boolean.TRUE); //hide toolbar and only show Done button for ios virtual keyboard -> AVOID making Picker pop up?!
 //    private Container commentCont;
 
         MyDurationPicker effort = new MyDurationPicker();
@@ -3376,6 +3382,7 @@ class TimerStack {
                 }
             };
             description.setUIID("BigTimerItemText");
+            description.putClientProperty("iosHideToolbar", Boolean.TRUE); //hide toolbar and only show Done button for ios virtual keyboard -> AVOID making Picker pop up?!
             description.setColumns(100);
             description.setGrowByContent(true);
             description.setActAsLabel(true);
@@ -3389,6 +3396,8 @@ class TimerStack {
             if (timedItem.isInteruptOrInstantTask() && description.getText().equals("")) {
 //                    contentPane.getComponentForm().setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
                 myForm.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
+            } else {
+                myForm.setEditOnShow(comment); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
             }
             description.setText(timedItem.getText());
         } else { //smallTimer
@@ -3401,6 +3410,7 @@ class TimerStack {
             }
 //            description.setUIID("Label");
             description.setUIID("SmallTimerItemText");
+            description.putClientProperty("iosHideToolbar", Boolean.TRUE); //hide toolbar and only show Done button for ios virtual keyboard -> AVOID making Picker pop up?!
             description.setCommitTimeout(300);
             description.setEditable(true); //true=editable (but will look like a label until clicked), false=not editable in small container
             description.setText(timedItem.getText());

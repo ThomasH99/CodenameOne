@@ -84,7 +84,7 @@ public class ScreenItem extends MyForm {
             previousForm.refreshAfterEdit();
             previousForm.showBack();
         });
-        cmd.putClientProperty("android:showAsAction", "withText");
+//        cmd.putClientProperty("android:showAsAction", "withText");
         toolbar.addCommandToLeftBar(cmd);
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens))

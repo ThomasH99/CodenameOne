@@ -117,13 +117,13 @@ public class InspirationalLists {
                 filter = new FilterSortDef() {
                     public boolean test(Item item) {
                         return (item.getStatus() == ItemStatus.WAITING
-                                && ((item.getWaitingTillDate().getTime() < MyDate.currentTimeMillis())
+                                && ((item.getWaitUntilDate().getTime() < MyDate.currentTimeMillis())
                                 || item.getDateWhenSetWaiting() == null && item.getDateWhenSetWaiting().getTime() < MyDate.currentTimeMillis()));
                     }
 
                     Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareDate(i1.getWaitingTillDate() != null ? i1.getWaitingTillDate() : i1.getDateWhenSetWaiting(),
-                                i2.getWaitingTillDate() != null ? i2.getWaitingTillDate() : i2.getDateWhenSetWaiting()); //waiting the longest first
+                        return (i1, i2) -> compareDate(i1.getWaitUntilDate() != null ? i1.getWaitUntilDate() : i1.getDateWhenSetWaiting(),
+                                i2.getWaitUntilDate() != null ? i2.getWaitUntilDate() : i2.getDateWhenSetWaiting()); //waiting the longest first
                     }
                 };
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
@@ -144,8 +144,8 @@ public class InspirationalLists {
                     }
 
                     Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareDate(i1.getWaitingTillDate() != null ? i1.getWaitingTillDate() : i1.getDateWhenSetWaiting(),
-                                i2.getWaitingTillDate() != null ? i2.getWaitingTillDate() : i2.getDateWhenSetWaiting()); //waiting the longest first
+                        return (i1, i2) -> compareDate(i1.getWaitUntilDate() != null ? i1.getWaitUntilDate() : i1.getDateWhenSetWaiting(),
+                                i2.getWaitUntilDate() != null ? i2.getWaitUntilDate() : i2.getDateWhenSetWaiting()); //waiting the longest first
                     }
                 };
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());

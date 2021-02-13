@@ -401,7 +401,7 @@ public class MyTree2 extends ContainerScrollY {
         Container parent = c.getParent();
         if (parent != null) { //added due to nullpoint in expand/collapse hierarchy
             if (isInitialized() && animate) {
-                if (false && parent.getParent() != null) {
+                if (true && parent.getParent() != null) {
                     parent = parent.getParent();
                 }
 
@@ -409,7 +409,8 @@ public class MyTree2 extends ContainerScrollY {
 //                parent.animateHierarchyAndWait(300);
 //parent.getAnimationManager().
 //                parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
-                parent.animateHierarchy(MyForm.ANIMATION_TIME_DEFAULT);
+//                parent.animateHierarchy(MyForm.ANIMATION_TIME_DEFAULT);
+                parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
 //            if (multilineMode) {
 //                revalidate();
 //            }
@@ -593,7 +594,8 @@ public class MyTree2 extends ContainerScrollY {
                     if (expanded != null && expanded.equals("true")) {
                         Object nodeElement = subNodeCont.getClientProperty(KEY_OBJECT);
 //                        if (nodeElement != null && expandedObjects != null && expandedObjects.contains(nodeElement)) {
-                        if (nodeElement instanceof ItemAndListCommonInterface && expandedObjects != null && expandedObjects.contains((ItemAndListCommonInterface) nodeElement)) {
+                        if (nodeElement instanceof ItemAndListCommonInterface && expandedObjects != null
+                                && expandedObjects.contains((ItemAndListCommonInterface) nodeElement)) {
                             expandedObjects.remove((ItemAndListCommonInterface) nodeElement);
                         } else {
                             assert false : "if KEY_EXPANDED==true, there should be a KEY_OBJECT";
@@ -606,7 +608,7 @@ public class MyTree2 extends ContainerScrollY {
         }
     }
 
-    private void collapseNode(Component itemNode, Transition t, boolean collapseAllLevels) {
+    private void collapseNodeOLD(Component itemNode, Transition t, boolean collapseAllLevels) {
 //        Container lead = c.getParent().getLeadParent();
 //        if (lead != null) {
 //            c = lead;
@@ -630,6 +632,58 @@ public class MyTree2 extends ContainerScrollY {
 //                        expandedObjects.remove(nodeObject);
 //                    }
                     removeExpandedSubObjects((Container) comp);
+                }
+            }
+        }
+    }
+
+    private void collapseNode(Component itemNode, Transition t, boolean collapseAllLevels) {
+//        Container lead = c.getParent().getLeadParent();
+//        if (lead != null) {
+//            c = lead;
+//        }
+        itemNode.putClientProperty(KEY_EXPANDED, null);
+//        setNodeIcon(folder, c);
+        if (expandedObjects != null) {
+            expandedObjects.remove((ItemAndListCommonInterface) itemNode.getClientProperty(KEY_OBJECT));
+        }
+        //Parent = {North: ItemNode; Center: expandedSubTasks}
+        Container itemNodeParent = itemNode.getParent();
+        for (int i = 0, size = itemNodeParent.getComponentCount(); i < size; i++) {
+            Component comp = itemNodeParent.getComponentAt(i);
+            if (comp != itemNode) { //don't collapse North:ItemNode
+//                Label dummy = new Label();
+//                itemNodeParent.replaceAndWait(comp, dummy, t, true);
+//                itemNodeParent.removeComponent(dummy);
+                itemNodeParent.removeComponent(comp);
+//                comp.setHidden(true);
+//                itemNodeParent.replaceAndWait(comp, dummy, t, true);
+                if (collapseAllLevels && expandedObjects != null && comp instanceof Container) {
+//                    Object nodeObject = comp.getClientProperty(KEY_OBJECT); //comp is a list of expanded subnodes, so no KEY_OBJECT
+//                    if (expandedObjects.contains(nodeObject) && collapseAllLevels) {
+//                        expandedObjects.remove(nodeObject);
+//                    }
+                    removeExpandedSubObjects((Container) comp);
+                }
+            }
+        }
+        if (itemNodeParent.getParent() != null) {
+//            itemNodeParent.getParent().animateLayoutAndWait(300); //animate hiding
+//            itemNodeParent.getParent().animateHierarchy(300); //animate hiding
+//            itemNodeParent.getParent().animateUnlayout(300,100,null); //animate hiding
+            itemNodeParent.getParent().animateLayout(MyForm.ANIMATION_TIME_FAST); //animate hiding
+        } else {
+//            itemNodeParent.animateLayoutAndWait(300); //animate hiding
+//            itemNodeParent.animateHierarchy(300); //animate hiding
+            itemNodeParent.animateLayout(MyForm.ANIMATION_TIME_FAST); //animate hiding
+        }
+        //then really remove the collapsed items:
+//        while(getAnimationManager().isAnimating());
+        if (false&&true) {
+            for (int i = 0, size = itemNodeParent.getComponentCount(); i < size; i++) {
+                Component comp = itemNodeParent.getComponentAt(i);
+                if (comp != itemNode) { //don't collapse North:ItemNode
+                    itemNodeParent.removeComponent(comp);
                 }
             }
         }
@@ -1185,11 +1239,15 @@ public class MyTree2 extends ContainerScrollY {
     }
 
     private static String makeHeader(String fieldName, Object fieldValue, Object undefinedValue) {
-        return makeHeader(fieldName, fieldValue.toString(), fieldValue, undefinedValue);
+        return makeHeader(fieldName, fieldValue == null ? "Not defined" : fieldValue.toString(), fieldValue, undefinedValue);
+    }
+
+    private static String makeHeader(String fieldName, String fieldValue) {
+        return fieldName + " " + fieldValue;
     }
 
     private static String makeHeader(String fieldName, Object fieldValue) {
-        return makeHeader(fieldName, fieldValue.toString(), fieldValue, null);
+        return makeHeader(fieldName, fieldValue == null ? "Not defined" : fieldValue.toString(), fieldValue, null);
     }
 
     /**
@@ -1255,9 +1313,9 @@ public class MyTree2 extends ContainerScrollY {
 //                        newStr = getDiffStr(previousStickyStr, Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDateD()));
                         newStr = getDiffStr(previousStickyStr, makeHeader(Item.DUE_DATE, MyDate.formatDateNew(item.getDueDate()), item.getDueDate(), new MyDate(0)));
                         break;
-                    case Item.PARSE_WAITING_TILL_DATE:
+                    case Item.PARSE_WAIT_UNTIL_DATE:
 //                        newStr = getDiffStr(previousStickyStr, Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitingTillDateD()));
-                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.WAIT_UNTIL_DATE, MyDate.formatDateNew(item.getWaitingTillDate()), item.getWaitingTillDate(), new MyDate(0)));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.WAIT_UNTIL_DATE, MyDate.formatDateNew(item.getWaitUntilDate()), item.getWaitUntilDate(), new MyDate(0)));
                         break;
                     case Item.PARSE_IMPORTANCE_URGENCY_VIRT:
 //                        newStr = getDiffStr(previousStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());
@@ -1265,15 +1323,35 @@ public class MyTree2 extends ContainerScrollY {
                         break;
                     case Item.PARSE_IMPORTANCE:
 //                        newStr = getDiffStr(previousStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());
-                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.IMPORTANCE, item.getImportanceN(), null));
+//                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.IMPORTANCE, item.getImportanceN(), null));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.IMPORTANCE,
+                                item.getImportanceN() == null
+                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                : item.getImportanceN().getDescription()));
                         break;
                     case Item.PARSE_URGENCY:
 //                        newStr = getDiffStr(previousStickyStr, Item.IMPORTANCE_URGENCY + " " + item.getImpUrgPrioValueAsString());
-                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.URGENCY, item.getUrgencyN(), null));
+//                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.URGENCY, item.getUrgencyN(), null));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.URGENCY,
+                                item.getUrgencyN() == null
+                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                : item.getUrgencyN().getDescription()));
                         break;
                     case Item.PARSE_CHALLENGE:
 //                        newStr = getDiffStr(previousStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
-                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.CHALLENGE, item.getChallengeN(), null));
+//                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.CHALLENGE, item.getChallengeN(), null));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.CHALLENGE,
+                                item.getChallengeN() == null
+                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                : item.getChallengeN().getDescription()));
+                        break;
+                    case Item.PARSE_DREAD_FUN_VALUE:
+//                        newStr = getDiffStr(previousStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
+//                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.DREAD_FUN, item.getDreadFunValueN(), null));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.DREAD_FUN,
+                                item.getDreadFunValueN() == null
+                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                : item.getDreadFunValueN().getDescription()));
                         break;
                     case Item.PARSE_TEXT: //no header for text, could do a letter 'A' but not valuable //TODO - add the right-side menu with letters to jump directly to tasks starting with that letter
 //                        newStr = getDiffStr(newStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
@@ -1307,7 +1385,7 @@ public class MyTree2 extends ContainerScrollY {
                                 newStr = Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDate());
                                 break;
                             case WAITING_TODAY:
-                                newStr = Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitingTillDate());
+                                newStr = Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitUntilDate());
                                 break;
                             case STARTING_TODAY_CREATED:
                             case STARTING_TODAY_ONGOING:

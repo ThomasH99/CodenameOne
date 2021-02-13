@@ -335,7 +335,7 @@ public class ScreenWorkSlot extends MyForm {
 
 //        statusCont.add(new Label(Item.BELONGS_TO)).add(owner); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //        content.add(layout(Item.BELONGS_TO, owner, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-        content.add(layoutN(ownerLabelTxt, ownerLabel, Item.BELONGS_TO_HELP, true, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+        content.add(layoutN(WorkSlot.PARSE_OWNER_ITEM, ownerLabelTxt, ownerLabel, WorkSlot.BELONGS_TO_HELP, true, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //        owner.setConstraint(TextArea.UNEDITABLE); //DOESN'T WORK        
 
         long now = MyDate.currentTimeMillis();
@@ -362,7 +362,7 @@ public class ScreenWorkSlot extends MyForm {
                 makeDefaultWorkSlotStartDate);
 //        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
-        content.add(layoutN(WorkSlot.START_TIME, startByDatePicker, WorkSlot.START_TIME_HELP, hideIcons ? null : Icons.iconWorkSlotStartTime));
+        content.add(layoutN(WorkSlot.PARSE_START_TIME, WorkSlot.START_TIME, startByDatePicker, WorkSlot.START_TIME_HELP, hideIcons ? null : Icons.iconWorkSlotStartTime));
 //        content.add(new SwipeableContainer(null, new Button(Command.create("Tst", null, (e) -> Log.p("Test"))), new Label("TestSwipe"))); //, true, false, false));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -397,7 +397,7 @@ public class ScreenWorkSlot extends MyForm {
                 (l) -> durationPicker.setDuration((long) l),
                 new Long(0),
                 makeDefaultDuration);
-        content.add(layoutN(WorkSlot.DURATION, durationPicker, WorkSlot.DURATION_HELP, hideIcons ? null : Icons.iconWorkSlotDuration));
+        content.add(layoutN(WorkSlot.PARSE_DURATION, WorkSlot.DURATION, durationPicker, WorkSlot.DURATION_HELP, hideIcons ? null : Icons.iconWorkSlotDuration));
 
         //END TIME
         MyDateAndTimePicker endByDatePicker = new MyDateAndTimePicker();
@@ -427,7 +427,7 @@ public class ScreenWorkSlot extends MyForm {
             endByDatePicker.setDate(new MyDate(0)); //simply set to start+duration pickers (even when zero or have locally stored values)
         }//        content.add(new Label("Start by")).add(startByDate);
 //        content.add(layout("Start by",startByDate, "**"));
-        content.add(layoutN(WorkSlot.END_TIME, endByDatePicker, WorkSlot.END_TIME_HELP, hideIcons ? null : Icons.iconWorkSlotEndTime));
+        content.add(layoutN(WorkSlot.PARSE_END_TIME, WorkSlot.END_TIME, endByDatePicker, WorkSlot.END_TIME_HELP, hideIcons ? null : Icons.iconWorkSlotEndTime));
 
         //ACTION LISTENERS to ensure consistence between start time, duration and end time
         if (false) {
@@ -793,7 +793,7 @@ public class ScreenWorkSlot extends MyForm {
 //</editor-fold>
 //        repeatRuleButton.setUIID("TextField");
 //        content.add(layoutN(true, WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, true, false, true, hide ? null : Icons.iconRepeat));//, true, false, false));
-        content.add(layoutN(true, WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, hideIcons ? null : Icons.iconRepeat));//, true, false, false));
+        content.add(layoutN(WorkSlot.PARSE_REPEAT_RULE, true, WorkSlot.REPEAT_DEFINITION, repeatRuleButton, WorkSlot.REPEAT_DEFINITION_HELP, hideIcons ? null : Icons.iconRepeat));//, true, false, false));
 //        checkDataIsCompleteBeforeExit = () -> {
 //        setCheckOnExit( () -> {
 //            if (startByDate.getDate().getTime() == 0 ^ duration.getDuration() == 0) { // ^ XOR - if one and only one is true
@@ -855,11 +855,11 @@ public class ScreenWorkSlot extends MyForm {
             ));
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
 //            content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
-            content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", hideIcons ? null : Icons.iconWorkSlotTasks));
+            content.add(layoutN(WorkSlot.PARSE_TASKS_IN_WORKSLOT_VIRT, "Tasks in WorkSlot", editSubtasksFullScreen, "**", hideIcons ? null : Icons.iconWorkSlotTasks));
         }
 
         Label lastEditedDate = new Label(workSlot.getEditedDate().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getEditedDate()));
-        content.add(layoutN(Item.EDITED_DATE, lastEditedDate, Item.EDITED_DATE_HELP, true, hideIcons ? null : Icons.iconEditedDate, Icons.myIconFont));
+        content.add(layoutN(Item.PARSE_EDITED_DATE, Item.EDITED_DATE, lastEditedDate, Item.EDITED_DATE_HELP, true, hideIcons ? null : Icons.iconEditedDate));
 
         //ORIGINAL SOURCE
         if (Config.TEST) { //hide source except when testing since purpose has to be clarified  
@@ -879,24 +879,26 @@ public class ScreenWorkSlot extends MyForm {
 //            statusCont.add(layout(Item.SOURCE, sourceLabel, "**", true, true, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //                content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //                content.add(layoutN(true, Item.SOURCE, sourceLabel, Item.SOURCE_HELP, true, true, false)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-                content.add(layoutN(Item.SOURCE, sourceLabel, Item.SOURCE_HELP, null, true, true, false, false, true, hideIcons ? null : Icons.iconSource)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+                content.add(layoutN(Item.PARSE_SOURCE, Item.SOURCE, sourceLabel, Item.SOURCE_HELP, null, true, true, false, false, true, hideIcons ? null : Icons.iconSource)); //.add(new SpanLabel("Click to move task to other projects or lists"));
             }
         }
 
         //CREATED
         Label createdDate = new Label(workSlot.getCreatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getCreatedAt().getTime())); //NOT use itemLS since CreatedDate is not saved locally
-        content.add(layoutN(Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDate));
+        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDate));
 
         //MODIFIED
         Label lastModifiedDate = new Label(workSlot.getUpdatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getUpdatedAt()));
-        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, hideIcons ? null : Icons.iconModifiedDateCust, Icons.myIconFont));
+        content.add(layoutN(Item.PARSE_UPDATED_AT, Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, hideIcons ? null : Icons.iconModifiedDateCust, Icons.myIconFont));
 
         //OBJECT-ID
         if ((Config.TEST
                 || (MyPrefs.enableShowingSystemInfo.getBoolean()
                 && MyPrefs.showObjectIdsInEditScreens.getBoolean())) && workSlot.getObjectIdP() != null) {
             Label itemObjectId = new Label(workSlot.getObjectIdP() == null ? "<set on save>" : workSlot.getObjectIdP(), "ScreenItemValueUneditable");
-            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hideIcons ? null : Icons.iconObjectId));
+            content.add(layoutN(Item.PARSE_OBJECT_ID_VIRT, Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hideIcons ? null : Icons.iconObjectId));
+            content.add(layoutN(Item.PARSE_GUID_VIRT, Item.OBJECT_GUID, new Label(workSlot.getGuid() == null ? "<set on save>" : workSlot.getGuid(), "ScreenItemValueUneditable"),
+                    Item.OBJECT_GUID_HELP, true, hideIcons ? null : Icons.iconObjectId));
         }
 
         //WORKTIME ALLOCATOR

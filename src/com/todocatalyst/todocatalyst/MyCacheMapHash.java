@@ -149,20 +149,24 @@ public class MyCacheMapHash {
         if (Config.TEST) {
             ASSERT.that(key != null, () -> "key==null for value=" + value);
             ASSERT.that(value != null, () -> "value==null for key=" + key);
-        }
-        Object oldVal = memoryCache.get(key);
+            Object oldVal = memoryCache.get(key);
 //            ASSERT.that(oldVal == null || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key
-        ASSERT.that(oldVal == null || oldVal == value, () -> "Cache key already points to a different object. Key=" + key + ", OLD= \"" + oldVal + "\", NEW= \"" + value + "\"");
+            ASSERT.that(oldVal == null || oldVal == value, () -> "Cache key already points to a different object. Key=" + key
+                    + ", OLD= \"" + ItemAndListCommonInterface.toIdString(oldVal) + "\", NEW= \"" + ItemAndListCommonInterface.toIdString(value) + "\"");
 //            ASSERT.that(oldVal == null || oldVal == value, 
 //                    () -> "Cache key already points to a different object. Key=" + key ); //NB avoid object.toString since may create infinite loop
-        if (oldVal == null|| oldVal == value) { //during testing, ignore overwrite which may be due to the debugger's use of toString which calls eg getListFull()
-            Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
-            memoryCache.put(key, value);
-        } else { 
-            if (false) { //always only use first value
+            if (oldVal == null || oldVal != value) { //during testing, ignore overwrite which may be due to the debugger's use of toString which calls eg getListFull()
                 Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
                 memoryCache.put(key, value);
+            } else {
+                if (false) { //always only use first value
+                    Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
+                    memoryCache.put(key, value);
+                }
             }
+        } else {
+            Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
+            memoryCache.put(key, value);
         }
     }
 

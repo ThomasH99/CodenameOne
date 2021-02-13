@@ -33,7 +33,7 @@ public class ItemListList extends ItemList {
 
     static synchronized public ItemListList getInstance() { //syncrhonized to avoid clashing with reload below
         if (INSTANCE == null) {
-            INSTANCE = DAO.getInstance().getItemListList();
+            INSTANCE = DAO.getInstance().getItemListListFromParse();
         }
         return INSTANCE;
     }

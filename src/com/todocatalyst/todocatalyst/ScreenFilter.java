@@ -200,7 +200,7 @@ public class ScreenFilter extends MyForm {
             boolean turnOnSorting = sortSelectorContainer.isHidden(); //if hidden before, means action is to turn on sorting
             sortSelectorContainer.setHidden(!turnOnSorting);
 //            filterSortDef.setSortOn(turnOnSorting); //when setting sorted, turn on sorted by default
-            sortSelectorContainer.getParent().getParent().animateLayout(ANIMATION_TIME_DEFAULT);
+            sortSelectorContainer.getParent().getParent().animateLayout(ANIMATION_TIME_FAST);
         });
 //        content.add(sortOnSwitch);
 //        sortContainer = Container.encloseIn(BoxLayout.y(), new Label("Manual sorting"), sortOnSwitch);
@@ -230,7 +230,17 @@ public class ScreenFilter extends MyForm {
 //</editor-fold>
             filterSortDef.setSortFieldId(filterSortDef.getSortFields()[i]);
         });
-
+        
+        
+MyOnOffSwitch customFilterOnOff = new MyOnOffSwitch(parseIdMap2, () -> {
+            return filterSortDef.isSortDescending();
+        }, (b) -> {/*button value used directly*/
+            filterSortDef.setSortDescending(b);
+        });
+        Component manualFilterCont = layoutSetting("Custom filter", customFilterOnOff, "**");
+        
+        
+        
         Component sortOnOffCont = layoutSetting("Sort", sortPicker, "**");
         Component sortReversed = layoutSetting("Reverse sort order", inverseOrder, "**");
 
@@ -296,7 +306,7 @@ public class ScreenFilter extends MyForm {
 
         showDone.addActionListener((e) -> {
             showTillMidnight.setHidden(!showTillMidnight.isHidden());
-            showTillMidnight.getParent().getParent().animateLayout(ANIMATION_TIME_DEFAULT);
+            showTillMidnight.getParent().getParent().animateLayout(ANIMATION_TIME_FAST);
         });
 
 //                content.add(new SpanLabel(ItemStatus.CANCELLED.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
@@ -345,7 +355,7 @@ public class ScreenFilter extends MyForm {
 
         //Estimates all/with/without
 //        content.add(new SpanLabel("With estimates")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutSetting(Format.f("Show only tasks with {0}",Item.EFFORT_ESTIMATE), new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutSetting(Format.f("Show only tasks without {0}",Item.EFFORT_ESTIMATE), new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowWithoutEstimatesOnly();
         }, (b) -> {
             filterSortDef.setShowWithoutEstimatesOnly(b);

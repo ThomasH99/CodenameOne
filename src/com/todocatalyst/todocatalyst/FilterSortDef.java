@@ -463,7 +463,7 @@ public class FilterSortDef extends ParseObject {
         Item.EFFORT_ESTIMATE,
         Item.EFFORT_ACTUAL,
         Item.CHALLENGE,
-        Item.FUN_DREAD,
+        Item.DREAD_FUN,
         Item.EARNED_VALUE,
         Item.START_BY_TIME,
         Item.STARTED_ON_DATE,
@@ -491,7 +491,7 @@ public class FilterSortDef extends ParseObject {
         Item.PARSE_UPDATED_AT,
         Item.PARSE_CREATED_AT,
         Item.PARSE_COMPLETED_DATE,
-        Item.PARSE_WAITING_TILL_DATE,
+        Item.PARSE_WAIT_UNTIL_DATE,
         Item.PARSE_TEXT,
         Item.PARSE_IMPORTANCE_URGENCY_VIRT,
         Item.PARSE_IMPORTANCE,
@@ -1019,7 +1019,8 @@ public class FilterSortDef extends ParseObject {
                 && (!showWithActualsOnly || item.has(Item.PARSE_ACTUAL_EFFORT)) //before now <=> hideUntil date is already passed so show the item
                 && (!showWithRemainingOnly || item.has(Item.PARSE_REMAINING_EFFORT_TOTAL)) //before now <=> hideUntil date is already passed so show the item
                 && (!showChallengeEasy || Objects.equals(item.getChallengeN(), Challenge.EASY))
-                && (!showChallengeHard || Objects.equals(item.getChallengeN(), Challenge.HARD)));
+                && (!showChallengeHard || Objects.equals(item.getChallengeN(), Challenge.HARD))
+                );
 //            return false;
     }
 
@@ -1224,15 +1225,7 @@ public class FilterSortDef extends ParseObject {
         return getMultipleComparatorNew(comp);
     }
 
-    /**
-     * compare DreadFun values which may be null. A null value is always smaller
-     * than a defined value (to show last in sorted list)
-     *
-     * @param d1
-     * @param d2
-     * @return
-     */
-    private static int compareDreadFunValue(DreadFunValue d1, DreadFunValue d2) {
+    private static int compareDreadFunValueOLD(DreadFunValue d1, DreadFunValue d2) {
         if (d1 == null) {
             if (d2 == null) {
                 return 0;
@@ -1242,6 +1235,96 @@ public class FilterSortDef extends ParseObject {
         } else {
             if (d2 == null) {
                 return 1;
+            } else {
+                return (d1.compareTo(d2));
+            }
+        }
+    }
+
+    /**
+     * compare DreadFun values which may be null. A null value is always smaller
+     * than a defined value (to show last in sorted list) return FUN > null >
+     * DREAD
+     *
+     * @param d1
+     * @param d2
+     * @return
+     */
+    private static int compareDreadFunValue(DreadFunValue d1, DreadFunValue d2) {
+        if (d1 == null) {
+            if (d2 == null) {
+                return 0;
+            } else if (d2 == DreadFunValue.FUN) {
+                return -1;
+            } else { //(d2==DreadFunValue.DREAD)
+                if (Config.TEST) {
+                    ASSERT.that(d2 == DreadFunValue.DREAD);
+                }
+                return 1;
+            }
+        } else {
+            if (d2 == null) {
+                if (d1 == DreadFunValue.FUN) {
+                    return 1;
+                } else { //(d2==DreadFunValue.DREAD)
+                    if (Config.TEST) {
+                        ASSERT.that(d2 == DreadFunValue.DREAD);
+                    }
+                    return -1;
+                }
+            } else {
+                return (d1.compareTo(d2));
+            }
+        }
+    }
+
+    private static int compareChallengeValue(Challenge d1, Challenge d2) {
+        if (d1 == null) {
+            if (d2 == null) {
+                return 0;
+            } else if (d2 == Challenge.HARD) {
+                return -1;
+            } else { //(d2==DreadFunValue.DREAD)
+                return 1;
+            }
+        } else {
+            if (d2 == null) {
+                if (d1 == Challenge.HARD) {
+                    return 1;
+                } else { //(d2==DreadFunValue.DREAD)
+                    if (Config.TEST) {
+                        ASSERT.that(d2 == Challenge.EASY);
+                    }
+                    return -1;
+                }
+            } else {
+                return (d1.compareTo(d2));
+            }
+        }
+    }
+
+    private static int compareHighMediumLow(HighMediumLow d1, HighMediumLow d2) {
+        if (d1 == null) {
+            if (d2 == null) {
+                return 0;
+            } else if (d2 == HighMediumLow.HIGH) {
+                return -1;
+            } else { //(d2==DreadFunValue.DREAD)
+                if (Config.TEST) {
+                    ASSERT.that(d2 == HighMediumLow.LOW);
+                }
+                return 1;
+            }
+        } else {
+            if (d2 == null) {
+                if (d1 == HighMediumLow.HIGH) {
+                    return 1;
+                } else { //(d2==DreadFunValue.DREAD)
+                    if (Config.TEST) {
+                        ASSERT.that(d2 == HighMediumLow.LOW);
+                    }
+                    return -1;
+                }
             } else {
                 return (d1.compareTo(d2));
             }
@@ -1332,7 +1415,7 @@ public class FilterSortDef extends ParseObject {
         }
     }
 
-    private static int compareNullValueLast(Object d1, Object d2) {
+    private static int compareNullValueLastXXX(Object d1, Object d2) {
         if (d1 == null) {
             if (d2 == null) {
                 return 0;
@@ -1350,6 +1433,23 @@ public class FilterSortDef extends ParseObject {
         }
     }
 
+//    private static int compareNullValueMiddle(Object d1, Object d2) {
+//        if (d1 == null) {
+//            if (d2 == null) {
+//                return 0;
+//            } else if(d2==)
+//                return -1;
+//            }
+//        } else {
+//            if (d2 == null) {
+//                return 1;
+//            } else if (d1 instanceof Comparable && d2 instanceof Comparable) {
+//                return ((Comparable) d1).compareTo((Comparable) d2);
+//            } else {
+//                return 0; //one or other is not Comparable
+//            }
+//        }
+//    }
     static Comparator<Item> getSortingComparator(String getSortFieldId, boolean sortDescending) {
 //        boolean sortDescending = isSortDescending();
 //        switch (getSortFieldId()) {
@@ -1382,16 +1482,25 @@ public class FilterSortDef extends ParseObject {
                 return sortDescending
                         //                        ? (i1, i2) -> i1.getChallengeN().compareTo(i2.getChallengeN())
                         //                        : (i1, i2) -> i2.getChallengeN().compareTo(i1.getChallengeN());
-                        ? (i1, i2) -> compareNullValueLast(i1.getChallengeN(), i2.getChallengeN())
-                        : (i1, i2) -> compareNullValueLast(i2.getChallengeN(), i1.getChallengeN());
+                        //                        ? (i1, i2) -> compareNullValueLast(i1.getChallengeN(), i2.getChallengeN())
+                        //                        : (i1, i2) -> compareNullValueLast(i2.getChallengeN(), i1.getChallengeN());
+//                        ? (i1, i2) -> compareChallengeValue(i1.getChallengeN(), i2.getChallengeN())
+//                        : (i1, i2) -> compareChallengeValue(i2.getChallengeN(), i1.getChallengeN());
+                        ? (i1, i2) -> Challenge.compare(i1.getChallengeN(), i2.getChallengeN())
+                        : (i1, i2) -> Challenge.compare(i2.getChallengeN(), i1.getChallengeN());
             case Item.PARSE_DREAD_FUN_VALUE:
                 return sortDescending
                         //                        ? (i1, i2) -> i1.getDreadFunValueN().compareTo(i2.getDreadFunValueN())
                         //                        : (i1, i2) -> i2.getDreadFunValueN().compareTo(i1.getDreadFunValueN());
                         //                        ? (i1, i2) -> compareDreadFunValue(i1.getDreadFunValueN(), i2.getDreadFunValueN())
                         //                        : (i1, i2) -> compareDreadFunValue(i2.getDreadFunValueN(), i1.getDreadFunValueN());
-                        ? (i1, i2) -> compareNullValueLast(i1.getDreadFunValueN(), i2.getDreadFunValueN())
-                        : (i1, i2) -> compareNullValueLast(i2.getDreadFunValueN(), i1.getDreadFunValueN());
+                        //                        ? (i1, i2) -> compareNullValueLast(i1.getDreadFunValueN(), i2.getDreadFunValueN())
+//                        //                        : (i1, i2) -> compareNullValueLast(i2.getDreadFunValueN(), i1.getDreadFunValueN());
+//                        ? (i1, i2) -> compareDreadFunValue(i1.getDreadFunValueN(), i2.getDreadFunValueN())
+//                        : (i1, i2) -> compareDreadFunValue(i2.getDreadFunValueN(), i1.getDreadFunValueN());
+                        //                        : (i1, i2) -> compareNullValueLast(i2.getDreadFunValueN(), i1.getDreadFunValueN());
+                        ? (i1, i2) -> DreadFunValue.compare(i1.getDreadFunValueN(), i2.getDreadFunValueN())
+                        : (i1, i2) -> DreadFunValue.compare(i2.getDreadFunValueN(), i1.getDreadFunValueN());
             case Item.PARSE_EARNED_VALUE:
                 return sortDescending
                         ? (i1, i2) -> compareDouble(i1.getEarnedValue(), i2.getEarnedValue()) //show highest on top
@@ -1408,10 +1517,10 @@ public class FilterSortDef extends ParseObject {
                 return sortDescending
                         ? (i1, i2) -> compareLong(i2.getStartedOnDate(), i1.getStartedOnDate())
                         : (i1, i2) -> compareLong(i1.getStartedOnDate(), i2.getStartedOnDate());
-            case Item.PARSE_WAITING_TILL_DATE:
+            case Item.PARSE_WAIT_UNTIL_DATE:
                 return sortDescending
-                        ? (i1, i2) -> compareLong(i2.getWaitingTillDate().getTime(), i1.getWaitingTillDate().getTime())
-                        : (i1, i2) -> compareLong(i1.getWaitingTillDate().getTime(), i2.getWaitingTillDate().getTime());
+                        ? (i1, i2) -> compareLong(i2.getWaitUntilDate().getTime(), i1.getWaitUntilDate().getTime())
+                        : (i1, i2) -> compareLong(i1.getWaitUntilDate().getTime(), i2.getWaitUntilDate().getTime());
             case Item.PARSE_UPDATED_AT:
                 return sortDescending
                         ? (i1, i2) -> compareDate(i2.getUpdatedAt(), i1.getUpdatedAt())
@@ -1437,12 +1546,16 @@ public class FilterSortDef extends ParseObject {
                         : (i1, i2) -> compareInt(i2.getImpUrgPrioValue(), i1.getImpUrgPrioValue());
             case Item.PARSE_IMPORTANCE:
                 return sortDescending
-                        ? (i1, i2) -> compareNullValueLast(i1.getImportanceN(), i2.getImportanceN()) //show highest values at top
-                        : (i1, i2) -> compareNullValueLast(i2.getImportanceN(), i1.getImportanceN());
+//                        ? (i1, i2) -> compareNullValueLast(i1.getImportanceN(), i2.getImportanceN()) //show highest values at top
+//                        : (i1, i2) -> compareNullValueLast(i2.getImportanceN(), i1.getImportanceN());
+//                        ? (i1, i2) -> compareHighMediumLow(i1.getImportanceN(), i2.getImportanceN()) //show highest values at top
+//                        : (i1, i2) -> compareHighMediumLow(i2.getImportanceN(), i1.getImportanceN());
+                        ? (i1, i2) -> HighMediumLow.compare(i1.getImportanceN(), i2.getImportanceN()) //show highest values at top
+                        : (i1, i2) -> HighMediumLow.compare(i2.getImportanceN(), i1.getImportanceN());
             case Item.PARSE_URGENCY:
                 return sortDescending
-                        ? (i1, i2) -> compareNullValueLast(i1.getUrgencyN(), i2.getUrgencyN()) //show highest values at top
-                        : (i1, i2) -> compareNullValueLast(i2.getUrgencyN(), i1.getUrgencyN());
+                        ? (i1, i2) -> HighMediumLow.compare(i1.getUrgencyN(), i2.getUrgencyN()) //show highest values at top
+                        : (i1, i2) -> HighMediumLow.compare(i2.getUrgencyN(), i1.getUrgencyN());
             case FILTER_SORT_TODAY_VIEW:
 //                                return (i1, i2) -> 0; //no sorting, arrive sorted from parse query
                 return (i1, i2) -> i1.getTodaySortOrder().compareTo(i2.getTodaySortOrder());

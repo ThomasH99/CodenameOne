@@ -55,7 +55,6 @@ class MyNumericTextField extends TextField {
     MyNumericTextField(String hint) {
         super("", hint, COLUMNS_FOR_INT, TextArea.DECIMAL);
         if (false&&Config.TEST) {
-            
             putClientProperty("iosHideToolbar", Boolean.FALSE); //TRUE will hide the toolbar and only show Done button
             putClientProperty("ios.hideToolbar", Boolean.FALSE); //TRUE will hide the toolbar and only show Done button
             putClientProperty("ios.HideToolbar", Boolean.FALSE); //TRUE will hide the toolbar and only show Done button

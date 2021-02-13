@@ -133,4 +133,29 @@ public enum Challenge {
         }
         return null;
     }
+    
+    public static int  compare(Challenge d1, Challenge d2) {
+        if (d1 == null) {
+            if (d2 == null) {
+                return 0;
+            } else if (d2 == Challenge.HARD) {
+                return -1;
+            } else { //(d2==DreadFunValue.DREAD)
+                return 1;
+            }
+        } else {
+            if (d2 == null) {
+                if (d1 == Challenge.HARD) {
+                    return 1;
+                } else { //(d2==DreadFunValue.DREAD)
+                    if (Config.TEST) {
+                        ASSERT.that(d1 == Challenge.EASY);
+                    }
+                    return -1;
+                }
+            } else {
+                return (d1.compareTo(d2));
+            }
+        }
+    }
 }

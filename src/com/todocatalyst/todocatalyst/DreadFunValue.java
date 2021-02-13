@@ -13,7 +13,9 @@ import com.codename1.ui.Font;
  */
 public enum DreadFunValue {
     //internationalize: http://programmers.stackexchange.com/questions/256806/best-approach-for-multilingual-java-enum
-    FUN("Fun"), NEUTRAL("Neutral"), DREAD("Dread");
+    DREAD("Dread"),
+    NEUTRAL("Neutral"),
+    FUN("Fun");
 
     private final String description;
 
@@ -66,7 +68,7 @@ public enum DreadFunValue {
 
     static String[] getNameList() {
 //        return new String[]{FUN.name(), NEUTRAL.name(), DREAD.name()};
-        return new String[]{FUN.name(),  DREAD.name()};
+        return new String[]{FUN.name(), DREAD.name()};
     }
 
     /**
@@ -85,14 +87,41 @@ public enum DreadFunValue {
         }
         return null;
     }
-    
+
     static char[] getIconList() {
         return new char[]{Icons.iconFun, Icons.iconDread};
     }
-    
-        static Font getIconFont() {
+
+    static Font getIconFont() {
         return null; //Icons.myIconFont;
     }
 
+    public static int compare(DreadFunValue d1,DreadFunValue d2) {
+        if (d1 == null) {
+            if (d2 == null) {
+                return 0;
+            } else if (d2 == DreadFunValue.FUN) {
+                return -1;
+            } else { //(d2==DreadFunValue.DREAD)
+                if (Config.TEST) {
+                    ASSERT.that(d2 == DreadFunValue.DREAD);
+                }
+                return 1;
+            }
+        } else {
+            if (d2 == null) {
+                if (d1 == DreadFunValue.FUN) {
+                    return 1;
+                } else { //(d2==DreadFunValue.DREAD)
+                    if (Config.TEST) {
+                        ASSERT.that(d1 == DreadFunValue.DREAD);
+                    }
+                    return -1;
+                }
+            } else {
+                return (d1.compareTo(d2));
+            }
+        }
+    }
 
 }

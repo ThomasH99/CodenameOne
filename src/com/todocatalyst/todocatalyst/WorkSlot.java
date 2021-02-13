@@ -52,6 +52,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     final static String DURATION_HELP = "Define the duration of the " + WORKSLOT;
     final static String START_TIME = "Start by"; //"Start time";
     final static String START_TIME_HELP = "Define when the " + WORKSLOT + " starts"; //"Start time";
+    final static String BELONGS_TO = "Owner"; //"Start time";
+    final static String BELONGS_TO_HELP = "Owner (List, Category, project) this workslot belongs to"; //"Start time";
 
     final static String END_TIME = "End by"; //"Start time";
     final static String END_TIME_HELP = "Define when the " + WORKSLOT + " ends"; //"Start time";
@@ -91,9 +93,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     final static String PARSE_START_TIME = "startTime";
     final static String PARSE_DURATION = "duration";
     final static String PARSE_END_TIME = "endTime"; //always set automatically, based on changes to startTime or duration
-    final static String PARSE_ORIGINAL_SOURCE = Item.PARSE_ORIGINAL_SOURCE;
+    final static String PARSE_ORIGINAL_SOURCE = Item.PARSE_SOURCE;
     final static String PARSE_EDITED_DATE = Item.PARSE_EDITED_DATE;
     final static String PARSE_DELETED_DATE = Item.PARSE_DELETED_DATE;
+    final static String PARSE_TASKS_IN_WORKSLOT_VIRT = "tasksInWS"; //virtual
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
 
     public boolean hasUserModifiedData() {

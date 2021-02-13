@@ -80,7 +80,7 @@ public class ScreenCategory extends MyForm {
 //            previousForm.showBack();
             previousForm.show();
         });
-        cmd.putClientProperty("android:showAsAction", "withText");
+//        cmd.putClientProperty("android:showAsAction", "withText");
         toolbar.addCommandToLeftBar(cmd);
 
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens))

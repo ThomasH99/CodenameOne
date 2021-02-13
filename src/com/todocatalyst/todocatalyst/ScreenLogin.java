@@ -247,22 +247,26 @@ public class ScreenLogin extends MyForm {
         if (false) {
             password.setUIID("TextField");
         }
+        
 //        NTextField password = new NTextField( TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 
 //        BorderLayout b1 = new BorderLayout();
 //        b1.defineLandscapeSwap(BorderLayout.NORTH, BorderLayout.WEST);
-        Button signUp = new Button();
-        Button createAccount = new Button();
-        Button connect = new Button();
-        Button login = new Button();
-        Button backToSignupSignIn = new Button();
+        Button signUp = new Button("","BigButton");
+        Button createAccount = new Button("","BigButton");
+        Button connect = new Button("","BigButton");
+        Button login = new Button("","BigButton");
+        Button backToSignupSignIn = new Button("","BigButton");
 //        Button forgottenPassword = new Button();
-        Button forgottenPassword = new Button(""); //Forgot your password?
+        Button forgottenPassword = new Button("","BigButton"); //Forgot your password?
 
         SpanLabel introText = new SpanLabel("This is TodoCatalyst. \nProbably the world's most useful Todo app. \nLet's get you started...\n");
         introText.setTextBlockAlign(Component.CENTER);
 
         addComponent(introText);
+        
+        addComponent(backToSignupSignIn);
+
         addComponent(signUp);
         addComponent(email);
         addComponent(password);
@@ -270,7 +274,6 @@ public class ScreenLogin extends MyForm {
         addComponent(createAccount);
         addComponent(login);
         addComponent(forgottenPassword);
-        addComponent(backToSignupSignIn);
 
         //hide everything except the two first buttons to chose Signin or SIgnUp
         email.setHidden(true);
@@ -316,6 +319,7 @@ public class ScreenLogin extends MyForm {
             email.setHidden(false);
             //TODO!!! cn1 support setEditOnShow(email); //startup editor in email field
             password.setHidden(false);
+            
             forgottenPassword.setHidden(false);
             backToSignupSignIn.setHidden(false);
             animateHierarchy(ANIMATION_TIME_DEFAULT);

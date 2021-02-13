@@ -2588,7 +2588,8 @@ public class ScreenListOfItems extends MyForm {
                 if (false) {
                     swipCont.getParent().animateLayout(ANIMATION_TIME_FAST);
                 } else {
-                    swipCont.getComponentForm().animateLayout(ANIMATION_TIME_FAST);
+//                    swipCont.getComponentForm().animateLayout(ANIMATION_TIME_FAST);
+                    swipCont.getParent().getParent().animateLayout(ANIMATION_TIME_DEFAULT); //Smooth!
                 }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                parent.animateLayout(150);
@@ -2833,8 +2834,8 @@ public class ScreenListOfItems extends MyForm {
             }
         }
         //
-        if ((actualTotal != 0 || MyPrefs.itemListShowActualEvenIfZero.getBoolean())
-                && (isDone || MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean())) {
+        if (!item.isTemplate() && ((actualTotal != 0 || MyPrefs.itemListShowActualEvenIfZero.getBoolean())
+                && (isDone || MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean()))) {
             actualEffortLabel = new Label(MyDate.formatDurationShort(actualTotal, true).toString());
 //                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
             actualEffortLabel.setFontIcon(Icons.myIconFont, isDone ? Icons.iconActualFinalCust : Icons.iconActualCurrentCust);
@@ -2879,8 +2880,10 @@ public class ScreenListOfItems extends MyForm {
 //                    dueDateLabel = new Label("D:" + MyDate.formatDateSmart(new Date(due)),Icons.iconSetDueDateToToday(),
 //                dueDateLabel = new Label(MyDate.formatDateSmart(new Date(due)), Icons.iconSetDueDateToToday(),
                 dueDateLabel = new Label(MyDate.formatDateSmart(new MyDate(due)), due < MyDate.currentTimeMillis() ? "ListOfItemsDueDateOverdue" : "ListOfItemsDueDate");
-                dueDateLabel.setMaterialIcon(Icons.iconSetDueDateToTodayFontImageMaterial);
-                dueDateLabel.setGap(GAP_LABEL_ICON);
+                if (MyPrefs.itemListShowIconForDueDate.getBoolean()) {
+                    dueDateLabel.setMaterialIcon(Icons.iconSetDueDateToTodayFontImageMaterial);
+                    dueDateLabel.setGap(GAP_LABEL_ICON);
+                }
                 if (item.isDueDateInherited()) {
                     dueDateLabel.setUIID("ListOfItemsDueDateInherited");
                 }
@@ -3281,12 +3284,12 @@ public class ScreenListOfItems extends MyForm {
 
         //WAITING
         Label waitingTillLabel = null;//new Label();
-        if (item.getWaitingTillDate().getTime() != 0 && MyPrefs.itemListWaitingTillDate.getBoolean()) {
+        if (item.getWaitUntilDate().getTime() != 0 && MyPrefs.itemListWaitingTillDate.getBoolean()) {
 //            south.add("H:" + L10NManager.getInstance().formatDateTimeShort(item.getHideUntilDateD()));
 //            waitingTillLabel = new Label("W:" + MyDate.formatDateNew(item.getWaitingTillDateD()), "ItemDetailsLabel");
 //            waitingTillLabel = new Label(MyDate.formatDateNew(item.getWaitingTillDateD()), Icons.iconWaitingDate, "ItemDetailsLabel");
 //            waitingTillLabel = new Label(MyDate.formatDateNew(item.getWaitingTillDateD()), "ItemDetailsLabel");
-            waitingTillLabel = new Label(MyDate.formatDateSmart(item.getWaitingTillDate()), "ItemDetailsLabel");
+            waitingTillLabel = new Label(MyDate.formatDateSmart(item.getWaitUntilDate()), "ItemDetailsLabel");
 //            waitingTillLabel.setMaterialIcon(Icons.iconWaitingDateMaterial);
             waitingTillLabel.setFontIcon(Icons.myIconFont, Icons.iconWaitingDateCust);
             waitingTillLabel.setGap(GAP_LABEL_ICON);
@@ -3701,8 +3704,8 @@ refreshAfterEdit();
                 if (MyDate.isToday(item.getDueDate())) {
 //                        item.setDueDate(MyDate.setDateToDefaultTimeOfDay(new Date(item.getDueDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow
                     item.setDueDate((new MyDate(item.getDueDate().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if due is already today, then set due day to tomorrow same time as it was today
-                } else if (MyDate.isToday(item.getWaitingTillDate())) {
-                    item.setWaitingTillDate((new MyDate(item.getWaitingTillDate().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if WaitingTillDate is today, then set to tomorrow
+                } else if (MyDate.isToday(item.getWaitUntilDate())) {
+                    item.setWaitUntilDate((new MyDate(item.getWaitUntilDate().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if WaitingTillDate is today, then set to tomorrow
                 } else if (MyDate.isToday(item.getStartByDateD())) {
                     item.setStartByDate((new MyDate(item.getStartByDateD().getTime() + MyDate.DAY_IN_MILLISECONDS))); //UI: if startBy is today, then set due day to tomorrow
                 } else {

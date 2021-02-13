@@ -317,22 +317,22 @@ public class MyPrefs {
                     "waitingAskToSetWaitingDateWhenMarkingTaskWaiting", prod ? false : true, "**does nothing if both of the waiting dates are already set");
 
     static PrefEntry waitingSetStatusWaitingWhenSettingDateWhenWaiting
-            = new PrefEntry("Automatically set task to " + ItemStatus.WAITING+" when setting " + Item.DATE_WHEN_SET_WAITING ,
+            = new PrefEntry("Automatically set task to " + ItemStatus.WAITING + " when setting " + Item.DATE_WHEN_SET_WAITING,
                     "waitingSetStatusWaitingWhenSettingDateWhenWaiting", prod ? false : true, "**");
     static PrefEntry waitingSetStatusAwayFromWaitingWhenRemovingSettingDateWhen
-            = new PrefEntry("Automatically set task status when deleting " + Item.DATE_WHEN_SET_WAITING ,
+            = new PrefEntry("Automatically set task status when deleting " + Item.DATE_WHEN_SET_WAITING,
                     "waitingSetStatusAwayFromWaitingWhenRemovingSettingDateWhen", prod ? false : true, "**");
     static PrefEntry waitingSetStatusEtcWhenSettingWaitingUntilDate
-            = new PrefEntry("Automatically update task when setting " + Item.WAIT_UNTIL_DATE ,
+            = new PrefEntry("Automatically update task when setting " + Item.WAIT_UNTIL_DATE,
                     "waitingSetStatusEtcWhenSettingWaitingUntilDate", prod ? false : true, "**");
     static PrefEntry waitingSetStatusEtcWhenDeletingWaitingUntilDate
-            = new PrefEntry("Automatically update task when deleting " + Item.WAIT_UNTIL_DATE ,
+            = new PrefEntry("Automatically update task when deleting " + Item.WAIT_UNTIL_DATE,
                     "waitingSetStatusEtcWhenDeletingWaitingUntilDate", prod ? false : true, "**");
     static PrefEntry waitingSetWaitingAlarmWhenSettingWaitingUntilDate
-            = new PrefEntry("Automatically set a Waiting reminder " + Item.WAIT_UNTIL_DATE ,
+            = new PrefEntry("Automatically set a Waiting reminder " + Item.WAIT_UNTIL_DATE,
                     "waitingSetWaitingAlarmWhenSettingWaitingUntilDate", prod ? false : true, "**");
     static PrefEntry waitingSetWaitingAlarmMinutesBeforeWaitingUntilDate
-            = new PrefEntry("Automatically set a Waiting reminder " + Item.WAIT_UNTIL_DATE ,
+            = new PrefEntry("Automatically set a Waiting reminder " + Item.WAIT_UNTIL_DATE,
                     "waitingSetWaitingAlarmWhenSettingWaitingUntilDate", prod ? 60 : 1, "**");
 
     static PrefEntry updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem
@@ -340,10 +340,10 @@ public class MyPrefs {
                     "updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueSetForItem", prod ? false : true, "**");
 
     static PrefEntry keepRemainingForTaskItselfWhenATaskBecomesAProject
-            = new PrefEntry("When a task becomes a project by adding Always show details for tasks", 
+            = new PrefEntry("When a task becomes a project by adding Always show details for tasks",
                     "keepRemainingForTaskItselfWhenATaskBecomesAProject", prod ? false : false, "**");
     static PrefEntry addCommentWhenRemaningIsSetToZeroWhenTaskBecomesProject
-            = new PrefEntry(Format.f("When a task has {0 remaining} set and is made into a project, add a comment with the old value",Item.EFFORT_REMAINING),
+            = new PrefEntry(Format.f("When a task has {0 remaining} set and is made into a project, add a comment with the old value", Item.EFFORT_REMAINING),
                     "addCommentWhenRemaningIsSetToZeroWhenTaskBecomesProject", prod ? false : true, "**");
 
     //NB probably not really useful since the easy way to update the other field is to delete it before setting the other... More intuitive (difficult to explain why different values cannot be set)
@@ -379,10 +379,10 @@ public class MyPrefs {
                     prod ? 1 : 3, "Allows you to immediately make edits to the just created template"); //"helpful to easily make small adjustments
     static PrefEntry addTemplateTaskTextToEndOfExistingTaskText = new PrefEntry("Add template task text when inserting a template", "addTemplateTaskTextToEndOfExistingTaskText",
             prod ? true : true, "**"); //"helpful to easily make small adjustments
-    static PrefEntry useActualAsEstimateForTemplatesOrCopies = 
-            new PrefEntry(Format.f("Use a non-zero {0 actual} as {1 estimate} for task/project copies or Templates",Item.EFFORT_ACTUAL, Item.EFFORT_ESTIMATE)                     , 
-            "useActualAsEstimateForTemplatesOrCopies",
-            prod ? true : true, "**use"); //"helpful to easily make small adjustments
+    static PrefEntry useActualAsEstimateForTemplatesOrCopies
+            = new PrefEntry(Format.f("Use a non-zero {0 actual} as {1 estimate} for task/project copies or Templates", Item.EFFORT_ACTUAL, Item.EFFORT_ESTIMATE),
+                    "useActualAsEstimateForTemplatesOrCopies",
+                    prod ? true : true, "**use"); //"helpful to easily make small adjustments
 //    static PrefEntry keepDoneTasksVisibleTheDayTheyreCompletedXXX //TODO!!! No, only ask if overwriting an alreadyd defined value!
 //            //            = new PrefEntry("If Completed tasks are hidden, keep them visible until midnight of the day they were completed", //"Don't hide Completed tasks the day they were completed
 //            = new PrefEntry("Show just Completed tasks until midnight", //"Don't hide Completed tasks the day they were completed
@@ -435,8 +435,8 @@ public class MyPrefs {
 
     static PrefEntry itemInheritOwnerProjectDreadFun
             //            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectDreadFun", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
-            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.FUN_DREAD), "itemInheritOwnerProjectDreadFun",
-                    prod ? false : true, INHERITS + Item.FUN_DREAD);
+            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.DREAD_FUN), "itemInheritOwnerProjectDreadFun",
+                    prod ? false : true, INHERITS + Item.DREAD_FUN);
 
     static PrefEntry itemInheritOwnerProjectImportance
             //            = new PrefEntry("**Subtasks inherit properties from their project", "itemInheritOwnerProjectImportance", true, "**Subtasks inherit properties due date**, priorities etc** from the project they belong to");
@@ -461,8 +461,8 @@ public class MyPrefs {
             = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.START_BY_TIME), "itemInheritOwnerProjectStartByDate",
                     prod ? false : true, INHERITS + Item.START_BY_TIME);
 
-    static PrefEntry itemInheritOwnerProjectWaitingTillDate
-            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.WAIT_UNTIL_DATE), "itemInheritOwnerProjectWaitingTillDate",
+    static PrefEntry itemInheritOwnerProjectWaitUntilDate
+            = new PrefEntry(Format.f("Subtasks inherit {0} from their project", Item.WAIT_UNTIL_DATE), "itemInheritOwnerProjectWaitUntilDate",
                     prod ? false : true, INHERITS + Item.WAIT_UNTIL_DATE);
 
     static PrefEntry itemInheritOwnerProjectDateWhenSetWaitingZZZ
@@ -655,10 +655,10 @@ public class MyPrefs {
 //    static PrefEntry repeatInsertAfterLastGeneratedRepeatInstance
 //            = new PrefEntry("Show internal RepeatRule data", "repeatInsertAfterLastGeneratedRepeatInstance", prod ? false : true, "**");
     static PrefEntry repeatInsertNewRepeatTaskAfterJustCompletedTask
-            = new PrefEntry("Insert new repeating tasks after just completed task", "repeatInsertNewRepeatTaskAfterJustCompletedTask", 
+            = new PrefEntry("Insert new repeating tasks after just completed task", "repeatInsertNewRepeatTaskAfterJustCompletedTask",
                     prod ? false : false, "**");
     static PrefEntry repeatInsertNewRepeatTaskAfterLatestRepeatInstance
-            = new PrefEntry("Insert new repeat task after last repeat instance", "repeatInsertNewRepeatTaskAfterLatestRepeatInstance", 
+            = new PrefEntry("Insert new repeat task after last repeat instance", "repeatInsertNewRepeatTaskAfterLatestRepeatInstance",
                     prod ? false : false, "**");
 //    static PrefEntry insertNewRepeatInstancesInStartOfLists
 //            = new PrefEntry("not used in code yet**", "insertNewRepeatInstancesInStartOfLists", prod ? false : false, "Always insert new repeat tasks at the beginning of lists (instead of after the repeating tasks)"); //"at the end"
@@ -689,9 +689,11 @@ public class MyPrefs {
     static PrefEntry earnedValueDecimals = new PrefEntry(Format.f("Number of decimals shown for {0 earled value}", Item.EARNED_VALUE), "earnedValueDecimals",
             prod ? 2 : 2, "**");
     static PrefEntry itemListShowEarnedValuePerHourEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EARNED_VALUE_PER_HOUR),
-            "itemListShowEarnedValuePerHourEvenIfZero", prod ? false : true, "**"); 
+            "itemListShowEarnedValuePerHourEvenIfZero", prod ? false : true, "**");
     static PrefEntry itemListShowEarnedValueIfEarnedValuePerHourIsZero = new PrefEntry(Format.f("Show {0} if {1} is 0", Item.EARNED_VALUE, Item.EARNED_VALUE_PER_HOUR),
-            "itemListShowEarnedValueIfEarnedValuePerHourIsZero", prod ? false : true, "**"); 
+            "itemListShowEarnedValueIfEarnedValuePerHourIsZero", prod ? false : true, "**");
+    static PrefEntry itemListShowIconForDueDate = new PrefEntry(Format.f("Show icon for {0}", Item.DUE_DATE),
+            "itemListShowIconForDueDate", prod ? false : false, "**");
 
     //
     static PrefEntry creationLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_CREATION_LOG_TITLE, "creationLogInterval",
@@ -785,7 +787,7 @@ public class MyPrefs {
             prod ? false : true, "**");
     static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry("Show sum of Remaining estimates for remaining tasks",
             "listOfItemListsShowRemainingEstimate", prod ? true : true, "**"); //, "e.g. 3h20", Only shown if not-zero. NB. May make displaying the list slower for very large lists or slow devices
-    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry( Format.f("Show sum of {0 estimate} for remaining tasks",Item.EFFORT_ESTIMATE),
+    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry(Format.f("Show sum of {0 estimate} for remaining tasks", Item.EFFORT_ESTIMATE),
             "listOfItemListsShowTotalTime", prod ? false : true, "**");
     static PrefEntry listOfItemListsShowWorkTime = new PrefEntry("Show sum of defined work time for the list",
             "listOfItemListsShowWorkTime", prod ? false : true, "**"); //"e.g. 1h10/23h12/[4h00]
@@ -795,6 +797,9 @@ public class MyPrefs {
     static PrefEntry hideStickyHeadersForSortedLists = new PrefEntry("Do not show group headers for sorted lists",
             "showStickyHeadersForSortedLists", prod ? false : false, "**"); //show as 'flat' lists
 
+    //HELP
+    static PrefEntry helpShowHelpOnLongPress = new PrefEntry("Only showDo not show group headers for sorted lists",
+            "helpShowHelpOnLongPress", prod ? false : false, "**"); //show as 'flat' lists
     //GLOBAL
     //localization
     static PrefEntry localeUserSelected = new PrefEntry("Language for text", "localeUserSelected",
@@ -928,6 +933,10 @@ public class MyPrefs {
         return Preferences.get(setting.settingId, (Boolean) setting.defaultValue);
     }
 
+    public static boolean getBoolean(String settingId) {
+        return Preferences.get(settingId, false);
+    }
+
     // **** SET ****
     public static void setString(PrefEntry setting, String s) {
         Preferences.set(setting.settingId, s);
@@ -952,8 +961,16 @@ public class MyPrefs {
         Preferences.set(setting.settingId, b);
     }
 
+    public static void setBoolean(String settingId, boolean b) {
+        Preferences.set(settingId, b);
+    }
+
     public static void flipBoolean(PrefEntry setting) {
         Preferences.set(setting.settingId, !getBoolean(setting));
+    }
+
+    public static void flipBoolean(String settingId) {
+        Preferences.set(settingId, !getBoolean(settingId));
     }
 
     public static String pick(PrefEntry setting, String stringIfTrue, String stringIfFalse) {

@@ -881,7 +881,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String EARNED_VALUE_PER_HOUR = "Value/hour"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
     //Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_VALUE + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."
     final static String EARNED_VALUE_PER_HOUR_HELP = "Value/hour**"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
-    final static String EARNED_VALUE = "Task worth"; //"Value";
+    final static String EARNED_VALUE = "Value"; //"Value"; Task worth
 //    final static String EARNED_VALUE_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate "+EARNED_POINTS_PER_HOUR+" which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
     final static String EARNED_VALUE_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate [EARNED_POINTS_PER_HOUR] which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
     //"Earned value (in currency or points)"
@@ -934,8 +934,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    final static String URGENCY_HELP = "Indicates the Importance of this task, according to the ** principle. Prioritizing using "+IMPORTANCE+" and "+URGENCY+" can help overcome a tendency to over-prioritize urgent tasks over important tasks.";
     final static String URGENCY_HELP = "Indicates the Importance of this task, according to the ** principle. Prioritizing using [IMPORTANCE] and [URGENCY] can help overcome a tendency to over-prioritize urgent tasks over important tasks.";
     final static String IMPORTANCE_URGENCY = "Importance/Urgency"; // "Importance/Urgency"
-    final static String FUN_DREAD = "Like"; //"Enjoy", "Affinity", "Fun";
-    final static String FUN_DREAD_HELP = "Is this a task you'd love to work on or not? Helps pick tasks on a low-energy day";
+    final static String DREAD_FUN = "Like"; //"Enjoy", "Affinity", "Fun";
+    final static String DREAD_FUN_HELP = "Is this a task you'd love to work on or not? Helps pick tasks on a low-energy day";
     final static String CHALLENGE = "Difficulty"; //"Challenge";
     final static String CHALLENGE_HELP = "Indicates how difficult or challenging the task is and what level of mental energu it requires"; //"Challenge";
     final static String BELONGS_TO = "In List/Project"; //"Owner List/Project" "Belongs to";
@@ -974,19 +974,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_WAITING_ALARM_DATE = "waitingAlarmDate";
     final static String PARSE_REPEAT_RULE = "repeatRule";
     final static String PARSE_STARTED_ON_DATE = "startedOnDate";
+    final static String PARSE_STARTED_ON_DATE_SUBTASKS_VIRT = "startedOnSubtasks";
     final static String PARSE_STATUS = "status";
     final static String PARSE_DUE_DATE = "dueDate";
     final static String PARSE_HIDE_UNTIL_DATE = "hideUntilDate";
     final static String PARSE_START_BY_DATE = "startByDate";
-    final static String PARSE_WAITING_TILL_DATE = "waitingTillDate";
+    final static String PARSE_WAIT_UNTIL_DATE = "waitingTillDate";
 //    final static String PARSE_WAITING_LAST_ACTIVATED_DATE = "waitingLastActivatedDate";
     final static String PARSE_DATE_WHEN_SET_WAITING = "dateWhenSetWaiting";
     final static String PARSE_EFFORT_ESTIMATE = "effortEstimate";
     final static String PARSE_EFFORT_ESTIMATE_PROJECT_TASK_ITSELF = "effortEstimateProjectTask";
+    final static String PARSE_EFFORT_ESTIMATE_SUBTASKS_VIRT = "effortSubtasks";
     final static String PARSE_REMAINING_EFFORT_TOTAL = "remainingEffort";
     final static String PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF = "remainingEffortProjectTask";
+    final static String PARSE_REMAINING_EFFORT_FOR_SUBTASKS_VIRT = "remainingSubtasks"; //virtual, not used!
     final static String PARSE_ACTUAL_EFFORT = "actualEffort";
     final static String PARSE_ACTUAL_EFFORT_TASK_ITSELF = "actualEffortProjectTask";
+    final static String PARSE_ACTUAL_EFFORT_SUBTASKS_VIRT = "actualSubtasks"; //only used as key
 //    final static String PARSE_SHOW_FROM_DATE = "showFromDate";
     final static String PARSE_CATEGORIES = "categories";
     final static String PARSE_PRIORITY = "priority";
@@ -1008,7 +1012,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_UPDATED_AT = "updatedAt"; //cannot be edited (PARSE set field)
     final static String PARSE_CREATED_AT = "createdAt"; //cannot be edited (PARSE set field)
     final static String PARSE_IMPORTANCE_URGENCY_VIRT = "impUrgValue"; //VIRTual - not used in Parse, but only to eg sort on the combinatino of Imp+Urg, cannot be edited (PARSE set field)
-    final static String PARSE_ORIGINAL_SOURCE = "source"; //for an interrupt task: which task was interrupted (taken from Timer)
+    final static String PARSE_SOURCE = "source"; //for an interrupt task: which task was interrupted (taken from Timer)
     final static String PARSE_NEXTCOMING_ALARM = "nextAlarm"; //first-coming/next-coming alarm (to allow easy search in Parse)
     final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
     final static String PARSE_SNOOZE_DATE = "snoozeDate"; //date until which the 
@@ -1019,6 +1023,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_INHERIT_ENABLED = "inherit"; //should this task inherit values from its owner?
 //    final static String PARSE_SUBTASKS_INHERIT = "subtasksInherit"; //should this project push inherited values subtasks? (used to block default inheritance)
     final static String PARSE_EDITED_DATE = "edited"; //should this project push inherited values subtasks? (used to block default inheritance)
+    final static String PARSE_FINISH_TIME = "finishTime"; //cannot be edited (dynamically calculated field)
+    final static String PARSE_OBJECT_ID_VIRT = "objId"; //Virtual
+    final static String PARSE_GUID_VIRT = "guid"; //Virtual
 //    final static String PARSE_FINISH_TIME = "finishTimexx"; //NOT a parse field, just used to store the field with
 //    final static String PARSE_ = "";
 
@@ -1207,7 +1214,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public boolean isWaiting() {
 //        return getStatus() == ItemStatus.WAITING && (System.currentTimeMillis() < getWaitingTillDateD().getTime() || getWaitingTillDateD().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
-        return getStatus() == ItemStatus.WAITING && (MyDate.currentTimeMillis() < getWaitingTillDate().getTime() || getWaitingTillDate().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
+        return getStatus() == ItemStatus.WAITING && (MyDate.currentTimeMillis() < getWaitUntilDate().getTime() || getWaitUntilDate().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
 //    ItemStatus status = getStatus();
 //        if (statusreturn getStatus() == ItemStatus.WAITING && (System.currentTimeMillis()<getWaitingTillDate()||getWaitingTillDate()==0 && ); 
     }
@@ -1990,7 +1997,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             destination.setCompletedDate(getCompletedDate(), true, false); //force the same (possibly set manually) completedDate
 //            destination.setCreatedDate(getCreatedDate());
 
-            destination.setWaitingTillDate(getWaitingTillDate());
+            destination.setWaitUntilDate(getWaitUntilDate());
 
             destination.setDateWhenSetWaiting(getDateWhenSetWaiting());
 
@@ -4113,7 +4120,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public Item getSource() {
-        Item source = (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
+        Item source = (Item) getParseObject(PARSE_SOURCE);
 //        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
         return (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(source);
     }
@@ -4132,15 +4139,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (has(PARSE_TASK_INTERRUPTED) || taskInterruptedByThisInterruptTask != null) {
 //            put(PARSE_TASK_INTERRUPTED, taskInterruptedByThisInterruptTask);
 //        }
-        Item oldVal = (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
+        Item oldVal = (Item) getParseObject(PARSE_SOURCE);
         oldVal = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(oldVal);
 
         if (originalTaskThisOneIsACopyOf != null) {
             if (!Objects.equals(oldVal, originalTaskThisOneIsACopyOf)) {
-                put(PARSE_ORIGINAL_SOURCE, originalTaskThisOneIsACopyOf);
+                put(PARSE_SOURCE, originalTaskThisOneIsACopyOf);
             }
         } else {
-            remove(PARSE_ORIGINAL_SOURCE);
+            remove(PARSE_SOURCE);
         }
     }
 
@@ -5487,12 +5494,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //reset waiting alarm and waitingTill dates to 0 when leavning Waiting status
         if (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING) { //UI: always only save the last time the task was set Waiting //-only save the first setWaitingDate (TODO!!!: or is it more intuitive that it's the last, eg it set waiting by mistake?)
             item.setWaitingAlarmDate(null); //always save
-            item.setWaitingTillDate(null); //always save
+            item.setWaitUntilDate(null); //always save
         }
 //<editor-fold defaultstate="collapsed" desc="deactivated updates">
-        if (false && (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && item.getWaitingTillDate().getTime() != 0L)) { //reset WaitingTillDate
+        if (false && (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && item.getWaitUntilDate().getTime() != 0L)) { //reset WaitingTillDate
             //UI: KEEP setWaitingDate as a marker the task was set waiting sometime and to keep the date WHEN it was said waiting. TODO: must never use waitingDate!=0 as indication task is waiting
-            item.setWaitingTillDate(0); //reset waitingTill date
+            item.setWaitUntilDate(0); //reset waitingTill date
             if (item.getWaitingAlarmDate().getTime() != 0) { //automatically turn off
                 item.setWaitingAlarmDate(null);
             }
@@ -6303,8 +6310,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
 
 //                if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean() && getWaitingTillDate().getTime() == 0) {
-                if (isWaitingTillInheritanceOn() && getWaitingTillDate().getTime() == 0) {
-                    setWaitingTillDate(newOwnerItem.getWaitingTillDate());
+                if (isWaitUntilInheritanceOn() && getWaitUntilDate().getTime() == 0) {
+                    setWaitUntilDate(newOwnerItem.getWaitUntilDate());
                 }
 
 //                if (MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean() && getHideUntilDateD().getTime() == 0) {
@@ -6387,8 +6394,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
 
 //            if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean() && getWaitingTillDate().equals(previousOwnerItem.getWaitingTillDate())) {
-            if (isWaitingTillInheritanceOn() && getWaitingTillDate().equals(previousOwnerItem.getWaitingTillDate())) {
-                setWaitingTillDate(0);
+            if (isWaitUntilInheritanceOn() && getWaitUntilDate().equals(previousOwnerItem.getWaitUntilDate())) {
+                setWaitUntilDate(0);
             }
 
 //            if (MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean() && getHideUntilDateD().equals(previousOwnerItem.getHideUntilDateD())) {
@@ -6939,12 +6946,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    public Date getWaitingTillDate() {
+    public Date getWaitUntilDate() {
 //        return getWaitingTillDateD(true);
 //    }
 //
 //    public Date getWaitingTillDateD(boolean useInheritedValue) {
-        Date date = getDate(PARSE_WAITING_TILL_DATE);
+        Date date = getDate(PARSE_WAIT_UNTIL_DATE);
 //        if (date == null && useInheritedValue && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()) {
 //            if (getOwnerItem() != null) {
 //                return getOwnerItem().getWaitingTillDateD();
@@ -6959,7 +6966,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
-    public boolean isWaitingTillInherited(Date potentiallyInheritedValue) {
+    public boolean isWaitUntilInherited(Date potentiallyInheritedValue) {
 ////        Date date = getDate(PARSE_WAITING_TILL_DATE);
 //        Date date = getWaitingTillDateD();
 ////        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
@@ -6969,13 +6976,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return isInherited(getWaitingTillDateD(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean());
         if (getOwnerItem() != null) {
 //            return isInherited(getOwnerItem().getWaitingTillDate(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean());
-            return isInherited(getOwnerItem().getWaitingTillDate(), potentiallyInheritedValue, isWaitingTillInheritanceOn());
+            return isInherited(getOwnerItem().getWaitUntilDate(), potentiallyInheritedValue, isWaitUntilInheritanceOn());
         } else {
             return false;
         }
     }
 
-    public boolean isWaitingTillInherited() {
+    public boolean isWaitUntilInherited() {
 ////        Date date = getDate(PARSE_WAITING_TILL_DATE);
 //        Date date = getWaitingTillDateD();
 ////        return date == null && MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
@@ -6983,11 +6990,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean()
 //                && getOwnerItem() != null && getOwnerItem().getWaitingTillDateD().equals(date);
 //        return getOwnerItem() != null ? isWaitingTillInherited(getOwnerItem().getWaitingTillDateD()) : false;
-        return isWaitingTillInherited(getWaitingTillDate());
+        return isWaitUntilInherited(getWaitUntilDate());
     }
 
-    public boolean isWaitingTillInheritanceOn() {
-        return MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean();
+    public boolean isWaitUntilInheritanceOn() {
+        return MyPrefs.itemInheritOwnerProjectWaitUntilDate.getBoolean();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -6998,7 +7005,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getWaitingAlarmDateD().getTime();
 //    }
 //</editor-fold>
-    public void setWaitingTillDate(long waitingTillDate) {
+    public void setWaitUntilDate(long waitingTillDate) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        this.dueDate = val;
 //        if (this.waitingTillDate != val) {
@@ -7012,10 +7019,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            put(PARSE_WAITING_TILL_DATE, new Date(waitingTillDate));
 //        }
 //</editor-fold>
-        setWaitingTillDate(new MyDate(waitingTillDate));
+        setWaitUntilDate(new MyDate(waitingTillDate));
     }
 
-    public void setWaitingTillDateInParse(Date waitingTillDate) {
+    public void setWaitUntilDateInParse(Date waitUntilDate) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (isProject()) {
 //            Date oldDate = getDate(PARSE_WAITING_TILL_DATE);
@@ -7049,16 +7056,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //        }
 //</editor-fold>
-        Date oldVal = getWaitingTillDate();
+        Date oldVal = getWaitUntilDate();
         if (false) { //NO, don't ripple this value down, it a proejct is set Waiting, waitingTill is set when status of subtasks are set Waiting
-            oldVal = getWaitingTillDate();
+            oldVal = getWaitUntilDate();
 //            if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean() && MyUtil.neql(waitingTillDate, oldVal)) {
-            if (isWaitingTillInheritanceOn() && MyUtil.neql(waitingTillDate, oldVal)) {
+            if (isWaitUntilInheritanceOn() && MyUtil.neql(waitUntilDate, oldVal)) {
 //                opsUpdateInheritedValues.put(PARSE_WAITING_TILL_DATE, (subtask) -> {
-                opsUpdateInheritedValues(PARSE_WAITING_TILL_DATE, (subtask) -> {
+                opsUpdateInheritedValues(PARSE_WAIT_UNTIL_DATE, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                    if (MyUtil.eql(subtask.getWaitingTillDate(), oldVal) && subtask.updateInheritedValuesFor(PARSE_WAITING_TILL_DATE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                        subtask.setWaitingTillDate(waitingTillDate);
+                    if (MyUtil.eql(subtask.getWaitUntilDate(), oldVal) && subtask.updateInheritedValuesFor(PARSE_WAIT_UNTIL_DATE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+                        subtask.setWaitUntilDate(waitUntilDate);
                         return true;
                     }
                     return false;
@@ -7066,21 +7073,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
         ItemStatus oldStatus = getStatus();
-        if (waitingTillDate != null && waitingTillDate.getTime() != 0) {
-            if (!Objects.equals(oldVal, waitingTillDate)) {
-                put(PARSE_WAITING_TILL_DATE, waitingTillDate);
+        if (waitUntilDate != null && waitUntilDate.getTime() != 0) {
+            if (!Objects.equals(oldVal, waitUntilDate)) {
+                put(PARSE_WAIT_UNTIL_DATE, waitUntilDate);
                 if (MyPrefs.waitingSetStatusEtcWhenSettingWaitingUntilDate.getBoolean() && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING)) { //only update if created or ongoing (not cancelled, Done)
                     setStatus(ItemStatus.WAITING);
 
                     if (getWaitingAlarmDate().getTime() == 0 && MyPrefs.waitingSetStatusEtcWhenSettingWaitingUntilDate.getBoolean()) {
-                        setWaitingAlarmDate(new MyDate(waitingTillDate.getTime() - MyPrefs.waitingSetWaitingAlarmMinutesBeforeWaitingUntilDate.getInt() * MyDate.MINUTE_IN_MILLISECONDS));
+                        setWaitingAlarmDate(new MyDate(waitUntilDate.getTime() - MyPrefs.waitingSetWaitingAlarmMinutesBeforeWaitingUntilDate.getInt() * MyDate.MINUTE_IN_MILLISECONDS));
                     }
 
                     setDateWhenSetWaiting(new MyDate()); //set waiting now
                 }
             }
         } else if (oldVal != null) {
-            remove(PARSE_WAITING_TILL_DATE);
+            remove(PARSE_WAIT_UNTIL_DATE);
             if (MyPrefs.waitingSetStatusEtcWhenDeletingWaitingUntilDate.getBoolean() && oldStatus == ItemStatus.WAITING) { //only update if created or ongoing (not cancelled, Done)
                 setStatus(getActualTotal() != 0 ? ItemStatus.ONGOING : ItemStatus.CREATED); //UI: if deleting setWaitingDate, then reset status to whatever it was before
                 if (false) {
@@ -7091,7 +7098,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        update();
     }
 
-    public void setWaitingTillDate(Date waitingTillDate) {
+    public void setWaitUntilDate(Date waitingTillDate) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (has(PARSE_WAITING_TILL_DATE) || waitingTillDate != 0) {
 //            put(PARSE_WAITING_TILL_DATE, new Date(waitingTillDate));
@@ -7104,7 +7111,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            remove(PARSE_WAITING_TILL_DATE);
 //        }
 //</editor-fold>
-        setWaitingTillDateInParse(waitingTillDate);
+        setWaitUntilDateInParse(waitingTillDate);
     }
 
     public Date getDateWhenSetWaiting() {
@@ -10455,7 +10462,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 return TodaySortOrder.DUE_TODAY_CREATED;
             }
         } else {
-            time = getWaitingTillDate().getTime();
+            time = getWaitUntilDate().getTime();
             if (time >= startOfToday && time < startOfTomorrow) {
                 return TodaySortOrder.WAITING_TODAY;
             } else {
@@ -10464,7 +10471,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                         -> "getStartByDateD should always be Today, item=" + this
                         + " startBy=" + MyDate.formatDateNew(getStartByDateD())
                         + " due=" + MyDate.formatDateNew(getDueDate())
-                        + " waiting=" + MyDate.formatDateNew(getWaitingTillDate()));
+                        + " waiting=" + MyDate.formatDateNew(getWaitUntilDate()));
                 if (status == status.ONGOING) {
                     return TodaySortOrder.STARTING_TODAY_ONGOING;
                 } else if (status == ItemStatus.WAITING) {
@@ -10517,7 +10524,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 || isDirty(PARSE_DUE_DATE)
                 || isDirty(PARSE_HIDE_UNTIL_DATE)
                 || isDirty(PARSE_START_BY_DATE)
-                || isDirty(PARSE_WAITING_TILL_DATE)
+                || isDirty(PARSE_WAIT_UNTIL_DATE)
                 || isDirty(PARSE_DATE_WHEN_SET_WAITING)
                 || isDirty(PARSE_EFFORT_ESTIMATE)
                 || isDirty(PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF)
@@ -10710,8 +10717,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
         if (alarmType.isWaitingReminder()) {
-            if (MyPrefs.alarmShowWaitingTimeAtEndOfNotificationText.getBoolean() && getWaitingTillDate().getTime() != 0) {
-                s += (s.isEmpty() ? "" : "\n") + Item.WAIT_UNTIL_DATE + ": " + MyDate.formatDateTimeNew(getWaitingTillDate());
+            if (MyPrefs.alarmShowWaitingTimeAtEndOfNotificationText.getBoolean() && getWaitUntilDate().getTime() != 0) {
+                s += (s.isEmpty() ? "" : "\n") + Item.WAIT_UNTIL_DATE + ": " + MyDate.formatDateTimeNew(getWaitUntilDate());
             }
             if (MyPrefs.alarmShowWaitingAlarmTimeAtEndOfNotificationText.getBoolean() && getWaitingAlarmDate().getTime() != 0) {
                 s += (s.isEmpty() ? "" : "\n") + Item.WAIT_UNTIL_DATE + ": " + MyDate.formatDateTimeNew(getWaitingAlarmDate());
@@ -10855,11 +10862,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     setStartByDate((Date) val);
                 }
                 break;
-            case PARSE_WAITING_TILL_DATE:
+            case PARSE_WAIT_UNTIL_DATE:
                 if (toCSV) {
-                    list.add(MyDate.formatDateNew(getWaitingTillDate()));
+                    list.add(MyDate.formatDateNew(getWaitUntilDate()));
                 } else {
-                    setWaitingTillDate((Date) val);
+                    setWaitUntilDate((Date) val);
                 }
                 break;
             case PARSE_DATE_WHEN_SET_WAITING:
@@ -10969,7 +10976,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     Log.p("Cannot import " + Item.CREATED_DATE);
                 }
                 break;
-            case PARSE_ORIGINAL_SOURCE:
+            case PARSE_SOURCE:
                 //TODO!!! search for task/project based on text string, if not existing, create it (?=> means need to check if already existing when importing/creating tasks) and add this task as sub-task
                 break;
             case PARSE_DELETED_DATE:

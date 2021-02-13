@@ -26,7 +26,7 @@ import com.codename1.ui.plaf.UIManager;
 
 /**
  * returns a command (to add to toolbar) that will create a search container and
- * add it to NORTH of the contentPane
+ * add it to NORTH of the contentPane 332
  *
  * @author thomashjelm
  */
@@ -329,7 +329,9 @@ public class MySearchCommand extends CommandTracked {
         searchCont.setHidden(!isHidden);
 //        getParent().animateHierarchy(300);
 //        getComponentForm().animateHierarchy(300);
-        searchCont.getParent().animateLayout(300);
+        if (searchCont.getParent() != null) { //TODO NPE on this, but why can parent be null??!
+            searchCont.getParent().animateLayout(300);
+        }
 //        toolbar.animateHierarchy(300);
     }
 

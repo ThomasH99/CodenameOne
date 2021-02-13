@@ -14,6 +14,7 @@ import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.events.ActionEvent.Type;
+import com.codename1.ui.events.ScrollListener;
 import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.Layout;
@@ -39,6 +40,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     private Component lastDropTarget = null;
     private Component lastDraggedOverXXX = null;
 //    private MyDragAndDropSwipeableContainer lastDraggedOverMyDD = null;
+    private long lastScroll;
 
     interface Call {
 
@@ -2021,6 +2023,29 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         setDraggable(false); //set false by default to allow scrolling. LongPress will activate, drop will deactivate it
         setUIID("MyDragAndDropSwipeableContainer");
 
+        //copied from KitchenSink demo, Contacts: close swipeable on scroll
+        addSwipeOpenListener(e -> {
+            // auto fold the swipe when we go back to scrolling
+            addScrollListener(new ScrollListener() {
+                int initial = -1;
+
+                @Override
+                public void scrollChanged(int scrollX, int scrollY, int oldscrollX, int oldscrollY) {
+                    // scrolling is very sensitive on devices...
+                    if (initial < 0) {
+                        initial = scrollY;
+                    }
+                    lastScroll = System.currentTimeMillis();
+                    if (Math.abs(scrollY - initial) > top.getHeight() / 2) {
+                        if (getParent() != null) {
+                            close();
+                        }
+                        getParent().removeScrollListener(this);
+                    }
+                }
+            });
+        });
+        
         if (false) {
             addSwipeOpenListener((e) -> {
                 Form f = getComponentForm();
@@ -5399,11 +5424,11 @@ before getting to here, we've already covered the following cases where both bef
 //</editor-fold>
             if (true) {
                 Label temp = new Label(dragImage2);
-                compToAnimate.replace(dropPlaceholder, temp,null); //simply insert dragged image until list is redrawn (with new values for dragged and following list elements)
+                compToAnimate.replace(dropPlaceholder, temp, null); //simply insert dragged image until list is redrawn (with new values for dragged and following list elements)
                 temp.repaint();
             } else {
                 dropPlaceholder.remove(); //remove the old placeholder ( not done in successful drop)
-            dropPlaceholder = null;
+                dropPlaceholder = null;
             }
 //            animate = true;
         }

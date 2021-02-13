@@ -127,7 +127,6 @@ public class ScreenSettingsCommon extends MyForm {
 //        }
 //        return compForActionListener;
 //    }
-
 //    static Switch addSettingBooleanOLD(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnAction, Runnable onOffAction) {
 ////        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
 //        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
@@ -175,7 +174,6 @@ public class ScreenSettingsCommon extends MyForm {
 //        });
 //        return compForActionListener;
 //    }
-
     static void addSettingBoolean(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnAction, Runnable onOffAction) {
 //        cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener, prefEntry.getHelpText()));
         cont.add(settingBoolean(parseIdMap2, prefEntry, onOnAction, onOffAction));
@@ -246,6 +244,27 @@ public class ScreenSettingsCommon extends MyForm {
         });
 //        return compForActionListener;
         return layoutSetting(prefEntry.getFieldScription(), switchCmp, prefEntry.getHelpText());
+    }
+
+    private static void hideShowAll(boolean show, Component... settings) {
+        if (settings.length > 0) {
+            for (Component setting : settings) {
+                setting.setHidden(!show);
+            }
+        }
+        Container parent = settings[0].getParent();
+        if (parent != null) {
+            parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+        } else {
+            if (Display.getInstance().getCurrent() != null) {
+                Display.getInstance().getCurrent().revalidateLater();
+            }
+        }
+    }
+
+    static Component settingBoolean(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, boolean showWhen, Component... settings) {
+        hideShowAll(prefEntry.getBoolean() == showWhen, settings);
+        return settingBoolean(parseIdMap2, prefEntry, () -> hideShowAll(prefEntry.getBoolean() == showWhen, settings), () -> hideShowAll(prefEntry.getBoolean() == showWhen, settings));
     }
 
     static Component settingBoolean(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
@@ -436,7 +455,7 @@ public class ScreenSettingsCommon extends MyForm {
             }, unselectAllowed, verticalLayout);
             compGroup.addActionListener(onAction);
             if (cont != null) {
-                cont.add(layoutN(prefEntry.getFieldScription(), compGroup,
+                cont.add(layoutN(null, prefEntry.getFieldScription(), compGroup,
                         prefEntry.getHelpText(), true));
             }
             return compGroup;

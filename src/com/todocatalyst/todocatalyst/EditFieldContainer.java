@@ -21,6 +21,7 @@ import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextField;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
+import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
 import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.table.TableLayout;
@@ -41,6 +42,7 @@ public class EditFieldContainer extends Container {
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, Character materialIcon) {
         this(fieldLabelTxt, field, helpText, swipeClearFct, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, false, materialIcon);
     }
+
     EditFieldContainer(String fieldLabelTxt, Component field, String helpText, SwipeClear swipeClearFct,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, Character materialIcon, Font iconFont) {
         this(fieldLabelTxt, field, helpText, swipeClearFct, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, false, materialIcon, iconFont);
@@ -71,6 +73,12 @@ public class EditFieldContainer extends Container {
     public EditFieldContainer(String fieldLabelTxt, Component fieldN, String helpText, SwipeClear swipeClearFct,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, boolean sizeWestBeforeEast,
             Character materialIcon, Font iconFont) {
+        this(null, fieldLabelTxt, fieldN, helpText, swipeClearFct, wrapText, showAsFieldUneditable, visibleEditButton, hiddenEditButton, sizeWestBeforeEast, materialIcon, iconFont);
+    }
+
+    public EditFieldContainer(boolean OLD, String settingId, String fieldLabelTxt, Component fieldN, String helpText, SwipeClear swipeClearFct,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, boolean sizeWestBeforeEast,
+            Character materialIcon, Font iconFont) {
 //        super(new BorderLayout()); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
         super(); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
         if (Config.TEST) {
@@ -84,7 +92,7 @@ public class EditFieldContainer extends Container {
         setLayout(layout);
 
 //        if (field instanceof OnOffSwitch | field instanceof MyOnOffSwitch) {
-        Component fieldLabel = makeHelpButton(fieldLabelTxt, helpText, wrapText, materialIcon, iconFont);
+        Component fieldLabel = makeHelpButton(settingId, fieldLabelTxt, helpText, wrapText, materialIcon, iconFont);
         if (fieldN == null) {
 //FIELD LABEL
 //            Component fieldLabel = makeHelpButton(fieldLabelTxt, helpText, wrapText, materialIcon);
@@ -243,6 +251,165 @@ public class EditFieldContainer extends Container {
         }
 //        fieldContainer.revalidate(); //right way to get the full text to size up?
 //        return fieldContainer;
+    }
+
+    private void setFieldUIIDs(Component fieldN, boolean showAsFieldUneditable) {
+//        if (fieldN instanceof TextField) {
+//        } else if (fieldN instanceof MyOnOffSwitch) {
+//        } else 
+        if (fieldN instanceof SpanButton) {
+            ((SpanButton) fieldN).setTextUIID(showAsFieldUneditable ? "ScreenItemValueUneditable" : "ScreenItemEditableValue");
+            ((SpanButton) fieldN).setUIID("Container");
+            ((SpanButton) fieldN).getTextComponent().setRTL(true);
+        } else if (fieldN instanceof SpanLabel) {
+            ((SpanLabel) fieldN).setTextUIID("ScreenItemValueUneditable");
+            ((SpanLabel) fieldN).setUIID("Container");
+            ((SpanLabel) fieldN).getTextComponent().setRTL(true);
+//        } else if (fieldN instanceof ComponentGroup || fieldN instanceof MyToggleButton) {
+        } else {
+//                field.setUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
+            fieldN.setUIID(showAsFieldUneditable ? "ScreenItemValueUneditable" : "ScreenItemEditableValue");
+        }
+    }
+
+//    private void setIcon(SpanButton spanButton, Character materialIcon, Font iconFont) {
+//        if (materialIcon != null) {
+//            if (iconFont != null) {
+//                spanButton.setFontIcon(iconFont, materialIcon);
+//            } else {
+//                spanButton.setMaterialIcon(materialIcon);
+//            }
+//        }
+//    }
+    private SpanButton makeFieldLabel(String settingId, String label, String helpText, boolean makeSpanButton, Character materialIcon, Font iconFont) {
+        if (label == null) {
+            return null;
+        }
+        SpanButton spanButton = new SpanButton(label, "ScreenItemFieldLabel"); //sets text UIID
+        spanButton.setTextPosition(Component.RIGHT); //put icon on the left
+//        setIcon(spanButton, materialIcon, iconFont);
+        if (materialIcon != null) {
+            if (iconFont != null) {
+                spanButton.setFontIcon(iconFont, materialIcon);
+            } else {
+                spanButton.setMaterialIcon(materialIcon);
+            }
+        }
+        spanButton.setUIID("Container"); //avoid adding additional white space by setting the Container UIID to LabelField
+        spanButton.setName("FieldContHlpSpanBut-" + label); //avoid adding additional white space by setting the Container UIID to LabelField
+        spanButton.setIconUIID("ScreenItemFieldIcon"); //avoid adding additional white space by setting the Container UIID to LabelField
+        return spanButton;
+    }
+
+    public EditFieldContainer(String settingId, String fieldLabelTxt, Component editFieldN, String helpText, SwipeClear swipeClearFct,
+            boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, boolean hiddenEditButton, boolean sizeWestBeforeEast,
+            Character materialIcon, Font iconFont) {
+        super(); // = BorderLayout.center(fieldLabel).add(BorderLayout.EAST, visibleField);
+        if (Config.TEST) {
+            setName("FieldCont-" + fieldLabelTxt);
+        }
+        setUIID(hiddenEditButton ? "EditFieldContainer" : "EditFieldContainerEditable");
+        MyBorderLayout layout = MyBorderLayout.center();
+        layout.setSizeEastWestMode(sizeWestBeforeEast ? MyBorderLayout.SIZE_WEST_BEFORE_EAST : MyBorderLayout.SIZE_EAST_BEFORE_WEST);
+        setLayout(layout);
+
+        SpanButton fieldLabel = null;
+        if (fieldLabelTxt != null && !fieldLabelTxt.isEmpty()) {
+            fieldLabel = makeFieldLabel(settingId, fieldLabelTxt, helpText, wrapText, materialIcon, iconFont);
+            if (helpText != null && !helpText.isEmpty()) {
+                Component helpTxt = new SpanLabel(helpText, "FieldHelpText");
+                ActionListener al;
+                if (settingId == null) {
+                    helpTxt.setHidden(true); //if no setting available, hide by default
+                    al = (e) -> {
+                        helpTxt.setHidden(!helpTxt.isHidden());
+                        helpTxt.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_FAST);
+                    };
+                } else {
+                    String helpSettingId = settingId + "ShowHelp";
+                    helpTxt.setHidden(!MyPrefs.getBoolean(helpSettingId));
+                    al = (e) -> {
+//                        MyPrefs.setBoolean(helpSettingId, !MyPrefs.getBoolean(helpSettingId)); //flip
+                        MyPrefs.flipBoolean(helpSettingId); //flip
+                        helpTxt.setHidden(!MyPrefs.getBoolean(helpSettingId));
+                        helpTxt.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_FAST);
+                    };
+                }
+                if (MyPrefs.helpShowHelpOnLongPress.getBoolean()) {
+                    fieldLabel.addLongPressListener(al);
+                } else {
+                    fieldLabel.addActionListener(al);
+                }
+                add(MyBorderLayout.SOUTH, helpTxt);
+            }
+        }
+
+        if (editFieldN == null) {
+//            if(fieldLabel!=null) //SHOULND'T happen, not both label and field should be empty/undefined
+            add(MyBorderLayout.WEST, fieldLabel);
+        } else { //editFieldN != null
+            //EDIT FIELD
+            setFieldUIIDs(editFieldN, showAsFieldUneditable);
+            Component visibleField = null; //contains the edit field and possibly the edit button
+            if (!visibleEditButton && hiddenEditButton) {
+                visibleField = editFieldN;
+            } else { //place a visible or invisible button
+                Label editFieldButton = new Label("", "IconEdit"); // [>]
+                editFieldButton.setName("FieldContEditButton-" + fieldLabelTxt);
+                editFieldButton.setMaterialIcon(Icons.iconEdit);
+                editFieldButton.setVisible(!showAsFieldUneditable || visibleEditButton); //Visible, but still using space
+                editFieldButton.setHidden(hiddenEditButton); //hidden, not taking any space
+                visibleField = BorderLayout.centerCenterEastWest(editFieldN, editFieldButton, null);
+                if (editFieldN instanceof SpanButton) {
+                    ((Container) visibleField).setLeadComponent(((SpanButton) editFieldN).getLeadComponent());
+                } else if (!(editFieldN instanceof ComponentGroup)) {
+                    ((Container) visibleField).setLeadComponent(editFieldN);
+                }
+
+                //SWIPE CLEAR
+                if (swipeClearFct != null) { //ADD SWIPE to delete
+                    SwipeableContainer swipeCont;
+                    assert !showAsFieldUneditable : "showAsUneditableField should never be true if we also define a swipeClear function";
+                    Button swipeDeleteFieldButton = new Button();
+                    swipeDeleteFieldButton.setUIID("ClearFieldButton");
+                    swipeDeleteFieldButton.setName("FieldContClearBut-" + fieldLabelTxt);
+                    swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
+                    swipeCont.setName("FieldContSwipeable-" + fieldLabelTxt);
+                    ActionListener l = (ev) -> {
+                        swipeClearFct.clearFieldValue();
+                        revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
+                        swipeCont.close();
+                    };
+                    if (false) { //deactivate since bad UI, better to show the clear command and leave it to the user to clear
+                        swipeCont.addSwipeOpenListener(l);
+                    }
+                    swipeDeleteFieldButton.setCommand(Command.createMaterial("", Icons.iconCloseCircle, l));
+                    visibleField = swipeCont;
+                }
+            }
+
+            wrapText = true;
+            //Place label and field
+            if (fieldLabel == null) {
+                add(MyBorderLayout.EAST, visibleField);
+            } else { //fieldLabel != null
+                if (wrapText) {
+                    int availDisplWidth = (Display.getInstance().getDisplayWidth() * 90) / 100; //asumme roughly 90% of width is available after margins
+                    int marginPlusPaddingWidth = getStyle().getHorizontalMargins() + getStyle().getHorizontalPadding();
+                    int labelPreferredW = fieldLabel.getPreferredW();
+                    int fieldPreferredW = visibleField.getPreferredW();
+                    if (labelPreferredW + fieldPreferredW > availDisplWidth && editFieldN instanceof ComponentGroup) { //if too wide
+                        add(MyBorderLayout.NORTH, fieldLabel);
+//                        add(MyBorderLayout.EAST, visibleField);
+                        editFieldN.setUIID("ComponentGroupTwoLines");
+                    } else {
+                        add(MyBorderLayout.WEST, fieldLabel);
+//                        add(MyBorderLayout.EAST, visibleField);
+                    }
+                    add(MyBorderLayout.EAST, visibleField);
+                }
+            }
+        }
     }
 
 }

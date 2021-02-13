@@ -1541,4 +1541,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //    }
     public Date getEditedDate();
 
+    static String toIdString(Object elt) {
+        if (elt instanceof ItemAndListCommonInterface) {
+            return ((ItemAndListCommonInterface) elt).getObjectIdP() + "/" + ((ItemAndListCommonInterface) elt).getGuid();
+        } else if (elt == null) {
+            return "<null>";
+        } else {
+            return "<not ItemAndListCommonInterface>?!";
+        }
+    }
+
 }

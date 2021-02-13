@@ -14,7 +14,9 @@ import com.codename1.ui.Font;
 public enum HighMediumLow {
     //internationalize: http://programmers.stackexchange.com/questions/256806/best-approach-for-multilingual-java-enum
 //    HIGH("High"), MEDIUM("Medium"), LOW("Low");
-    HIGH("High"), MEDIUM("Medium"), LOW("Low");
+    LOW("Low"),
+    MEDIUM("Medium"), 
+    HIGH("High");
 //    HIGH("High"), LOW("Low");
 
     HighMediumLow(String description) {
@@ -114,5 +116,34 @@ public enum HighMediumLow {
             
         }
     }
+    
+        public static int compare(HighMediumLow d1, HighMediumLow d2) {
+        if (d1 == null) {
+            if (d2 == null) {
+                return 0;
+            } else if (d2 == HighMediumLow.HIGH) {
+                return -1;
+            } else { //(d2==DreadFunValue.DREAD)
+                if (Config.TEST) {
+                    ASSERT.that(d2 == HighMediumLow.LOW);
+                }
+                return 1;
+            }
+        } else {
+            if (d2 == null) {
+                if (d1 == HighMediumLow.HIGH) {
+                    return 1;
+                } else { //(d2==DreadFunValue.DREAD)
+                    if (Config.TEST) {
+                        ASSERT.that(d1 == HighMediumLow.LOW);
+                    }
+                    return -1;
+                }
+            } else {
+                return (d1.compareTo(d2));
+            }
+        }
+    }
+
 
 }

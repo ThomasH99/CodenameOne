@@ -83,8 +83,9 @@ class MyTextField extends TextField {
 //        super("", hint, columns, constraint);
         this(hint, columns, 1, 1, 2000, ANY, null, null, null, LEFT);
         setBlockLead(false);//xxx;
-        putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
-
+        if (false) {
+            putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
+        }
         setAutoDegradeMaxSize(true);
         setHint(hint);
     }

@@ -221,7 +221,7 @@ MyIcon {
 #Constants {
     /*includeNativeBool: true;*/ 
     ComponentGroupBool: true;
-    labelGap: 1;   
+    labelGap: 2.0; /*/in mm according to https://www.codenameone.com/developer-guide.html/**/
 
     overflowImageSize: "5.0"; /*tried w 6.0, a tad big*/
     menuImageSize:"5.0";
@@ -233,7 +233,7 @@ MyIcon {
     /*style the scrollbar - does it work here? Used in CN1 LookAndFeel.java*/
     scrollVisibleBool: true;
     fadeScrollEdgeBool:false;
-    fadeScrollEdgeInt:20;
+    fadeScrollEdgeInt:5; /*20/**/
     fadeScrollBarBool:true;
 
     tabsFillRowsBool:true; /*ensures tabs in ScreenItem2 fill out the row*/
@@ -429,8 +429,8 @@ StatusBarZeroSize {
 
 StatusBarButton { /*the 'virtual' button in the statusbar that catches clicks to scroll to top/bottom/swithc position */
     cn1-derive: StatusBar;
-    padding: 4mm 0mm; /*try without any sizing to see if default size makes it work on iPhone*/
-    /*background-color: blue;*/
+    padding: 1mm 0 0 1mm; /*try without any sizing to see if default size makes it work on iPhone*/
+    background-color: lightgray;
 }
 
 Toolbar {
@@ -616,9 +616,9 @@ ScreenAlarmsSnoozeAll { /*icon for snoozing a single alarm*/
 
 /*************** EDIT ITEM - ScreenItem2 ***********/
 
-ScreenItemTaskText {
+ScreenItemTaskText { 
     cn1-derive: TextField; 
-    /*font-family :  "native:MainRegular";/*"native:MainThin"; "native:MainRegular";*/
+    font-family :  "native:MainRegular";/*"native:MainThin"; "native:MainRegular";
     /*padding: 3mm;/**/ 
     /*margin: 0mm; /*field goes to edge of screen*/
     /*color: black; /*darkgrey;*/
@@ -781,7 +781,7 @@ ScreenItemFieldLabel {
 
 ScreenItemFieldIcon{
     cn1-derive: ScreenItemFieldLabel;
-    padding-right: 1mm;
+    padding-right: 0mm;
     /*padding: 1mm;*/
 }
 
@@ -805,8 +805,8 @@ ScreenItemEditableValue {/*used for field labels*/
     cn1-derive: ScreenItemFieldLabel;
     color: #666;
     /*padding:0mm 0mm 0 0mm; top+bottom right+left*/
-    padding:0mm 2mm 0mm 2mm; /*top+bottom right+left*/
-    margin:0mm 0mm 0mm 6mm;
+    padding:0mm 2mm 0mm 1mm; /*top+bottom right+left*/
+    margin:0mm 0mm 0mm 0mm;
 }
 
 ScreenItemValueInherited {
@@ -822,6 +822,7 @@ ScreenItemValueUneditable {
 
 ScreenItemEarnedValue {
     cn1-derive: TextField;
+    color: var(--ios-blue);
     text-align: right;
     padding: 0.5mm 1mm 0.5mm 0mm;
     margin: 0mm;
@@ -861,7 +862,8 @@ TabsContainer { /*container with 4 tabs in ScreenItem2*/
 ClearFieldButton {
     cn1-derive: LabelValue;
     color: red;
-    padding:0mm 0 0 2mm; /*top+bottom right+left*/
+    margin: 0;
+    padding:0 2mm; /*top+bottom right+left*/
     /*margin:0mm 0mm;*/
 }
 
@@ -877,6 +879,8 @@ IconEdit {
     /*    font-size: 100%;*/
     /*padding: 0 0mm 0mm 2.7mm;*/
     padding-right:0mm;
+    padding-top:0;
+    padding-bottom:0;
     margin: 0 0;
     color: grey;
     /*color: red;*/
@@ -964,6 +968,15 @@ SettingIndividualLabel { /*label with explanation of following Settings */
     color: lightslategrey;
     padding: 0mm;
     margin: 0mm 2mm 2mm 2mm;
+    font-size: var(--font-size-small);/*80%;*/
+}
+
+FieldHelpText { /*label with field help text (shown in small below the field label) */
+    cn1-derive: Label;
+    text-align: left;
+    color: lightslategrey;
+    padding: 0mm;
+    margin: 1mm 1mm 0mm 0 ;
     font-size: var(--font-size-small);/*80%;*/
 }
 
@@ -1137,8 +1150,8 @@ SmallTimerContainer {
 
 SmallTimerItemStatus {
     cn1-derive: SmallTimerBase;
-    padding-left: 2mm;
-    padding-right: 2mm;
+    padding-left: 4mm;
+    padding-right: 0mm;
     text-align: right;
 }
 
@@ -1189,7 +1202,7 @@ SmallTimerEditItem {
     cn1-derive: SmallTimerBase;
     color: white;
     text-align: right;
-    padding-left: 1mm;
+    padding-left: 3mm;
     padding-right: 0mm;
 }
 
@@ -1220,6 +1233,7 @@ ObjectSelectorRadioButton.pressed {
 
 MainForm {
     cn1-derive: Form;
+    padding: 1mm;
     /*background-color: whitesmoke;/**/
     /*background: transparent;/**/
     /*background: darkgray;/**/
@@ -1570,13 +1584,13 @@ ListOfItemsAlarmDate {
 }
 ListOfItemsOwnerList{ /*showing the owner list of an item */
     cn1-derive: ItemListSmall;
-    padding: 0 4pt 1pt 0;
+    padding: 0 2pt ;
     border: 1pt solid grey;
     color:grey;
 }
 ListOfItemsOwnerItem{ /*showing the owner task/project of an item */
     cn1-derive: ItemListSmall;
-    padding: 0 4pt;
+    padding: 0 2pt;
     border: 1pt solid grey;
     color:red;
     background:lightblue;
@@ -1686,8 +1700,8 @@ CategoryListOtherText { /*the text/name of the category*/
 
 CategoryListIcon  { /*the icon to the left of the name of the itemlist*/
     cn1-derive: IconEdit;
-    padding-left: 1mm;
-    padding-right: 1mm;
+    padding-left: 2mm;
+    padding-right: 0mm;
     /*margin: 0 2mm;*/
 }
 
@@ -1893,8 +1907,8 @@ SwipeButtonSetFutureDueToToday {
 SwipeButtonStarInactive {
     cn1-derive: SwipeButtonCommonBase;
     /*background-color:blue;*/
-    background-color:blueviolet;
-    color:white;
+    background-color:yellow; /*blueviolet;/**/
+    color:black;
 }
 
 SwipeButtonStarActive {

@@ -81,6 +81,7 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
         textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
         textEntryField.setHint(ENTER_CATEGORY);
         textEntryField.setUIID("CatPinchInsertTextField");
+        textEntryField.putClientProperty("iosHideToolbar", Boolean.TRUE); //hide toolbar and only show Done button for ios virtual keyboard
         textEntryField.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
 //        Container westCont = new Container(BoxLayout.x());
 

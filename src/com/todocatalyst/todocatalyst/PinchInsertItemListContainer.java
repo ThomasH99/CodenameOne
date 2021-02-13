@@ -22,7 +22,7 @@ import com.parse4cn1.ParseObject;
  *
  * @author Thomas
  */
-public class PinchInsertItemListContainer extends PinchInsertContainer  {
+public class PinchInsertItemListContainer extends PinchInsertContainer {
 
     private MyTextField2 textEntryField;
     private MyForm myForm;
@@ -86,6 +86,8 @@ public class PinchInsertItemListContainer extends PinchInsertContainer  {
 
         textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
         textEntryField.setUIID("ListPinchInsertTextField");
+        textEntryField.putClientProperty("iosHideToolbar", Boolean.TRUE); //hide toolbar and only show Done button for ios virtual keyboard
+
         textEntryField.setHint(ENTER_ITEMLIST);
         textEntryField.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
 //        Container westCont = new Container(BoxLayout.x());
@@ -223,9 +225,9 @@ public class PinchInsertItemListContainer extends PinchInsertContainer  {
         //UI: close the text field
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(this);
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
-        if (true||stopAddingInlineContainers) {
+        if (true || stopAddingInlineContainers) {
 //            if(false)
-                myForm.setPinchInsertContainer(null); //remove this as inlineContainer
+            myForm.setPinchInsertContainer(null); //remove this as inlineContainer
 //            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
             myForm.previousValues.removePinchInsertKeys(); //delete the marker on exit
 //            ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated

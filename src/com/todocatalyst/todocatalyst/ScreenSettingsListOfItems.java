@@ -114,6 +114,7 @@ addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenI
         addSettingBoolean(content, parseIdMap2, MyPrefs.hideStickyHeadersForSortedLists);
         if(false)addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenOnScrollingUp);
         addSettingBoolean(content, parseIdMap2, MyPrefs.titleAutoSize);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowIconForDueDate);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropLeftDropZoneWidth, 0, 30, 1);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropRightDropZoneWidth, 0, 30, 1);
     }
