@@ -72,9 +72,9 @@ public class ScreenObjectPicker<E> extends MyForm {
     private Container listCont;
     private String errorMsgInSelection;
 
-    class SelectionState {
-
-    }
+//    class SelectionState {
+//
+//    }
 
     /**
      *
@@ -89,55 +89,55 @@ public class ScreenObjectPicker<E> extends MyForm {
      * be selected
      */
 //    ScreenObjectPicker(String title, List listOfAllObjects, ItemAndListCommonInterface owner, MyForm previousForm, UpdateField updateOnDone) {
-    ScreenObjectPicker(String title, List listOfAllObjects, ItemAndListCommonInterface owner, MyForm previousForm, Runnable updateOnDone) {
-        this(title, listOfAllObjects, null, new ArrayList(Arrays.asList(owner)), previousForm, updateOnDone, null, 1, true, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=true since we can only select one and it's natural to deselect previously selected 
-    }
+//    ScreenObjectPicker(String title, List listOfAllObjects, ItemAndListCommonInterface owner, MyForm previousForm, Runnable updateOnDone) {
+//        this(title, listOfAllObjects, null, new ArrayList(Arrays.asList(owner)), previousForm, updateOnDone, null, 1, true, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=true since we can only select one and it's natural to deselect previously selected 
+//    }
 
-    ScreenObjectPicker(String title, List listOfAllObjects, List<ItemAndListCommonInterface> ownerList, MyForm previousForm, Runnable updateOnDone) {
-        this(title, listOfAllObjects, null, ownerList, previousForm, updateOnDone, null, 1, true, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=true since we can only select one and it's natural to deselect previously selected 
-    }
+//    ScreenObjectPicker(String title, List listOfAllObjects, List<ItemAndListCommonInterface> ownerList, MyForm previousForm, Runnable updateOnDone) {
+//        this(title, listOfAllObjects, null, ownerList, previousForm, updateOnDone, null, 1, true, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=true since we can only select one and it's natural to deselect previously selected 
+//    }
 
-    ScreenObjectPicker(String title, List listOfAllObjects, List listOfAllTopLevelProjects, List<ItemAndListCommonInterface> ownerList, MyForm previousForm, Runnable updateOnDone) {
-        this(title, listOfAllObjects, listOfAllTopLevelProjects, ownerList, previousForm, updateOnDone, null, 1, true, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=true since we can only select one and it's natural to deselect previously selected 
-    }
+//    ScreenObjectPicker(String title, List listOfAllObjects, List listOfAllTopLevelProjects, List<ItemAndListCommonInterface> ownerList, MyForm previousForm, Runnable updateOnDone) {
+//        this(title, listOfAllObjects, listOfAllTopLevelProjects, ownerList, previousForm, updateOnDone, null, 1, true, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=true since we can only select one and it's natural to deselect previously selected 
+//    }
 
 //    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllProjects, List listOfAllTasks, List<ItemAndListCommonInterface> ownerList, MyForm previousForm, UpdateField updateOnDone) {
 //        this(title, listOfAllLists, listOfAllProjects,listOfAllTasks,ownerList, previousForm, updateOnDone, null, 1, true, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=true since we can only select one and it's natural to deselect previously selected 
 //    }
-    ScreenObjectPicker(String title, List listOfAllObjects, List selectedObjects, MyForm previousForm) {
-        this(title, listOfAllObjects, null, selectedObjects, previousForm, () -> {
-        }, null, 1, true, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=true since we can only select one and it's natural to deselect previously selected 
-    }
+//    ScreenObjectPicker(String title, List listOfAllObjects, List selectedObjects, MyForm previousForm) {
+//        this(title, listOfAllObjects, null, selectedObjects, previousForm, () -> {
+//        }, null, 1, true, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=true since we can only select one and it's natural to deselect previously selected 
+//    }
 
-    ScreenObjectPicker(String title, List listOfAllObjects, List selectedObjects, MyForm previousForm, int maxNbOfSelected) {
-        this(title, listOfAllObjects, null, selectedObjects, previousForm, () -> {
-        }, null, maxNbOfSelected, false, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=false to avoid invisible deselect of previous selected
-    }
+//    ScreenObjectPicker(String title, List listOfAllObjects, List selectedObjects, MyForm previousForm, int maxNbOfSelected) {
+//        this(title, listOfAllObjects, null, selectedObjects, previousForm, () -> {
+//        }, null, maxNbOfSelected, false, false, false); //removeFirstAddedObjectIfMoreThanMaxAreAdded=false to avoid invisible deselect of previous selected
+//    }
 
 //    ScreenObjectPicker(String title, List listOfAllObjects, List selectedObjects, MyForm previousForm, UpdateField updateOnDone,
 //            GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
 //        this(title, listOfAllObjects, null, null, selectedObjects, previousForm, updateOnDone, labelMaker, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
 //    }
-    ScreenObjectPicker(String title, List listOfAllLists, List selectedObjects, MyForm previousForm, Runnable updateOnDone,
-            GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
-        this(title, listOfAllLists, null, selectedObjects, previousForm, updateOnDone,
-                labelMaker, 1, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
-    }
-//    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllProjects, List listOfAllTasks, List selectedObjects, MyForm previousForm, UpdateField updateOnDone,
-
-    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllTopLevelProjects, List selectedObjects,
-            MyForm previousForm, Runnable updateOnDone, GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected,
-            boolean exitWhenMaxObjectsIsSelected) {
-        this(title, listOfAllLists, listOfAllTopLevelProjects, selectedObjects, previousForm, updateOnDone,
-                labelMaker, 1, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
-    }
-
-    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllTopLevelProjects, Object selectedObject,
-            MyForm previousForm, Runnable updateOnDone, GetStringFrom labelMaker, int minNbOfSelected, int maxNbOfSelected,
-            boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
-        this(title, listOfAllLists, listOfAllTopLevelProjects, (List) new ArrayList(Arrays.asList(selectedObject)), previousForm, updateOnDone, labelMaker, minNbOfSelected,
-                maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
-    }
+//    ScreenObjectPicker(String title, List listOfAllLists, List selectedObjects, MyForm previousForm, Runnable updateOnDone,
+//            GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
+//        this(title, listOfAllLists, null, selectedObjects, previousForm, updateOnDone,
+//                labelMaker, 1, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
+//    }
+////    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllProjects, List listOfAllTasks, List selectedObjects, MyForm previousForm, UpdateField updateOnDone,
+//
+//    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllTopLevelProjects, List selectedObjects,
+//            MyForm previousForm, Runnable updateOnDone, GetStringFrom labelMaker, int maxNbOfSelected, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected,
+//            boolean exitWhenMaxObjectsIsSelected) {
+//        this(title, listOfAllLists, listOfAllTopLevelProjects, selectedObjects, previousForm, updateOnDone,
+//                labelMaker, 1, maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
+//    }
+//
+//    ScreenObjectPicker(String title, List listOfAllLists, List listOfAllTopLevelProjects, Object selectedObject,
+//            MyForm previousForm, Runnable updateOnDone, GetStringFrom labelMaker, int minNbOfSelected, int maxNbOfSelected,
+//            boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
+//        this(title, listOfAllLists, listOfAllTopLevelProjects, (List) new ArrayList(Arrays.asList(selectedObject)), previousForm, updateOnDone, labelMaker, minNbOfSelected,
+//                maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected);
+//    }
 
     /**
      *
@@ -201,7 +201,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             if (idx != -1) {
                 checkBoxes[idx].setSelected(selected);
             }
-        }, minNbOfSelected == 0); //allow no selection
+        }, minNbOfSelected ); //allow no selection
 
         //set error message if wrong number selected when clicking Back
 //        this.errorInSelection = "Please select "+(minNbOfSelected>0?"":"")+(maxNbOfSelected>0?"":"");
@@ -238,7 +238,7 @@ public class ScreenObjectPicker<E> extends MyForm {
         listCont.setScrollableY(true); //disable scrolling of form, necessary to let lists handle their own scrolling 
         getContentPane().add(BorderLayout.CENTER, listCont);
         addCommandsToToolbar(getToolbar());
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        getToolbar().addSearchCommand((e) -> {
 //            String text = (String) e.getSource();
 //            boolean showAll = (text == null || text.length() == 0);
@@ -252,6 +252,7 @@ public class ScreenObjectPicker<E> extends MyForm {
 ////            getContentPane().animateLayout(150);
 //            animateMyForm();
 //        }, MyPrefs.defaultIconSizeInMM.getFloat());
+//</editor-fold>
         refreshAfterEdit();
     }
 
@@ -285,7 +286,8 @@ public class ScreenObjectPicker<E> extends MyForm {
 
         super.addCommandsToToolbar(toolbar);
 
-        getToolbar().addCommandToRightBar(new MySearchCommand(getContentPane(), (e) -> {
+//        getToolbar().addCommandToRightBar(new MySearchCommand(getContentPane(), (e) -> {
+        setSearchCmd(new MySearchCommand(this, (e) -> {
             String text = (String) e.getSource();
             boolean showAll = (text == null || text.length() == 0);
             for (int i = 0, size = this.checkBoxes.length; i < size; i++) {
@@ -293,6 +295,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             }
             animateMyForm();
         }));
+        getToolbar().addCommandToRightBar(getSearchCmd());
 
         //if (objectCreator!=null)
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllObjects, ScreenObjectPicker.this)); //TODO!!!! enable adding new elements to picker screen
@@ -313,7 +316,7 @@ public class ScreenObjectPicker<E> extends MyForm {
             );
         }
 
-    }
+    };
 
     private Container buildList(List listOfAllObjects, Container cont) {
         parseIdMap2.parseIdMapReset();

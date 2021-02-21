@@ -38,7 +38,8 @@ public class ScreenSettingsTimer extends ScreenSettingsCommon {
 //        cont.setScrollableY(true);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAutomaticallyStartTimer);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowNextTask);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowNextTaskWithRemainingTime);
+//        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowNextTaskWithRemainingTime);
+        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowRemainingForNextTask);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAutomaticallyGotoNextTask);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysShowDialogToAskToUpdateRemainingTimeAterTimingAnItem);
         if (false) {
@@ -50,17 +51,21 @@ public class ScreenSettingsTimer extends ScreenSettingsCommon {
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerKeepScreenAlwaysOnInTimer);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeWaitingTasks);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeDoneTasks);
+        if (false) {
+            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeDoneTasks);
+        }
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.enableTimerToRestartOnLists);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject);
         if (false) {
+//            Component setting0 = SettingTimeInMinutes(cont, parseIdMap2, MyPrefs.timerBuzzerInterval); //disable until buzzer can run in background
+            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerBuzzerActive); //disable until buzzer can run in background
             addSettingTimeInMinutes(cont, parseIdMap2, MyPrefs.timerBuzzerInterval); //disable until buzzer can run in background
         }
         addSettingInt(cont, parseIdMap2, MyPrefs.timerUpdateInterval, 1, 60, 1);
         if (false) {
             addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysExpandListHierarchy);
-            addSettingInt(cont, parseIdMap2, MyPrefs.timerMaxTimerDurationInHoursXXX, 0, 12, 1);
+//            addSettingInt(cont, parseIdMap2, MyPrefs.timerMaxTimerDurationInHoursXXX, 0, 12, 1);
         }
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList);
         addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow);

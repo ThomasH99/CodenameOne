@@ -346,25 +346,26 @@ public class TimerStackEntry implements Externalizable {
     public void externalize(DataOutputStream out) throws IOException {
 
         if (timedItem != null && timedItem.getObjectIdP() == null) {
-            DAO.getInstance().saveNew(timedItem); //if needed, save temporary item (interupt task) so it is kept if app is closed and can be recovered on startup (and possibly deleted if Timer exited using Cancelled)
-            DAO.getInstance().saveNewExecuteUpdate();
+//            DAO.getInstance().saveNew(timedItem); //if needed, save temporary item (interupt task) so it is kept if app is closed and can be recovered on startup (and possibly deleted if Timer exited using Cancelled)
+//            DAO.getInstance().saveNewTriggerUpdate();
+            DAO.getInstance().saveToParseNow(timedItem);
             timedItemSavedLocallyInTimer = true;
         } else {
             timedItemSavedLocallyInTimer = false;
         }
 
 //        out.writeBoolean(timedItem != null && timedItem.getObjectId() != null);
-        if (timedItem != null && timedItem.getObjectIdP() != null) {
+        if (timedItem != null && timedItem.getGuid() != null) {
             out.writeBoolean(true);
-            Util.writeUTF(timedItem.getObjectIdP(), out);
+            Util.writeUTF(timedItem.getGuid(), out);
         } else {
             out.writeBoolean(false);
         }
 
 //        out.writeBoolean(timedItem != null && timedItem.getObjectId() != null);
-        if (nextItem != null && nextItem.getObjectIdP() != null) {
+        if (nextItem != null && nextItem.getGuid() != null) {
             out.writeBoolean(true);
-            Util.writeUTF(nextItem.getObjectIdP(), out);
+            Util.writeUTF(nextItem.getGuid(), out);
         } else {
             out.writeBoolean(false);
         }
@@ -374,9 +375,9 @@ public class TimerStackEntry implements Externalizable {
 //            Util.writeObject(item.getObjectId(), out);
 //        }
 //</editor-fold>
-        if (sourceItemOrProject != null && sourceItemOrProject.getObjectIdP() != null) {
+        if (sourceItemOrProject != null && sourceItemOrProject.getGuid() != null) {
             out.writeBoolean(true);
-            Util.writeUTF(sourceItemOrProject.getObjectIdP(), out);
+            Util.writeUTF(sourceItemOrProject.getGuid(), out);
         } else {
             out.writeBoolean(false);
         }
@@ -387,10 +388,10 @@ public class TimerStackEntry implements Externalizable {
 //        }
 //</editor-fold>
 //        if (orgItemList != null && orgItemList.getObjectId() != null) {
-        if (itemList != null && itemList.getObjectIdP() != null) {
+        if (itemList != null && itemList.getGuid() != null) {
             out.writeBoolean(true);
 //            Util.writeUTF(orgItemList.getObjectId(), out);
-            Util.writeUTF(itemList.getObjectIdP(), out);
+            Util.writeUTF(itemList.getGuid(), out);
         } else {
             out.writeBoolean(false);
         }
@@ -422,7 +423,7 @@ public class TimerStackEntry implements Externalizable {
     public void internalize(int version, DataInputStream in) throws IOException {
         if (in.readBoolean()) {
 //            timedItem = DAO.getInstance().getItem(in.readUTF());
-            timedItem = DAO.getInstance().fetchItem(Util.readUTF(in));
+            timedItem = DAO.getInstance().fetchItem(Util.readUTF(in)); //now guid!
         }
         if (in.readBoolean()) {
 //            timedItem = DAO.getInstance().getItem(in.readUTF());

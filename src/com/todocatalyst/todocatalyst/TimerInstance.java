@@ -14,6 +14,7 @@ import com.parse4cn1.ParseObject;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * stores each timer (the 'stack' is defined by which is created(??) the latest)
@@ -77,12 +78,12 @@ public class TimerInstance extends ParseObject {
 
     public String toString() {
         return ((getTimedItemListN() != null ? " List:" + getTimedItemListN().getText() : "")
-                + (getTimedProject() != null ? " Proj:" + getTimedProject().getText() : "")
-                + (getTimedItemN() != null ? "Task:" + getTimedItemN().getText() : "")
-                + (getStartTimeD().getTime() != 0 ? " Start:" + getStartTimeD() : "")
-                + (getElapsedTime() != 0 ? " Duration:" + MyDate.formatDurationShort(getElapsedTime()) : "")
-                + (isRunning() ? " Running" : " Stopped")
-                + (isFullScreen() ? " BIG" : " SMALL")
+                + (getTimedProject() != null ? "; Proj:" + getTimedProject().getText() : "")
+                + (getTimedItemN() != null ? "; Task:" + getTimedItemN().getText() : "")
+                + (getStartTimeD().getTime() != 0 ? "; Start:" + getStartTimeD() : "")
+                + (getElapsedTime() != 0 ? "; Duration:" + MyDate.formatDurationShort(getElapsedTime()) : "")
+                + (isRunning() ? "; Running" : "; Stopped")
+                + (isFullScreen() ? "; BIG" : "; SMALL")
                 + " [" + getObjectIdP() + "]");
 //                +(isAutostart());
     }
@@ -104,12 +105,14 @@ public class TimerInstance extends ParseObject {
         if (projectOrItemList instanceof ItemList) {
             return Dialog.show("Timer", "The timed task \"" + item.getText()
                     + "\" is no longer in the list \"" + projectOrItemList.getText()
-                    + "\". \n\n Start over from the start of the list or stop timer?", "Start over", "Stop Timer");
+//                    + "\". \n\n Start over from the start of the list or stop timer?", "Start over", "Stop Timer");
+                    + "\". \n\n Please restart the Timer", null,"OK"); //OK/Cancel inversed to ensure OK exits timer
         } else { //if (projectOrItemList instanceof Item)
             ASSERT.that(projectOrItemList instanceof Item,"projectOrItemList NOT instance of Item, projectOrItemList="+projectOrItemList);
             return Dialog.show("Timer", "The timed task \"" + item.getText()
                     + "\" is no longer in the project \"" + projectOrItemList.getText()
-                    + "\". \n\n Start over from the start of the project or stop Timer?", "Start over", "Stop Timer");
+//                    + "\". \n\n Start over from the start of the project or stop Timer?", "Start over", "Stop Timer");
+                    + "\". \n\n Please restart the Timer", null, "OK");
         }
     }
 
@@ -124,7 +127,8 @@ public class TimerInstance extends ParseObject {
 //        if (!Objects.equals(timedItem, previousItem)) {
         //definition from Objects.equals() => return (a == b) || (a != null && a.equals(b))
 //        if (!((timedItem == previousItem) || timedItem != null && timedItem.equals(previousItem))) { //do not update if timedItem is the same as before (including if was null before and after) changed
-        if (!(timedItem == previousItem || timedItem != null && timedItem == previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
+//        if (!(timedItem == previousItem || timedItem != null && timedItem == previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
+        if (!Objects.equals(timedItem ,previousItem )) { //do not update if timedItem is the same as before (including if was null before and after) changed
             //reset both when changing timedItem
             setStartTime(0);
             setElapsedTime(0);
@@ -344,7 +348,7 @@ public class TimerInstance extends ParseObject {
      * @return
      */
     public long getElapsedTotalTime() {
-        return getElapsedTime() + (getTimedItemN() != null ? getTimedItemN().getActualForProjectTaskItself() : 0); //optimization!!! getTimedItem() will load item from cache!
+        return getElapsedTime() + (getTimedItemN() != null ? getTimedItemN().getActualForTaskItself() : 0); //optimization!!! getTimedItem() will load item from cache!
     }
 
     /**
@@ -542,11 +546,12 @@ public class TimerInstance extends ParseObject {
 //                        : timerInstance.getElapsedTime() + timedItem.getActualEffortProjectTaskItself());
 //            timedItem.setActual(timerInstance.getElapsedTime() + timedItem.getActualForProjectTaskItself(), false);
             if (timedItemN != null) {
-                timedItemN.setActual(timedItemN.getActualForProjectTaskItself() + getElapsedTime(), false); //false: don't auto-update startedOn time (done when status is set?!)
+                timedItemN.setActualForTaskItself(timedItemN.getActualForTaskItself() + getElapsedTime(), false); //false: don't auto-update startedOn time (done when status is set?!)
                 if (saveUpdatedItem) {
 //                    DAO.getInstance().saveNew(timedItemN,true);
-                    DAO.getInstance().saveNew(timedItemN);
-                    DAO.getInstance().saveNewExecuteUpdate();
+//                    DAO.getInstance().saveNew(timedItemN);
+//                    DAO.getInstance().saveNewTriggerUpdate();
+                    DAO.getInstance().saveToParseNow(timedItemN);
                 }
             }
 //            timerInstance.setElapsedTime(0); //reset elapsed time since it's now been added to Item's actual & saved
@@ -765,7 +770,7 @@ public class TimerInstance extends ParseObject {
     GetNextItemStatus updateToNextTimerItem(boolean updateAndSave) {
         //TODO!!!! simplify the algorithm to a long list of leaf elements (apply filtering only when searching fo previousItem)
         Item previousTimedItem = getTimedItemN(); //may return null on first call, in which case the very first subtask will be returned
-        Item nextTimedItem = null;
+        Item nextTimedItemN = null;
         Item project = getTimedProject();
         ItemList itemList = null;
         boolean alwaysStartOverOnFirstElement
@@ -804,11 +809,11 @@ public class TimerInstance extends ParseObject {
 //                nextTimedItem = project.getNextLeafItem(previousTimedItem, item -> TimerStack.isValidItemForTimer(item)); //return valid subtasks (matching condition), or null
 //                        nextTimedItem = ItemList.getNextItemAfter(leafTasks, lookForItem, false);
                     //NB! getNextLeafItem CANNOT be used because will only work if previousTimedItem matches the condition
-                    nextTimedItem = ItemList.getNextItemAfter(timeableLeafTasks, lookForItemAfterThis, alwaysStartOverOnFirstElement);
-                    if (nextTimedItem != null) {
-                        if (!TimerStack.isValidItemForTimer(nextTimedItem) && !isTimeEvenInvalidItemOrProjects()) {
-                            lookForItemAfterThis = nextTimedItem; //look for next item *after* the (invalid) nextTimedItem
-                            nextTimedItem = null; //skip invalid items
+                    nextTimedItemN = ItemList.getNextItemAfter(timeableLeafTasks, lookForItemAfterThis, alwaysStartOverOnFirstElement);
+                    if (nextTimedItemN != null) {
+                        if (!TimerStack.isValidItemForTimer(nextTimedItemN) && !isTimeEvenInvalidItemOrProjects()) {
+                            lookForItemAfterThis = nextTimedItemN; //look for next item *after* the (invalid) nextTimedItem
+                            nextTimedItemN = null; //skip invalid items
                         }
                     } else { //didn't find any suitable items, continue looking in itemList (if any) 
 //                        previousTimedItem = project; //the previousTimedTask *was* in the timedProject, but there were no more suitable subtasks, set previousTimedItem=null so we'll use project as the first task/subtask in the next tasks/project
@@ -816,12 +821,12 @@ public class TimerInstance extends ParseObject {
                         project = null; //this project has no more leaf tasks so removed
                         //iteration stops after this since project == null
                     }
-                } while (nextTimedItem == null && project != null); // !(nextTimedItem == null && project != null) <=> (nextTimedItem != null || project == null)
+                } while (nextTimedItemN == null && project != null); // !(nextTimedItem == null && project != null) <=> (nextTimedItem != null || project == null)
                 //post-condition: either a nextTimedItem is found or project==null
             }
 
             //if there was no project or no suitable subtask found in project, continue with next in list
-            if (nextTimedItem == null) {
+            if (nextTimedItemN == null) {
                 itemList = getTimedItemListN();
 //                lookForItemAfterThis = previousTimedItem; //NO, lookForItemAfterThis = project above
 
@@ -853,7 +858,7 @@ public class TimerInstance extends ParseObject {
                     }
 
                     //iterate through list until nextItem or Project is found or we've exhausted the possibilities (no next item exists)
-                    while (nextTimedItem == null && project == null && itemList != null) {
+                    while (nextTimedItemN == null && project == null && itemList != null) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                        nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
 //                        nextTimedItem = (Item) itemList.getNextItemAfter(previousTimedItem, false); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
@@ -865,13 +870,13 @@ public class TimerInstance extends ParseObject {
                         ItemAndListCommonInterface nextElementN = itemList.getNextItemAfter(lookForItemAfterThis, startOverOnFirstElementIfPreviousNotFound); //if previousTimedItem==null, return first element! false=> UI: don't expect start from start of list when last one's past
 //                        if (nextTimedItem != null) {
                         if (nextElementN instanceof Item) {
-                            nextTimedItem = (Item) nextElementN;
-                            if (TimerStack.isValidItemForTimer(nextTimedItem) || isTimeEvenInvalidItemOrProjects()) {
+                            nextTimedItemN = (Item) nextElementN;
+                            if (TimerStack.isValidItemForTimer(nextTimedItemN) || isTimeEvenInvalidItemOrProjects()) {
 //                                previousTimedItem = null; //reset previous since we've now found the following item and don't want next iteration to search for an item after previous
                                 lookForItemAfterThis = null; //reset previous since we've now found the following item and don't want next iteration to search for an item after previous
-                                if (nextTimedItem.isProject()) {
-                                    project = nextTimedItem; //set project to search for a subtask
-                                    nextTimedItem = null; //force to repeat do while to check if there's a suitable subtask
+                                if (nextTimedItemN.isProject()) {
+                                    project = nextTimedItemN; //set project to search for a subtask
+                                    nextTimedItemN = null; //force to repeat do while to check if there's a suitable subtask
                                 } //else: we've found the next item!
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                else { //else: a project, so we'll see if it is valid in the while(isValidItemForTimer...)
@@ -883,16 +888,16 @@ public class TimerInstance extends ParseObject {
 //</editor-fold>
                             } else { //not Valid
 //                                previousTimedItem = nextTimedItem;// get the next item *after* the nextTimedItem already found
-                                lookForItemAfterThis = nextTimedItem;// get the next item *after* the nextTimedItem already found
-                                nextTimedItem = null;
+                                lookForItemAfterThis = nextTimedItemN;// get the next item *after* the nextTimedItem already found
+                                nextTimedItemN = null;
                             }
                         } else if (nextElementN instanceof WorkSlot) { //treat WorkSlot like a project, that is run the timer on the tasks 'inside' the workslot
-                            if (TimerStack.isValidItemForTimer(nextTimedItem) || isTimeEvenInvalidItemOrProjects()) {
+                            if (TimerStack.isValidItemForTimer(nextTimedItemN) || isTimeEvenInvalidItemOrProjects()) {
 //                                previousTimedItem = null; //reset previous since we've now found the following item and don't want next iteration to search for an item after previous
                                 lookForItemAfterThis = null; //reset previous since we've now found the following item and don't want next iteration to search for an item after previous
-                                if (nextTimedItem.isProject()) {
-                                    project = nextTimedItem; //set project to search for a subtask
-                                    nextTimedItem = null; //force to repeat do while to check if there's a suitable subtask
+                                if (nextTimedItemN.isProject()) {
+                                    project = nextTimedItemN; //set project to search for a subtask
+                                    nextTimedItemN = null; //force to repeat do while to check if there's a suitable subtask
                                 } //else: we've found the next item!
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                else { //else: a project, so we'll see if it is valid in the while(isValidItemForTimer...)
@@ -904,12 +909,12 @@ public class TimerInstance extends ParseObject {
 //</editor-fold>
                             } else { //not Valid
 //                                previousTimedItem = nextTimedItem;// get the next item *after* the nextTimedItem already found
-                                lookForItemAfterThis = nextTimedItem;// get the next item *after* the nextTimedItem already found
-                                nextTimedItem = null;
+                                lookForItemAfterThis = nextTimedItemN;// get the next item *after* the nextTimedItem already found
+                                nextTimedItemN = null;
                             }
                         } else if (nextElementN == null) { //nothing found (e.g. previous was last element in list
                             itemList = null;
-                            nextTimedItem = null;
+                            nextTimedItemN = null;
                         } else {
                             assert false;
                         }
@@ -929,11 +934,11 @@ public class TimerInstance extends ParseObject {
                 }
             }
 //        } while ((nextTimedItem == null || !TimerStack.isValidItemForTimer(nextTimedItem)) && (project != null || itemList != null));
-        } while ((nextTimedItem == null) && (project != null || itemList != null));
+        } while ((nextTimedItemN == null) && (project != null || itemList != null));
 
 //        if (update) {
         if (updateAndSave) {
-            setTimedItem(nextTimedItem);
+            setTimedItem(nextTimedItemN);
             if (true || project instanceof Item) {
                 setTimedProject(project); //set project (possibly to null to indicate we've finished with the project)
             }//            else if (project instanceof WorkSlot)
@@ -943,7 +948,7 @@ public class TimerInstance extends ParseObject {
             saveMe();
         }
 //        return nextTimedItem;
-        return new GetNextItemStatus(nextTimedItem, false);
+        return new GetNextItemStatus(nextTimedItemN, false);
     }
 
     /**

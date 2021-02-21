@@ -605,8 +605,10 @@ public class ScreenRepeatRule extends MyForm {
 //        intervalField_1_NN_TextField = new TextField("" + myRepeatRule.getInterval(), "<interval>", 10, TextField.NUMERIC);
 //        intervalField_1_NN_TextField = new MyIntTextField(repeatRuleEdited.getInterval(), "**", 1, MyPrefs.repeatMaxInterval.getInt(), 1);
         intervalField_1_NN_TextField = new MyIntPicker(repeatRuleEdited.getInterval(), 1, MyPrefs.repeatMaxInterval.getInt(), 1);
-        intervalField_1_NN_TextFieldCont = layoutN(RepeatRuleParseObject.REPEAT_RULE_FREQUENCY, intervalField_1_NN_TextField,
-                RepeatRuleParseObject.REPEAT_RULE_FREQUENCY_HELP);
+//        intervalField_1_NN_TextFieldCont = layoutN(RepeatRuleParseObject.REPEAT_RULE_FREQUENCY, intervalField_1_NN_TextField,
+//                RepeatRuleParseObject.REPEAT_RULE_FREQUENCY_HELP);
+        intervalField_1_NN_TextFieldCont = BoxLayout.encloseY(layoutN(RepeatRuleParseObject.REPEAT_RULE_FREQUENCY, intervalField_1_NN_TextField,
+                RepeatRuleParseObject.REPEAT_RULE_FREQUENCY_HELP),makeSpacerThin());
 
         //Set up all fields with default selected valued
         //DAYS IN WEEK: MONDAY[ ] TUESDAY[ ]...
@@ -624,7 +626,8 @@ public class ScreenRepeatRule extends MyForm {
 //        daysInWeek_MonSun_Field = new MyComponentGroup(MyDate.getShortWeekDayNamesMondayFirst(), RepeatRuleParseObject.getDayInWeekNumbers(),
 //                repeatRuleEdited.getDaysInWeekAsVector(), -1);
 //        daysInWeek_MonSun_FieldCont = layoutN(RepeatRuleParseObject.REPEAT_RULE_DAYS_IN_WEEK, (MyToggleButton) daysInWeek_MonSun_Field,
-        daysInWeek_MonSun_FieldCont = BoxLayout.encloseY(makeSpacerThin(), layoutN(RepeatRuleParseObject.REPEAT_RULE_DAYS_IN_WEEK, daysInWeek_MonSun_Field,
+//        daysInWeek_MonSun_FieldCont = BoxLayout.encloseY(makeSpacerThin(), layoutN(RepeatRuleParseObject.REPEAT_RULE_DAYS_IN_WEEK, daysInWeek_MonSun_Field,
+        daysInWeek_MonSun_FieldCont = BoxLayout.encloseY( layoutN(RepeatRuleParseObject.REPEAT_RULE_DAYS_IN_WEEK, daysInWeek_MonSun_Field,
                 RepeatRuleParseObject.REPEAT_RULE_DAYS_IN_WEEK_HELP));
 //        daysInWeekField = new MyComponentGroup(MyDate.getShortWeekDayNamesMondayFirst(), RepeatRuleParseObject.getDayInWeekNumbers(), myRepeatRule.getDaysInWeekAsVector(), true);
 //        daysInWeek_MonSun_Field.setContainer(new Container(new GridLayout(7)));
@@ -729,8 +732,9 @@ public class ScreenRepeatRule extends MyForm {
 //                new int[]{MONTHLY_OPTION_DAY, MONTHLY_OPTION_WEEKDAYS, MONTHLY_OPTION_WEEK_NB});
         monthlyRepeatType_DayWeekdaysWeeks_SelectionBox = new MyComponentGroup(
                 new Object[]{MONTHLY_OPTION_DAY, MONTHLY_OPTION_WEEKDAYS, MONTHLY_OPTION_WEEK_NB}, new String[]{"Day", "Week days", "Week in month"}, false);
-        monthlyRepeatType_DayWeekdaysWeeks_SelectionBoxCont = BoxLayout.encloseY(makeSpacerThin(), layoutN(RepeatRuleParseObject.REPEAT_RULE_MONTHLY_TYPE, monthlyRepeatType_DayWeekdaysWeeks_SelectionBox,
-                RepeatRuleParseObject.REPEAT_RULE_MONTHLY_TYPE_HELP));
+//        monthlyRepeatType_DayWeekdaysWeeks_SelectionBoxCont = BoxLayout.encloseY(makeSpacerThin(), layoutN(RepeatRuleParseObject.REPEAT_RULE_MONTHLY_TYPE, monthlyRepeatType_DayWeekdaysWeeks_SelectionBox,
+        monthlyRepeatType_DayWeekdaysWeeks_SelectionBoxCont =  layoutN(RepeatRuleParseObject.REPEAT_RULE_MONTHLY_TYPE, monthlyRepeatType_DayWeekdaysWeeks_SelectionBox,
+                RepeatRuleParseObject.REPEAT_RULE_MONTHLY_TYPE_HELP);
 
         //show dayInMonth if either field is defined, or if weekInMonth is not defined (covers both initial state and once defined)
 //        monthlyRepeatTypeSelectionBox.setSelectedIndex(((myRepeatRule.getDayInMonth() > 0 || (myRepeatRule.getWeekInMonth() == 0 && myRepeatRule.getWeekdaysInMonth() == 0)) ? 0 : ((myRepeatRule.getWeekInMonth() != 0) ? 1 : 2)));
@@ -913,7 +917,7 @@ public class ScreenRepeatRule extends MyForm {
 //        showNumberDaysAhead = new MyIntPicker(myRepeatRule.useNumberFutureRepeatsToGenerateAhead()
 //                ? myRepeatRule.getNumberFutureRepeatsToGenerateAhead() : 1, 1, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead.getInt());
         showNumberDaysAheadZZZ = new MyIntPicker(!repeatRuleEdited.useNumberFutureRepeatsToGenerateAhead()
-                ? repeatRuleEdited.getNumberOfDaysRepeatsAreGeneratedAhead() : 1, 1, MyPrefs.repeatMaxNumberFutureDaysToGenerateAhead.getInt());
+                ? repeatRuleEdited.getNumberOfDaysRepeatsAreGeneratedAhead() : 1, 1, MyPrefs.repeatMaxNumberFutureDaysToGenerateAheadZZZ.getInt());
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            initialized = true;
 //        } else { //if not initialized

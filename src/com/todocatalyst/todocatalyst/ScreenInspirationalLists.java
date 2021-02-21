@@ -115,8 +115,7 @@ public class ScreenInspirationalLists extends MyForm {
                 MyReplayCommand.create(InspirationalLists.ROIoverRemaining_X.getCmdUniqueId(), InspirationalLists.ROIoverRemaining_X.getDescription(), Icons.iconInspiration, (e) -> {
                     MyForm myForm = new ScreenListOfItems(InspirationalLists.ROIoverRemaining_X.getFilterName(), "No tasks",
                             () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(), InspirationalLists.ROIoverRemaining_X, true),
-                            ScreenInspirationalLists.this, (i) -> {
-                            },
+                            ScreenInspirationalLists.this, null,
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                             | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
                     );
@@ -128,8 +127,7 @@ public class ScreenInspirationalLists extends MyForm {
                 MyReplayCommand.create(InspirationalLists.UrgentByCreated.getCmdUniqueId(), InspirationalLists.UrgentByCreated.getDescription(), Icons.iconInspiration, (e) -> {
                     MyForm myForm = new ScreenListOfItems(InspirationalLists.UrgentByCreated.getFilterName(), "No tasks",
                             () -> new ItemList(SCREEN_ALL_TASKS_TITLE, DAO.getInstance().getAllItems(), InspirationalLists.UrgentByCreated, true),
-                            ScreenInspirationalLists.this, (i) -> {
-                            },
+                            ScreenInspirationalLists.this, null,
                             ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                             | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
                     );

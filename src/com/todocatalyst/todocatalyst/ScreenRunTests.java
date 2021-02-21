@@ -29,7 +29,7 @@ public class ScreenRunTests extends MyForm {
     ScreenRunTests(MyForm mainScreen) { // throws ParseException, IOException {
         super(SCREEN_TITLE, null, () -> {
         });
-        this.previousForm = mainScreen;
+        this.parentForm = mainScreen;
         setLayout(new BoxLayout(BoxLayout.Y_AXIS));
         setScrollableY(true);
         addCommandsToToolbar();

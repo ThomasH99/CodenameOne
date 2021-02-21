@@ -46,8 +46,8 @@ public class ScreenListOfCategories extends MyForm {
     //TODO show only number/count of undone items in category (not getSize() as now)
     //DONE add sum of effort of subtasks in each category
 
-    public final static String SCREEN_TITLE = "Categories";
-    public final static String SCREEN_HELP = "Categories";
+//    public final static String SCREEN_TITLE = "Categories";
+//    public final static String SCREEN_HELP = "Categories";
     private CategoryList categoryList;
     private MyTree2 dt;
 //    protected static String FORM_UNIQUE_ID = "ScreenListOfCategories"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
@@ -67,9 +67,12 @@ public class ScreenListOfCategories extends MyForm {
 //                            DAO.getInstance().save(cat);
 //                        });
 //    }
-    ScreenListOfCategories(CategoryList categoryList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfCategories(CategoryList categoryList, MyForm previousForm, Runnable updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super(title == null ? SCREEN_TITLE : title, previousForm, () -> updateItemListOnDone.update(categoryList));
-        super(SCREEN_TITLE, previousForm, () -> updateItemListOnDone.update(categoryList));
+//        super(SCREEN_TITLE, previousForm, () -> updateItemListOnDone.update(categoryList));
+//        super(MyForm.SCREEN_CATEGORIES_TITLE, previousForm, updateItemListOnDone,MyForm.SCREEN_CATEGORIES_HELP);
+        super(ScreenType.CATEGORIES, previousForm, updateItemListOnDone);
+//        setUpdateActionOnCancel(() -> updateItemListOnDone.update2(categoryList));
         setUniqueFormId("ScreenListOfCategories");
 //        setUpdateItemListOnDone(updateItemListOnDone);
         this.categoryList = categoryList;
@@ -133,7 +136,7 @@ public class ScreenListOfCategories extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
+        ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         getContentPane().removeAll();
         categoryList.resetWorkTimeDefinition();
         Container cont = buildContentPaneForItemList(categoryList);
@@ -172,10 +175,12 @@ public class ScreenListOfCategories extends MyForm {
                 if (category.hasSaveableData()) { //UI: do nothing for an empty category, allows user to add category and immediately return if regrests or just pushed wrong button
                     category.setOwner(categoryOwnerList); //TODO should store ordered list of categories
                     categoryOwnerList.addItemAtIndex(category, MyPrefs.addNewCategoriesToBeginningOfCategoryList.getBoolean() ? 0 : categoryOwnerList.size());
-                    DAO.getInstance().saveNew((ParseObject) category, false); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-//                    DAO.getInstance().saveNew((ParseObject) categoryOwnerList, true); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
-                    DAO.getInstance().saveNew((ParseObject) categoryOwnerList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
-                    DAO.getInstance().saveNewExecuteUpdate();
+//                    DAO.getInstance().saveNew((ParseObject) category); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+////                    DAO.getInstance().saveNew((ParseObject) categoryOwnerList, true); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
+//                    DAO.getInstance().saveNew((ParseObject) categoryOwnerList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
+//                    DAO.getInstance().saveNewTriggerUpdate();
+//                    DAO.getInstance().saveToParseNow((ParseObject) category,(ParseObject) categoryOwnerList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
+                    DAO.getInstance().saveToParseNow((ParseObject) category); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
 //                        previousForm.revalidate(); //refresh list to show new items(??)
                     if (refreshOnItemEdits != null) {
                         refreshOnItemEdits.launchAction();
@@ -190,7 +195,8 @@ public class ScreenListOfCategories extends MyForm {
 
         super.addCommandsToToolbar(toolbar);
 
-        setSearchCmd(new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(categoryList)));
+//        setSearchCmd(new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(categoryList)));
+        setSearchCmd(new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(categoryList)));
         toolbar.addCommandToRightBar(getSearchCmd());
 
         //NEW TASK to Inbox
@@ -198,7 +204,8 @@ public class ScreenListOfCategories extends MyForm {
 
         //NEW CATEGORY
 //        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("New Category", categoryList, ScreenListOfCategories.this, () -> refreshAfterEdit()));
-        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("New Category", categoryList, ScreenListOfCategories.this, null));
+//        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("New Category", categoryList, ScreenListOfCategories.this, null));
+        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("Add Category", categoryList, ScreenListOfCategories.this, null));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToRightBar(MyReplayCommand.create("CreateNewCategory", "", Icons.iconNewToolbarStyle(), (e) -> {
 //            Category category = new Category();
@@ -461,29 +468,31 @@ public class ScreenListOfCategories extends MyForm {
         editItemPropertiesButton.setUIID("IconEdit");
 
 //        editItemPropertiesButton.setCommand(MyReplayCommand.create("EditCategory-", category.getObjectIdP(), "", Icons.iconEditPropertiesToolbarStyle, (e) -> {
-        MyReplayCommand editCategoryCmd = MyReplayCommand.create("EditCategory-", category.getObjectIdP(), "", Icons.iconEdit, (e) -> {
+        MyReplayCommand editCategoryCmd = MyReplayCommand.create("EditCategory-", category.getReplayId(), "", Icons.iconEdit, (e) -> {
 //                new ScreenCategory(category, ScreenListOfCategories.this, 
 //                ()-> {}
 //                ).show();
-            if (false) {
-                DAO.getInstance().getAllItemsInCategory(category);
-            }
+//            if (false) {
+//                DAO.getInstance().getAllItemsInCategory(category);
+//            }
             ASSERT.that(category.isDataAvailable(), "Category \"" + category + "\" data not available");
 
 //                new ScreenListOfItems(category, ScreenListOfCategories.this,
 //            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, mainCont)); //mainCont right container to use here??
-            new ScreenListOfItems(category.getText(), () -> category, (MyForm) swipCont.getComponentForm(), (itemsInCategory) -> {
+            new ScreenListOfItems(category.getText(), () -> category, (MyForm) swipCont.getComponentForm(), () -> {
                 ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(category, swipCont));
-                if (false) { // I don't think this makes any sense, all edits to items within the category should be updated directly (eg Item.softdelete should remove it from category, edit Item to remove the category should also update/save the category, ...)
-                    category.setList(itemsInCategory.getListFull()); //should probably be full, to check if re-activating this code
-//                    DAO.getInstance().saveNew((ParseObject) category, true);
-                    DAO.getInstance().saveNew((ParseObject) category);
-                    DAO.getInstance().saveNewExecuteUpdate();
-                }
+//                if (false) { // I don't think this makes any sense, all edits to items within the category should be updated directly (eg Item.softdelete should remove it from category, edit Item to remove the category should also update/save the category, ...)
+//                    category.setList(itemsInCategory.getListFull()); //should probably be full, to check if re-activating this code
+////                    DAO.getInstance().saveNew((ParseObject) category, true);
+////                    DAO.getInstance().saveNew((ParseObject) category);
+////                    DAO.getInstance().saveNewTriggerUpdate();
+//                    DAO.getInstance().saveToParseNow((ParseObject) category);
+//                }
 //                    refreshAfterEdit();
                 if (refreshOnItemEdits != null) {
                     refreshOnItemEdits.launchAction(); //refresh when items have been edited
                 }
+//                return true;
             }, 0).show();
         });
         editCategoryCmd.setAnalyticsActionId("EditCategoryFromListOfCategories");
@@ -536,7 +545,7 @@ public class ScreenListOfCategories extends MyForm {
         }
 
         if (MyPrefs.listOfCategoriesShowRemainingEstimate.getBoolean()) {
-            long remainingEffort = category.getRemaining();
+            long remainingEffort = category.getRemainingTotal();
 //            long totalEffort = MyPrefs.listOfCategoriesShowTotalTime.getBoolean() ? category.getEstimate() : 0;
             long totalEffort = MyPrefs.listOfCategoriesShowTotalTime.getBoolean() ? category.getTotalEffort() : 0;
             String effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")

@@ -5,7 +5,8 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.compat.java.util.Objects;
+//import com.codename1.compat.java.util.Objects;
+import java.util.Objects;
 import com.codename1.components.InfiniteProgress;
 import com.codename1.io.Log;
 import com.codename1.ui.Dialog;
@@ -179,7 +180,7 @@ public class CleanUpDataInconsistencies {
                 logAction("Set owner to " + correctOwner);
                 if (executeCleanup) {
                     element.setOwner(correctOwner);
-                    dao.saveNew((ParseObject) element);
+                    dao.saveToParseLater((ParseObject) element);
                     return true;
                 }
             }
@@ -199,7 +200,6 @@ public class CleanUpDataInconsistencies {
 //    private void cleanUpCircularReferencesInHierarchyXXX(String description, List list) {
 //
 //    }
-
     private String getClassOfElement(ItemAndListCommonInterface element) {
         if (element instanceof Item) {
             return "Item";
@@ -339,7 +339,7 @@ public class CleanUpDataInconsistencies {
                     logAction("Adding Category to Item");
                     if (executeCleanup) {
                         item.addCategoryToItem(category, false);
-                        dao.saveNew(item);
+                        dao.saveToParseLater(item);
                     }
                 }
             }
@@ -384,7 +384,6 @@ public class CleanUpDataInconsistencies {
 //        }
 //        return someElementWereDeleted;
 //    }
-
     private boolean cleanUpDuplicatesInList(String description, List inputList, boolean executeCleanup) {
         //http://stackoverflow.com/questions/223918/iterating-through-a-collection-avoiding-concurrentmodificationexception-when-re
         //http://stackoverflow.com/questions/2849450/how-to-remove-duplicates-from-a-list
@@ -423,12 +422,12 @@ public class CleanUpDataInconsistencies {
     }
 
     /**
-     * return true if filter doesNO
-     * T exist in parse
+     * return true if filter doesNO T exist in parse
+     *
      * @param filterOwner
      * @param filterSortDef
      * @param executeCleanup
-     * @return 
+     * @return
      */
     private boolean cleanUpReferencedFilterSortDef(ItemAndListCommonInterface filterOwner, FilterSortDef filterSortDef, boolean executeCleanup) {
 //                FilterSortDef filterSortDef = itemList.getFilterSortDef();
@@ -643,13 +642,13 @@ public class CleanUpDataInconsistencies {
 //        }
 //FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
 //       cleanUpReferencedFilterSortDef(itemList, itemList.getFilterSortDefN(), executeCleanup);
-       cleanUpReferencedFilterSortDef(itemList, (FilterSortDef) itemList.getParseObject(ItemList.PARSE_FILTER_SORT_DEF), executeCleanup);
+        cleanUpReferencedFilterSortDef(itemList, (FilterSortDef) itemList.getParseObject(ItemList.PARSE_FILTER_SORT_DEF), executeCleanup);
 
         //workslots
         cleanUpWorkSlotList(itemList, executeCleanup);
 
         if (executeCleanup) {
-            dao.saveNew((ParseObject) itemList);
+            dao.saveToParseLater((ParseObject) itemList);
         }
     }
 
@@ -813,7 +812,7 @@ public class CleanUpDataInconsistencies {
         checkListForNotInParseSoftDeletedReferenceOwner(itemListList, (List) itemListsFromParse, executeCleanup);
 
         if (executeCleanup) {
-            dao.saveNew((ParseObject) itemListList, false);
+            dao.saveToParseLater((ParseObject) itemListList);
         }
     }
 
@@ -860,7 +859,7 @@ public class CleanUpDataInconsistencies {
 //        cleanUpBadObjectReferencesInListOfCategoriesOrItemListsXXX("ItemListList", "ItemList", itemListList); //Clean up links to removed Categories
 //</editor-fold>
         if (executeCleanup) {
-            dao.saveNew((ParseObject) itemListList, false);
+            dao.saveToParseLater((ParseObject) itemListList);
         }
         setLogPrefix("");
     }
@@ -1023,13 +1022,13 @@ public class CleanUpDataInconsistencies {
 //            filterSortDefReferenced.add(filterSortDef);
 //        }
 //       cleanUpReferencedFilterSortDef(category, category.getFilterSortDefN(), executeCleanup);
-       cleanUpReferencedFilterSortDef(category, (FilterSortDef) category.getParseObject(ItemList.PARSE_FILTER_SORT_DEF), executeCleanup);
+        cleanUpReferencedFilterSortDef(category, (FilterSortDef) category.getParseObject(ItemList.PARSE_FILTER_SORT_DEF), executeCleanup);
 
         //workslots
         cleanUpWorkSlotList(category, executeCleanup);
 
         if (executeCleanup) {
-            dao.saveNew((ParseObject) category);
+            dao.saveToParseLater((ParseObject) category);
         }
     }
 
@@ -1060,7 +1059,7 @@ public class CleanUpDataInconsistencies {
         if (cleanUpDuplicatesInList("CategoryList", categoriesInCatList, executeCleanup)) {
             if (executeCleanup) {
                 categoryList.setList(categoriesInCatList);
-                dao.saveNew((ParseObject) categoryList);
+                dao.saveToParseLater((ParseObject) categoryList);
             }
         }
 
@@ -1068,7 +1067,7 @@ public class CleanUpDataInconsistencies {
         if (checkListForNotInParseSoftDeletedReferenceOwner(categoryList, (List) categoriesInCatList, executeCleanup, false)) {
             if (executeCleanup) {
                 categoryList.setList(categoriesInCatList);
-                dao.saveNew((ParseObject) categoryList);
+                dao.saveToParseLater((ParseObject) categoryList);
             }
         }
 
@@ -1148,7 +1147,7 @@ public class CleanUpDataInconsistencies {
                     log("non-template \"" + item + "\" inside template \"" + item + " parseId=" + ((ParseObject) item).getObjectIdP());
                     if (executeCleanup) {
                         item.setTemplate(true);
-                        dao.saveNew(item, false);
+                        dao.saveToParseLater(item);
                     }
                 }
                 makeAllSubTaskTemplatesAndRemoveDuplicates(item, executeCleanup); //iterate down the hierarchy
@@ -1266,7 +1265,7 @@ public class CleanUpDataInconsistencies {
 //</editor-fold>
         if (executeCleanup) {
 //            templateList.setList(templateList);
-            dao.saveNew((ParseObject) templateList, false);
+            dao.saveToParseLater((ParseObject) templateList);
         }
         setLogPrefix("");
         allTemplatesCleaned = true;
@@ -1332,14 +1331,14 @@ public class CleanUpDataInconsistencies {
                 logAction("Set RepeatRule for WorkSlot");
                 if (executeCleanup) {
                     workSlot.setRepeatRuleInParse(repeatRule);
-                    dao.saveNew(workSlot);
+                    dao.saveToParseLater(workSlot);
                 }
             } else if (!Objects.equals(repeatRule, repRule)) {
                 log("RepeatRule references WorkSlot with wrong RepeatRule. WorkSlot=" + workSlot + " WRONG RepeatRule=" + repRule + " CORRECT RepeatRule" + repeatRule);
                 logAction("Set RepeatRule for WorkSlot");
                 if (executeCleanup) {
                     workSlot.setRepeatRuleInParse(repeatRule);
-                    dao.saveNew(workSlot);
+                    dao.saveToParseLater(workSlot);
                 }
             }
         } else if (elt instanceof Item) {
@@ -1350,14 +1349,14 @@ public class CleanUpDataInconsistencies {
                 logAction("Set RepeatRule for Item");
                 if (executeCleanup) {
                     item.setRepeatRuleInParse(repeatRule);
-                    dao.saveNew(item);
+                    dao.saveToParseLater(item);
                 }
             } else if (!Objects.equals(repeatRule, repRule)) {
                 log("RepeatRule references Item with wrong RepeatRule. Item=" + item + ", WRONG RepeatRule=" + repRule + ", CORRECT RepeatRule=" + repeatRule);
                 logAction("Set RepeatRule for Item");
                 if (executeCleanup) {
                     item.setRepeatRuleInParse(repeatRule);
-                    dao.saveNew(item);
+                    dao.saveToParseLater(item);
                 }
             }
         }
@@ -1431,7 +1430,7 @@ public class CleanUpDataInconsistencies {
                         repeatRule.setListOfDoneInstances(dones);
                         removeFromList = true;
                         i--;
-                        dao.saveNew(repeatRule);
+                        dao.saveToParseLater(repeatRule);
                     }
                 }
                 i++;
@@ -1455,7 +1454,7 @@ public class CleanUpDataInconsistencies {
                         repeatRule.setListOfUndoneInstances(undones);
                         removeFromList = true;
                         i--;
-                        dao.saveNew(repeatRule);
+                        dao.saveToParseLater(repeatRule);
                     }
                 }
                 i++;
@@ -1602,20 +1601,22 @@ public class CleanUpDataInconsistencies {
 //                cleanUpBadObjectReferencesItem(item);
                 if (executeCleanup) {
                     danglingItems.addToList(item);
-                    dao.saveNew((ParseObject) item);
+                    dao.saveToParseLater((ParseObject) item);
                 }
             } else if (owner.getItemIndex(item) == -1) {
                 cleanUpItem(item, owner, item.isTemplate(), executeCleanup);
                 if (executeCleanup) {
                     owner.addToList(item, true, false); //add to end of list, don't add owner as owner (already the case)
-                    dao.saveNew((ParseObject) owner);
+                    dao.saveToParseLater((ParseObject) owner);
                 }
             }
         }
 
         if (executeCleanup && danglingItems.getSize() > 0) {
             ItemListList.getInstance().addToList(danglingItems);
-            dao.saveNew(ItemListList.getInstance(), danglingItems);
+//            dao.saveNew(ItemListList.getInstance(), danglingItems);
+            dao.saveToParseLater(ItemListList.getInstance());
+            dao.saveToParseNow( danglingItems);
         }
         setLogPrefix("");
         allItemFromParseCleaned = true;
@@ -1713,7 +1714,7 @@ public class CleanUpDataInconsistencies {
                             List done = repeatRule.getListOfDoneInstances();
                             done.add(item);
                             repeatRule.setListOfDoneInstances(done);
-                            dao.saveNew(repeatRule);
+                            dao.saveToParseLater(repeatRule);
                         }
                     } else {
                         log("Item is Not Done but not in RepeatRule's Undone list. Item= \"" + item + "\", RepeatRule=" + repeatRule);
@@ -1722,7 +1723,7 @@ public class CleanUpDataInconsistencies {
                             List undone = repeatRule.getListOfUndoneInstances();
                             undone.add(item);
                             repeatRule.setListOfUndoneInstances(undone);
-                            dao.saveNew(repeatRule);
+                            dao.saveToParseLater(repeatRule);
                         }
                     }
                 }
@@ -1786,7 +1787,7 @@ public class CleanUpDataInconsistencies {
                     logAction("Removing template from category");
                     if (executeCleanup) {
                         cat.removeItemFromCategory(item, false);
-                        dao.saveNew((ParseObject) cat);
+                        dao.saveToParseLater((ParseObject) cat);
                     }
                 }
             } else {
@@ -1798,7 +1799,7 @@ public class CleanUpDataInconsistencies {
                     logAction("Adding Item to Category");
                     if (executeCleanup) {
                         cat.addItemToCategory(item, false);
-                        dao.saveNew((ParseObject) cat);
+                        dao.saveToParseLater((ParseObject) cat);
                     }
                 }
             }
@@ -1806,7 +1807,7 @@ public class CleanUpDataInconsistencies {
         List catItems = item.getCategories();
         if (cleanUpDuplicatesInList("Item \"" + item + "\" (ObjId=" + item.getObjectIdP() + ") list of categories", catItems, executeCleanup)) {
             if (executeCleanup) {
-                item.setCategories(catItems);
+                item.setCategoriesInParse(catItems);
             }
         }
 
@@ -1867,7 +1868,7 @@ public class CleanUpDataInconsistencies {
 //finally save
         if (executeCleanup) {
 //            item.setList(subtasks);
-            dao.saveNew(item);
+            dao.saveToParseLater(item);
         }
 
     }
@@ -2212,7 +2213,7 @@ public class CleanUpDataInconsistencies {
                 if (executeCleanup) {
                     workSlot.setRepeatRule(null); //remove reference to inexisting RepeatRule
                     modified = true;
-                    dao.saveNew(workSlot);
+                    dao.saveToParseLater(workSlot);
                 }
             } else {
                 if (!repeatRule.getListOfDoneInstances().contains(workSlot) && !repeatRule.getListOfUndoneInstances().contains(workSlot)) { //in neither lists
@@ -2225,7 +2226,7 @@ public class CleanUpDataInconsistencies {
                             List done = repeatRule.getListOfDoneInstances();
                             done.add(workSlot);
                             repeatRule.setListOfDoneInstances(done);
-                            dao.saveNew(repeatRule);
+                            dao.saveToParseLater(repeatRule);
                         }
                     } else {
                         ASSERT.that(workSlot.isInTheFuture(now) && !repeatRule.getListOfUndoneInstances().contains(workSlot),
@@ -2237,7 +2238,7 @@ public class CleanUpDataInconsistencies {
                             List undone = repeatRule.getListOfUndoneInstances();
                             undone.add(workSlot);
                             repeatRule.setListOfUndoneInstances(undone);
-                            dao.saveNew(repeatRule);
+                            dao.saveToParseLater(repeatRule);
                         }
                     }
                 }
@@ -2253,12 +2254,12 @@ public class CleanUpDataInconsistencies {
             if (executeCleanup) {
                 workSlot.setSource(null); //remove reference to inexisting Item
                 modified = true;
-                dao.saveNew(workSlot);
+                dao.saveToParseLater(workSlot);
             }
         }
 
         if (executeCleanup) {
-            dao.saveNew(workSlot);
+            dao.saveToParseLater(workSlot);
         }
 
         return modified;
@@ -2282,7 +2283,7 @@ public class CleanUpDataInconsistencies {
         if (cleanUpDuplicatesInList(owner + "/WorkSlots", workslots, executeCleanup)) {
             if (executeCleanup) {
                 owner.setWorkSlotsInParse(workslots);
-                dao.saveNew((ParseObject) owner);
+                dao.saveToParseLater((ParseObject) owner);
                 modified = true;
             }
         }
@@ -2290,7 +2291,7 @@ public class CleanUpDataInconsistencies {
         if (checkListForNotInParseSoftDeletedReferenceOwner(owner, (List) workslots, executeCleanup, false)) {
             if (executeCleanup) {
                 owner.setWorkSlotsInParse(workslots);
-                dao.saveNew((ParseObject) owner);
+                dao.saveToParseLater((ParseObject) owner);
                 modified = true;
             }
         }
@@ -2391,7 +2392,7 @@ public class CleanUpDataInconsistencies {
                     logAction("Add WorkSlot to its owner");
                     if (executeCleanup) {
                         owner.addWorkSlot(workSlot);
-                        DAO.getInstance().saveNew((ParseObject) owner);
+                        DAO.getInstance().saveToParseLater((ParseObject) owner);
                     }
                 }
             }
@@ -2430,7 +2431,7 @@ public class CleanUpDataInconsistencies {
             }
         }
         if (executeCleanup) {
-            dao.saveNew(updatedWorkSlots);
+            dao.saveToParseLater(updatedWorkSlots);
         }
         setLogPrefix("");
         allWorkSlotsCleaned = true;
@@ -2459,6 +2460,12 @@ public class CleanUpDataInconsistencies {
 
         log("-----------------------------------------------------");
         log("STARTING (execute=" + executeCleanup + ") ----------------------------");
+
+        log("-----------------------------------------------------");
+        log("CLEANING CACHE");
+        log("-----------------------------------------------------");
+        DAO.getInstance().resetAndDeleteAndReloadAllCachedData();
+//        Log.p("Finished updating cache");
 
         log("-----------------------------------------------------");
         log("ITEMLISTS");
@@ -2513,7 +2520,7 @@ public class CleanUpDataInconsistencies {
         Logger.getInstance().setLogLevel(Log.DEBUG);  //re-enable logging of Parse traffic
         long analysisEndTime = System.currentTimeMillis();
         log("********Duration go through data= " + MyDate.formatDurationStd(analysisEndTime - startAnalysisTime));
-        
+
         if (executeCleanup) {
             log("-----------------------------------------------------");
             log("SAVING CLEANED ELEMENTS -----------------------------");
@@ -2521,7 +2528,7 @@ public class CleanUpDataInconsistencies {
 
             long startSaveTime = System.currentTimeMillis();
 
-            DAO.getInstance().triggerParseUpdate(); //do all saves!
+            DAO.getInstance().saveNewTriggerUpdate(); //do all saves!
             long saveEndTime = System.currentTimeMillis();
 
             log("Duration go through data=" + MyDate.formatDurationStd(saveEndTime - startSaveTime));

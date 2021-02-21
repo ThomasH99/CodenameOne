@@ -3,6 +3,7 @@ package com.todocatalyst.todocatalyst;
 //import com.codename1.io.Log;
 import com.codename1.components.SpanLabel;
 import com.codename1.components.Switch;
+import com.codename1.io.Preferences;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
@@ -126,7 +127,6 @@ public class ScreenSettingsCommon extends MyForm {
 //        }
 //        return compForActionListener;
 //    }
-
 //    static Switch addSettingBooleanOLD(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnAction, Runnable onOffAction) {
 ////        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
 //        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
@@ -174,7 +174,6 @@ public class ScreenSettingsCommon extends MyForm {
 //        });
 //        return compForActionListener;
 //    }
-
     static void addSettingBoolean(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnAction, Runnable onOffAction) {
 //        cont.add(layoutSetting(prefEntry.getFieldScription(), compForActionListener, prefEntry.getHelpText()));
         cont.add(settingBoolean(parseIdMap2, prefEntry, onOnAction, onOffAction));
@@ -247,6 +246,27 @@ public class ScreenSettingsCommon extends MyForm {
         return layoutSetting(prefEntry.getFieldScription(), switchCmp, prefEntry.getHelpText());
     }
 
+    private static void hideShowAll(boolean show, Component... settings) {
+        if (settings.length > 0) {
+            for (Component setting : settings) {
+                setting.setHidden(!show);
+            }
+        }
+        Container parent = settings[0].getParent();
+        if (parent != null) {
+            parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+        } else {
+            if (Display.getInstance().getCurrent() != null) {
+                Display.getInstance().getCurrent().revalidateLater();
+            }
+        }
+    }
+
+    static Component settingBoolean(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, boolean showWhen, Component... settings) {
+        hideShowAll(prefEntry.getBoolean() == showWhen, settings);
+        return settingBoolean(parseIdMap2, prefEntry, () -> hideShowAll(prefEntry.getBoolean() == showWhen, settings), () -> hideShowAll(prefEntry.getBoolean() == showWhen, settings));
+    }
+
     static Component settingBoolean(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
         return settingBoolean(parseIdMap2, prefEntry, null, null);
     }
@@ -295,7 +315,7 @@ public class ScreenSettingsCommon extends MyForm {
 //            }));
 //</editor-fold>
             MyDurationPicker durationPicker = new MyDurationPicker(prefEntry.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
-            durationPicker.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) durationPicker.getDuration() / MyDate.MINUTE_IN_MILLISECONDS)));
+            durationPicker.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) (durationPicker.getDuration() / MyDate.MINUTE_IN_MILLISECONDS))));
             cont.add(rightAdj, durationPicker);
 
             String helpText = prefEntry.getHelpText();
@@ -309,7 +329,7 @@ public class ScreenSettingsCommon extends MyForm {
 //                MyPrefs.setInt(prefEntry, i);
 //            })).add(BorderLayout.SOUTH, new SpanLabel(prefEntry.getHelpText())));
             MyDurationPicker durationPicker2 = new MyDurationPicker(prefEntry.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
-            durationPicker2.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) durationPicker2.getDuration() / MyDate.MINUTE_IN_MILLISECONDS)));
+            durationPicker2.addActionListener((e) -> MyPrefs.setInt(prefEntry, ((int) (durationPicker2.getDuration() / MyDate.MINUTE_IN_MILLISECONDS))));
             cont.add(layoutSetting(prefEntry.getFieldScription(), durationPicker2, prefEntry.getHelpText()));
         }
     }
@@ -435,7 +455,7 @@ public class ScreenSettingsCommon extends MyForm {
             }, unselectAllowed, verticalLayout);
             compGroup.addActionListener(onAction);
             if (cont != null) {
-                cont.add(layoutN(prefEntry.getFieldScription(), compGroup,
+                cont.add(layoutN(null, prefEntry.getFieldScription(), compGroup,
                         prefEntry.getHelpText(), true));
             }
             return compGroup;

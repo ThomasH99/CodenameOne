@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.io.Log;
 import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Display;
 import com.codename1.ui.spinner.Picker;
@@ -22,6 +23,8 @@ class MyDatePicker extends Picker implements SwipeClear {
     private int timeOfSelectedDay;
     public final static int START_OF_SELECTED_DAY = 0;
     public final static int END_OF_SELECTED_DAY = 1;
+
+    private boolean inputValidated; //true if the user explicitely validated the value by pressing Done?
 
 //    MyDatePicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetDate get, MyForm.PutDate set) {
 //        this(null, parseIdMap, get, set);
@@ -43,6 +46,10 @@ class MyDatePicker extends Picker implements SwipeClear {
                 return MyDate.formatDateNew(date); //
             }
         });
+        addActionListener((e) -> {
+            Log.p("ActionListener called on MyDateAndTimePicker, actionEvent=" + e);
+            inputValidated = true;
+        });
     }
 
     MyDatePicker(Date date) {
@@ -59,7 +66,7 @@ class MyDatePicker extends Picker implements SwipeClear {
         if (zeroValuePattern != null) {
             this.zeroValuePattern = zeroValuePattern;
         }
-        ASSERT.that(timeOfSelectedDay == START_OF_SELECTED_DAY || this.timeOfSelectedDay == END_OF_SELECTED_DAY);
+        ASSERT.that(timeOfSelectedDay == START_OF_SELECTED_DAY || timeOfSelectedDay == END_OF_SELECTED_DAY);
         this.timeOfSelectedDay = timeOfSelectedDay;
     }
 
@@ -97,7 +104,7 @@ class MyDatePicker extends Picker implements SwipeClear {
 //</editor-fold>
 //    @Override
     protected void updateValue() {
-        Date date = getDate();
+        Date date = (Date)getValue();
         if (date != null && date.getTime() == 0 && zeroValuePattern != null) {
             setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
         } else {
@@ -108,12 +115,16 @@ class MyDatePicker extends Picker implements SwipeClear {
     @Override
     public void pressed() {
         //set date to Now if empty when button is clicked
-        if (getDate().getTime() == 0) {
+        if (getValue() == null || ((Date)getValue()).getTime() == 0) {
+            inputValidated = false;
 //                setDate(new Date());
+            if (getValue() == null) {
+                setDate(new MyDate());
+            }
             if (timeOfSelectedDay == END_OF_SELECTED_DAY) {
-                getDate().setTime(MyDate.getEndOfDay(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+                ((Date)getValue()).setTime(MyDate.getEndOfDay(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
             } else if (timeOfSelectedDay == START_OF_SELECTED_DAY) {
-                getDate().setTime(MyDate.getStartOfDay(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+                ((Date)getValue()).setTime(MyDate.getStartOfDay(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
             }
         }
         super.pressed();
@@ -197,4 +208,23 @@ class MyDatePicker extends Picker implements SwipeClear {
     public void clearFieldValue() {
         swipeClear();
     }
+
+//    @Override
+//    public Object getValueXXX() {
+//        if (inputValidated) {
+//            return super.getValue();
+//        } else {
+//            return null;
+//        }
+//    }
+
+    @Override
+    public Date getDate() {
+        if (inputValidated) {
+            return super.getDate();
+        } else {
+            return null;
+        }
+    }
+
 };

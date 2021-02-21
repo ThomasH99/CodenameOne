@@ -5,6 +5,7 @@ import com.codename1.components.Switch;
 import com.codename1.io.Log;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
+import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
@@ -35,6 +36,7 @@ public class PickerDialog {
         dlg.setDialogUIID("PickerDialog");
         dlg.setTitle(title);
         dlg.setLayout(BorderLayout.center());
+        dlg.setDisposeWhenPointerOutOfBounds(true); //=> 'cancel' dialog by clicking outside its bounds
 
 //        spinner3D.getPreferredSize();
         Container cont = new Container(BoxLayout.y());
@@ -84,7 +86,8 @@ public class PickerDialog {
      * @return
      */
     public Object show() {
-        Command cmd = dlg.showDialog();
+//        Command cmd = dlg.showDialog();
+        Command cmd = dlg.showPacked(BorderLayout.CENTER, true);
         if (cmd == doneCmd) {
             switch (type) {
                 case Display.PICKER_TYPE_DATE_AND_TIME:

@@ -5,8 +5,10 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.compat.java.util.Objects;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Random;
 
 /**
  *
@@ -15,10 +17,12 @@ import java.util.List;
 public class MyUtil {
 
     /**
-    clean up text for tasks, itemlists or workslots to avoid starting or ending with newlines or spaces (would
-    make it easier to have duplicate names without realizing)
-    @param inputStr
-    @return 
+     * clean up text for tasks, itemlists or workslots to avoid starting or
+     * ending with newlines or spaces (would make it easier to have duplicate
+     * names without realizing)
+     *
+     * @param inputStr
+     * @return
      */
     public static String removeTrailingPrecedingSpacesNewLinesEtc(String inputStr) {
         //remove spaces in start of string:
@@ -46,9 +50,11 @@ public class MyUtil {
     }
 
     /**
-  /Users/thomashjelm/NetBeansProjects/todocatalyst/src/com/todocatalyst/todocatalyst/TodoCatalystParse.java:538: error: cannot find symbol
-    @param inputStr
-    @return string roughly limited to 150chars (Google Analytics max length)
+     * /Users/thomashjelm/NetBeansProjects/todocatalyst/src/com/todocatalyst/todocatalyst/TodoCatalystParse.java:538:
+     * error: cannot find symbol
+     *
+     * @param inputStr
+     * @return string roughly limited to 150chars (Google Analytics max length)
      */
     public static String keepMethodCallInStackTrace(String inputStr) {
         return inputStr;
@@ -110,11 +116,11 @@ public class MyUtil {
 ////        inputStr = inputStr.replace('\n',""); //remove 
 //        return inputStr;
 //    }
-
     /**
-    clean a string so it can for example be used with Google Analytics
-    @param inputStr
-    @return 
+     * clean a string so it can for example be used with Google Analytics
+     *
+     * @param inputStr
+     * @return
      */
     public static String cleanToSingleLineNoSpacesString(String inputStr) {
         //remove spaces in start of string:
@@ -140,9 +146,10 @@ public class MyUtil {
     }
 
     /**
-    https://stackoverflow.com/questions/11208479/how-do-i-initialize-a-byte-array-in-java
-    @param s
-    @return 
+     * https://stackoverflow.com/questions/11208479/how-do-i-initialize-a-byte-array-in-java
+     *
+     * @param s
+     * @return
      */
     public static byte[] hexStringToByteArray(String s) {
         int len = s.length();
@@ -155,7 +162,8 @@ public class MyUtil {
     }
 
     public static boolean eql(Object a, Object b) {
-        return a == null ? b == null : a.equals(b);
+//        return a == null ? b == null : a.equals(b);
+        return Objects.equals(a, b) ;
     }
 
     public static boolean neql(Object a, Object b) {
@@ -163,19 +171,23 @@ public class MyUtil {
     }
 
     /**
-    return true for an empty or single-element list, and if all elements are smaller than their successor based on comp
-    @param list
-    @param comp
-    @return 
+     * return true for an empty or single-element list, and if all elements are
+     * smaller than their successor based on comp
+     *
+     * @param list
+     * @param comp
+     * @return
      */
     public static boolean isSorted(List list, Comparator comp) {
         Object oPrev = null;
         for (Object o : list) {
-            if (oPrev == null)
+            if (oPrev == null) {
                 oPrev = o; //on first iteration, simply store first element in list
-            else {
+            } else {
 //                if (!(comp.compare(oPrev, o) > 0)) return false;
-                if ((comp.compare(oPrev, o) < 0)) return false;
+                if ((comp.compare(oPrev, o) < 0)) {
+                    return false;
+                }
                 oPrev = o;
             }
         }
@@ -203,11 +215,13 @@ public class MyUtil {
     }
 
     /**
-     replace first occurrence of subStr (if found) with newStr, if not found return the original string s unchanged
-     @param s
-     @param subStr
-     @param newStr
-     @return 
+     * replace first occurrence of subStr (if found) with newStr, if not found
+     * return the original string s unchanged
+     *
+     * @param s
+     * @param subStr
+     * @param newStr
+     * @return
      */
     public static String replaceSubstring(String s, String subStr, String newStr) {
         int pos = s.indexOf(subStr);
@@ -218,5 +232,26 @@ public class MyUtil {
         }
         return s;
     }
-    
+
+    String randomString() {
+//  if (size == 0) {
+//    throw new Error('Zero-length randomString is useless.');
+//  }
+        String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ" + "abcdefghijklmnopqrstuvwxyz" + "0123456789-+"; //len 0 26+26+10+2 = 64 = 6 bits
+        String objectId = "";
+//  const bytes = randomjava yBtes(size);
+        Random rd = new Random();
+//  Math.random
+//      byte[] bytes = new byte[7];
+        long l = rd.nextLong(); //64bits / 7 = 9 chars
+        long mask = 63;
+        int len = chars.length();
+
+        for (int i = 0; i < 7; ++i) {
+            objectId += chars.charAt((int) (l & mask));
+            l = l >>> 6; //use lowest 6 bits for each number
+        }
+        return objectId;
+    }
+
 }

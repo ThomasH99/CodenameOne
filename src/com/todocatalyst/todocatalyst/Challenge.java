@@ -5,6 +5,8 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.ui.Font;
+
 /**
  *
  * @author thomashjelm
@@ -42,12 +44,14 @@ public enum Challenge {
 
     static String[] getDescriptionList() {
 //            return new String[]{VERY_EASY.getDescription(), EASY.getDescription(), AVERAGE.getDescription(), HARD.getDescription(), VERY_HARD.getDescription()};
-        return new String[]{VERY_EASY.description, EASY.description, AVERAGE.description, HARD.description, VERY_HARD.description};
+//        return new String[]{VERY_EASY.description, EASY.description, AVERAGE.description, HARD.description, VERY_HARD.description};
+        return new String[]{EASY.description, HARD.description};
     }
 
     static String[] getDescriptionList(boolean shortLabels) {
         if (shortLabels) {
-            return new String[]{VERY_EASY.shortDescription, EASY.shortDescription, AVERAGE.shortDescription, HARD.shortDescription, VERY_HARD.shortDescription};
+//            return new String[]{VERY_EASY.shortDescription, EASY.shortDescription, AVERAGE.shortDescription, HARD.shortDescription, VERY_HARD.shortDescription};
+            return new String[]{EASY.shortDescription, HARD.shortDescription};
         } else //            return new String[]{VERY_EASY.getDescription(), EASY.getDescription(), AVERAGE.getDescription(), HARD.getDescription(), VERY_HARD.getDescription()};
         {
             return getDescriptionList();
@@ -55,12 +59,24 @@ public enum Challenge {
     }
 
     static int[] getDescriptionValues() {
-        return new int[]{VERY_EASY.ordinal(), EASY.ordinal(), AVERAGE.ordinal(), HARD.ordinal(), VERY_HARD.ordinal()};
+//        return new int[]{VERY_EASY.ordinal(), EASY.ordinal(), AVERAGE.ordinal(), HARD.ordinal(), VERY_HARD.ordinal()};
+        return new int[]{EASY.ordinal(), HARD.ordinal()};
     }
 
     static String[] getNameList() {
 //            return new String[]{VERY_EASY.getDescription(), EASY.getDescription(), AVERAGE.getDescription(), HARD.getDescription(), VERY_HARD.getDescription()};
-        return new String[]{VERY_EASY.name(), EASY.name(), AVERAGE.name(), HARD.name(), VERY_HARD.name()};
+//        return new String[]{VERY_EASY.name(), EASY.name(), AVERAGE.name(), HARD.name(), VERY_HARD.name()};
+        return new String[]{EASY.name(), HARD.name()};
+    }
+
+    static char[] getIconList() {
+//            return new String[]{VERY_EASY.getDescription(), EASY.getDescription(), AVERAGE.getDescription(), HARD.getDescription(), VERY_HARD.getDescription()};
+//        return new String[]{VERY_EASY.name(), EASY.name(), AVERAGE.name(), HARD.name(), VERY_HARD.name()};
+        return new char[]{Icons.iconChallengeEasyCust, Icons.iconChallengeHardCust};
+    }
+
+    static Font getIconFont() {
+        return Icons.myIconFont;
     }
 
     char getIcon() {
@@ -68,11 +84,13 @@ public enum Challenge {
             case VERY_EASY:
                 return Icons.iconChallengeVeryEasy;
             case EASY:
-                return Icons.iconChallengeEasy;
+//                return Icons.iconChallengeEasy;
+                return Icons.iconChallengeEasyCust;
             case AVERAGE:
                 return Icons.iconChallengeAverage;
             case HARD:
-                return Icons.iconChallengeHard;
+//                return Icons.iconChallengeHard;
+                return Icons.iconChallengeHardCust;
             case VERY_HARD:
                 return Icons.iconChallengeVeryHard;
         }
@@ -114,5 +132,30 @@ public enum Challenge {
             }
         }
         return null;
+    }
+    
+    public static int  compare(Challenge d1, Challenge d2) {
+        if (d1 == null) {
+            if (d2 == null) {
+                return 0;
+            } else if (d2 == Challenge.HARD) {
+                return -1;
+            } else { //(d2==DreadFunValue.DREAD)
+                return 1;
+            }
+        } else {
+            if (d2 == null) {
+                if (d1 == Challenge.HARD) {
+                    return 1;
+                } else { //(d2==DreadFunValue.DREAD)
+                    if (Config.TEST) {
+                        ASSERT.that(d1 == Challenge.EASY);
+                    }
+                    return -1;
+                }
+            } else {
+                return (d1.compareTo(d2));
+            }
+        }
     }
 }

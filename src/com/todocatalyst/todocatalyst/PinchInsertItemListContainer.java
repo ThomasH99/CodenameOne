@@ -22,7 +22,7 @@ import com.parse4cn1.ParseObject;
  *
  * @author Thomas
  */
-public class PinchInsertItemListContainer extends PinchInsertContainer  {
+public class PinchInsertItemListContainer extends PinchInsertContainer {
 
     private MyTextField2 textEntryField;
     private MyForm myForm;
@@ -33,7 +33,8 @@ public class PinchInsertItemListContainer extends PinchInsertContainer  {
     private Command editNewCmd;
 //    private Container cont=new Container(new BorderLayout());
 
-    private final static String ENTER_ITEMLIST = "New " + ItemList.ITEM_LIST; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+//    private final static String ENTER_ITEMLIST = "New " + ItemList.ITEM_LIST; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+    private final static String ENTER_ITEMLIST = "Add " + ItemList.ITEM_LIST; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
 
     /**
      *
@@ -85,6 +86,8 @@ public class PinchInsertItemListContainer extends PinchInsertContainer  {
 
         textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
         textEntryField.setUIID("ListPinchInsertTextField");
+        textEntryField.putClientProperty("iosHideToolbar", Boolean.TRUE); //hide toolbar and only show Done button for ios virtual keyboard
+
         textEntryField.setHint(ENTER_ITEMLIST);
         textEntryField.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
 //        Container westCont = new Container(BoxLayout.x());
@@ -136,7 +139,8 @@ public class PinchInsertItemListContainer extends PinchInsertContainer  {
                 new ScreenItemListProperties(newItemList, (MyForm) getComponentForm(), () -> {
                     insertNewItemListAndSaveChanges(newItemList);
                     myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
-                    if(false)myForm.refreshAfterEdit();
+                    closePinchContainer(true);
+//                    if(false)myForm.refreshAfterEdit();
                 }).show();
             } else {
                 ASSERT.that(false, "Something went wrong here, what to do? ...");
@@ -205,10 +209,12 @@ public class PinchInsertItemListContainer extends PinchInsertContainer  {
                 "old value left for SAVE_LOCALLY_INSERT_BEFORE_REF_ELT=" + myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT));
 //        DAO.getInstance().saveNew((ParseObject)newItemList, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP()));
 //        DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewItemLists,true);
-        DAO.getInstance().saveNew((ParseObject) newItemList);
-        DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewItemLists);
-        DAO.getInstance().saveNewExecuteUpdate();
-        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP());
+//        DAO.getInstance().saveNew((ParseObject) newItemList);
+//        DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewItemLists);
+//        DAO.getInstance().saveNewTriggerUpdate();
+        DAO.getInstance().saveToParseNow((ParseObject) newItemList);
+//        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP());
+        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY, newItemList.getGuid());
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
@@ -219,8 +225,9 @@ public class PinchInsertItemListContainer extends PinchInsertContainer  {
         //UI: close the text field
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(this);
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
-        if (true||stopAddingInlineContainers) {
-            if(false)myForm.setPinchInsertContainer(null); //remove this as inlineContainer
+        if (true || stopAddingInlineContainers) {
+//            if(false)
+            myForm.setPinchInsertContainer(null); //remove this as inlineContainer
 //            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
             myForm.previousValues.removePinchInsertKeys(); //delete the marker on exit
 //            ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated

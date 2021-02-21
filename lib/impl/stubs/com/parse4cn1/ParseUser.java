@@ -2,7 +2,7 @@ package com.parse4cn1;
 
 
 /**
- *  The ParseUser is a local representation of user data that can be saved and 
+ *  The ParseUser is a local representation of user data that can be saved and
  *  retrieved from the Parse cloud.
  */
 public class ParseUser extends ParseObject {
@@ -23,6 +23,7 @@ public class ParseUser extends ParseObject {
 
 	/**
 	 *  Sets the username. Usernames cannot be null or blank.
+	 * 
 	 *  @param username The username to be set.
 	 */
 	public void setUsername(String username) {
@@ -41,9 +42,9 @@ public class ParseUser extends ParseObject {
 	}
 
 	/**
-	 *  Retrieves the session token associated with this user. Only logged in 
+	 *  Retrieves the session token associated with this user. Only logged in
 	 *  users have a valid session.
-	 *  
+	 * 
 	 *  @return The session token associated with this user.
 	 */
 	public String getSessionToken() {
@@ -54,7 +55,7 @@ public class ParseUser extends ParseObject {
 
 	/**
 	 *  Retrieves the user associated with {@code sessionToken}.
-	 *  
+	 * 
 	 *  @param sessionToken A session token associated with a ParseUser.
 	 *  @return The ParseUsser associated with {@code sessionToken}.
 	 *  @throws ParseException if anything goes wrong.
@@ -63,50 +64,52 @@ public class ParseUser extends ParseObject {
 	}
 
 	/**
-	 *  Requests a password reset email to be sent to the specified email address 
-	 *  associated with the user account. This email allows the user to securely 
+	 *  Requests a password reset email to be sent to the specified email address
+	 *  associated with the user account. This email allows the user to securely
 	 *  reset their password on the Parse site.
-	 *  
-	 *  @param email The email address associated with the user that forgot their password.
+	 * 
+	 *  @param email The email address associated with the user that forgot their
+	 *  password.
 	 *  @throws ParseException if anything goes wrong.
 	 */
 	public static void requestPasswordReset(String email) {
 	}
 
 	/**
-	 *  Checks whether the ParseUser has been authenticated on this device. 
-	 *  This will be true if the ParseUser was obtained via a logIn or signUp method. 
-	 *  Only an authenticated ParseUser can be saved (with altered attributes) and deleted.
-	 *  
+	 *  Checks whether the ParseUser has been authenticated on this device. This
+	 *  will be true if the ParseUser was obtained via a logIn or signUp method.
+	 *  Only an authenticated ParseUser can be saved (with altered attributes)
+	 *  and deleted.
+	 * 
 	 *  @return {@code true} if this user is authenticated.
 	 */
 	public boolean isAuthenticated() {
 	}
 
 	/**
-	 *  Signs up a new user. You should call this instead of {@link ParseObject#save()} 
-	 *  for new ParseUsers.
+	 *  Signs up a new user. You should call this instead of
+	 *  {@link ParseObject#save()} for new ParseUsers.
 	 *  <p>
 	 *  A username and password must be set before calling signUp.
-	 *  
+	 * 
 	 *  @throws ParseException if anything goes wrong
 	 */
 	public void signUp() {
 	}
 
 	/**
-	 *  Logs the current user in. If successful, a session is created for this 
+	 *  Logs the current user in. If successful, a session is created for this
 	 *  user which can be retrieved via {@link #getSessionToken()}.
-	 *  
+	 * 
 	 *  @throws ParseException if anything goes wrong.
 	 */
 	public void login() {
 	}
 
 	/**
-	 *  Logs this user out if they were previously logged in, for example, 
-	 *  via a {@link #signUp()} or {@link #login()} call.
-	 *  
+	 *  Logs this user out if they were previously logged in, for example, via a
+	 *  {@link #signUp()} or {@link #login()} call.
+	 * 
 	 *  @throws ParseException if anything goes wrong.
 	 */
 	public void logout() {

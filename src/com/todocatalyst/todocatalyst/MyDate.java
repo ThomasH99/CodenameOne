@@ -235,7 +235,6 @@ public class MyDate extends Date {
 ////        return (timeWithFlags & topmostSignbit) == 0 ? (timeWithFlags & timeMask) : ((timeWithFlags & timeMask) | flagMask); //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
 //        return (timeWithFlags); //filter out all bit flags from long time. If topmost negative bit set, then number is assumed negative and the topmost bits are all set to one to recreate original negative number
 //    }
-
 //    private long getTimeWithFlags() {
 //        return timeWithFlags;
 //    }
@@ -244,7 +243,6 @@ public class MyDate extends Date {
 //        this.timeWithFlags = time;
 //        super.setTime(time);
 //    }
-
     /**
      * set time to value, keep flags. Used internally to update the time
      * variable w/o changing the time/date bit flags
@@ -840,7 +838,6 @@ public class MyDate extends Date {
 ////        setTime(getTimeWithFlags() + days * DAY_IN_MILLISECONDS);
 //        addToTimeKeepFlags(days * DAY_IN_MILLISECONDS);
 //    }
-
 //    public void subtractDays(int days) {
 //        time -= days * DAY_IN_MILLISECONDS;
 //    }
@@ -849,7 +846,6 @@ public class MyDate extends Date {
 ////        setTime(getTime() + minutes * MINUTE_IN_MILLISECONDS);
 //        addToTimeKeepFlags(minutes * MINUTE_IN_MILLISECONDS);
 //    }
-
 //    public void subtractMinutes(int minutes) { //-use addMinutes(-3)
 //        time -= minutes * MINUTE_IN_MILLISECONDS;
 //    }
@@ -858,7 +854,6 @@ public class MyDate extends Date {
 ////        setTime(getTime() + hours * HOUR_IN_MILISECONDS);
 //        addToTimeKeepFlags(hours * HOUR_IN_MILISECONDS);
 //    }
-
 //    public void subtractHours(int hours) {
 //        time -= hours * HOUR_IN_MILISECONDS;
 //    }
@@ -875,7 +870,6 @@ public class MyDate extends Date {
 //        }
 //        return dayOfMonth;
 //    }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * moves date one month back. If setToFirstInMonth then also sets day of
@@ -1052,7 +1046,6 @@ public class MyDate extends Date {
 //        v = calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH);
 //        return v;
 //    }
-
     /**
      * eg first Monday of month will return 1, 3rd Sunday 2ill return 3
      *
@@ -1717,10 +1710,16 @@ public class MyDate extends Date {
         return formatDateSmart(date, forceShowTimeOfDay, forceShowPastDatesAsSmart, false);
     }
 
-    final static String timeOfDateFormat = "H'h'mm";
-    final static String timeOfDateFormatPrecSpace = " H'h'mm";
+//    final static String timeOfDateFormat = "H'h'mm";
+//    final static String timeOfDateFormatPrecSpace = " H'h'mm";
+    final static String timeOfDateFormat = "H:mm";
+    final static String timeOfDateFormatPrecSpace = " H:mm";
 
     static public String formatDateSmart(Date date, boolean forceShowTimeOfDay, boolean forceShowPastDatesAsSmart, boolean showDayOfWeek) {
+        return formatDateSmart(date, forceShowTimeOfDay, forceShowPastDatesAsSmart, showDayOfWeek, false);
+    }
+
+    static public String formatDateSmart(Date date, boolean forceShowTimeOfDay, boolean forceShowPastDatesAsSmart, boolean showDayOfWeek, boolean alwaysHideTimeOfDay) {
         //SimpleDateFormat("EEE, yyyy-MM-dd KK:mm a"); //http://docs.oracle.com/javase/6/docs/api/java/text/SimpleDateFormat.html
 
 //        long now = MyDate.currentTimeMillis();
@@ -1743,12 +1742,12 @@ public class MyDate extends Date {
 //        if (date.getTime() < startOfToday.getTime() && date.getTime() >= startOfYesterday.getTime())
         //within today(before midnight/*next 24h*?/till 5 in the morning for night owls?!): "13h14" / "1h14am"
         if (MyPrefs.smartDatesShowOnlyTimeOfDayToday.getBoolean() && isToday(date)) { //            return new SimpleDateFormat("HH'h'mm").format(date);
-            return "Today " + (new SimpleDateFormat(timeOfDateFormat).format(date));
+            return "Today " + (alwaysHideTimeOfDay ? "" : (new SimpleDateFormat(timeOfDateFormat).format(date)));
         }
 
         if (MyPrefs.smartDatesShowYesterdayAsYesterday.getBoolean() && isYesterday(date)) {
             return "Yesterday"
-                    + ((true || MyPrefs.smartDatesShowTimeOfDayForPastDates.getBoolean() || forceShowTimeOfDay)
+                    + (!alwaysHideTimeOfDay && (true || MyPrefs.smartDatesShowTimeOfDayForPastDates.getBoolean() || forceShowTimeOfDay)
                     ? new SimpleDateFormat(timeOfDateFormatPrecSpace).format(date) : "");
         }
 
@@ -1759,7 +1758,7 @@ public class MyDate extends Date {
         if ((MyPrefs.smartDatesShowOnlyWeekdayAndTimeForNextcomingWeek.getBoolean() && isNextcomingWeek(date))) {//  || (forceShowPastDatesAsSmart && isPreviousWeek(date))) { //previous week
 //            return new SimpleDateFormat("EEE HH'h'mm").format(date);
 //            return new SimpleDateFormat("EEE H'h'mm").format(date);
-            return new SimpleDateFormat("EEE" + timeOfDateFormatPrecSpace + (forceShowTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date);
+            return new SimpleDateFormat("EEE" + timeOfDateFormatPrecSpace + (forceShowTimeOfDay && !alwaysHideTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date);
         }
 
         //within next 365 days: "Jun11"
@@ -1767,13 +1766,13 @@ public class MyDate extends Date {
 //            if (date.getTime() < startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * 365) {
         if (MyPrefs.smartDatesShowOnlyMonDayForNext365Days.getBoolean() && isNextcomingYear(date)) {// || (forceShowPastDatesAsSmart && isPreviousYear(date))) {
 //            return new SimpleDateFormat("MMM dd" + (forceShowTimeOfDay ? " H'h'mm" : "")).format(date);
-            return new SimpleDateFormat((showDayOfWeek ? "EEE " : "") + "MMM dd" + (forceShowTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date);
+            return new SimpleDateFormat((showDayOfWeek ? "EEE " : "") + "MMM dd" + (forceShowTimeOfDay && !alwaysHideTimeOfDay? timeOfDateFormatPrecSpace : "")).format(date);
         }
 
         //beyond 365 days: "Jun'18"???
 //        return new SimpleDateFormat("MMM''yy").format(date); //"Jun'18"
 //        return new SimpleDateFormat("dd'/'MM'/'yy" + (forceShowTimeOfDay ? " H'h'mm" : "")).format(date); //"Jun'18"
-        return new SimpleDateFormat((showDayOfWeek ? "EEE " : "") + "dd'/'MM'/'yy" + (forceShowTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date); //"Jun'18"
+        return new SimpleDateFormat((showDayOfWeek ? "EEE " : "") + "dd'/'MM'/'yy" + (forceShowTimeOfDay && !alwaysHideTimeOfDay? timeOfDateFormatPrecSpace : "")).format(date); //"Jun'18"
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
     //    private static String formatDateNewXX(MyDate date, MyDate referenceDate) { //, boolean useYesterdayTodayTomorrow) {
@@ -1943,10 +1942,10 @@ public class MyDate extends Date {
 //        boolean SHOW_SECONDS = false;
 //        boolean SHOW_LEADING_ZERO_FOR_HOUR = true;
         String s; // = "";
-        int hours = (int) hoursMinutesInMilliSeconds / MyDate.HOUR_IN_MILISECONDS;//3600000;
-        long restAfterHours = (int) hoursMinutesInMilliSeconds % MyDate.HOUR_IN_MILISECONDS;
+        int hours = (int) (hoursMinutesInMilliSeconds / MyDate.HOUR_IN_MILISECONDS);//3600000;
+        long restAfterHours = (int) (hoursMinutesInMilliSeconds % MyDate.HOUR_IN_MILISECONDS);
 //        if (hours > 0) {
-        int minutes = (int) restAfterHours / MyDate.MINUTE_IN_MILLISECONDS; //60000;
+        int minutes = (int) (restAfterHours / MyDate.MINUTE_IN_MILLISECONDS); //60000;
         boolean onlySecondsToShow = (minutes == 0 && hours == 0); //if only seconds, always show them, e.g. 0:01
 //        boolean showLeadingZeroForMinutes = minutes < 10 && !(hours == 0 && dontShowZeroHours) ; // hours != 0 || !dontShowZeroHours
 //            return "" + hours + "h" + (minutes < 10 ? "0" + minutes : "" + minutes);
@@ -1956,7 +1955,7 @@ public class MyDate extends Date {
                 //https://english.stackexchange.com/questions/114205/english-notation-for-hour-minutes-and-seconds says: minutes *can* be 3', but 3m is more common
                 + (minutes < 10 && (hours != 0 || !dontShowZeroHours) ? "0" + minutes : "" + minutes
                         + (dontShowZeroHours && !showSeconds ? ":" : "")); //don't show '0' for 3 min, e.g. "3m" instead of "0h03"
-        int seconds = (int) (restAfterHours % MyDate.MINUTE_IN_MILLISECONDS) / MyDate.SECOND_IN_MILLISECONDS; //1000;
+        int seconds = (int) ((restAfterHours % MyDate.MINUTE_IN_MILLISECONDS) / MyDate.SECOND_IN_MILLISECONDS); //1000;
         if (roundUpMinutes && !showSeconds && seconds >= 30) {
             minutes++;
         }
@@ -1995,13 +1994,13 @@ public class MyDate extends Date {
      */
     static String formatDurationStd(long hoursMinutesInMilliSeconds, boolean showSeconds) {
         StringBuilder s = new StringBuilder("");
-        int hours = (int) hoursMinutesInMilliSeconds / MyDate.HOUR_IN_MILISECONDS;//3600000;
+        int hours = (int) (hoursMinutesInMilliSeconds / MyDate.HOUR_IN_MILISECONDS);//3600000;
 
-        long restAfterHours = (int) hoursMinutesInMilliSeconds % MyDate.HOUR_IN_MILISECONDS;
-        int minutes = (int) restAfterHours / MyDate.MINUTE_IN_MILLISECONDS; //60000;
+        long restAfterHours = (int) (hoursMinutesInMilliSeconds % MyDate.HOUR_IN_MILISECONDS);
+        int minutes = (int) (restAfterHours / MyDate.MINUTE_IN_MILLISECONDS); //60000;
 
-        int restAfterMinutes = (int) hoursMinutesInMilliSeconds % MyDate.MINUTE_IN_MILLISECONDS; //60000;
-        int seconds = (int) restAfterMinutes / MyDate.SECOND_IN_MILLISECONDS; //60000;
+        int restAfterMinutes = (int) (restAfterHours % MyDate.MINUTE_IN_MILLISECONDS); //60000;
+        int seconds = (int) (restAfterMinutes / MyDate.SECOND_IN_MILLISECONDS); //60000;
 
         s.append(hours).append(':');
         if (minutes >= 10) {
@@ -2033,9 +2032,9 @@ public class MyDate extends Date {
      */
     public static String formatDurationShort(long hoursMinutesInMilliSeconds, boolean showZeroDurationAsZeroMinutes) {
         StringBuilder s = new StringBuilder("");
-        int hours = (int) hoursMinutesInMilliSeconds / MyDate.HOUR_IN_MILISECONDS;//3600000;
-        long restAfterHours = (int) hoursMinutesInMilliSeconds % MyDate.HOUR_IN_MILISECONDS;
-        int minutes = (int) restAfterHours / MyDate.MINUTE_IN_MILLISECONDS; //60000;
+        int hours = (int) (hoursMinutesInMilliSeconds / MyDate.HOUR_IN_MILISECONDS);//3600000;
+        long restAfterHours = (int) (hoursMinutesInMilliSeconds % MyDate.HOUR_IN_MILISECONDS);
+        int minutes = (int) (restAfterHours / MyDate.MINUTE_IN_MILLISECONDS); //60000;
         if (hours > 0) {
             s.append(hours).append('h');
             if (minutes >= 10) {
@@ -2062,16 +2061,13 @@ public class MyDate extends Date {
 //    private static String formatDateL10NShortXXX(long timeInMilliSeconds, boolean dateOnlyNoTime) {
 //        return formatDateL10NShortXXX(timeInMilliSeconds); //TODO!!!! write code to return date without time
 //    }
-
 //    private static String formatDateL10NShortXXX(long timeInMilliSeconds) {
 ////        return L10NManager.getInstance().formatDateShortStyle(new Date(timeInMilliSeconds));
 //        return formatDateL10NShortXXX(new MyDate(timeInMilliSeconds));
 //    }
-
 //    private static String formatDateL10NShortXXX(Date date) {
 //        return L10NManager.getInstance().formatDateShortStyle(date);
 //    }
-
     public static String addNthPostFix(String str) {
         char lastChiffer = str.charAt(str.length() - 1);
 //        if (Settings.getInstance().getLocale().equals("en")) {
@@ -2410,7 +2406,7 @@ public class MyDate extends Date {
 //            return false;
 //        }
 //        return ((Date) date).getTime() == getTime();
-return false;
+        return false;
     }
 // <editor-fold defaultstate="collapsed" desc="comment">
 //        / ================================================== ==

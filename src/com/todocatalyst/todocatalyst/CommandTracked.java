@@ -6,6 +6,7 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.ui.Command;
+import com.codename1.ui.Font;
 import com.codename1.ui.Image;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
@@ -44,6 +45,15 @@ public class CommandTracked extends Command {
     CommandTracked(String command, char icon) {
 //        super(command, icon);
         super(command);
+        setMaterialIcon(icon);
+        setMaterialIconSize(MyPrefs.defaultIconSizeInMM.getFloat());
+//        actionId=analyticsActionId;
+    }
+    
+    CommandTracked(String command, char icon, Font iconFont) {
+//        super(command, icon);
+        super(command);
+        setIconFont(iconFont);
         setMaterialIcon(icon);
         setMaterialIconSize(MyPrefs.defaultIconSizeInMM.getFloat());
 //        actionId=analyticsActionId;
@@ -94,6 +104,19 @@ public class CommandTracked extends Command {
     public static CommandTracked create(String name, char icon, final ActionListener ev, String analyticsActionId) {
 //        com.codename1.ui.CommandTracked cmd = new com.codename1.ui.CommandTracked(name) {
         CommandTracked cmd = new CommandTracked(name, icon) {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+//                MyAnalyticsService.event(name);
+                super.actionPerformed(evt);
+                ev.actionPerformed(evt);
+            }
+        };
+        cmd.setAnalyticsActionId(analyticsActionId);
+        return cmd;
+    }
+    public static CommandTracked create(String name, char icon, Font iconFont, final ActionListener ev, String analyticsActionId) {
+//        com.codename1.ui.CommandTracked cmd = new com.codename1.ui.CommandTracked(name) {
+        CommandTracked cmd = new CommandTracked(name, icon, iconFont) {
             @Override
             public void actionPerformed(ActionEvent evt) {
 //                MyAnalyticsService.event(name);

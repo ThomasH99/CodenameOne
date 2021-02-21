@@ -1,0 +1,59 @@
+<component name="libraryTable">
+  <library name="ant-1.7.1">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/janino/lib/ant-1.7.1.jar!/" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne" />
+      <root url="file://$PROJECT_DIR$/../parse4cn1" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="file://$PROJECT_DIR$/../CodenameOne/CodenameOne/javadoc" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="file://$PROJECT_DIR$/../CodenameOne/CodenameOne/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/CodenameOneDesigner/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Factory/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/Android/CompatLibs/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/Android/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/BlackBerryOS_4_2/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/BlackBerryOS_5/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/CLDC11/build/classes" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/CLDC11/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/J2ME/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/JavaSE/build/classes" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/JavaSE/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/JavaSEWithSVGSupport/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/iOSPort/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/retro/JavaCompatibility/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Ports/retro/core" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Samples/SampleProjectTemplate/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/Samples/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/TestNativeInterfaces/native/android" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/TestNativeInterfaces/native/internal_tmp" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/TestNativeInterfaces/native/j2me" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/TestNativeInterfaces/native/javase" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/TestNativeInterfaces/native/rim" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/TestNativeInterfaces/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/TestNativeInterfaces/test" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/core/native/android" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/core/native/j2me" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/core/native/javase" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/core/native/rim" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/core/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/core/test" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/signin-demo/native/android" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/signin-demo/native/j2me" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/signin-demo/native/javase" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/signin-demo/native/rim" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/signin-demo/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/tests/signin-demo/test" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/vm/ByteCodeTranslator/src" />
+      <root url="file://$PROJECT_DIR$/../CodenameOne/vm/JavaAPI/src" />
+      <root url="file://$PROJECT_DIR$/../parse4cn1/build/stubs" />
+      <root url="file://$PROJECT_DIR$/../parse4cn1/src" />
+      <root url="file://$PROJECT_DIR$/../parse4cn1/test/CN1TestApp/src" />
+      <root url="file://$PROJECT_DIR$/../parse4cn1/test/CN1TestApp/test" />
+      <root url="file://$PROJECT_DIR$/../parse4cn1/test/JavaTestApplication/src" />
+    </SOURCES>
+    <jarDirectory url="file://$PROJECT_DIR$/../parse4cn1" recursive="false" />
+  </library>
+</component>

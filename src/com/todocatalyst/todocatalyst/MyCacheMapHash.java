@@ -69,9 +69,8 @@ public class MyCacheMapHash {
     /**
      * Default constructor
      */
-    public MyCacheMapHash() {
-    }
-
+//    public MyCacheMapHash() {
+//    }
     /**
      * Creates a cache map with a prefix string
      *
@@ -149,13 +148,26 @@ public class MyCacheMapHash {
 //</editor-fold>
         if (Config.TEST) {
             ASSERT.that(key != null, () -> "key==null for value=" + value);
+            ASSERT.that(value != null, () -> "value==null for key=" + key);
             Object oldVal = memoryCache.get(key);
-            ASSERT.that(oldVal == null || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key 
-                    + ", OLDVAL= \"" + oldVal + "\", NEWVAL= \"" + value + "\"");
+//            ASSERT.that(oldVal == null || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key
+            ASSERT.that(oldVal == null || oldVal == value, () -> "Cache key already points to a different object. Key=" + key
+                    + ", OLD= \"" + ItemAndListCommonInterface.toIdString(oldVal) + "\", NEW= \"" + ItemAndListCommonInterface.toIdString(value) + "\"");
+//            ASSERT.that(oldVal == null || oldVal == value, 
+//                    () -> "Cache key already points to a different object. Key=" + key ); //NB avoid object.toString since may create infinite loop
+            if (true || oldVal == null || oldVal != value) { //during testing, ignore overwrite which may be due to the debugger's use of toString which calls eg getListFull()-????
+                Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
+                memoryCache.put(key, value);
+            } else {
+                if (false) { //always only use first value
+                    Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
+                    memoryCache.put(key, value);
+                }
+            }
+        } else {
+            Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
+            memoryCache.put(key, value);
         }
-        Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
-        Object oldVal = memoryCache.put(key, value);
-//        }
     }
 
     /**
@@ -177,6 +189,59 @@ public class MyCacheMapHash {
             }
         }
 //        }
+        return val;
+//<editor-fold defaultstate="collapsed" desc="comment">
+////
+//        Object[] o = (Object[]) memoryCache.get(key);
+//        if (o != null) {
+//            return o[1];
+//        }
+//        Object ref = weakCache.get(key);
+//        if (ref != null) {
+//            ref = Display.getInstance().extractHardRef(ref);
+//            if (ref != null) {
+//                // cache hit! Promote it to the hard cache again
+//                put(key, ref);
+//                return ref;
+//            }
+//        }
+//        if (storageCacheSize > 0) {
+//            Hashtable storageCacheContent = getStorageCacheContent();
+////            for (int iter = 0, size = storageCacheContent.size(); iter < size; iter++) { //THJ: optimization
+////                Object[] obj = (Object[]) storageCacheContent.elementAt(iter);
+////                if (obj[1].equals(key)) { //THJ: stored format: { value, lastAccessed, key } so must be '2'. NOPE: index is {lastAccessed, key}
+////                    // place the object back into the memory cache and return the value
+////                    Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
+////                    if (v != null) {
+////                        Object val = v.elementAt(0);
+////                        put(key, val);
+////                        return val;
+////                    }
+////                    return null;
+////                }
+////            }
+//            Object temp = storageCacheContent.get(key);
+//            if (temp != null) {
+//                Vector v = (Vector) Storage.getInstance().readObject("$CACHE$" + cachePrefix + key.toString());
+//                if (v != null) {
+//                    Object val = v.elementAt(0);
+//                    put(key, val);
+//                    return val;
+//                }
+//                return null;
+//            }
+//        }
+//        return null;
+//</editor-fold>
+    }
+
+    synchronized public Object getFromLocalStorage(Object key) {
+        Object val = null;
+        val = Storage.getInstance().readObject(cacheId + key.toString());
+        if (val != null) {
+//                    put(key, val); //don't put, since it writes back to storage again, for no purpose
+            memoryCache.put(key, val);
+        }
         return val;
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////
@@ -467,6 +532,10 @@ public class MyCacheMapHash {
         return storageCacheSize;
     }
 
+    public int getCurrentMemoryCacheSize() { //for debug!
+        return memoryCache.size();
+    }
+
     /**
      * Indicates the size of the storage cache after which the cache won't grow
      * further Size is indicated by number of elements stored and not by KB or
@@ -510,7 +579,8 @@ public class MyCacheMapHash {
     public void setCachePrefix(String cachePrefix) {
 //        this.cachePrefix = cachePrefix;
         this.cachePrefix = cachePrefix;
-        cacheId = this.cachePrefix + CACHE_ID;
+//        cacheId = this.cachePrefix + CACHE_ID;
+        cacheId = CACHE_ID + this.cachePrefix + "$";
     }
 
     /**

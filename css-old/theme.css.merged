@@ -1,0 +1,2363 @@
+
+/* /Users/thomashjelm/NetBeansProjects/todocatalyst/css/theme.css */
+/*
+https://www.codenameone.com/manual/css.html
+https://stackoverflow.com/questions/46617128/css-defined-style-not-always-abode-in-codename-one
+
+*************************************************************************
+My Structure guidelines:
+- The predefined "Label" and "Button" are used as starting point to ensure that graphics are correct for the platform (will this always work?))
+- "Base" is the base element, e.g. the text size for all items
+- "Container" designates a container which sourrounds e.g. an item or an itemlist and which may define background color or borders
+- "Icon" is for icons
+- "Text" is for text elements
+- Swipe buttons 
+- All elements within a certain screen are prefixed by the screen name, e.g. "ScreenItem" or "ScreenListOfItemLists"
+*************************************************************************
+
+padding (and variants): padding-left/right/top/bottom, top+bottom right+left, top left+right bottom, top right bottom left
+    If there is only one value, it applies to all sides. 
+If there are two values, the top and bottom paddings are set to the first value and the right and left paddings are set to the second. 
+If there are three values, the top is set to the first value, the left and right are set to the second, and the bottom is set to the third. 
+If there are four values, they apply to the top, right, bottom, and left, respectively.
+margin (and variants)
+border (and variants): cn1-round-border /cn1-pill-border /border-radius (property)
+RoundBorder {
+border: 1px #3399ff  cn1-round-border;
+text-align:center;
+margin:2mm;
+padding:3mm;
+}
+
+RoundBorderFilled {
+background: cn1-round-border;
+background-color: #ccc;
+text-align:center;
+margin:2mm;
+padding:3mm;
+}
+PillBorder {
+border: 1pt #3399ff cn1-pill-border;
+text-align:center;
+}
+
+PillBorderFilled {
+background: cn1-pill-border;
+background-color: #3399ff;
+color:white;
+text-align:center;
+}
+RoundRectLabel {
+background-color: red;
+border-radius: 2mm;
+}
+
+border-radius
+background (Usage below)
+background-color
+background-repeat
+background-image
+
+ex: MyContainer {
+background: linear-gradient(0deg, #ccc, #666);
+}
+
+font(Usage on Fonts wiki page):
+PlainText0p5mm {
+font-size: 0.5mm;
+}
+font-family (Usage on Fonts wiki page):  
+"native:MainThin" / 
+native:MainLight / 
+native:MainRegular / 
+native:MainBold / 
+native:MainBlack / 
+native:ItalicThin / 
+native:ItalicLight / 
+native:ItalicRegular / 
+native:ItalicBold / 
+native:ItalicBlack 
+https://www.codenameone.com/javadoc/com/codename1/ui/Font.html
+
+links to official syntax: https://developer.mozilla.org/en-US/docs/Web/CSS/font-family
+
+CN1 Syntax and keywords in file: package com.codename1.ui.html.CSSElement.java
+
+font-style (Usage on Fonts wiki page): italic
+font-size (Usage on Fonts wiki page): small/medium/large/5mm/200% (% relative to the medium font size of the platform)
+font-weight: bold
+
+color: white/black/**
+@font-face (Usage on Fonts wiki page)
+@font-face {
+font-family: "FontAwesome";
+src: url(github://FontAwesome/Font-Awesome/blob/master/fonts/fontawesome-webfont.ttf);
+}
+BoldText3d {
+text-decoration: cn1-3d;
+font-weight: bold;
+color:white;
+background-color: #3399ff;
+}    
+
+color
+text-align
+text-decoration(Usage below): underline/overline/line-through/none/cn1-3d/cn1-3d-lowered/cn1-3d-shadow-north
+opacity
+box-shadow
+width (only used for generating background-images and borders)
+height (only used for generating background-images and borders)
+*/
+
+/*
+    Constants {
+
+https://stackoverflow.com/questions/60899023/how-to-define-a-constant-macro-in-cn1-css-theme-css
+
+-main-bg-color: red; 
+
+    PopupDialogArrowBool: false;
+    calTitleDayStyleBool: true;
+    calTransitionVertBool: false;
+    calendarLeftImage: "calendar-arrow-left.png";
+    calendarRightImage: "calendar-arrow-right.png";
+    centeredPopupBool: false;
+    checkBoxCheckDisFocusImage: "Check-Box_Normal.png";
+    checkBoxCheckedFocusImage: "Check-Box_Press.png";
+    checkBoxCheckedImage: "Check-Box_Press.png";
+    checkBoxOppositeSideBool: true;
+    checkBoxUncheckedFocusImage: "Check-Box_Normal.png";
+    checkBoxUncheckedImage: "Check-Box_Normal.png";
+    comboImage: "combo.png";
+    commandBehavior: "Side";
+    dialogTransitionIn: "fade";
+    dialogTransitionOut: "fade";
+    dlgButtonCommandUIID: "DialogButton";
+    dlgCommandGridBool: true;
+    dlgInvisibleButtons: #1a1a1a;
+    formTransitionIn: "empty";
+    formTransitionOut: "slide";
+    includeNativeBool: true;
+    menuImage: "of_menu.png";
+    noTextModeBool: true;
+    onOffIOSModeBool: true;
+    otherPopupRendererBool: false;
+    pureTouchBool: true;
+    radioSelectedFocusImage: "Radio_btn_Press.png";
+    radioSelectedImage: "Radio_btn_Press.png";
+    radioUnselectedFocusImage: "Radio_btn_Normal.png";
+    radioUnselectedImage: "Radio_btn_Normal.png";
+    sideMenuImage: "menu.png";
+    switchMaskImage: "switch-mask-3.png";
+    switchOffImage: "switch-off-3.png";
+    switchOnImage: "switch-on-3.png";
+    tabPlacementInt: 0;
+    backIconImage: "Back-icon.png";
+    articleSourceIconImage: "Source-icon.png";
+    articleDateIconImage: "Date-icon.png";
+    articleArrowRightImage: "Arrow-right.png";
+    articleShareIconImage: "Share-icon.png";
+    articleBookmarkIconImage: "Bookmark-icon.png";
+    articleTextIconImage: "Text-icon.png";
+    articleCommentsIconImage: "Comments-icon.png";
+    newsIconImage: "News-icon.png";
+    channelsIconImage: "Channels-icon.png";
+    bookmarksIconImage: "Bookmarks-icon.png";
+    overviewIconImage: "Overview-icon.png";
+    calendarIconImage: "Calendar-icon.png";
+    timelineIconImage: "Timeline-icon.png";
+    profileIconImage: "Profile-icon.png";
+    widgetsIconImage: "Widgets-icon.png";
+    settingsIconImage: "Settings-icon.png";
+    SubmitIconImage: "Submit-icon.png";
+    SubmitIconDarkImage: "SubmitButtonLight-icon.png";
+}
+*/
+
+/*
+https://stackoverflow.com/questions/52045430/codename-one-use-fontello-with-css/52046193#52046193
+Roughly something like this:
+
+@font-face {
+    font-family: "Fontello";
+    src: url(res/Fontello.ttf);
+}
+Then you can apply the font to any UIID you wish to use such as:
+
+MyIcon {
+    font-family: "Fontello";
+}
+*/
+
+#Constants {
+    /*includeNativeBool: true;*/ 
+    ComponentGroupBool: true;
+    labelGap: 1;
+
+    overflowImageSize: "5.0"; /*tried w 6.0, a tad big*/
+    menuImageSize:"5.0";
+
+    paintsTitleBarBool:true;
+    statusBarScrollsUpBool:true;
+    scrollVisibleBool:true;
+
+    /*style the scrollbar - does it work here? Used in CN1 LookAndFeel.java*/
+    scrollVisibleBool: true;
+    fadeScrollEdgeBool:false;
+    fadeScrollEdgeInt:20;
+    fadeScrollBarBool:true;
+
+    tabsFillRowsBool:true; /*ensures tabs in ScreenItem2 fill out the row*/
+
+    /*https://stackoverflow.com/questions/19032940/how-can-i-get-the-ios-7-default-blue-color-programmatically/19033326*/
+    /* use as var(--left-padding)*/
+    --ios-blue: #007AFF;
+    --left-padding: 3mm;
+    --right-padding: 2mm;
+    --left-margin: 3mm;
+    --right-margin: 2mm;
+
+    --font-size-normal:3mm;
+    --font-size-small:2.4mm;
+    --font-size-big:3.6mm;
+
+    --label-color: darkgrey;
+    --field-color: darkgrey;
+}
+
+Default {
+    /*background-color: transparent;/**/
+    /*background-color:  white; /*whitesmoke;/**/
+    /*font-family:  "native:MainRegular"; "native:MainThin"*/
+    font-family:  "native:MainLight"; /*"native:MainThin"*/
+    font-size: var(--font-size-normal); /*2mm;/*100%; /*100%;*/
+    text-align: left;
+    color: coral;
+}
+
+Form { 
+    background-color: whitesmoke; /*white; /*whitesmoke;/**/
+}
+
+Label {
+    cn1-derive: Default;
+    /*border: 1pt solid gray;*/
+    padding: 1mm;
+    margin: 1mm;
+    /*text-align: left;*/
+
+    /*font-family :  "native:MainLight";*/
+
+    /*text-align: left; /**/
+    /* font-size: 80%;*/
+    color: blue; 
+    background: transparent; /**/
+    /*background-color: #3399ff;*/
+    /*padding:0mm 3mm 0 0mm; top+bottom right+left*/
+    /*    padding-top: 1mm; 
+        padding-bottom: 1mm; */
+    /*padding-left: 3mm; top+bottom right+left*/
+    /*    margin:0mm 0mm 0mm 0mm;
+        padding: 0mm 0mm 0mm 0mm;*/
+
+    /*color: black;*/
+    /*background-color: transparent; /**/
+}
+
+DateLabelCentered { /*used to show simulated dates in ScreenRepeatRule */
+    cn1-derive: Label;
+    text-align: center;
+}
+
+/*ExpandableContainerTitleXXX { used eg to show past/future repeat instances in ScreenRepeatRule 
+    cn1-derive: StickyHeader;
+    text-align: center;
+}*/
+
+/*ExpandableContainerButtonXXX { used eg to show past/future repeat instances in ScreenRepeatRule 
+    cn1-derive: StickyHeader;
+    text-align: left;
+}*/
+ExpandableContainer{ /*used eg to show past/future repeat instances in ScreenRepeatRule */
+    cn1-derive: StickyHeader;
+}
+
+Button {
+    cn1-derive: Default;
+    /*border: 1pt solid gray;*/
+    text-align: center;
+    color: var(--ios-blue); /*#007AFF; /*dodgerblue;*/
+    background-color: transparent; 
+}
+
+/*Button.pressed {
+    background-color: gray;
+}*/
+
+MyButton {
+    cn1-derive: Button;
+    background-color: blue;
+}
+
+/*TextFieldXXX  {
+    cn1-derive: Default;
+    font-family :  "native:MainRegular"; "native:MainRegular";
+    padding: 2mm;
+    margin: 1mm;
+    background-color: white;
+    border: 1pt solid lightgray;  cn1-pill-border; /*cn1-round-border;
+    border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;
+    color: black;
+    font-size: 100%;
+    text-align: left; 
+}*/
+
+TextField { 
+    cn1-derive: Default; /*ListOfItemsTextBase;*/
+    /*font-family :  "native:MainRegular"; "native:MainRegular";*/
+    font-family :  "native:MainLight"; /*"native:MainRegular";*/
+    /*font-family :  "native:MainRegular";/*"native:MainThin"; "native:MainRegular";*/
+    /*padding: 3mm;/**/
+    margin: 0mm; /*field goes to edge of screen*/
+    /*color: black; /*darkgrey;*/
+    /*->font-family :  "native:MainLight"; /*"native:MainRegular";*/
+    /*margin: 1mm;*/
+    padding: 3mm; /*var(--left-padding);/*2mm;*/
+    /*border: 1pt solid lightgray;  cn1-pill-border; /*cn1-round-border;*/
+    color: black;
+    text-align: left;
+}
+
+/****************** Dialog *******************/
+
+Dialog {
+    background-color: aqua;/**/
+    border: 1px solid ; /*#007AFF;/**/
+    border-color: var(--ios-blue);
+    border-radius: 2mm ;
+}
+DialogTitle {
+    cn1-derive: Title;
+    color: white;
+    /*font: bold;*/
+    /*font-size: 140%;*/
+    font-size: var(--font-size-big);
+    background: darkgray;
+}
+DialogContentPane {
+    cn1-derive: Title;
+    margin: 3mm;
+    padding: 1mm;
+}
+DialogBody {
+    cn1-derive: Title;
+}
+DialogCommandArea {
+    cn1-derive: Title;
+    border-top: 1px solid darkgray;
+}
+
+/****************** Form Title / Titlebar + Tool icons *******************/
+
+StatusBar {
+    /*cn1-derive: Button;/**/
+    /*cn1-derive: Container;/**/
+    /*color: blue;/**/
+    padding-top: 0mm;  /*no longer needed on iphone 10 with safeArea
+    /*    padding-bottom: 3mm; */
+
+    background-color: transparent;/**/
+}
+
+StatusBarZeroSize {
+    cn1-derive: StatusBar;
+    /*cn1-derive: Button;/**/
+    /*cn1-derive: Container;/**/
+    /*color: blue;/**/
+    /*padding-top: 2mm;  /*no longer needed on iphone 10 with safeArea*/
+    /*    padding-bottom: 3mm; */
+    /*    margin: 0;
+        padding: 0;
+        background-color: transparent; BLOCK all this to just use a normal StatusBar*/
+}
+
+StatusBarButton { /*the 'virtual' button in the statusbar that catches clicks to scroll to top/bottom/swithc position */
+    cn1-derive: StatusBar;
+    padding: 4mm 0mm; /*try without any sizing to see if default size makes it work on iPhone*/
+    /*background-color: blue;*/
+}
+
+Toolbar {
+    /*cn1-derive: Button;/**/
+    cn1-derive: Container;/**/
+    color: blue;
+    background-color: whitesmoke; /*lightgrey;*/
+    /*border-bottom: 0.2mm black;/**/
+    /*border-bottom: 2px black solid;*/
+    /*border-width: 20pt;*/
+    /*border:  red;/**/
+}
+
+/*TitleXX {
+    cn1-derive: Button;
+    color: green;
+    background-color: red;
+}*/
+
+FormTitle { 
+    /*cn1-derive: Label; Button;*/
+    /*font-size: 120%; /**/
+    font-size: var(--font-size-big); /*100%; /**/
+    color: black; /*#333333; /*blue;/**/
+    font-family :  "native:MainBold";
+    background-color: transparent; /*transperent lets the background, e.g. ligth */
+    text-align: center;
+    /*background-color: red;/**/
+    /*background-color: transparent;/**/
+    /*color: green;
+    /*background-color: red;*/
+}
+
+TitleSmall {
+    cn1-derive: FormTitle;
+    font-size: var(--font-size-small); /*60%;*/
+    /*color: blueviolet;/**/
+    /*background-color: transparent;/**/
+    /*background-color: red;*/
+}
+
+TitleCommand { /*the commands in the title bar*/
+    cn1-derive: Button;
+    /*margin-top: 0.5mm;/**/
+    margin: 0mm;
+    padding: 1mm 1.5mm 1.5mm 1.5mm;
+    font-size: var(--font-size-big); /*140%; /*140%;160 too big compared to other apps, looks clumsy*/
+    background-color: transparent;
+    /*color: green;
+    /*background-color: red;*/
+}
+
+Command { /* the overflow menu commands */
+    cn1-derive: Button;
+    text-align: left;
+    /*color: greenyellow;*/
+}
+CommandFocus { /* not sure what this is */
+    cn1-derive: Command;
+    color: crimson;
+    /*color: greenyellow;*/
+}
+
+CommandList { /* the overflow menu itself */
+    cn1-derive: Container;
+    background-color: whitesmoke;
+    text-align: left;
+    border: darkgray;
+    border: solid;
+    /*color: greenyellow;*/
+}
+
+SearchFieldContainer {
+    cn1-derive: Container;
+    padding-top: 0mm;
+    margin-top: 1mm;
+    border-bottom-width: 1px;
+    /*    border-top-color: black;*/
+    border: gray;
+    background: lightgrey;
+    border: solid;
+    /*    margin-top: 0.5mm;
+        font-size: 120%;
+        background-color: transparent;
+        /*color: green;
+        /*background-color: red;*/
+}
+TextFieldSearch {
+    cn1-derive: Label;
+    /*    margin-top: 0.5mm;
+        font-size: 120%;
+        background-color: transparent;
+        /*color: green;
+        /*background-color: red;*/
+}
+SearchFieldText {
+    cn1-derive: Label;
+    border-radius:  1mm;
+    padding: 0.5mm 2mm;
+    margin: 0mm 1mm 1mm 3mm;
+    background: white;
+    color: darkslategray;
+    /*    margin-top: 0.5mm;
+        font-size: 120%;
+        background-color: transparent;
+        /*color: green;
+        /*background-color: red;*/
+}
+TextHintSearch {
+    cn1-derive: SearchFieldText;
+    color: lightgray;
+    /*    margin-top: 0.5mm;
+        font-size: 120%;
+        background-color: transparent;
+        /*color: green;
+        /*background-color: red;*/
+}
+
+/******* LOGIN screen ****************/
+LoginForm {
+    cn1-derive: Form;
+    /*background-image: "andrew-buchanan-1377212-unsplash.jpg"; /**/
+    /*background-image: "andrew-edit1.jpg"; */
+}
+
+TextComponentField {
+    cn1-derive: TextField;
+}
+
+/******* ALARMS screen ****************/
+AlarmsForm {
+    cn1-derive: Form;
+    /*background-image: "andrew-buchanan-1377212-unsplash.jpg"; /**/
+    background-color: bisque; /**/
+}
+ScreenAlarmContainer { /*the top-level container containing everything for a single task */
+    cn1-derive: Container;
+    /*padding: 2pt;/**/
+    /*border-bottom: orange solid 2pt;/**/
+    border: orange solid 1mm;
+    background: white; /**/
+}
+ScreenAlarmsHeaderCont { /*the header above a task (containing text and cancel/snooze icons) */
+    cn1-derive: Container;
+    background-color: orange; /**/
+}
+ScreenAlarmsHeader { /*the label above a task (containing text) */
+    cn1-derive: Label;
+    background-color: burlywood; /**/
+}
+ScreenAlarmsWaitingTitle { /*icon for cancelling a single alarm*/
+    cn1-derive: Label;
+    color: white;
+    background-color: orange; /**/
+    margin-left: 0mm;
+    margin-right: 1mm;
+}
+ScreenAlarmsCancelAlarm { /*icon for cancelling a single alarm*/
+    cn1-derive: ScreenAlarmsWaitingTitle;
+    /*background-color: burlywood; /**/
+}
+ScreenAlarmsSnoozeAlarm { /*icon for snoozing a single alarm*/
+    cn1-derive: ScreenAlarmsWaitingTitle;
+    /*background: burlywood; /**/
+}
+
+ScreenAlarmsCancelAll { /*icon for cancelling a single alarm*/
+    cn1-derive: Button;
+    text-align: center;
+    /*background: burlywood; /**/
+    background-color: white;
+    color: orange;
+    /*margin: 0;
+    /*padding: 0; /**/
+    /*border: 6pt solid orange;/**/
+}
+ScreenAlarmsSnoozeAll { /*icon for snoozing a single alarm*/
+    cn1-derive: ScreenAlarmsCancelAll;
+    /*text-align: center;
+    background: burlywood; /**/
+}
+
+
+/*************** EDIT ITEM - ScreenItem2 ***********/
+
+ScreenItemTaskText {
+    cn1-derive: TextField; 
+    /*font-family :  "native:MainRegular";/*"native:MainThin"; "native:MainRegular";*/
+    /*padding: 3mm;/**/ 
+    /*margin: 0mm; /*field goes to edge of screen*/
+    /*color: black; /*darkgrey;*/
+    /*    padding: 3mm;
+        margin: 2mm 0 0 0;
+        background-color: white;
+        /*    border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    /*border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    /*  color: black;
+      text-align: left;
+      /*font-size: 100%;*/
+}
+
+ScreenItemTaskTextHint {
+    cn1-derive: ScreenItemTaskText;
+    /*    margin: 0mm;
+        padding: 0mm; */
+    font-family:  "native:MainThin";
+    color: darkgray;
+    /*color: red;*/
+}
+
+
+ScreenItemTaskTextStarred {
+    cn1-derive: ScreenItemTaskText;
+    /*    color: coral; /*blueviolet;*/
+    background: yellow;
+}
+
+ScreenItemTaskTextStarredInherited {
+    cn1-derive: ScreenItemTaskTextStarred;
+    /*color: indianred; /*blueviolet;*/
+    background: lightyellow;
+}
+
+/*ScreenItemTaskText.selected {
+    cn1-derive: ScreenItemTaskText;
+    padding: 3mm;
+    margin: 0mm;
+}
+
+ScreenItemTaskText.pressed {
+    cn1-derive: ScreenItemTaskText;
+    padding: 3mm;
+    margin: 0mm;
+}*/
+
+/*Text { old UIID for task text
+    cn1-derive: ScreenItemTaskText;
+}*/
+
+ScreenItemComment { 
+    /*cn1-derive: ScreenItemTaskText;/**/
+    cn1-derive: TextField; /*LabelField; /*TextField;*/
+    /*font-size: 80%;*/
+    padding: 2mm 3mm 2mm 3mm;
+    /*border: 0mm solid red;/**/
+    margin: 0mm;
+    font-size: var(--font-size-small);/*80%;*/
+    /*font-family :  "native:MainLight";/**/
+    color: black; /*darkslategray;/**/
+    /*font-size: 90%;/**/
+    /*margin: 2px 0mm 0 0mm;/**/
+}
+
+ScreenItemCommentHint { 
+    cn1-derive: ScreenItemComment; 
+    font-family:  "native:MainThin";
+    color: #bbb; /*lightgray; -> lightgray is too weak to read */
+    /*color: red;*/
+}
+
+TextHint { 
+    cn1-derive: TextField;/**/
+    font-family:  "native:MainThin"; /*"native:MainThin"
+    /*font-size: 80%;/**/
+    color: #bbb; /*lightgray;*/
+}
+
+BaseFieldContainer { /*encapsulates each edit field in ScreenItem and adds left/right margins*/
+    cn1-derive: Container;
+    /* cn1-derive: Label;
+     color: darkslategray;
+     background-color: blue;
+     margin:3mm;
+     border-top: 1px darkgray;
+     padding:0 ; /*top+bottom right+left*/
+    /*border: solid;/**/
+    /*border-bottom: 4px solid yellow; /*black;/**/
+    /*padding: 1.5mm 2mm 1.5mm 2mm ;*/
+    /*padding: 2mm 0mm 2mm 0mm;*/
+    padding-top: 2mm;
+    padding-bottom: 2mm;
+    padding-right: 2mm;/**/
+    background-color: white;
+    /*margin: 2px 0mm 0mm 0mm;*/
+    border-bottom: 1px solid lightgray;
+}
+
+BaseListElementContainer { /*encapsulates each element in a list of ItemLists/Categories */
+    cn1-derive: BaseFieldContainer;
+}
+
+EditFieldContainer { /*encapsulates each edit field in ScreenItem and adds left/right margins*/
+    cn1-derive: BaseFieldContainer;
+    padding: 2mm 2mm 2mm 2mm;
+
+    /* color: darkslategray;
+     background-color: blue;
+     margin:3mm;
+     border-top: 1px darkgray;
+     padding:0 ; /*top+bottom right+left*/
+    /*border: solid;/**/
+    /*border-bottom: 4px solid yellow; /*black;/**/
+    /*    padding: 1.5mm 2mm 1.5mm 2mm ;
+        margin: 2px 0mm 0 0mm;*/
+}
+
+EditFieldContainerEditable { /*encapsulates each edit field *with edit arrow* in ScreenItem and adds left/right margins*/
+    cn1-derive: EditFieldContainer;
+    padding: 2mm 0mm 2mm 2mm;
+}
+
+/*LabelFieldXXX { used for (uneditable) field *labels* on the left of the screen 
+    cn1-derive: Default;
+    font-family :  "native:MainLight";
+
+    text-align: left;
+     font-size: 80%;
+    color: black;
+    background-color: #3399ff;
+    padding:0mm 3mm 0 0mm; top+bottom right+left
+    margin:0mm 0mm;
+    padding-left:0.5mm;
+    padding-right:0.5mm;
+}*/
+
+ScreenItemTabsContainer {
+    cn1-derive: Container;
+}
+ScreenItemFieldLabel {
+    /*cn1-derive: LabelField;*/
+    /*cn1-derive: Default;*/
+    cn1-derive: Label;
+    font-family :  "native:MainLight";
+
+    text-align: left; /**/
+    /* font-size: 80%;*/
+    color: black;
+    /*background-color: #3399ff;*/
+    /*padding:0mm 3mm 0 0mm; top+bottom right+left*/
+    /*    padding-top: 1mm; 
+        padding-bottom: 1mm; */
+    /*padding-left: 3mm; top+bottom right+left*/
+    margin:0mm 0mm 0mm 0mm;
+    padding: 0mm 0mm 0mm 0mm;
+    /*padding-left:0.5mm;
+    padding-right:0.5mm;*/
+}
+
+ScreenItemFieldIcon{
+    cn1-derive: ScreenItemFieldLabel;
+    padding-right: 1mm;
+    /*padding: 1mm;*/
+}
+
+/*LabelValueXXX { used for editable fields on the right of the screen
+    cn1-derive: LabelField;
+    color: darkblue;
+    padding:0mm 0mm 0 0mm; 
+        font-family :  "native:MainLight";
+        font-size: 100%;
+        text-align: left;
+        color: darkslategray;
+        /*background-color: #3399ff;
+     margin:0 0 ;
+     padding:0 0mm; /*top+bottom right+left
+    padding-left:0.5mm;
+    padding-right:0.5mm;
+    padding:0 0mm; /*top+bottom right+left
+}*/
+
+ScreenItemEditableValue {/*used for field labels*/
+    cn1-derive: ScreenItemFieldLabel;
+    color: #666;
+    /*padding:0mm 0mm 0 0mm; top+bottom right+left*/
+    padding:0mm 2mm 0mm 2mm; /*top+bottom right+left*/
+    margin:0mm 0mm 0mm 6mm;
+}
+
+ScreenItemValueInherited {
+    cn1-derive: ScreenItemEditableValue;
+    /*color: darkgray;*/
+    color: #999;/*red;*/
+}
+
+ScreenItemValueUneditable {
+    cn1-derive: ScreenItemEditableValue;
+    /*color: darkgrey; /*use same color for uneditable field as for editable since the absence of edit symbol (>) shows it's uneditable)*/
+}
+
+ScreenItemEarnedValue {
+    cn1-derive: TextField;
+    text-align: right;
+    padding: 0.5mm 1mm 0.5mm 0mm;
+    margin: 0mm;
+    /*color: darkgrey; /*use same color for uneditable field as for editable since the absence of edit symbol (>) shows it's uneditable)*/
+
+}
+
+ScreenItemTab {
+    /* cn1-derive: Tab;/**/
+    cn1-derive: ScreenItemFieldLabel; /*Container; /*RadioButton;*/
+    color: darkgray;
+    text-align: center;
+    padding:  2mm 0mm 2mm 0mm;/**/
+    /*margin: 2mm 1mm 2mm 1mm; /**/
+}
+Tab { /*currently hard-coded in CN1 Tabs.addTab() */
+    cn1-derive: ScreenItemTab; /*RadioButton;*/
+}
+
+ScreenItemTab.selected {
+    color: white;
+    background-color: grey;
+}
+
+ScreenItemTab.pressed {
+    color: white;
+    background-color: grey;
+}
+
+TabsContainer { /*container with 4 tabs in ScreenItem2*/
+    cn1-derive: Container; 
+    border-top: 1px solid darkgray;
+    padding: 0 0 0 0;/**/
+    margin: 0mm; /*2mm 1mm 2mm 1mm; /**/
+}
+
+ClearFieldButton {
+    cn1-derive: LabelValue;
+    color: red;
+    padding:0mm 0 0 2mm; /*top+bottom right+left*/
+    /*margin:0mm 0mm;*/
+}
+
+IconEdit {
+    cn1-derive: Label;
+    /*    cn1-derive: TextArea;
+        padding: 1mm;
+        margin: 1mm;
+        background: white;
+    /*    border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    /*  border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    /*color: black;*/
+    /*    font-size: 100%;*/
+    /*padding: 0 0mm 0mm 2.7mm;*/
+    padding-right:0mm;
+    margin: 0 0;
+    color: grey;
+    /*color: red;*/
+    /*background: green;*/
+    text-align: right;
+}
+
+ScreenItemCommentDateStamp {
+    cn1-derive: Button;
+    /*    cn1-derive: TextArea;
+        padding: 1mm;
+        margin: 1mm;
+        background: white;
+    /*    border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    /*  border-bottom: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    /*color: black;*/
+    /*    font-size: 100%;*/
+    padding: 0.5mm 0mm 0mm 0.6mm;
+    margin: 0 0;
+    /*color: blue;*/
+    /*background: green;*/
+    text-align: right;
+}
+
+Spacer {
+    cn1-derive: Container; /*Label;/**/
+    /*color: darkslategray;/**/
+    background-color: transparent; /*white; /*smoke; /*lightgray;/**/
+    /*margin:2mm 0mm 2mm 0mm;/**/
+    margin:0mm 0;/**/
+    padding:1mm 0;/**/
+    /*    border-top: 1px solid darkgray; 
+        border-bottom: 1px solid darkgray; */
+    /*border: 1px solid darkgray; /**/
+    /*border-top: 1px darkgray;
+    /*padding-left:0.5mm;
+    padding-right:0.5mm;*/
+}
+
+SpacerThin {
+    cn1-derive: Spacer;
+    /*margin:0mm 0;/**/
+    padding:0.5mm 0;/**/
+    /*color: darkslategray;/**/
+    /*background-color: yellow; /*lightgray;/**/
+    /*margin:2mm 0mm 2mm 0mm;/**/
+    /*margin:0;/**/
+    /*padding:0;/**/
+    /*padding-bottom:1mm ; /*top+bottom right+left*/
+    /*border: 1px solid red; /**/
+    /*border-top: 1px darkgray;
+    /*padding-left:0.5mm;
+    padding-right:0.5mm;*/
+}
+
+SpacerThick {
+    cn1-derive: Spacer;
+    padding-bottom:2mm ; /*top+bottom right+left*/
+    /*border-bottom: 5mm solid lightgray;/**/
+}
+
+/*************** SETTINGS **************/
+
+SettingContainer { /*container for each Setting */
+    cn1-derive: Container;
+    background: white;
+    /*margin: 2mm 2mm 0mm 1mm;*/
+    padding-bottom: 2mm;/**/
+    padding-top: 2mm;/**/
+    padding-right: 2mm;/**/
+    padding-left: 2mm;/* */
+
+    border-bottom: 1px solid lightgray; /*black; */
+    /*padding: 3mm;*/
+}
+SettingSectionLabel { /*label with explanation of following Settings */
+    cn1-derive: Label;
+    text-align: center;
+    color: lightslategrey;
+}
+
+SettingIndividualLabel { /*label with explanation of following Settings */
+    cn1-derive: Label;
+    text-align: left;
+    color: lightslategrey;
+    padding: 0mm;
+    margin: 0mm 2mm 2mm 2mm;
+    font-size: var(--font-size-small);/*80%;*/
+}
+
+
+/******* TIMER ****************/
+
+BigTimerBase {
+    cn1-derive: Button;
+    padding: 0;
+    margin: 0;
+    background-color: lightblue;
+    color: white;
+}
+
+BigTimerForm {
+    cn1-derive: Form;
+    background-color: lightblue; /*powderblue; /*lightblue;*/
+}
+
+BigTimerListTitle {
+    cn1-derive: Label; /**BigTimerBase;/**/
+    color: darkgrey;
+    text-align: center;
+    padding: 0.5mm;
+    margin: 0; 
+    /*color: red;
+    background-color: grey;*/
+}
+BigTimerItemStatus {
+    cn1-derive: Label;
+    background: transparent; 
+    /*color: red; /**/
+}
+BigTimerItemText{
+    cn1-derive: ScreenItemTaskText; 
+    /*background-color: #e3fefe; /*whitesmoke;*/
+    /*color: violet;
+    background-color: grey;/**/
+}
+BigTimerComment {
+    cn1-derive: ScreenItemComment;
+    background-color: white;
+    /*color: violet;
+    background-color: grey; */
+}
+BigTimerLabels {
+    cn1-derive: ScreenItemFieldLabel;
+    text-align: center;
+    /*color: darkgray;*/
+}
+BigTimerEffortLabel {
+    cn1-derive: BigTimerLabels;
+    text-align: center;
+    /*color: green;*/
+}
+BigTimerEffortValues {
+    cn1-derive: LabelValue;
+    text-align: center;
+    margin-bottom: 2mm;
+}
+BigTimerEffort {
+    cn1-derive: Button;
+    margin-bottom: 2mm;
+}
+BigTimerEstimate {
+    cn1-derive: Button;
+    margin-bottom: 2mm;
+}
+BigTimerTotalActual {
+    cn1-derive: Label;
+    text-align: center;
+    margin-bottom: 2mm;
+}
+
+BigTimerTimer {
+    cn1-derive: Default;
+    /*font-family :  "native:MainBold";*/
+    /*font-family :  "System-Monospace"; doesn't seem to be monospace on iOS, but OK on simulator'*/
+    /*font-family :  "largeBoldMonospaceFont";*/
+    /*font-family :  "native:MainBold";*/
+    /*font-family :  "largeBoldMonospaceFont";*/
+    /*https://stackoverflow.com/questions/60801160/how-to-select-a-native-monospace-font-in-theme-css/60931071#60931071*/
+    font-family:  monospace; /*should now be valid*/
+    /*font-size: 200%;*/ 
+    font-size: 10mm; /*large; /*use large as suggested here: https://stackoverflow.com/questions/62119533/how-to-set-a-specific-font-size-on-devices-using-css 15mm; /*34pt; 200%;/**56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
+    border: 1mm solid gray;
+    background-color: blue;
+    text-align: center;
+    color:white;
+    padding: 3mm; 
+    margin-top: 2mm;
+    margin-bottom: 2mm;
+}
+
+BigTimerTimerPaused {
+    cn1-derive: BigTimerTimer;
+    background-color: grey;
+}
+
+BigTimerInterruptIcon{
+    cn1-derive: BigTimerBase;
+    text-align: center;
+}
+BigTimerCmdButton{
+    cn1-derive: Button;
+    text-align: center;
+    margin: 1mm;
+    padding: 1mm;
+    border-radius: 1mm;
+    background: lightskyblue; 
+}
+BigTimerExit { 
+    cn1-derive: BigTimerCmdButton;
+    /*color: limegreen;/**/
+}
+BigTimerWaiting {
+    cn1-derive: BigTimerCmdButton;
+    /*color: limegreen;/**/
+}
+BigTimerNext {
+    cn1-derive: BigTimerCmdButton;
+    /*color: limegreen;/**/
+}
+BigTimerCompleted {
+    cn1-derive: BigTimerCmdButton;
+    margin-top: 2mm; 
+    padding-top: 2mm;
+    padding-bottom: 2mm;
+    /*padding: 2mm;*/
+    /*border: 1pt darkgrey solid;*/ 
+    /*background: lightskyblue;*/ 
+    /*    border-top-left-radius: 1mm;
+        border-top-right-radius: 1mm;
+        border-bottom-left-radius:  1mm;
+        border-bottom-right-radius:  1mm;*/
+    /*border-radius:  1mm;*/
+    /*color: limegreen;/**/
+}
+BigTimerNextItemWithText {
+    cn1-derive: BigTimerCmdButton;
+    /*color: limegreen;/**/
+    text-align: center; /*left;*/
+    background: lightblue; 
+    /*margin-top: 2mm;*/
+    padding: 1mm;
+    margin-top: 0mm;
+    /*    margin: 1mm;
+        padding: 1mm;*/
+    border: 1pt lightskyblue solid;
+}
+
+/*************** smallTimer **************/
+
+SmallTimerBase {
+    cn1-derive: Button;
+    padding: 0;
+    margin: 0;
+    background-color: lightblue;
+    color: white;
+}
+
+SmallTimerContainer {
+    cn1-derive: SmallTimerBase;
+    background-color: lightblue;
+    color: white;
+    /*padding: 2mm 2mm 2mm 2mm;*/
+    padding: 0mm ;
+    margin: 0mm ;
+    border: 1pt black solid;
+}
+
+SmallTimerItemStatus {
+    cn1-derive: SmallTimerBase;
+    padding-left: 2mm;
+    padding-right: 2mm;
+    text-align: right;
+}
+
+SmallTimerItemText {
+    cn1-derive: TextField; /*SmallTimerBase;/**/
+    color: black;   
+    margin: 0mm;
+    padding: 1mm 1mm 1mm 0mm;
+    background-color: lightblue;
+    text-align: left;
+}
+
+SmallTimerSwipeNext {
+    cn1-derive: SwipeButtonCommonBase;
+    background-color: blue;
+    color: white;
+    /*text-align: right;*/
+}
+
+SmallTimerSwipeExit {
+    cn1-derive: SmallTimerSwipeNext;
+    background-color: violet;
+    color: white;
+    /*text-align: right;*/
+}
+
+SmallTimerInterruptIcon{
+    cn1-derive: SmallTimerBase;
+    text-align: right;
+}
+
+SmallTimerTimer {
+    cn1-derive: BigTimerTimer;
+    border: 5px solid gray;
+    font-size: var(--font-size-normal); /*medium; /*small; /*xx-large; /*100%;*/
+    padding: 1mm; /* 0mm 1mm 1mm;*/
+    margin: 0mm;
+    /*        margin-top: 1mm;
+        margin-bottom: 1mm;*/
+
+}
+SmallTimerTimerPaused {
+    cn1-derive: SmallTimerTimer;
+    color: white;
+    background-color: grey;
+}
+SmallTimerEditItem {
+    cn1-derive: SmallTimerBase;
+    color: white;
+    text-align: right;
+    padding-left: 1mm;
+    padding-right: 0mm;
+}
+
+
+
+/*************** objectSelector / setOwner **************/
+
+ObjectSelectorRadioButton{
+    cn1-derive: Button;
+    background-color: transparent;
+    color: blue;
+    text-align: center;
+}
+ObjectSelectorRadioButton.pressed {
+    color: white;
+    background-color: blue;
+}
+/*ObjectSelectorRadioButton.selected {
+    color: white;
+    background: red;
+}*/
+/*ObjectSelectorRadioButton.unselected {
+    color: white;
+    /*background: blueviolet;/*
+}*/
+
+/*************** main menu **************/
+
+MainForm {
+    cn1-derive: Form;
+    /*background-color: whitesmoke;/**/
+    /*background: transparent;/**/
+    /*background: darkgray;/**/
+    /*background: url(images/my-image.png"andrew-buchanan-1377212-unsplash.jpg";/**/
+    /*background-image: url(/res/theme/andrew-buchanan-1377212-unsplash.jpg);/**/
+    /*background-image:  url(andrew-buchanan-1377212-unsplash.jpg);/**/
+    /*background-image: "andrew-buchanan-1377212-unsplash.jpg";/**/
+    /*background-image: "andrew-edit1.jpg"; /**/
+}
+MainContentPane {
+    cn1-derive: MainForm;
+    /*background-color: yellow; /**/
+    /*background-image: "andrew-buchanan-1377212-unsplash.jpg";/**/
+}
+
+
+MainMenuCommand {
+    cn1-derive: Label;
+    /*->font-family :  "native:MainLight";*/
+    font-size: var(--font-size-big); /*120%;*/
+    text-align: left;
+    color: black;
+    /*text-decoration: cn1-3d-shadow-north; /*cn1-3d-lowered; /**/
+    /*background: linear-gradient(0deg, #ccc, #666);*/
+    /*background: linear-gradient(0deg, #f5f5f5, white); /*whitesmoke*/
+    /*background-color: transparent; /*whitesmoke*/
+    /*background-color: #3399ff;*/
+    margin:0mm 0mm;/*1px 1mm;*/
+    padding:1.5mm 3mm; /*top+bottom right+left*/
+    border-bottom: 1mm solid lightgray;
+    /*padding-left:0.5mm;
+    padding-right:0.5mm;*/
+}
+
+
+/*ScreenItemStarredXXX { style for starred icon task text in lists
+    cn1-derive: Button;
+    color:red; /*blueviolet;/*
+    padding:0 0.5mm 0 0; top+bottom right+left
+    margin:0mm;
+}*/
+ScreenItemStarredActive { /*style for starred icon task text in lists*/
+    cn1-derive: ScreenItemEditableValue;
+    /*color:red; /*blueviolet;/**/
+    /*background: yellow; yellow background not needed since text turns yellow and star black, */
+    /*    padding:0 0.5mm 0 0; top+bottom right+left
+        margin:0mm;*/
+}
+ScreenItemStarredNotActive { /*style for NOT starred icon task text in lists*/
+    cn1-derive: ScreenItemEditableValue; 
+    /*    color:red; blueviolet;/*
+        padding:0 0.5mm 0 0; top+bottom right+left
+        margin:0mm;*/
+}
+ScreenItemStarredActiveInherited { /*style for *active* starred icon task text in lists*/
+    cn1-derive: ScreenItemEditableValue;
+    /*color:indianred;/**/
+    background: lightyellow;
+}
+
+
+/*************** list of items **************/
+
+ListOfItemsTextCont { /*style for task container (WrapButton) in lists*/
+    margin:0mm;
+    padding:0; /*top+bottom right+left*/
+}
+
+ListOfItemsTextBase { /*style for task text in lists*/
+    cn1-derive: Label;/**/
+    color: black;
+    /*font-family :  "native:MainLight"; "native:MainLight";*/
+    /*font-family :  "native:MainRegular"; "native:MainLight";*/
+    /*font-family :  "native:MainBold"; /*"native:MainLight";
+    /* color:black;*/
+    /*font-size: 90%; /*100%;*/
+    text-align: left;
+    /*background-color: #3399ff;*/
+    padding:0 0.5mm 0 0; /*top+bottom right+left*/
+    margin:0mm;
+    /*padding-left:0.5mm;
+    padding-right:0.5mm;*/
+}
+
+ListOfItemsText { /*style for task text in lists    */
+    cn1-derive: ListOfItemsTextBase; /**/
+    /*font-family :  "native:MainLight"; "native:MainLight";*/
+}
+
+ListOfItemsTextDone { /*style for DONE task text in lists*/
+    cn1-derive: ListOfItemsText;
+    color:darkgray;
+    /*text-decoration: line-through;*/
+}
+
+ListOfItemsTextStarred { /*style for Starred task text in lists*/
+    cn1-derive: ListOfItemsText;
+    /*color: coral; /*red; /*blueviolet;/*/
+    background: yellow;
+}
+ListOfItemsTextStarredInherited { /*style for Starred task text in lists*/
+    cn1-derive: ListOfItemsTextStarred;
+    /*    color: indianred;*/
+    background: lightyellow;
+}
+
+/*ListofItemsStarred { style for starred icon task text in lists
+    cn1-derive: ListOfItemsTextBase; Button;
+    color:coral; red; blueviolet;/*
+    padding:0 0.5mm 0 0; top+bottom right+left
+    margin:0mm;
+    text-decoration: line-through;/*
+}*/
+
+ListOfItemsItemContent { /*style for task - CENTER - between status icon and edit task icon */
+    cn1-derive: Container;
+    margin: 0mm 0mm 1px 0mm;
+    padding: 1mm 0mm 1.5mm 0mm; /*top+bottom right+left*/
+    /*border-bottom: 2px solid lightgrey; /*4px solid blueviolet; /*lightgrey; */
+    border-bottom: 1px solid darkgray; /*darkslategray/black: too dark, 4px solid blueviolet; /*lightgrey; */
+}
+
+ListOfItemsItemDetails { /*style for task details - SOUTH */
+    cn1-derive: Container;
+    /*border-bottom: 4px solid blueviolet; /*lightgrey; */
+    margin:0mm;
+    padding:0; /*top+bottom right+left*/
+}
+
+ListOfItemsItemTextStar { 
+    cn1-derive: Container;
+    padding:0 0 0.5mm 0; /*top+bottom right+left*/
+    margin:0mm;
+}
+ListOfItemsBottomContent { /*style for task details - SOUTH */
+    cn1-derive: Container;
+    padding:0 0 0mm 0; /*top+bottom right+left*/
+    margin:0 0 0mm 0; /*top+bottom right+left*/
+    /*border-bottom: 8px solid green; /*lightgrey;*/ /* this one works!*/
+    /*    margin:0mm;
+        padding:0; /*top+bottom right+left*/
+}
+
+ListOfItemsItemDetailsWest { /*style for task details - SOUTH */
+    cn1-derive: Container;
+}
+
+ItemListSmall {
+    cn1-derive: ListOfItemsText;
+    /*    text-align: left;*/
+    /*font-family :  "native:MainLight"; "native:MainRegular";*/
+    font-size: var(--font-size-small);/*90%; /*80*/
+    color: gray; /*darkgray; */
+    margin-right: 0.75mm;
+    /*    padding:0 0.5mm 0 0; top+bottom right+left
+        margin:0;*/
+}
+
+ListOfItemsItemDetailsLabel { /*style for task details labels */
+    cn1-derive: ItemListSmall;
+    /*color:darkgray;
+    /*margin:0mm;
+    padding:0 0.5mm; /*top+bottom right+left*/
+}
+
+ListOfItemsCategories { /*style for task details labels */
+    cn1-derive: ItemListSmall;
+    color:white;
+    background:darkgray;
+    /*color:darkgray;
+    margin:0mm;*/
+    padding:0 1mm; /*top+bottom right+left*/
+}
+
+ItemDetailsLabel { /*style for task details labels */
+    cn1-derive: ItemListSmall;
+}
+
+ListOfItemsPrioOLD {
+    /*cn1-derive: ItemListSmall;/**/
+    /*border: 1pt aquamarine cn1-round-border; /*cn1-pill-border;*/
+    /*border: cn1-round-border; cn1-pill-border;*/
+    border-radius: 1.5mm;
+    /*border-radius: 0.5mm;/**/
+    background: lightgray; /*gray;*/
+    color: white;
+    text-align: center;/**/
+    /*padding: 2pt;/**/
+    /*margin: 0pt 1pt; 2pt;/**/
+    /*margin: 0.1mm; 2pt;/**/
+    margin-right: 1.25mm;
+    padding: 0 0.6mm 0 0.6mm;
+    /*margin-right: 0mm;/**/
+}
+
+ListOfItemsPrio {
+    cn1-derive: ItemListSmall;
+    /*margin-right: 0mm;/**/
+}
+
+ListOfItemsImpUrg {
+    cn1-derive: ItemListSmall;
+}
+
+ListOfItemsImpUrgHigh {
+    cn1-derive: ListOfItemsImpUrg;
+    color:red;
+}
+
+ListOfItemsActualEffort {
+    cn1-derive: ItemListSmall;
+    /*text-align: center;*/
+    /*color:grey;*/
+}
+ItemEffortEstimateLabel {
+    cn1-derive: ItemListSmall;
+    /*text-align: center;*/
+    /*color:brown;*/
+}
+
+ListOfItemsRemaining {
+    cn1-derive: ItemListSmall;
+    /*color:black;
+    /*text-align: center;*/
+}
+
+ListOfItemsCompletedDate {
+    cn1-derive: ItemListSmall;
+    /*text-align: center;*/
+    /*color:grey;
+    /*background-color: #3399ff;
+    /*foreground-color: #268b04;*/
+}
+
+ListOfItemsDueDate {
+    cn1-derive: ItemListSmall;
+    /*text-align: center;*/
+    color:grey;
+    /*background-color: #3399ff;
+    /*foreground-color: #268b04;*/
+}
+
+ListOfItemsDueDateInherited {
+    cn1-derive: ListOfItemsDueDate;
+    /* text-align: center;*/
+    color: lightgray; /*red;*/
+    /*text-decoration: underline;
+    /*background-color: #3399ff;
+    /*foreground-color: #268b04;*/
+}
+
+ListOfItemsDueDateOverdue {
+    cn1-derive: ItemListSmall;
+    text-align: center;
+    color:darksalmon;
+    /*background-color: #3399ff;
+    /*foreground-color: #268b04;*/
+}
+
+ListOfItemsFinishTime {
+    cn1-derive: ItemListSmall;
+    text-align: center;
+    color:grey;
+    text-decoration: underline;
+    /*background-color: #3399ff;
+    /*foreground-color: #268b04;*/
+}
+
+ListOfItemsFinishTimeOverdue {
+    cn1-derive: ItemListSmall;
+    color:red;
+}
+
+ListOfItemsShowSubtasks { /*expand subtasks*/
+    cn1-derive: ItemListSmall;
+    background-color: lightgrey;/**/
+    text-decoration: none;
+    color:white;
+    padding: 0 0.5mm 0 0.5mm; 
+    margin: 0 1mm;
+    /*border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    /*border-radius: 8px; //TODO: this seems to make it crash - need to update CN1 source?! */
+}
+
+ListOfItemsShowSubtasksExpanded { /*expand subtasks*/
+    cn1-derive: ListOfItemsShowSubtasks;
+    background-color: darkgray; /**/
+    /*color:white;
+    border: 1pt solid black; /* cn1-pill-border; /*cn1-round-border;*/
+    /*border-radius: 8px; //TODO: this seems to make it crash - need to update CN1 source?! */
+}
+ListOfWorkSlotsShowTasks { /*expand subtasks*/
+    cn1-derive: ItemListSmall;
+    /*background-color: lightgrey;/**/
+    background-color: darkgray;
+    text-decoration: none;
+    color:white;
+    padding: 0 0.5mm 0 0.5mm; 
+    margin: 1mm;
+    /*border: 1pt solid darkgray; /* cn1-pill-border; /*cn1-round-border;*/
+    /*border-radius: 8px; //TODO: this seems to make it crash - need to update CN1 source?! */
+}
+
+ListOfWorkSlotsShowTasksExpanded { /*expand subtasks*/
+    cn1-derive: ListOfWorkSlotsShowTasks;
+    /*background-color: darkgray; /**/
+    background-color: lightgrey; 
+    /*color:white;
+    border: 1pt solid black; /* cn1-pill-border; /*cn1-round-border;*/
+    /*border-radius: 8px; //TODO: this seems to make it crash - need to update CN1 source?! */
+}
+
+FunDread { /*expand subtasks*/
+    cn1-derive: ItemListSmall;
+    /*background: lightgray; /**/
+    text-decoration: none;
+    color:white;
+}
+
+ListOfItemsMyCheckBox {
+    cn1-derive: ListOfItemsText;
+    font-size: var(--font-size-big); /*120%;*/
+    margin-top: 0mm;
+    margin-bottom: 0mm;
+    margin-left:1.5mm;
+    margin-right: 1.5mm;
+    padding: 0;
+    text-align: left;
+    /*color: lightgray;*/
+    color: gray;
+}
+
+ListOfItemsItemStatusCont {
+    /* cn1-derive: ListOfItemsText;
+     font-size: 120%;*/
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    color: brown;
+}
+
+ListOfItemsAlarmDate {
+    cn1-derive: ItemListSmall;
+    color:grey;
+}
+ListOfItemsOwnerList{ /*showing the owner list of an item */
+    cn1-derive: ItemListSmall;
+    padding: 0 4pt 1pt 0;
+    border: 1pt solid grey;
+    color:grey;
+}
+ListOfItemsOwnerItem{ /*showing the owner task/project of an item */
+    cn1-derive: ItemListSmall;
+    padding: 0 4pt;
+    border: 1pt solid grey;
+    color:red;
+    background:lightblue;
+}
+
+/************* list of itemlists ScreenListOfItemLists ************/
+
+ListOfItemListsBase { 
+    cn1-derive: ListOfItemsTextBase; /*Label;*/
+    margin: 0;/**/
+    padding: 0;/**/
+    font-family :  "native:MainBold"; /*"native:MainLight";*/
+    /*background: white;*/
+    /*margin-left: 2mm;/**/
+}
+
+ItemListContainer {
+    cn1-derive: BaseListElementContainer;
+    /*border-top: 1pt solid green;*/
+    /*    border-bottom: 1pt solid lightgray;*/
+}
+
+ListOfItemListsTextCont { /*the 'span' container of the wrap button with the icon/text of the itemlist*/
+    cn1-derive: ListOfItemListsBase;
+    /*text-decoration: bold;*/
+}
+ListOfItemListsText { /*the text/name of the itemlist*/
+    cn1-derive: ListOfItemListsBase;
+}
+ListOfItemListsIcon  { /*the icon to the left of the name of the itemlist*/
+    cn1-derive: ListOfItemListsBase;
+    /*margin: 0 2mm;*/
+    padding-left: 2mm;
+    padding-right: 1mm;
+}
+ListOfItemListsRemainingTime  { /*the icon to the left of the name of the itemlist*/
+    cn1-derive: ListOfItemListsShowItems;
+}
+ListOfItemListsShowItems  { /*the icon to the left of the name of the itemlist*/
+    /*cn1-derive: ListOfItemsShowSubtasks;*/
+    cn1-derive: Label;
+    /*    background-color: lightgrey;/**/
+    text-decoration: none;
+    color: black;
+    /*color:white;*/
+    padding: 0 0.5mm 0 0.5mm;
+    margin: 0 1mm;
+    /*background-color: white;*/
+}
+ListOfItemListsShowItemsExpanded { 
+    cn1-derive: ListOfItemListsShowItems;
+    background-color: lightgrey;/**/
+}
+
+/*************** Category/ItemList properties **************/
+
+CategoryContainer { /*inside swipeable*/
+    cn1-derive: Container;
+    /*wraps Category in ScreenListOfCategories*/
+    /*    padding: 1mm 2mm 1mm 4mm;
+        margin: 0;*/
+    /*background-color: whitesmoke; /**/
+    /*background-color: transparent;
+    /*border: 1px solid gray; /*cn1-pill-border */
+    /*border-radius: 0mm;*/
+}
+
+CategoryListContainer {
+    cn1-derive: BaseListElementContainer; 
+    /*border-top: 1pt solid darkgrey;*/
+    border-bottom: 1px solid darkgray; /*darkslategray/black: too dark, 4px solid blueviolet; /*lightgrey; */
+
+    /*border-bottom: 1pt solid darkgrey;*/
+    /*background: #d1eded;*/
+    padding: 2mm 0mm 2mm 3mm; 
+    /*margin: 0mm 2mm 2mm 3mm;*/
+    /*border-top: 1pt solid green;*/
+    /*border-bottom: 1pt solid lightgray;*/
+}
+
+CategoryListBase { 
+    cn1-derive: Label;
+    margin: 0;/**/
+    padding: 0;/**/
+    color: #666;
+    /*background: white;*/
+    /*margin-left: 2mm;/**/
+    font-family :  "native:MainBold"; /*"native:MainLight";*/
+    /*font-size: 100%;*/
+}
+
+CategoryListTextCont { /*the 'span' container of the wrap button with the icon/text of the itemlist*/
+    cn1-derive: CategoryListBase;
+    margin: 0;/**/
+    padding: 0;/**/
+    /*text-decoration: bold;*/
+}
+
+CategoryListText { /*the text/name of the category*/
+    cn1-derive: CategoryListBase;
+    /*padding-left: 2mm;*/
+}
+
+CategoryListOtherText { /*the text/name of the category*/
+    cn1-derive: ListOfItemListsShowItems;
+}
+
+CategoryListIcon  { /*the icon to the left of the name of the itemlist*/
+    cn1-derive: IconEdit;
+    padding-left: 1mm;
+    padding-right: 1mm;
+    /*margin: 0 2mm;*/
+}
+
+CategoryListRemainingTime  { /*the icon to the left of the name of the itemlist*/
+    cn1-derive: CategoryListOtherText;
+}
+
+CategoryListShowItems  { /*the icon to the left of the name of the itemlist*/
+    cn1-derive: CategoryListOtherText;
+}
+
+CategoryListShowItemsExpanded { 
+    cn1-derive: ListOfItemListsShowItemsExpanded;
+}
+CategoryListDescriptionLabel { 
+    cn1-derive: ListOfItemListsShowItemsExpanded;
+}
+
+
+CategoryPickerCategory { 
+    /*cn1-derive: ToggleButton;*/
+    cn1-derive: LabelValue; /*Button; RadioButton;*/
+
+    border-bottom: 2px solid;/* #007AFF;/**/
+    border-color: var(--ios-blue);
+    /*border-bottom: 1px solid #007AFF;*/
+    /*    border-color: #007AFF; royalblue;
+        border-style: solid;
+        border-width: 1pt; 0.2mm;/*0.3mm;*/
+
+    /* font-size: 100%;*/
+    color:var(--ios-blue);/*#007AFF; /*royalblue;*/
+    /* background: white;
+     /*background: grey;*/
+    text-align: center;
+    /*margin-bottom: 2pt; 0mm;/*2pt;/**/
+    /*    margin-bottom: 0px;*/
+    padding: 1mm;
+    /* border-top: 1mm;
+     border-bottom:  1mm;*/
+    /* text-align: right;*/
+    /*color: #6eaeff; /**dodgerblue;*/
+}
+
+CategoryPickerCategory.pressed {
+    /*cn1-derive: CategoryPickerCategory;*/
+    background-color: var(--ios-blue);/*#007AFF;/* blue;*/
+    color: white;
+    /*color: green; *dodgerblue;*/
+}
+CategoryPickerCategory.selected {
+    /*cn1-derive: CategoryPickerCategory;*/
+    background-color:  var(--ios-blue);/*#007AFF; /*royalblue;*/
+    color: white;
+    /*color: brown; /**dodgerblue;*/
+}
+
+
+/************* expanded list of elements ************/
+
+Tree { 
+    cn1-derive: Container;
+}
+
+StickyHeader {
+    cn1-derive: ItemListSmall;
+    /*text-align: center;/**/
+    color:black;
+    background-color:lightgrey;
+    text-align: center;
+    /*padding: 0mm 0mm; was h=0.5mm*/
+    padding-top: 1mm; /*was h=0.5mm*/
+    padding-bottom: 1mm; /*was h=0.5mm*/
+    /*foreground-color: #268b04;*/
+}
+
+/*StickyHeaderLabel {
+    cn1-derive: ItemListSmall;
+    text-align: center;
+    background-color:transparent;
+    color:black; darkgray;/*
+    background-color:darkgrey;/*
+    padding: 1mm 0mm;
+    foreground-color: #268b04;
+}*/
+
+/*StickyHeaderIconXXX {
+    cn1-derive: StickyHeaderLabel;
+    text-align: center;
+    color:black;
+    background-color:darkgrey;
+    padding: 0mm 0;
+    /*foreground-color: #268b04;
+}*/
+
+TreeContainer {
+    /*wraps item in ScreenListOfItems*/
+    cn1-derive: Container;
+    padding:0mm;
+    margin:0mm;
+    /*margin-left: 1mm;/*/
+    /*margin: 0mm 0;*/
+    /*border-left: 1mm solid blueviolet; /* expanded line for subtasks!! */
+    /* border-spacing: 2mm; NOT supported */
+    /*border-left: 0.3mm solid gray; 
+    /*    border-bottom: 1px solid lightgrey;*/
+    /*background-color: whitesmoke;
+    box-shadow: 12px 12px 12px 12px activeborder inset;
+    /*background-color: transparent;
+    /*border: 1px solid gray; /*cn1-pill-border */
+    /*border-radius: 0mm;*/
+}
+
+MyDragAndDropSwipeableContainer {
+    /*cn1-derive: Label;*/
+    cn1-derive: Container;
+    padding:0mm;
+    margin: 0mm;
+    /*background: yellow; /*background for swipeable icons */
+    /*border-left: 1mm solid blueviolet; 
+    /*background-color: transparent;
+    /*border: 1px solid gray; /*cn1-pill-border */
+    /*border-radius: 0mm;*/
+}
+
+ExpandedList { /* the ScrollY container, CENTER, with all expanded subtasks - indents and add line on the left*/
+    cn1-derive: Container;
+    /*padding-left:1mm;*/
+    padding:0mm 0mm 0mm 1mm;
+    /*margin: 0 0 0 4mm;
+    padding: 0 0 0 4mm; */
+    /*margin-left: 1mm; this indents the first indent-line*/
+    margin: 0 0 0 1mm; /*this indents the first indent-line*/
+    /*background: lightgrey; /*space btw indent-line and itemContainer */
+    /*padding-left: 0.5mm; /*this is space between the indent-line and the ItemContainer*/
+    border-left: 1mm solid lightgrey; /*greenyellow; /* expanded line for subtasks!! */
+
+    /*color: lightgray;*/
+    /*border-left: 0.5mm solid green; 
+    /*border-left: 0.3mm solid gray; /*cn1-pill-border */
+    /*box-shadow: 12px 12px 12px 12px activeborder inset;*/
+    /*box-shadow: 1mm activeborder inset;
+    /*border-radius: 0mm;*/
+}
+
+ItemContainer { /*inside swipeable*/
+    cn1-derive: Container;
+    /*wraps item in ScreenListOfItems*/
+    /*cn1-derive: Label;*/
+    /*padding:0;*/
+    padding: 0mm 0 0mm 0;
+    background-color: white; /**/
+    /*background-color: transparent;
+    /*border: 1px solid gray; /*cn1-pill-border */
+    /*border-radius: 0mm;*/
+}
+
+ListOfItemsSwipeButtons{
+    margin: 0;
+    padding: 0mm;
+}
+
+SwipeButtonCommonBase{
+    font-size: var(--font-size-big);/*120%;*/
+    padding: 2mm 3mm 2mm 3mm; /*2mm;*/
+    margin: 0;
+    /*text-align: right;*/
+    text-align:center;
+    color:white;
+}
+
+SwipeButton{
+    cn1-derive: SwipeButtonCommonBase;
+    /* font-size: 120%;
+     padding: 2mm;
+     margin: 0;
+     text-align: right;*/
+    color:white;
+}
+
+/*SwipeButtonIconXXX{
+    font-size: 180%;
+    margin: 0;
+    padding: 1mm;
+    color:white;
+}*/
+
+SwipeButtonNewFromTemplate {
+    cn1-derive: SwipeButtonCommonBase;
+    background-color:lightblue;
+}
+
+SwipeButtonSetDueToToday {
+    cn1-derive: SwipeButtonCommonBase;
+    background-color:darkseagreen;
+}
+
+SwipeButtonSetFutureDueToToday {
+    cn1-derive: SwipeButtonCommonBase;
+    background-color:darkseagreen;
+}
+
+SwipeButtonStarInactive {
+    cn1-derive: SwipeButtonCommonBase;
+    /*background-color:blue;*/
+    background-color:blueviolet;
+    color:white;
+}
+
+SwipeButtonStarActive {
+    cn1-derive: SwipeButtonCommonBase;
+    /*background-color:blue;*/
+    background-color:yellow; /*blueviolet;*/
+    color:black; /*red;*/
+}
+
+SwipeButtonTimer {
+    cn1-derive: SwipeButtonCommonBase;
+    /*color:cornflowerblue;*/
+    background-color:cornflowerblue;
+}
+
+SwipeButtonInsertBelow{
+    cn1-derive: SwipeButtonCommonBase;
+    background-color:dodgerblue;
+}
+
+SwipeButtonInsertAbove {
+    cn1-derive: SwipeButtonCommonBase;
+    background-color:darkgrey;
+}
+
+
+
+/* INLINE INSERT ** ITEM ***/
+InlineInsertItemAsTask {
+    cn1-derive: ItemContainer;
+}
+InlineInsertItemAsSubtask {
+    cn1-derive: InlineInsertItemAsTask;
+    background: yellow;
+    color:red;
+}
+
+InlineInsertNewItemContainer2 { 
+    cn1-derive: Container;
+    border-style: solid;
+    border-width: 0.5mm;/*0.3mm;*/
+    border-color: lightslategray;
+    margin: 0mm;
+    padding: 0.5mm;
+    background-color: #eee;
+}
+PinchInsertTextField { 
+    cn1-derive: TextField;
+    /*color: darkslategray;*/
+    /*background-color: #eee;*/
+    /*border-color: lightblue;*/
+    /*border-color: #007AFF; royalblue;*/
+    border-style: none;
+    /*border-width: 0.2mm;*/ 
+    background-color: transparent;
+    margin: 0mm;
+    padding: 0mm 1mm;
+}
+PinchInsertTextEditButton { 
+    cn1-derive: IconEdit; 
+    /*    margin: 0mm;
+        padding: 0mm 0mm; */
+}
+PinchInsertTextCloseButton { 
+    cn1-derive: Button;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm 2mm;
+}
+PinchInsertHintLabel { 
+    cn1-derive: Label;
+    font-size: var(--font-size-small); /*80%;*/
+    color: lightslategray;
+    text-align: center;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm;
+}
+
+/* INLINE INSERT ** ITEMLIST ***/
+
+InlineInsertListCont{
+    cn1-derive: ItemListContainer;
+}
+ListPinchInsertTextField { 
+    cn1-derive: TextField;
+    /*color: darkslategray;*/
+    /*background-color: #eee;*/
+    /*border-color: lightblue;*/
+    /*border-color: #007AFF; royalblue;*/
+    border-style: none;
+    /*border-width: 0.2mm;*/ 
+    background-color: transparent;
+    margin: 0mm;
+    padding: 0mm 1mm;
+}
+ListPinchInsertTextEditButton { 
+    cn1-derive: IconEdit; 
+    /*    margin: 0mm;
+        padding: 0mm 0mm; */
+}
+ListPinchInsertTextCloseButton { 
+    cn1-derive: Button;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm 2mm;
+}
+/*ListPinchInsertHintLabelXXX { 
+    cn1-derive: Label;
+    font-size: 80%;
+    color: lightslategray;
+    text-align: center;
+    background-color: #eee;
+    margin: 0mm;
+    padding: 0mm;
+}*/
+
+/* INLINE INSERT ** CATEGORY ***/
+
+InlineInsertCategoryCont{
+    cn1-derive: ItemListContainer;
+}
+CatPinchInsertTextField { 
+    cn1-derive: TextField;
+    /*color: darkslategray;*/
+    /*background-color: #eee;*/
+    /*border-color: lightblue;*/
+    /*border-color: #007AFF; royalblue;*/
+    border-style: none;
+    /*border-width: 0.2mm;*/ 
+    background-color: transparent;
+    margin: 0mm;
+    padding: 0mm 1mm;
+}
+CatPinchInsertTextEditButton { 
+    cn1-derive: IconEdit; 
+    /*    margin: 0mm;
+        padding: 0mm 0mm; */
+}
+CatPinchInsertTextCloseButton { 
+    cn1-derive: Button;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm 2mm;
+}
+/*CatPinchInsertHintLabelXXX { 
+    cn1-derive: Label;
+    font-size: 80%;
+    color: lightslategray;
+    text-align: center;
+    background-color: #eee;
+    margin: 0mm;
+    padding: 0mm;
+}*/
+
+/* INLINE INSERT ** WORKSLOT ***/
+
+InlineInsertWorkSlotCont{
+    cn1-derive: ItemListContainer;
+}
+WorkSlotPinchInsertTextField { 
+    cn1-derive: TextField;
+    /*color: darkslategray;*/
+    /*background-color: #eee;*/
+    /*border-color: lightblue;*/
+    /*border-color: #007AFF; royalblue;*/
+    border-style: none;
+    /*border-width: 0.2mm;*/ 
+    background-color: transparent;
+    margin: 0mm;
+    padding: 0mm 1mm;
+}
+WorkSlotPinchInsertTextEditButton { 
+    cn1-derive: IconEdit; 
+    /*    margin: 0mm;
+        padding: 0mm 0mm; */
+}
+WorkSlotPinchInsertTextCloseButton { 
+    cn1-derive: Button;
+    /*background-color: #eee;*/
+    margin: 0mm;
+    padding: 0mm 2mm;
+}
+/*WorkSlotPinchInsertHintLabelXXX { 
+    cn1-derive: Label;
+    font-size: 80%;
+    color: lightslategray;
+    text-align: center;
+    background-color: #eee;
+    margin: 0mm;
+    padding: 0mm;
+}*/
+
+
+/* STATISTICS */
+StatisticsItemListContainer1 { /*south container with details for a List/Cat/Date interval*/
+    cn1-derive:ItemListContainer;
+    background:lightgray;
+    padding: 0.7mm 1mm 0.7mm 1mm;
+}
+StatisticsItemListContainer2 { /*south container with details for a List/Cat/Date interval*/
+    cn1-derive:ItemListContainer;
+    padding: 0.2mm 1mm 0.2mm 1mm;
+}
+StatisticsGroupDetails { /*south container with details for a List/Cat/Date interval*/
+    cn1-derive:Container;
+    margin: 0 2mm 0 2mm;
+}
+StatisticsDetail { /*label with details for a group, Estimate sum and Work Time sum*/
+    cn1-derive:ItemListSmall;
+}
+
+StatisticsDetailActual { /*label with details for a group, Estimate sum and Work Time sum*/
+    cn1-derive:ListOfItemListsRemainingTime;
+}
+StatisticsDetailTaskCountActual { /*label with details for a group, Estimate sum and Work Time sum*/
+    cn1-derive:ListOfItemListsShowItems;
+}
+
+/* WORKSLOT */
+WorkSlotContainer {
+    cn1-derive: ItemContainer;
+}
+WorkSlotStartTime { /*style for task details - SOUTH */
+    cn1-derive: ListOfItemsTextBase; 
+    margin-left: 0mm;
+    margin-bottom: 0;
+}
+WorkSlotStartTimeNow { /*style for task details - SOUTH */
+    cn1-derive: WorkSlotStartTime;
+    text-decoration: underline;
+}
+WorkSlotStartTimePast { /*style for task details - SOUTH */
+    cn1-derive: WorkSlotStartTime;
+    text-decoration: underline;
+}
+WorkSlotEndTime { /*style for task details - SOUTH */
+    cn1-derive: ListOfItemsTextBase;
+}
+WorkSlotDetails { /*style for task details - SOUTH */
+    cn1-derive: ListOfItemsTextBase;
+    /*font-size: 90%;*/
+    margin-top: 0;
+    padding-top: 0; 
+    /*padding-left: 4mm;*/
+    color: darkgray;
+}
+
+ListOfItemsSelected { /*the size of the hidden(?) button below the checkbox)*/
+    cn1-derive: FinishTime;
+    /*    font-size: 80%;*/
+    margin: 0 0 0 0mm;
+    padding: 0 1mm 0 2mm;
+    text-align: left;
+    color:grey;
+}
+
+ListOfItemsEditItemIcon {
+    cn1-derive: IconEdit;
+    /*    font-size: 120%;
+        margin: 0 0 0 0mm;
+        padding: 0 2mm 0 2mm;
+        text-align: right;
+        color:grey;*/
+}
+
+ItemStatusPopup {
+    font-size: var(--font-size-normal); /*180%;*/
+    /*    margin: 0 0 0 2mm;
+        padding: 0 0 0 2mm;*/
+    margin: 2mm;
+    padding: 2mm;
+    text-align: right;
+    color:green;
+}
+
+ItemStatusIcon {
+    font-size: var(--font-size-normal); /*100%;*/
+    margin: 0 0 0 2mm;
+    padding: 0 0 0 2mm;
+    text-align: right;
+    color: #999999;
+}
+
+ItemCommentIcon {
+    cn1-derive: ItemStatusIcon;
+}
+
+ItemStatusPopupIcon {
+    font-size: 120%;
+    margin: 0 0 0 2mm;
+    padding: 0 0 0 2mm;
+    text-align: left;
+    color:#666666;
+}
+
+ToggleButton {
+    cn1-derive: LabelValue; /*Button; RadioButton;*/
+
+    /*border-color: #007AFF; royalblue;*/
+    /*border-style: solid;*/
+    /*border-width: 1px; /*0.2mm;/*0.3mm;*/
+    border: 1px solid;/* #007AFF;/**/
+    border-color: var(--ios-blue);
+    border-radius: 0mm 0mm 0mm 0mm; /*TEMP DISABLED*/
+
+    /* font-size: 100%;*/
+    color: var(--ios-blue);/*#007AFF; /*royalblue;*/
+    /* background: white;
+     /*background: grey;*/
+    text-align: center;
+    margin: 0mm;/**/
+    /*    margin-bottom: 0px;*/
+    padding: 1mm;
+    /* border-top: 1mm;
+     border-bottom:  1mm;*/
+    /* text-align: right;*/
+    /*color: #6eaeff; /**dodgerblue;*/
+}
+
+ToggleButton.pressed {
+    /*cn1-derive: ToggleButton;*/
+    background-color: var(--ios-blue); /*#007AFF; /*blue;*/
+    color: white;
+    /*color: green; /**dodgerblue;*/
+}
+
+ToggleButton.selected {
+    /*cn1-derive: ToggleButton;*/
+    background-color:  var(--ios-blue);/*#007AFF; /*royalblue;*/
+    color: white;
+    /*color: brown; /**dodgerblue;*/
+}
+
+ToggleButtonFirst {
+    /*https://stackoverflow.com/questions/52163839/codename-one-componentgroupbool-on-android-by-css*/
+    cn1-derive: ToggleButton;
+    /*border-width: 0.3mm;
+    border-color: gray;
+    color: green;
+    background: aqua;
+    /*border-style: solid;*/
+    /*border-style: solid;
+    border-right: 0mm;*/
+    /* border-top-left-radius: 1mm;
+     border-bottom-left-radius: 1mm; /*TEMP DISABLED*/
+    /*border-top-right-radius: 1mm;
+     border-bottom-right-radius: 1mm; /*TEMP DISABLED*/
+    border-radius: 1mm 0mm 0mm 1mm; /*TEMP DISABLED*/
+    /*   margin: 0mm;
+      margin-bottom: 0px;
+      padding: 1mm;*/
+}
+
+ToggleButtonOnly {
+    /*https://stackoverflow.com/questions/52163839/codename-one-componentgroupbool-on-android-by-css*/
+    /*cn1-derive: ToggleButton;*/
+    /*border-width: 0.3mm;
+    border-color: gray;
+    color: green;
+    background: aqua;
+    /*border-style: solid;*/
+    /*  border-top-left-radius: 1mm;
+      border-bottom-left-radius: 1mm;
+      border-top-right-radius: 1mm;
+      border-bottom-right-radius: 1mm; /*TEMP DISABLED*/
+    border-radius: 1mm 1mm 1mm 1mm; /*TEMP DISABLED*/
+
+    /*   margin: 0mm;
+       margin-bottom: 0px;
+       padding: 1mm;*/
+}
+
+ToggleButtonLast { 
+    cn1-derive: ToggleButton;
+    border-radius: 0mm 1mm 1mm 0mm; 
+    /*      border-top-left-radius: 1mm;
+        border-bottom-left-radius: 1mm; */
+    /*    border-top-right-radius: 1mm;
+        border-bottom-right-radius: 1mm;*/
+}
+
+GroupElement{   
+    /*cn1-derive: ToggleButton;*/
+    cn1-derive: LabelValue; 
+    border: 1px solid; /* #007AFF;/**/
+    border-color: var(--ios-blue);
+    margin: 0mm;/**/
+    /*    margin-bottom: 0px;*/
+    padding: 1mm;
+    border-radius: 0mm 0mm 0mm 0mm;
+
+}
+
+GroupElementFirst{
+    cn1-derive: ToggleButton;
+    /*    border-top-left-radius: 1mm;
+        border-top-right-radius:  1mm;TEMP DISABLED*/
+    border-radius: 2mm 2mm 0mm 0mm;
+}
+GroupElementLast{
+    cn1-derive: ToggleButton;
+    /*    border-bottom-right-radius: 1mm;
+        border-bottom-left-radius:  1mm; TEMP DISABLED*/
+    border-radius: 0mm 0mm 2mm 2mm;
+
+}
+GroupElementOnly{
+    cn1-derive: ToggleButtonOnly;
+    border-radius: 2mm 2mm 2mm 2mm;
+
+}
+
+
+MyComponentGroupxx {
+    margin:1mm 1mm;
+    padding:0 1.5mm; /*top+bottom right+left*/
+}
+
+ComponentGroup {
+    margin:0mm 0mm 0mm 0mm ;
+}
+
+ComponentGroupTwoLines {
+    cn1-derive: ComponentGroup;
+    margin-top: 1.5mm;
+}
+
+ButtonGroup { /*popup menu to select item status */
+    font-family :  "native:MainRegular";
+    font-size: var(--font-size-big); /*140%;*/
+    color: darkgrey;
+    padding: 1mm;
+    margin: 1mm;
+    /*background: green;*/
+}
+
+ButtonGroupFirst {
+    cn1-derive: ButtonGroup;
+    background: white;
+    border-top-left-radius: 1mm;
+    border-top-right-radius: 1mm;/*TEMP DISABLED*/
+}
+
+ButtonGroupLast {
+    cn1-derive: ButtonGroup;
+    background: white;
+    border-bottom-right-radius: 1mm;
+    border-bottom-left-radius: 1mm;/*TEMP DISABLED*/
+}
+
+ButtonGroupOnly { 
+    cn1-derive: ButtonGroup;
+    background: white;
+    border-top-left-radius: 1mm;
+    border-top-right-radius:  1mm;
+    border-bottom-right-radius: 1mm;
+    border-bottom-left-radius:  1mm;/*TEMP DISABLED*/
+    margin: 2mm;
+    padding: 2mm; 
+}
+
+ManualSorting {
+    color: violet;
+}
+/******* OTHER ****************/
+Switch {
+    /*color: white;
+    background: activeborder;*/
+    margin-left: 5mm;
+    /*padding: 0 0mm 0 2mm;*/
+    padding: 0mm 0mm 0mm 0mm;
+}
+
+PickerDialog{
+    cn1-derive: Dialog;
+    color: red;
+    background-color: lightpink;
+}
+PickerDialogText{
+    cn1-derive: Label;
+    text-align:center;
+    color: green;
+}
+
+/*Used in CN1 LookAndFeel.initScroll*/
+
+Scroll{ /*also HorizontalScroll*/
+    color: yellow;
+}
+
+ScrollThumb{ /*also HorizontalScrollThumb*/
+    color: red;
+}
+
+/*Styles for Overflow menu */
+/*https://stackoverflow.com/questions/60331822/codename-one-how-to-style-the-overflow-and-its-commands-in-css*/
+
+Menu{ 
+    color: blue;
+}
+
+Command { 
+    cn1-derive: Label;
+    padding: 0mm 0mm 0mm 1mm;
+    border-bottom: 1px solid darkgray;
+
+    /*color: green;*/
+}
+
+CommandList{ 
+    color: red;
+}
+
+/* End /Users/thomashjelm/NetBeansProjects/todocatalyst/css/theme.css */

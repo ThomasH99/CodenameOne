@@ -35,13 +35,13 @@ public class ScreenSettingsListOfItemLists extends ScreenSettingsCommon {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
 //        cont.setScrollableY(true);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewItemListsInStartOfItemListList);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfItemListsShowNumberUndoneTasks);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfItemListsShowNumberDoneTasks);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfItemListsShowRemainingEstimate);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfItemListsShowTotalTime);
         addSettingBoolean(content, parseIdMap2, MyPrefs.listOfItemListsShowWorkTime);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewItemListsInStartOfItemListList);
 
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropLeftDropZoneWidth, 0, 30, 1);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropRightDropZoneWidth, 0, 30, 1);

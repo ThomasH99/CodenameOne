@@ -727,7 +727,7 @@ return StartTimerResult.noTask;
         moveToNextTask();
         refreshOrShowTimerUI();
         refreshScreenOnTimerUpdate();
-        return StartTimerResult.started; xx;
+        return StartTimerResult.started;
     }
 
     private StartTimerResult gotoNext(TimerInstance timerInstance) {

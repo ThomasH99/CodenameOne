@@ -67,20 +67,20 @@ public class ScreenSettings extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.keepScreenAlwaysOnInApp);
 
         if (Display.getInstance().canForceOrientation()) {
-            addSettingBoolean(content, parseIdMap2, MyPrefs.screenEnableDisplayRotationToLandscape,
-//                    () -> Display.getInstance().lockOrientation(false));
+            addSettingBoolean(content, parseIdMap2, MyPrefs.screenEnableDisplayRotationAwayFromPortrait,
+                    //                    () -> Display.getInstance().lockOrientation(false));
                     () -> Display.getInstance().unlockOrientation(),
-                    () -> Display.getInstance().lockOrientation(true)            );
+                    () -> Display.getInstance().lockOrientation(true));
         }
         //Safe area on/off
         addSettingBoolean(content, parseIdMap2, MyPrefs.enableSafeArea,
                 () -> {
-                    previousForm.setSafeArea(true);
-                    previousForm.setSafeAreaChanged();
+                    parentForm.setSafeArea(true);
+                    parentForm.setSafeAreaChanged();
                 },
                 () -> {
-                    previousForm.setSafeArea(false);
-                    previousForm.setSafeAreaChanged();
+                    parentForm.setSafeArea(false);
+                    parentForm.setSafeAreaChanged();
                 });
 
         if (true) {
@@ -131,6 +131,19 @@ public class ScreenSettings extends ScreenSettingsCommon {
                         parseUser.logout();
                     }
                     ScreenLogin.logoutCurrentUser();
+                    DAO.getInstance().clearAllCacheAndStorage(false);
+                    showPreviousScreen(false); //back to Main screen
+                    if (parentForm.parentForm != null) {
+                        if (!Config.TEST && parentForm.parentForm instanceof ScreenLogin) { //keep mail+password during testing
+                            if (((ScreenLogin) parentForm.parentForm).email != null) {
+                                ((ScreenLogin) parentForm.parentForm).email.setText("");
+                            }
+                            if (((ScreenLogin) parentForm.parentForm).password != null) {
+                                ((ScreenLogin) parentForm.parentForm).password.setText("");
+                            }
+                        }
+                        parentForm.showPreviousScreen(false); //back out to Login screen
+                    }
                 } catch (ParseException ex) {
                     Log.p(ex.getMessage());
                     Log.e(ex);
@@ -165,7 +178,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
                     //TODO add WARNING: this will delete xx tasks, yy lists, zz categories as well as work time, finished tasks etc. Do NOT use this unless you have a backup of your data or really want to erase all your data in Sharper
                     DAO.getInstance().deleteAllUserDataOnParseServerCannotBeUndone(false);
 //                    DAO.getInstance().resetAndDeleteAndReloadAllCachedData(); //NOT enough since it would leave all local data stored 
-                    DAO.getInstance().deleteAllLocalStorage(); //NB! will also delete the login token
+                    DAO.getInstance().clearAllCacheAndStorage(false); //NB! will also delete the login token
                     DAO.getInstance().resetAndDeleteAndReloadAllCachedData();
 
 //                    ParseUser parseUser = ParseUser.getCurrent();
@@ -187,7 +200,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //background task: http://stackoverflow.com/questions/28366161/parse-remove-user-and-its-related-records
                     //TODO!!! ask "A few last words to help us understand why you delete your account?"
                     DAO.getInstance().deleteAllUserDataOnParseServerCannotBeUndone(true);
-                    DAO.getInstance().deleteAllLocalStorage(); //will also delete the login token
+                    DAO.getInstance().clearAllCacheAndStorage(false); //will also delete the login token
                     ParseUser parseUser = ParseUser.getCurrent();
                     try {
                         parseUser.logout();

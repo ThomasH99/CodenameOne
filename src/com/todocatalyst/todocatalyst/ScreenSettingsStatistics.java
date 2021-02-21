@@ -120,12 +120,5 @@ public class ScreenSettingsStatistics extends ScreenSettingsCommon {
 //        addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsGroupByCategoryInsteadOfList);
         addSettingInt(cont, parseIdMap2, MyPrefs.statisticsScreenNumberPastDaysToShow, 1, 365, 1);
 
-        if (false) {
-            //Examples:
-            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowEffortEstimateDetails);
-            addSettingInt(cont, parseIdMap2, MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds, 0, 30, 1);
-            addSettingTimeInMinutes(cont, parseIdMap2, MyPrefs.timerBuzzerInterval); //disable until buzzer can run in background
-        }
-
     }
 }

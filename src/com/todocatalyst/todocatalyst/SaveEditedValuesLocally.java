@@ -13,6 +13,7 @@ import com.codename1.ui.Display;
 import com.codename1.ui.Form;
 import com.codename1.ui.events.ScrollListener;
 import com.codename1.ui.util.UITimer;
+import com.parse4cn1.ParseObject;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -40,9 +41,11 @@ public class SaveEditedValuesLocally {//extends HashMap {
     private MyForm myForm;
     private int scrollY;
     private UITimer saveScrollTimer;
-    private Component lastScrollableComponent = null;
-    private ScrollListener lastScrollListener = null;
+    private Component lastScrollableComponent;
+    private ScrollListener lastScrollListener;
     private boolean scrollListenerActive;
+    private final static String EDIT_SESSION_START_TIME = "EditSessionStartTime"; //how long after last scroll should the scroll value be saved
+//    private Date editSessionStartTime;
 
     SaveEditedValuesLocally(MyForm myForm, String filename, boolean activateScrollPositionSave) {
         if (Config.TEST) {
@@ -50,6 +53,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         }
 //         previousValues = new HashMap<Object, Object>(); //implicit
         this.myForm = myForm;
+
         this.scrollListenerActive = activateScrollPositionSave;
         if (scrollListenerActive && this.myForm != null) {
             saveScrollTimer = new UITimer(() -> {
@@ -84,11 +88,14 @@ public class SaveEditedValuesLocally {//extends HashMap {
             this.filename = PREFIX + filename;
             if (Storage.getInstance().exists(this.filename)) {
 //            while (Storage.getInstance().exists(this.filename)) {
-                previousValues.putAll((Map) Storage.getInstance().readObject(this.filename)); //merge values
-//                uniquePostFix += "+1";
+                Map s = (Map) Storage.getInstance().readObject(this.filename);
+                if (s instanceof Map) { //also checks for null
+                    previousValues.putAll((Map) s); //merge values
+                }//                uniquePostFix += "+1";
 //                this.filename = PREFIX + filename + uniquePostFix;
             }
         }
+        put(EDIT_SESSION_START_TIME, new MyDate());
     }
 
     SaveEditedValuesLocally(String filename) {
@@ -125,18 +132,17 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
 
     public void setListenToYScrollComponent(MyForm form) {
-        SaveEditedValuesLocally.this.setListenToYScrollComponent(form.findScrollableContYChild());
+        setListenToYScrollComponent(form.findScrollableContYChild());
     }
 
     public void setListenToYScrollComponent() {
 //        if (myForm!=null)
-        SaveEditedValuesLocally.this.setListenToYScrollComponent(myForm.findScrollableContYChild());
+        setListenToYScrollComponent(myForm.findScrollableContYChild());
     }
 
 //    public Integer getScrollYXXX() {
 //        return (Integer) get(SCROLL_VALUE_KEY);
 //    }
-
     /**
      * will scroll the form to the last stored scrollY position (if any) and
      * delete the scrollY position so this is only done once
@@ -153,7 +159,9 @@ public class SaveEditedValuesLocally {//extends HashMap {
                 scrollableComp.setScrollYPublic(scrollY);
             }
 //            previousValues.remove(SCROLL_VALUE_KEY); //we only scroll to this value once, on first show of screen after 
-            remove(SCROLL_VALUE_KEY); //we only scroll to this value once, on first show of screen after 
+            if (false) {
+                remove(SCROLL_VALUE_KEY); //we only scroll to this value once, on first show of screen after 
+            }
             if (false && Config.TEST) {
                 Log.p("SaveEditedValuesLocally: Scroll to Y=" + scrollY);
             }
@@ -206,7 +214,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         if (false && Config.TEST) {
             ASSERT.that(value != null, "SaveEditedValuesLocally: put key=\"" + key + "\" with null value - missing objectIdP??");
         }
-        if (previousValues != null) {
+        if (true || previousValues != null) { //should never bu null, or error if so
             Object previousValue;
             if (value == null) {
                 previousValue = previousValues.remove(key); // value.toString());
@@ -284,7 +292,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
     }
 
     public void removePinchInsertKeys() {
-        remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
+        remove(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY); //delete the marker on exit
         remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //delete the marker on exit
         remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK); //delete the marker on exit
         remove(MyForm.SAVE_LOCALLY_REF_ELT_PARSE_CLASS); //delete the marker on exit
@@ -353,23 +361,23 @@ public class SaveEditedValuesLocally {//extends HashMap {
      * defined, it will currently be overwritten (this could be changed to
      * merging the values if needed someday)
      *
-     * @param predefinedValues
+     * @param predefinedValuesN
      */
-    public void addAndOverwrite(SaveEditedValuesLocally predefinedValues) {
-        if (predefinedValues == null) {
+    public void addAndOverwrite(SaveEditedValuesLocally predefinedValuesN) {
+        if (predefinedValuesN == null) {
             return;
         }
 //        for(Map.Entry<String, HashMap> entry : selects.entrySet()) {
 //    String key = entry.getKey();
 //    HashMap value = entry.getValue();
 //        for (Map.Entry<Object, Object> entry : getValues().entrySet()) {
-        for (Map.Entry<Object, Object> entry : predefinedValues.getValues().entrySet()) {
+        for (Map.Entry<Object, Object> entry : predefinedValuesN.getValues().entrySet()) {
             Object key = entry.getKey();
             Object value = entry.getValue();
 //            Object oldValue = previousValues.put(key, value);
             Object oldValue = put(key, value);
             if (Config.TEST) {
-                ASSERT.that(oldValue == null || oldValue.equals(value), this.getClass() + ".addAndOverwrite: key=" + key + ", overwriting exiting value=" + oldValue + ", with different value=" + value);
+                ASSERT.that(oldValue == null || oldValue.equals(value) || key.equals(EDIT_SESSION_START_TIME), this.getClass() + ".addAndOverwrite: key=" + key + ", overwriting exiting value=" + oldValue + ", with different value=" + value);
             }
         }
 //        saveFile(); //saved in put above
@@ -400,24 +408,23 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //        saveFile(); //saved in put above
     }
 
-    public void putCategories(List<Category> categories) {
-//        Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
-        if (categories == null || categories.size() == 0) {
-            remove(Item.PARSE_CATEGORIES);
-        }
-//        put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(categories));
-        put(Item.PARSE_CATEGORIES, ItemAndListCommonInterface.convListToObjectIdList((List) categories));
-    }
-
-    public List<Category> getCategories() {
-        if (get(Item.PARSE_CATEGORIES) != null) {
-//            return Item.convCatObjectIdsListToCategoryList((List<String>) get(Item.PARSE_CATEGORIES));
-            return DAO.getInstance().convCatObjectIdsListToCategoryListN((List<String>) get(Item.PARSE_CATEGORIES));
-        } else {
-            return new ArrayList();
-        }
-    }
-
+//    public void putCategories(List<Category> categories) {
+////        Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
+//        if (categories == null || categories.size() == 0) {
+//            remove(Item.PARSE_CATEGORIES);
+//        }
+////        put(Item.PARSE_CATEGORIES, Item.convCategoryListToObjectIdList(categories));
+//        put(Item.PARSE_CATEGORIES, ItemAndListCommonInterface.convListToObjectIdList((List) categories));
+//    }
+//    
+//    public List<Category> getCategories() {
+//        if (get(Item.PARSE_CATEGORIES) != null) {
+////            return Item.convCatObjectIdsListToCategoryList((List<String>) get(Item.PARSE_CATEGORIES));
+//            return DAO.getInstance().convCatObjectIdsListToCategoryListN((List<String>) get(Item.PARSE_CATEGORIES));
+//        } else {
+//            return new ArrayList();
+//        }
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void putOwnerXXX(ItemAndListCommonInterface owner) {
 ////        Item.convCatObjectIdsListToCategoryList((List<String>) previousValues.get(Item.PARSE_CATEGORIES))
@@ -432,36 +439,35 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //        }
 //    }
 //</editor-fold>
-    private void putListOfElements(String key, List<ItemAndListCommonInterface> list) {
-        if (list == null) {
-            remove(key);
-        } else {
-            List<String> objIdList = new ArrayList();
-            for (ItemAndListCommonInterface e : list) {
-                objIdList.add(e.getObjectIdP());
-            }
-            put(key, objIdList);
-        }
-    }
-
-    public void putOwners(List<ItemAndListCommonInterface> owners) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (owners == null) {
-//            remove(Item.PARSE_OWNER_ITEM);
+//    private void putListOfElements(String key, List<ItemAndListCommonInterface> list) {
+//        if (list == null) {
+//            remove(key);
 //        } else {
-//            List ids = new ArrayList();
-//            for (ItemAndListCommonInterface e : owners) {
-//                ids.add(e.getObjectIdP());
+//            List<String> objIdList = new ArrayList();
+//            for (ItemAndListCommonInterface e : list) {
+////                objIdList.add(e.getObjectIdP());
+//                objIdList.add(e.getGuid());
 //            }
-//            put(Item.PARSE_OWNER_ITEM, ids);
+//            put(key, objIdList);
 //        }
-//</editor-fold>
-        putListOfElements(Item.PARSE_OWNER_ITEM, owners);
-    }
-
-    public void putOwner(ItemAndListCommonInterface owner) {
-        putOwners(Arrays.asList(owner));
-    }
+//    }
+//    public void putOwners(List<ItemAndListCommonInterface> owners) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (owners == null) {
+////            remove(Item.PARSE_OWNER_ITEM);
+////        } else {
+////            List ids = new ArrayList();
+////            for (ItemAndListCommonInterface e : owners) {
+////                ids.add(e.getObjectIdP());
+////            }
+////            put(Item.PARSE_OWNER_ITEM, ids);
+////        }
+////</editor-fold>
+//        putListOfElements(Item.PARSE_OWNER_ITEM, owners);
+//    }
+//    public void putOwner(ItemAndListCommonInterface owner) {
+//        putOwners(Arrays.asList(owner));
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public ItemAndListCommonInterface getOwnerXXX() {
 ////        if (previousValues.get(Item.PARSE_CATEGORIES) != null)
@@ -472,7 +478,6 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //                : null;
 //    }
 //</editor-fold>
-
     /**
      * returns null if no list was previously defined, otherwise an empty list
      * if previous owner was removed, or a list containing the previously
@@ -497,90 +502,114 @@ public class SaveEditedValuesLocally {//extends HashMap {
 //            return null;
 //        }
 //    }
-
-    public List<ItemAndListCommonInterface> getOwnersN() {
-        if (get(Item.PARSE_OWNER_ITEM) != null) {
-            List<String> ids = (List) get(Item.PARSE_OWNER_ITEM);
-            List<ItemAndListCommonInterface> owners = new ArrayList();
-            for (String id : ids) {
-                ItemAndListCommonInterface owner = DAO.getInstance().fetchItemOwner(id);
-                owners.add(owner);
-            }
-            return owners;
-        } else {
-            return null;
-        }
-//        return getListOfElementsN(Item.PARSE_OWNER_ITEM);
-    }
-
+//    public List<ItemAndListCommonInterface> getOwnersN() {
+//        if (get(Item.PARSE_OWNER_ITEM) != null) {
+//            List<String> ids = (List) get(Item.PARSE_OWNER_ITEM);
+//            List<ItemAndListCommonInterface> owners = new ArrayList();
+//            for (String id : ids) {
+//                ItemAndListCommonInterface owner = DAO.getInstance().fetchItemOwner(id);
+//                owners.add(owner);
+//            }
+//            return owners;
+//        } else {
+//            return null;
+//        }
+////        return getListOfElementsN(Item.PARSE_OWNER_ITEM);
+//    }
     /**
      * shortcut to convert a list of subtasks/Items to a list of their ObjectIds
      * and put that
      *
      * @param subtasksObjIds
      */
-    public Object putSubtaskList(List<Item> subtasks) {
+//    public Object putSubtaskList(List<Item> subtasks) {
+    public void putSubtaskList(List<Item> subtasks) {
 //        putListOfElements(Item.PARSE_SUBTASKS, subtasks);
-        if (subtasks == null) {
-            remove(Item.PARSE_SUBTASKS);
-            return null;
+        if (true) {
+            if (subtasks == null) {
+                remove(Item.PARSE_SUBTASKS);
+//                return null;
+            } else {
+                List<String> listOfObjIds = ItemAndListCommonInterface.convListToObjectIdList((List) subtasks);
+                put(Item.PARSE_SUBTASKS, listOfObjIds);
+//                return listOfObjIds;
+            }
         } else {
-            List<String> listOfObjIds = ItemAndListCommonInterface.convListToObjectIdList((List) subtasks);
-            put(Item.PARSE_SUBTASKS, listOfObjIds);
-            return listOfObjIds;
+            if (subtasks == null) {
+                remove(Item.PARSE_SUBTASKS);
+//                return null;
+            } else {
+//                ParseObject.setExternalizeAllState(true);
+                put(Item.PARSE_SUBTASKS, subtasks);
+//                ParseObject.setExternalizeAllState(false);
+            }
         }
     }
 
-    public void putSubtaskObjdIdsList(List<String> subtasksObjIds) {
-        if (subtasksObjIds == null) {
-            remove(Item.PARSE_SUBTASKS);
-        } else {
-            put(Item.PARSE_SUBTASKS, subtasksObjIds);
-        }
-    }
-
-    /**
-     * returns null if no edits were done, and empty list if all subtasks were
-     * deleted!!
-     *
-     * @return
-     */
-    public List<Item> getSubtaskListN() {
-        List<String> subtasksObjIds = (List) get(Item.PARSE_SUBTASKS);
-        return DAO.getInstance().convItemObjectIdsListToItemListN((List) subtasksObjIds);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (ids != null) {
-//            List<Item> items = new ArrayList();
-//            for (String id : ids) {
-//                Item item = DAO.getInstance().fetchItem(id);
-//                items.add(item);
-//            }
-//            return items;
+//    public void putSubtaskObjdIdsListxxx(List<String> subtasksObjIds) {
+//        if (subtasksObjIds == null) {
+//            remove(Item.PARSE_SUBTASKS);
 //        } else {
-//            return null;
+//            put(Item.PARSE_SUBTASKS, subtasksObjIds);
 //        }
-//        return getListOfElementsN(Item.PARSE_SUBTASKS);
-//</editor-fold>
-    }
-
+//    }
     /**
      * returns null if no edits were done, and empty list if all subtasks were
      * deleted!!
      *
      * @return
      */
-    public List<String> getSubtaskObjIdsListN() {
-        List<String> ids = (List) get(Item.PARSE_SUBTASKS);
-//        return ids != null ? ids : new ArrayList();
-        return ids;
-    }
-
+//    public List<Item> getSubtaskListN() {
+////        List<Item> subtasks = (List<Item>) get(Item.PARSE_SUBTASKS);
+////        return subtasks;
+//        List<String> subtasksObjIds = (List<String>) get(Item.PARSE_SUBTASKS);
+//        return DAO.getInstance().convItemObjectIdsListToItemListN(subtasksObjIds);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (ids != null) {
+////            List<Item> items = new ArrayList();
+////            for (String id : ids) {
+////                Item item = DAO.getInstance().fetchItem(id);
+////                items.add(item);
+////            }
+////            return items;
+////        } else {
+////            return null;
+////        }
+////        return getListOfElementsN(Item.PARSE_SUBTASKS);
+////</editor-fold>
+//    }
+    /**
+     * returns null if no edits were done, and empty list if all subtasks were
+     * deleted!!
+     *
+     * @return
+     */
+//    public List<String> getSubtaskObjIdsListNxxx() {
+//        List<String> ids = (List) get(Item.PARSE_SUBTASKS);
+////        return ids != null ? ids : new ArrayList();
+//        return ids;
+//    }
 //    public void removeOwnerXXX() {
 //        remove(Item.PARSE_OWNER_ITEM);
 //    }
+//    public void removeOwners() {
+//        remove(Item.PARSE_OWNER_ITEM);
+//    }
+    public Date getEditSessionStartTime() {
+        return (Date) get(EDIT_SESSION_START_TIME);
+    }
+    ParseObject element;
 
-    public void removeOwners() {
-        remove(Item.PARSE_OWNER_ITEM);
+    public void setElementToSaveLocally(ParseObject element) {
+        this.element = element;
+    }
+
+    public void saveElementToSaveLocally() {
+        put("Element", element);
+    }
+
+    public ParseObject getElementToSaveLocally() {
+        return (ParseObject) get("Element");
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

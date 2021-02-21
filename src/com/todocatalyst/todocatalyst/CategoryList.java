@@ -7,13 +7,13 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.io.Externalizable;
 import com.codename1.io.Util;
 import com.parse4cn1.ParseObject;
-import static com.todocatalyst.todocatalyst.ItemList.PARSE_ITEMLIST;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import static com.todocatalyst.todocatalyst.ItemList.PARSE_ITEMS;
 
 /**
  * stores the (manually sorted) list of categories defined by the user. Updated
@@ -26,7 +26,7 @@ public class CategoryList extends ItemList {
 
     public static String CLASS_NAME = "CategoryList";
 
-    final static String PARSE_CATEGORY_LIST = ItemList.PARSE_ITEMLIST; //reuse column name from ItemList to ensure any non-overwritten calls (notably getListFull()) works, was: "categoryList";
+    final static String PARSE_CATEGORY_LIST = ItemList.PARSE_ITEMS; //reuse column name from ItemList to ensure any non-overwritten calls (notably getListFull()) works, was: "categoryList";
     private static CategoryList INSTANCE = null;
 
     /**

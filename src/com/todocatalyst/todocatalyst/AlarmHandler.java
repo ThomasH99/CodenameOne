@@ -283,10 +283,12 @@ public class AlarmHandler {
     }
 
     private void updateAlarmsOrTextForItem(Item item) {
-        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getAlarmDate(), AlarmType.notification,
+//        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getAlarmDate(), AlarmType.notification,
+        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getGuid(), item.getAlarmDate(), AlarmType.notification,
                 item.makeNotificationTitleText(AlarmType.notification), item.makeNotificationBodyText(AlarmType.notification));
 
-        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getWaitingAlarmDate(), AlarmType.waiting,
+//        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getWaitingAlarmDate(), AlarmType.waiting,
+        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getGuid(), item.getWaitingAlarmDate(), AlarmType.waiting,
                 item.makeNotificationTitleText(AlarmType.waiting), item.makeNotificationBodyText(AlarmType.waiting));
 
         if (false) {
@@ -338,7 +340,8 @@ public class AlarmHandler {
     public void deleteAllAlarmsForItem(Item item) {
         //delete all possible alarms set for this item
 //        notificationList.removeAllAlarms(item.getObjectId());
-        notificationList.removeALLAlarmsForItem(item.getObjectIdP());
+//        notificationList.removeALLAlarmsForItem(item.getObjectIdP());
+        notificationList.removeALLAlarmsForItem(item.getGuid());
         cancelAllExpiredAlarms(item); //remove any already expired alarms
 //        inAppTimer.refreshInAppTimer();
 //        notificationList.save();
@@ -377,20 +380,22 @@ public class AlarmHandler {
     public void snoozeAlarm(ExpiredAlarm expiredAlarm, Date snoozeExpireTime) {
 //        AlarmType type = AlarmType.getTypeContainedInStr(notificationId);
 //        String objId = AlarmType.getObjectIdStrWithoutTypeStr(notificationId, type);
-        Item item = DAO.getInstance().fetchItem(expiredAlarm.objectId);
+        Item item = DAO.getInstance().fetchItem(expiredAlarm.guid);
         expiredAlarms.remove(expiredAlarm);
         expiredAlarmSave();
-        notificationList.removeAlarmAndRepeatAlarm(expiredAlarm.objectId, expiredAlarm.type); //on snooze, remove any still active alarms of the same type as the snoozed one
+        notificationList.removeAlarmAndRepeatAlarm(expiredAlarm.guid, expiredAlarm.type); //on snooze, remove any still active alarms of the same type as the snoozed one
 //        notificationList.snoozeAlarm(notificationId, snoozeExpireTime, item.makeNotificationTitleText(type), item.makeNotificationBodyText(type));
-        notificationList.addAlarmAndRepeat(expiredAlarm.objectId, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type), item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
+        notificationList.addAlarmAndRepeat(expiredAlarm.guid, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type), item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
 //        notificationList.save();
         refreshInAppTimerAndSaveNotificationList();
         //save snooze time
 //        item.setSnoozeDate(snoozeExpireTime);
         item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type)));
 //        DAO.getInstance().saveNew(item, true);
-        DAO.getInstance().saveNew(item);
-        DAO.getInstance().saveNewExecuteUpdate();
+//        DAO.getInstance().saveNew(item);
+//        DAO.getInstance().saveItem3(item);xxx;
+//        DAO.getInstance().saveNewTriggerUpdate3();
+        DAO.getInstance().saveToParseNow(item);
     }
 
     public void snoozeAllExpiredAlarms(Date snoozeExpireTime) {
@@ -448,7 +453,8 @@ public class AlarmHandler {
         Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
         while (it.hasNext()) {
             ExpiredAlarm expiredAlarm = it.next();
-            if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
+//            if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
+            if (item.getGuid().equals(expiredAlarm.guid)) {
 //                expiredAlarms.remove(expiredAlarm);
                 it.remove();
             }
@@ -457,7 +463,7 @@ public class AlarmHandler {
     }
 
     private void cancelExpiredAlarmsOnItemUpdate(Item item) {
-        if (item.getObjectIdP() != null) { //can't have any alarms for an not yet saved item
+//        if (item.getObjectIdP() != null) { //can't have any alarms for an not yet saved item
             long now = MyDate.currentTimeMillis();
             boolean normalAlarmUpdatedToFuture = item.getAlarmDate().getTime() > now;
             boolean waitingAlarmUpdatedToFuture = item.getWaitingAlarmDate().getTime() > now;
@@ -466,7 +472,8 @@ public class AlarmHandler {
             Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
             while (it.hasNext()) {
                 ExpiredAlarm expiredAlarm = it.next();
-                if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
+//                if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
+                if (item.getGuid().equals(expiredAlarm.guid)) {
                     if (((expiredAlarm.type == AlarmType.notification || expiredAlarm.type == AlarmType.snoozedNotif) && normalAlarmUpdatedToFuture)
                             || ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.snoozedWaiting) && waitingAlarmUpdatedToFuture)) {
                         it.remove();
@@ -474,7 +481,7 @@ public class AlarmHandler {
                 }
             }
             expiredAlarmSave();
-        }
+//        }
     }
 
     /**
@@ -738,8 +745,9 @@ public class AlarmHandler {
         Item testItem = new Item("test local notification", 20, new MyDate(MyDate.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 48));
         testItem.setAlarmDate(new MyDate(MyDate.currentTimeMillis() + secondsFromNow * 1000)); //alarm in 10s from now
 //        DAO.getInstance().saveNew(testItem, true);
-        DAO.getInstance().saveNew(testItem);
-        DAO.getInstance().saveNewExecuteUpdate();
+//        DAO.getInstance().saveNew(testItem);
+//        DAO.getInstance().saveNewTriggerUpdate3();
+        DAO.getInstance().saveToParseNow(testItem);
     }
 
     public void simulateNotificationReceived_TEST(String taskText, Date due, Date alarm, Date waiting) {
@@ -747,8 +755,9 @@ public class AlarmHandler {
         testItem.setAlarmDate(alarm);
         testItem.setWaitingAlarmDate(waiting);
 //        DAO.getInstance().saveNew(testItem, true);
-        DAO.getInstance().saveNew(testItem);
-        DAO.getInstance().saveNewExecuteUpdate();
+//        DAO.getInstance().saveNew(testItem);
+//        DAO.getInstance().saveNewTriggerUpdate3();
+        DAO.getInstance().saveToParseNow(testItem);
     }
 
     public void simulateNotificationReceived_TEST(String taskText, Date due, int alarmInSecondsFromNow, int waitingAlarmInSecondsFromNow) {

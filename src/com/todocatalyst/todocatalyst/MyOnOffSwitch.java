@@ -35,6 +35,9 @@ class MyOnOffSwitch extends Switch {
         if (parseIdMap != null) {
             parseIdMap.put(this, () -> set.accept(this.isValue()));
         }
+        addActionListener(e -> {
+            set.accept(isOn());
+        });
     }
 
     MyOnOffSwitch() {
@@ -47,5 +50,4 @@ class MyOnOffSwitch extends Switch {
 //        this.setOn(onString);
 //        this.setOff(offString);
 //    }
-
 };

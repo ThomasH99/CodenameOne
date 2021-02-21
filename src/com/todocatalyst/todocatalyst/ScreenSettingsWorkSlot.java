@@ -39,5 +39,6 @@ public class ScreenSettingsWorkSlot extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.workSlotsMayBeCreatedInThePast);
         addSettingBoolean(content, parseIdMap2, MyPrefs.workSlotDefaultStartDateIsNow);
         addSettingBoolean(content, parseIdMap2, MyPrefs.workSlotContinueAddingInlineWorkslots);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.hideIconsInEditTaskScreen);
     }
 }

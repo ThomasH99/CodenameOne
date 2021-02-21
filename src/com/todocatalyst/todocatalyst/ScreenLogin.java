@@ -6,15 +6,13 @@ import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
 import com.codename1.messaging.Message;
-import com.codename1.nui.NTextField;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
-import com.codename1.ui.Form;
 import com.codename1.ui.TextArea;
-import com.codename1.ui.TextComponentPassword;
+import com.codename1.ui.TextField;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.validation.Constraint;
 import com.codename1.ui.validation.RegexConstraint;
@@ -59,21 +57,31 @@ public class ScreenLogin extends MyForm {
 //    private final static String welcome2 = "For demanding users who need the features no other todo apps offer. See how new tasks impacts your deadlines or commitments. Be efficient.";
 //    private final static String welcome3 = "Master priorities. Master time. \nTime-saving features like templates, copy-paste, multiple selections, ...";
 //    private final static String welcome4 = "Time-saving features like templates, copy-paste, multiple selections, ...";
+    TextField email;
+
+    TextField password;
+    private boolean test;
+
     public ScreenLogin() {
         //TODO change login screen to show 2 text/ad screens, swipe them left to get to login fields (like ?? app)
         super("Login", null, () -> {
         });
-
 //        AdMobManager ad;
 //        NTextField n;
     }
 
-    public void go() {
-        go(false);
+    public ScreenLogin(MyForm previousForm, boolean forTesting) {
+        //TODO change login screen to show 2 text/ad screens, swipe them left to get to login fields (like ?? app)
+        super("Login", previousForm, () -> {
+        });
+        test = forTesting;
+//        AdMobManager ad;
+//        NTextField n;
     }
 
     private void startUp(boolean refreshDataInBackground) {
         EasyThread thread = EasyThread.start("cacheUpdate");
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            if (true) {
 //                thread.run(() -> {
 //                    DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
@@ -109,18 +117,20 @@ public class ScreenLogin extends MyForm {
 //            });
 //        } else {
 //            Dialog ip = new InfiniteProgress().showInfiniteBlocking(); //DONE in DAO.cacheLoadDataChangedOnServer
-        //TODO!!!! show waiting symbol "loading your tasks..."
+//TODO!!!! show waiting symbol "loading your tasks..."
 //            DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(), true); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            DAO.getInstance().cacheLoadDataChangedOnServer(true || MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean(),
 //                    false && MyPrefs.reloadChangedDataInBackground.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+//</editor-fold>
         DAO.getInstance().cacheLoadDataChangedOnServer(false); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
 //            ip.dispose();
 //        }
         //ALARMS - initialize
 //        AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
         AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(); //TODO!!!! optimization: do in background
+//<editor-fold defaultstate="collapsed" desc="comment">
 
-        //TIMER - was running when app was moved to background? - now done with ReplayCommand
+//TIMER - was running when app was moved to background? - now done with ReplayCommand
 //            if (!ScreenTimer.getInstance().isTimerActive()) {
 //                new ScreenMain().show(); //go directly to main screen if user already has a session
 //            } else {
@@ -128,8 +138,13 @@ public class ScreenLogin extends MyForm {
 //                    new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
 //                }
 //            }
-        new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+//</editor-fold>
+        new ScreenMain(this).show(); //if pb with Timer relaunch, go to main screen instead
 
+    }
+
+    public void go() {
+        go(false);
     }
 
     public void go(boolean forceLaunchForTest) {
@@ -210,7 +225,6 @@ public class ScreenLogin extends MyForm {
 //            new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
             show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
         }
-
     }
 
     private void setupLoginScreen() {
@@ -218,6 +232,9 @@ public class ScreenLogin extends MyForm {
 //        super("Welcome to TodoCatalyst", BoxLayout.y());
         setTitle("Welcome to TodoCatalyst");
         setLayout(BoxLayout.y());
+        if (test) {
+            addStandardBackCommand();
+        }
 
 //        getTitleArea().setUIID("Container");
 //        setTitle("TodoCatalyst");
@@ -226,36 +243,41 @@ public class ScreenLogin extends MyForm {
         //hide titlebar: http://stackoverflow.com/questions/42871223/how-do-i-hide-get-rid-the-title-bar-on-a-form-codename-one
 //        getToolbar().setUIID("Container");
 //        getToolbar().hideToolbar();
-//        TextField email = new TextField("", "Email", 20, TextArea.EMAILADDR);
-        NTextField email = new NTextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
+        email = new TextField("", "Email", 20, TextArea.EMAILADDR);
+//        NTextField email = new NTextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
+//        TextField email = new TextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
         if (MyPrefs.loginStoreEmail.getBoolean()) {
             email.setText(MyPrefs.loginEmail.getString());
         }
 
-//        TextField password = new TextField("", "Password", 20, TextArea.PASSWORD);
+        password = new TextField("", "Password", 20, TextArea.PASSWORD);
 //        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        TextComponentPassword password = new TextComponentPassword(); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        password.constraint(TextArea.PASSWORD);
-        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+//        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+//        TextField password = new TextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
         if (false) {
             password.setUIID("TextField");
         }
-//        NTextField password = new NTextField( TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 
+//        NTextField password = new NTextField( TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        BorderLayout b1 = new BorderLayout();
 //        b1.defineLandscapeSwap(BorderLayout.NORTH, BorderLayout.WEST);
-        Button signUp = new Button();
-        Button createAccount = new Button();
-        Button connect = new Button();
-        Button login = new Button();
-        Button backToSignupSignIn = new Button();
+        Button signUp = new Button("", "BigButton");
+        Button createAccount = new Button("", "BigButton");
+        Button connect = new Button("", "BigButton");
+        Button login = new Button("", "BigButton");
+        Button backToSignupSignIn = new Button("", "SmallButton");
 //        Button forgottenPassword = new Button();
-        Button forgottenPassword = new Button(""); //Forgot your password?
+        Button forgottenPassword = new Button("", "SmallButton"); //Forgot your password?
 
         SpanLabel introText = new SpanLabel("This is TodoCatalyst. \nProbably the world's most useful Todo app. \nLet's get you started...\n");
         introText.setTextBlockAlign(Component.CENTER);
 
         addComponent(introText);
+
+//        addComponent(backToSignupSignIn);
+
         addComponent(signUp);
         addComponent(email);
         addComponent(password);
@@ -263,6 +285,7 @@ public class ScreenLogin extends MyForm {
         addComponent(createAccount);
         addComponent(login);
         addComponent(forgottenPassword);
+        
         addComponent(backToSignupSignIn);
 
         //hide everything except the two first buttons to chose Signin or SIgnUp
@@ -275,7 +298,9 @@ public class ScreenLogin extends MyForm {
 
         backToSignupSignIn.setCommand(Command.createMaterial("Back", Icons.iconBackToPreviousScreen, (e2) -> {
             signUp.setHidden(false);
+            signUp.setUIID("BigButton");
             login.setHidden(false);
+            login.setUIID("BigButton");
 
             connect.setHidden(true);
             createAccount.setHidden(true);
@@ -283,11 +308,13 @@ public class ScreenLogin extends MyForm {
             password.setHidden(true);
             backToSignupSignIn.setHidden(true);
             forgottenPassword.setHidden(true);
-            animateHierarchy(ANIMATION_TIME_DEFAULT);
+//            animateHierarchy(ANIMATION_TIME_DEFAULT);
+            animateLayout(ANIMATION_TIME_DEFAULT);
         }));
 
-        signUp.setCommand(Command.createMaterial("Sign up", Icons.iconPersonNew, (e2) -> {
-            signUp.setHidden(true);
+        signUp.setCommand(Command.createMaterial("Sign me up", Icons.iconPersonNew, (e2) -> {
+//            signUp.setHidden(true);
+            signUp.setUIID("BigButtonTitle");
             login.setHidden(true);
 
             connect.setHidden(true);
@@ -296,33 +323,36 @@ public class ScreenLogin extends MyForm {
             password.setHidden(true);
             forgottenPassword.setHidden(true);
             backToSignupSignIn.setHidden(false);
-            animateHierarchy(ANIMATION_TIME_DEFAULT);
+//            animateHierarchy(ANIMATION_TIME_DEFAULT);
+            animateLayout(ANIMATION_TIME_DEFAULT);
             email.startEditingAsync();
         }));
 
-        login.setCommand(Command.createMaterial("Log in", Icons.iconPerson, (ev) -> { //Start/login**
+        login.setCommand(Command.createMaterial("Log me in", Icons.iconPerson, (ev) -> { //Start/login**
             signUp.setHidden(true);
-            login.setHidden(true);
+//            login.setHidden(true);
+            login.setUIID("BigButtonTitle");
 
             createAccount.setHidden(true);
             connect.setHidden(false);
             email.setHidden(false);
             //TODO!!! cn1 support setEditOnShow(email); //startup editor in email field
             password.setHidden(false);
+
             forgottenPassword.setHidden(false);
             backToSignupSignIn.setHidden(false);
-            animateHierarchy(ANIMATION_TIME_DEFAULT);
+            animateLayout(ANIMATION_TIME_DEFAULT);
             email.startEditingAsync();
 //            ScreenLogin.this.getContentPane().animateLayout(300);
         }));
 
-        createAccount.setCommand(Command.createMaterial("Create account", Icons.iconPersonNew, (e2) -> {
+        createAccount.setCommand(Command.createMaterial("Create my account", Icons.iconPersonNew, (e2) -> {
             String errorMsg;
             String cleanEmail = cleanEmail(email.getText());
             if ((errorMsg = createAccount(cleanEmail)) == null) {
                 MyPrefs.setString(MyPrefs.loginEmail, cleanEmail); //store email for future use
                 MyPrefs.setBoolean(MyPrefs.loginStoreEmail, true); //store email for future use
-                new ScreenMain().show();
+                new ScreenMain(this).show();
             } else {
                 Dialog.show("", errorMsg, "OK", null);
             }
@@ -330,7 +360,7 @@ public class ScreenLogin extends MyForm {
         }));
 
 //        connect.setCommand(Command.create("Connect", Icons.iconPerson, (ev) -> { //Start/login**
-        connect.setCommand(Command.createMaterial("Log in", Icons.iconPerson, (ev) -> { //Start/login**
+        connect.setCommand(Command.createMaterial("Log me in", Icons.iconPerson, (ev) -> { //Start/login**
             String errorMsg;
             String cleanEmail = cleanEmail(email.getText());
             if ((errorMsg = loginUser(cleanEmail, null, password.getText())) == null) {
@@ -338,7 +368,7 @@ public class ScreenLogin extends MyForm {
                     MyPrefs.setString(MyPrefs.loginEmail, cleanEmail); //store email for future use
                     MyPrefs.setBoolean(MyPrefs.loginStoreEmail, true); //store email for future use
                 }
-                new ScreenMain().show();
+                new ScreenMain(this).show();
             } else {
                 Dialog.show("", errorMsg, "OK", null);
             }
@@ -359,300 +389,15 @@ public class ScreenLogin extends MyForm {
                     Dialog.show("", errorMsg, "OK", null);
                 }
             } else {
-                Dialog.show("Incorrect email", "Please enter a correct email like name@domain.xx", "OK", null);
+                Dialog.show("Enter your email", "Please enter a correct email like myname@gmail.com", "OK", null);
             }
         }));
 
         revalidate(); //ensure correct size of all components
-        email.startEditingAsync(); //always start editing email field
+//        email.startEditingAsync(); //always start editing email field
 
     }
 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    public ScreenLogin(int xxx, Resources res) {
-////        if (MyPrefs.loginFirstTimeLogin.getBoolean()) { //very first login
-////            MyPrefs.setBoolean(MyPrefs.loginFirstTimeLogin, false);
-////
-////            ParseUser parseUser = getLastUserSessionFromStorage();
-////            Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
-////            if (parseUser != null) { //already logged in
-////                setDefaultACL(parseUser); //TODO needed??
-//////                try {
-//////                    count = query.count();
-//////                } catch (ParseException ex) {
-//////                    Log.e(ex);
-//////                }
-//////            Log.p("Count of Item in Parse = " + count, Log.DEBUG);
-////            } else {
-//////                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
-////                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
-////
-////                //TODO intro quiz: you tired of running into limitations in (miss features) in other ToDO apps, your tasks tend to pile up endlessly?, it is important for to be fully control/appear professional?
-//////        super("Welcome to TodoCatalyst", BoxLayout.y());
-////                super("", BoxLayout.y());
-//////        setTitleComponent(null);
-////                if (false) {
-////                    Toolbar tb = new Toolbar(true);
-////                    setToolbar(tb);
-////                    tb.addSearchCommand(e -> {
-////                    });
-////                }
-////                getTitleArea().setUIID("Container");
-//////        setTitle("TodoCatalyst");
-////                getContentPane().setScrollVisible(false);
-////                getContentPane().setAlwaysTensile(false); //only scroll if needed(???)
-////
-////                //hide titlebar: http://stackoverflow.com/questions/42871223/how-do-i-hide-get-rid-the-title-bar-on-a-form-codename-one
-////                getToolbar().setUIID("Container");
-////                getToolbar().hideToolbar();
-////
-//////        super.addSideMenu(res);
-////                Tabs swipe = new Tabs();
-////
-////                Label spacer1 = new Label();
-////                Label spacer2 = new Label();
-////                Label spacer3 = new Label();
-////                Label spacer4 = new Label();
-//////        addTab(swipe, res.getImage("news-item.jpg"), spacer1, "15 Likes  ", "85 Comments", "Integer ut placerat purued non dignissim neque. ");
-//////        addTab(swipe, res.getImage("dog.jpg"), spacer2, "100 Likes  ", "66 Comments", "Dogs are cute: story at 11");
-//////        addTab(swipe, res.getImage("todocatpng.png"), spacer1, Format.f("Integer ut placerat purued non dignissim neque. "));
-////                Image background = res.getImage("firewater.jpg"); //TODO: attribution: http://all-free-download.com/free-vector/download/fire-and-water-swirl_311642.html
-//////        addTab(swipe, res.getImage("todocatpng.png"), spacer1, Format.f(welcome1));
-//////        addTab(swipe, res.getImage("todocat.jpg"), spacer2, Format.f(welcome2));
-//////        addTab(swipe, res.getImage("todocat3.jpg"), spacer3, Format.f(welcome3));
-//////        addTab(swipe, res.getImage("todocat3.jpg"), spacer4, Format.f(welcome4));
-////                addTab(swipe, background, spacer1, Format.f(welcome1));
-////                addTab(swipe, background, spacer2, Format.f(welcome2));
-////                addTab(swipe, background, spacer3, Format.f(welcome3));
-////                addTab(swipe, background, spacer4, Format.f(welcome4));
-////
-////                swipe.setUIID("Container");
-////                swipe.getContentPane().setUIID("Container");
-////                swipe.hideTabs();
-////
-////                ButtonGroup bg = new ButtonGroup();
-////                int size = Display.getInstance().convertToPixels(1);
-////                Image unselectedWalkthru = Image.createImage(size, size, 0);
-////                Graphics g = unselectedWalkthru.getGraphics();
-////                g.setColor(0xffffff);
-////                g.setAlpha(100);
-////                g.setAntiAliased(true);
-////                g.fillArc(0, 0, size, size, 0, 360);
-////                Image selectedWalkthru = Image.createImage(size, size, 0);
-////                g = selectedWalkthru.getGraphics();
-////                g.setColor(0xffffff);
-////                g.setAntiAliased(true);
-////                g.fillArc(0, 0, size, size, 0, 360);
-////                RadioButton[] rbs = new RadioButton[swipe.getTabCount()];
-////                FlowLayout flow = new FlowLayout(CENTER);
-////                flow.setValign(BOTTOM);
-////                Container radioContainer = new Container(flow);
-////                for (int iter = 0; iter < rbs.length; iter++) {
-////                    rbs[iter] = RadioButton.createToggle(unselectedWalkthru, bg);
-////                    rbs[iter].setPressedIcon(selectedWalkthru);
-////                    rbs[iter].setUIID("Label");
-////                    radioContainer.add(rbs[iter]);
-////                }
-////
-////                rbs[0].setSelected(true);
-////                swipe.addSelectionListener((i, ii) -> {
-////                    if (!rbs[ii].isSelected()) {
-////                        rbs[ii].setSelected(true);
-////                    }
-////                });
-////
-////                Component.setSameSize(radioContainer, spacer1, spacer2, spacer3);
-////
-//////        SpanLabel newUserInfo = new SpanLabel("Please enter your email to start using [TODOCATALYST]. You will receive a confirmation email that also lets you set your password.");
-////                SpanLabel newUserInfo = new SpanLabel("Enter your email to sign up and receive an email to validate your account and set your password.");
-////                newUserInfo.setHidden(false);
-////
-//////        SpanLabel incognitoWarning = new SpanLabel("As an incognito user, you cannot login from other devices. If you lose this device or log out** your data will be lost. You can register anytime by entering your email in [SETTINGS].");
-////                SpanLabel incognitoWarning = new SpanLabel(Format.f("Incognito users cannot login from other devices. If you lose this device your data will be lost. You can register anytime by entering your email in [SETTINGS]."));
-////                incognitoWarning.setHidden(true);
-////
-////                if (false) {
-////                    Label emailLabel = new Label("Email");
-////                    FontImage.setMaterialIcon(emailLabel, FontImage.MATERIAL_EMAIL);
-////                    Label passwordLabel = new Label("Password");
-////                    FontImage.setMaterialIcon(passwordLabel, FontImage.MATERIAL_LOCK);
-////                }
-////
-////                TextField email = new TextField("", "Email", 20, TextArea.EMAILADDR);
-////                if (MyPrefs.loginStoreEmail.getBoolean()) {
-////                    email.setText(MyPrefs.loginEmail.getString());
-////                }
-////
-////                MyOnOffSwitch keepEmail = new MyOnOffSwitch(null, () -> {
-////                    return MyPrefs.loginStoreEmail.getBoolean();
-////                }, (b) -> {
-////                    MyPrefs.setBoolean(MyPrefs.loginStoreEmail, b);
-////                });
-////                Container storeEmailCont = BorderLayout.centerEastWest(null, keepEmail, new Label("Keep my email for next time"));
-////
-////                TextField password = new TextField("", "Password", 20, TextArea.PASSWORD);
-////
-//////        MyOnOffSwitch stayLoggiedIn = new MyOnOffSwitch(null, () -> {
-//////            return MyPrefs.loginStayLoggedIn.getBoolean();
-//////        }, (b) -> {
-//////            MyPrefs.setBoolean(MyPrefs.loginStayLoggedIn, b);
-//////        });
-////                BorderLayout b1 = new BorderLayout();
-////                b1.defineLandscapeSwap(BorderLayout.NORTH, BorderLayout.WEST);
-////                Container emailCont = new Container(b1);
-//////        emailCont.add(BorderLayout.NORTH, emailLabel);
-////                emailCont.add(BorderLayout.EAST, email);
-////
-////                b1 = new BorderLayout();
-////                b1.defineLandscapeSwap(BorderLayout.NORTH, BorderLayout.WEST);
-////                Container passwordCont = new Container(b1);
-//////        passwordCont.add(BorderLayout.NORTH, passwordLabel);
-////                passwordCont.add(BorderLayout.EAST, password);
-//////        passwordCont.setHidden(true);
-////
-////                SpanButton forgottenPassword = new SpanButton(""); //Forgot your password?
-//////        forgottenPassword.setUIID("ForgottenPassword");
-//////        forgottenPassword.setUIID("Button");
-////                forgottenPassword.setHidden(true);
-////
-////                Button startButton = new Button("Start");
-////                FontImage.setMaterialIcon(startButton, FontImage.MATERIAL_ARROW_FORWARD);
-////
-////                ActionListener newUserActionListerner;
-////                ButtonGroup barGroup = new ButtonGroup();
-////                RadioButton newUser = RadioButton.createToggle("New user", barGroup);
-////                newUser.setUIID("SelectBar");
-////                newUser.addActionListener(newUserActionListerner = (e) -> {
-////                    emailCont.setHidden(false);
-////                    storeEmailCont.setHidden(false);
-////                    passwordCont.setHidden(true);
-//////            startButton.setText("Start");
-////                    newUserInfo.setHidden(false);
-////                    incognitoWarning.setHidden(true);
-////                    forgottenPassword.setHidden(true);
-////                    startButton.setCommand(Command.create("Start/new user**", selectedWalkthru, (ev) -> {
-////                        String errorMsg;
-////                        if ((errorMsg = createAccount(email.getText(), null, null)) == null) {
-////                            MyPrefs.setBoolean(MyPrefs.loginStoreEmail, keepEmail.isValue());
-////                            if (keepEmail.isValue()) {
-////                                MyPrefs.setString(MyPrefs.loginEmail, email.getText());
-////                            }
-////                            MyPrefs.setBoolean(MyPrefs.loginIncognitoMode, false);
-////                            new ScreenMain().show();
-////                        } else {
-////                            Dialog.show("", errorMsg, "OK", null);
-////                        }
-////                    }));
-//////            ScreenLogin.this.animateHierarchy(300);
-//////            ScreenLogin.this.getContentPane().animateHierarchy(300);
-////                    ScreenLogin.this.getContentPane().animateLayout(300);
-////                });
-////
-////                RadioButton login = RadioButton.createToggle("Login", barGroup);
-////                login.setUIID("SelectBar");
-////                login.addActionListener((e) -> {
-////                    emailCont.setHidden(false);
-////                    storeEmailCont.setHidden(false);
-////                    passwordCont.setHidden(false);
-//////            startButton.setText("Log in");
-////                    newUserInfo.setHidden(true);
-////                    incognitoWarning.setHidden(true);
-////                    forgottenPassword.setHidden(false);
-////                    startButton.setCommand(Command.create("Log in", selectedWalkthru, (ev) -> { //Start/login**
-////                        String errorMsg;
-////                        if ((errorMsg = loginUser(email.getText(), null, password.getText())) == null) {
-////                            MyPrefs.setBoolean(MyPrefs.loginStoreEmail, keepEmail.isValue());
-////                            if (keepEmail.isValue()) {
-////                                MyPrefs.setString(MyPrefs.loginEmail, email.getText());
-////                            }
-////                            MyPrefs.setBoolean(MyPrefs.loginIncognitoMode, false);
-////                            new ScreenMain().show();
-////                        } else {
-////                            Dialog.show("", errorMsg, "OK", null);
-////                        }
-////                        ScreenLogin.this.getContentPane().animateLayout(300);
-////                    }));
-////                });
-////
-////                ActionListener incognitoActionListerner;
-////                RadioButton incognito = RadioButton.createToggle("Incognito", barGroup);
-////                incognito.setUIID("SelectBar");
-////                incognito.addActionListener(incognitoActionListerner = (e) -> {
-////                    emailCont.setHidden(true);
-////                    storeEmailCont.setHidden(true);
-////                    passwordCont.setHidden(true);
-//////            startButton.setText("Start");
-////                    newUserInfo.setHidden(true);
-////                    incognitoWarning.setHidden(false);
-////                    forgottenPassword.setHidden(true);
-////                    startButton.setCommand(Command.create("Start/incognito", selectedWalkthru, (ev) -> {
-////                        String errorMsg;
-////                        if ((errorMsg = createAccount(null, null, null)) == null) {
-////                            MyPrefs.setBoolean(MyPrefs.loginIncognitoMode, true);
-////                            new ScreenMain().show();
-////                        } else {
-////                            Dialog.show("", errorMsg, "OK", null);
-////                        }
-////                    }));
-////                    ScreenLogin.this.getContentPane().animateLayout(300);
-////                });
-////
-//////        forgottenPassword.setCommand(Command.create("Forgot you password?", selectedWalkthru, (ev) -> {
-////                forgottenPassword.setCommand(Command.create("Forgot password", selectedWalkthru, (ev) -> {
-////                    String errorMsg = validEmail(email.getText());
-//////            if (validEmail(email.getText(), "Enter your email to reset your password.")
-////                    if (errorMsg == null) {
-////                        if (Dialog.show("", "Reset your password? You will receive an email with a link to change your password.", "OK", "Not now")) {
-////                            try {
-////                                ParseUser.requestPasswordReset(email.getText()); //TODO read password - copy Amazon usability
-////                            } catch (ParseException ex) {
-////                                Log.e(ex);
-////                            }
-////                        } else {
-//////                    Dialog.show("", "Reset your password? You will receive an email with a link to change your password.", "OK", "Not now")) {
-////                            Dialog.show("", errorMsg, "OK", null);
-////                        }
-////                    }
-////                }));
-//////        RadioButton myFavorite = RadioButton.createToggle("My Favorites", barGroup);
-//////        myFavorite.setUIID("SelectBar");
-////
-////                add(LayeredLayout.encloseIn(swipe, radioContainer));
-////
-////                Label arrow = new Label(res.getImage("news-tab-down-arrow.png"), "Container");
-////                add(LayeredLayout.encloseIn(
-////                        //                GridLayout.encloseIn(4, all, featured, popular, myFavorite),
-////                        GridLayout.encloseIn(3, newUser, login, incognito),
-////                        FlowLayout.encloseBottom(arrow)
-////                ));
-////
-////                add(newUserInfo);
-////                add(incognitoWarning);
-////                add(emailCont);
-////                add(storeEmailCont);
-////                add(passwordCont);
-////                add(forgottenPassword);
-////                add(startButton);
-////
-////                newUser.setSelected(true);
-////                newUserActionListerner.actionPerformed(null); //trigger the selection of fields
-//////        newUser.fire
-////                arrow.setVisible(false);
-////                addShowListener(e -> {
-////                    arrow.setVisible(true);
-////                    updateArrowPosition(newUser, arrow);
-////                });
-////                bindButtonSelection(newUser, arrow);
-////                bindButtonSelection(login, arrow);
-////                bindButtonSelection(incognito, arrow);
-//////        bindButtonSelection(myFavorite, arrow);
-////
-////                // special case for rotation
-////                addOrientationListener(e -> {
-////                    updateArrowPosition(barGroup.getRadioButton(barGroup.getSelectedIndex()), arrow);
-////                });
-////
-//</editor-fold>
 //////<editor-fold defaultstate="collapsed" desc="comment">
 //////        addButton(res.getImage("news-item-1.jpg"), "Morbi per tincidunt tellus sit of amet eros laoreet.", false, 26, 32);
 //////        addButton(res.getImage("news-item-2.jpg"), "Fusce ornare cursus masspretium tortor integer placera.", true, 15, 21);
@@ -816,7 +561,7 @@ public class ScreenLogin extends MyForm {
         return Storage.getInstance().writeObject(CURRENT_USER_SESSION_TOKEN, sessionToken);
     }
 
-    static String fetchCurrentUserSessionToStorage() {
+    static String fetchCurrentUserSessionFromStorage() {
         String sessionTokenN = (String) Storage.getInstance().readObject(CURRENT_USER_SESSION_TOKEN);
         return sessionTokenN;
     }
@@ -837,7 +582,7 @@ public class ScreenLogin extends MyForm {
 
     static public ParseUser getLastUserSessionFromStorage() {
 //        String sessionTokenN = (String) Storage.getInstance().readObject(CURRENT_USER_SESSION_TOKEN);
-        String sessionTokenN = fetchCurrentUserSessionToStorage();
+        String sessionTokenN = fetchCurrentUserSessionFromStorage();
         Log.p("Retrieved Sessiontoken=" + sessionTokenN != null ? sessionTokenN : "<null>");
         if (sessionTokenN == null || sessionTokenN.equals("")) {
             return null;

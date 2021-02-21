@@ -13,6 +13,10 @@ public class Permissions implements com.codename1.io.Externalizable {
 	}
 
 	@java.lang.Override
+	public String toString() {
+	}
+
+	@java.lang.Override
 	public int getVersion() {
 	}
 

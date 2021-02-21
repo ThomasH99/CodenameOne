@@ -29,6 +29,8 @@ import com.parse4cn1.ParseConstants;
 import com.parse4cn1.ParseObject;
 import com.parse4cn1.ParseUser;
 import com.parse4cn1.Permissions;
+import com.parse4cn1.operation.DeleteFieldOperation;
+import com.parse4cn1.operation.SetFieldOperation;
 import com.parse4cn1.util.Logger;
 import com.parse4cn1.util.ParseRegistry;
 import static com.todocatalyst.todocatalyst.ScreenLogin.setDefaultACL;
@@ -379,6 +381,9 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //        Resources theme = UIManager.initFirstTheme("/theme");
 //        Resources theme = null;
 //</editor-fold>
+        Log.p("Default value for Storage.getInstance().isNormalizeNames() = " + Storage.getInstance().isNormalizeNames());
+        Storage.getInstance().setNormalizeNames(true); //is on default, but set it just in case
+
         Log.getInstance().setFileWriteEnabled(true);
         Log.setLevel(Log.DEBUG);
         Log.setReportingLevel(Log.REPORTING_DEBUG);
@@ -391,11 +396,13 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         Log.p("AppVersion=" + Display.getInstance().getProperty("AppVersion", "1.0"));
         Log.p("init() starting...");
 
+        Icons.init();
+
         long timeSinceLastInit = getTimeSinceLastAppStartAndUpdateTimeMillis();
         Log.p("Time since last app start (call to init())= " + MyDate.formatDurationStd(timeSinceLastInit, true));
 
 //        if (MyPrefs.deleteLocalStorageIfRestartedQuickly.getBoolean()&&timeSinceLastInit < MyDate.MINUTE_IN_MILLISECONDS) {
-        if (MyPrefs.deleteLocalStorageIfRestartedQuickly.getBoolean()
+        if ((MyPrefs.deleteLocalStorageIfRestartedQuickly.getBoolean() || !Display.getInstance().isSimulator())
                 && timeSinceLastInit < MyPrefs.deleteLocalStorageIfRestartedBeforeSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS) {
 //            Log.p("Time since last restart less than " + MyDate.formatDuration(timeSinceLastInit,true) + " - deleting Replay");
             Log.p("Time since last restart less than " + MyDate.formatDuration(timeSinceLastInit, true));
@@ -406,11 +413,12 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                 Log.p(" - Replay delete FAILED");
 //                Log.p("Replay info NOT successfully deleted");
             }
-            Log.p("Deleting ALL STORAGE (except user token");
-            String userToken = ScreenLogin.fetchCurrentUserSessionToStorage(); //avoid user token being deleted (which would force user to log in again)
-            //TODO also reset cache to ensure a complete reset
-            Storage.getInstance().clearStorage();
-            ScreenLogin.saveCurrentUserSessionToStorage(userToken);
+//            Log.p("Deleting ALL STORAGE (except user token");
+//            String userToken = ScreenLogin.fetchCurrentUserSessionToStorage(); //avoid user token being deleted (which would force user to log in again)
+//            //TODO also reset cache to ensure a complete reset
+//            Storage.getInstance().clearStorage();
+//            ScreenLogin.saveCurrentUserSessionToStorage(userToken);
+            DAO.getInstance().resetAndDeleteAndReloadAllCachedData();
         } else {
             Log.p("Time since last restart=" + MyDate.formatDurationStd(timeSinceLastInit) + " - NO ACTION taken");
         }
@@ -650,6 +658,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 
                         Message m = new Message("Body of message"
                                 + "DeviceId: " + Log.getUniqueDeviceId()
+                                + "DeviceKey: " + Log.getUniqueDeviceKey()
                                 + "\nBuilt by user: " + Display.getInstance().getProperty("built_by_user", "")
                                 + "\nPackage name: " + Display.getInstance().getProperty("package_name", "")
                                 + "\nAppVersion: " + Display.getInstance().getProperty("AppVersion", "0.1")
@@ -771,10 +780,14 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         com.codename1.io.Util.register(RepeatRuleParseObject.CLASS_NAME, RepeatRuleParseObject.class); //register Externalizable class
         com.codename1.io.Util.register(FilterSortDef.CLASS_NAME, FilterSortDef.class); //register Externalizable class
         com.codename1.io.Util.register(WorkSlot.CLASS_NAME, WorkSlot.class); //register Externalizable class
+
+//        com.codename1.io.Util.register("ParseObject", ParseObject.class); //not possible for ParseObject: must be initialized with a classname
+        com.codename1.io.Util.register("SetFieldOperation", SetFieldOperation.class); //register Externalizable class
+        com.codename1.io.Util.register("DeleteFieldOperation", DeleteFieldOperation.class); //register Externalizable class
 //        com.codename1.io.Util.register(ListSelector.CLASS_NAME, ListSelector.class); //register Externalizable class
 //</editor-fold>
 
-        Display.getInstance().setLongPointerPressInterval(400); //UI: 600 too long, 700 is maybe a bit long, 650 a bit too long. set delay for activating LongPress (default 800 is too fast??)
+        Display.getInstance().setLongPointerPressInterval(600); //UI: 400 was set for a long time, but may clash with Pinch, 600 too long, 700 is maybe a bit long, 650 a bit too long. set delay for activating LongPress (default 800 is too fast??)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //add a 'theme layer' on top of an existing theme
 //            UIManager.getInstance().addThemeProps(theme.getTheme("NameOfLayerTheme"));
@@ -830,6 +843,8 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //            Toolbar.setPermanentSideMenu(true); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
         Toolbar.setPermanentSideMenu(Display.getInstance().isTablet()); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
         Display.getInstance().setPureTouch(true);
+        
+        UIManager.getInstance().getLookAndFeel().setFadeScrollBar(false) ; //https://stackoverflow.com/questions/50223939/codename-one-fading-scrollbar
 
 //        Display d = Display.getInstance();
 //        Label supported = new Label();
@@ -948,10 +963,11 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                 Display.getInstance().lockOrientation(true); //lock screen rotation to portrait=true, https://stackoverflow.com/questions/48712682/codenameone-rotate-display
             }//        }
 //            Display.getInstance().lockOrientation(!Config.TEST); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
-            if (MyPrefs.screenEnableDisplayRotationToLandscape.getBoolean()) {
+            if (MyPrefs.screenEnableDisplayRotationAwayFromPortrait.getBoolean()) {
                 Display.getInstance().unlockOrientation(); //enable screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
+            } else {
+                Display.getInstance().lockOrientation(true); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
             }
-            Display.getInstance().lockOrientation(true); //prevent screen rotation, true=portrait, but only Android, see https://stackoverflow.com/questions/48712682/codenameone-rotate-display
         }
 
         //Check if already logged in, if so, removeFromCache cache

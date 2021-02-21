@@ -515,6 +515,14 @@ public class ParseQuery {
 	}
 
 	/**
+	 *  Exclude specific fields from the returned query
+	 *  @param keys
+	 *  @return 
+	 */
+	public ParseQuery excludeKeys(java.util.Collection keys) {
+	}
+
+	/**
 	 *  Constructs a ParseObject whose id is already known by fetching data from
 	 *  the source.
 	 *  <p>

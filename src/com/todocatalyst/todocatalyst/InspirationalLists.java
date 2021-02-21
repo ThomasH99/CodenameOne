@@ -27,11 +27,11 @@ public class InspirationalLists {
             "the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)") {
         @Override
         public boolean test(Item item) {
-            return item.getEarnedValue()>0&&item.getRemaining() > 0; //only keep if remaining is not zero (otherwise divide by zero)!
+            return item.getEarnedValue()>0&&item.getRemainingTotal() > 0; //only keep if remaining is not zero (otherwise divide by zero)!
         }
 
         Comparator<Item> getSortingComparator() {
-            return (i1, i2) -> compareDouble(i1.getEarnedValue() / i1.getRemaining(), i2.getEarnedValue() / i2.getRemaining());
+            return (i1, i2) -> compareDouble(i1.getEarnedValue() / i1.getRemainingTotal(), i2.getEarnedValue() / i2.getRemainingTotal());
         }
     };
 
@@ -49,6 +49,7 @@ public class InspirationalLists {
 
     public static FilterSortDef makeFilter(PredefinedFilters predefinedFilter, String description, String helpTxt) {
         FilterSortDef filter = null;
+        if(false){//false to reduce jar size
         switch (predefinedFilter) {
             case ROIoverRemaining_X:
                 filter = new FilterSortDef() {
@@ -57,7 +58,7 @@ public class InspirationalLists {
                     }
 
                     Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareDouble(i1.getEarnedValue() / i1.getRemaining(), i2.getEarnedValue() / i2.getRemaining());
+                        return (i1, i2) -> compareDouble(i1.getEarnedValue() / i1.getRemainingTotal(), i2.getEarnedValue() / i2.getRemainingTotal());
                     }
                 };
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
@@ -68,7 +69,7 @@ public class InspirationalLists {
             case ProgressNoActuals:
                 filter = new FilterSortDef() {
                     public boolean test(Item item) {
-                        return item.getStatus() == ItemStatus.ONGOING && item.getActual() == 0;
+                        return item.getStatus() == ItemStatus.ONGOING && item.getActualTotal() == 0;
                     }
 
                     Comparator<Item> getSortingComparator() {
@@ -84,12 +85,12 @@ public class InspirationalLists {
                 filter = new FilterSortDef() {
                     public boolean test(Item item) {
                         return (item.getStatus() == ItemStatus.CREATED || item.getStatus() == ItemStatus.ONGOING)
-                                && item.getRemaining() <= 10 * MyDate.MINUTE_IN_MILLISECONDS
+                                && item.getRemainingTotal() <= 10 * MyDate.MINUTE_IN_MILLISECONDS
                                 && (item.getChallengeN() != null && (item.getChallengeN() == Challenge.VERY_EASY || item.getChallengeN() == Challenge.EASY));
                     }
 
                     Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareLong(i1.getRemaining(), i2.getRemaining());
+                        return (i1, i2) -> compareLong(i1.getRemainingTotal(), i2.getRemainingTotal());
                     }
                 };
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
@@ -104,7 +105,7 @@ public class InspirationalLists {
                     }
 
                     Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareLong(i1.getRemaining() / i1.getActual(), i2.getRemaining() / i2.getActual());
+                        return (i1, i2) -> compareLong(i1.getRemainingTotal() / i1.getActualTotal(), i2.getRemainingTotal() / i2.getActualTotal());
                     }
                 };
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
@@ -116,13 +117,13 @@ public class InspirationalLists {
                 filter = new FilterSortDef() {
                     public boolean test(Item item) {
                         return (item.getStatus() == ItemStatus.WAITING
-                                && ((item.getWaitingTillDate().getTime() < MyDate.currentTimeMillis())
+                                && ((item.getWaitUntilDate().getTime() < MyDate.currentTimeMillis())
                                 || item.getDateWhenSetWaiting() == null && item.getDateWhenSetWaiting().getTime() < MyDate.currentTimeMillis()));
                     }
 
                     Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareDate(i1.getWaitingTillDate() != null ? i1.getWaitingTillDate() : i1.getDateWhenSetWaiting(),
-                                i2.getWaitingTillDate() != null ? i2.getWaitingTillDate() : i2.getDateWhenSetWaiting()); //waiting the longest first
+                        return (i1, i2) -> compareDate(i1.getWaitUntilDate() != null ? i1.getWaitUntilDate() : i1.getDateWhenSetWaiting(),
+                                i2.getWaitUntilDate() != null ? i2.getWaitUntilDate() : i2.getDateWhenSetWaiting()); //waiting the longest first
                     }
                 };
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
@@ -137,14 +138,14 @@ public class InspirationalLists {
                                 && ((item.getImportanceN() == HighMediumLow.HIGH)
                                 && (item.getUrgencyN() == null || item.getUrgencyN() == HighMediumLow.LOW || item.getUrgencyN() == HighMediumLow.MEDIUM))
                                 && (item.getChallengeN() == null || item.getChallengeN() == Challenge.VERY_HARD || item.getChallengeN() == Challenge.HARD)
-                                && (item.getActual() == 0 || item.getActual() > 40 * MyDate.HOUR_IN_MILISECONDS)
-                                && (item.getDueDateD() != null && item.getDueDateD().getTime() < MyDate.currentTimeMillis() //overdue
+                                && (item.getActualTotal() == 0 || item.getActualTotal() > 40 * MyDate.HOUR_IN_MILISECONDS)
+                                && (item.getDueDate() != null && item.getDueDate().getTime() < MyDate.currentTimeMillis() //overdue
                                 || (item.getUpdatedAt() != null && item.getUpdatedAt().getTime() < MyDate.currentTimeMillis() - 90 * MyDate.DAY_IN_MILLISECONDS)); //or not touched since 90 days
                     }
 
                     Comparator<Item> getSortingComparator() {
-                        return (i1, i2) -> compareDate(i1.getWaitingTillDate() != null ? i1.getWaitingTillDate() : i1.getDateWhenSetWaiting(),
-                                i2.getWaitingTillDate() != null ? i2.getWaitingTillDate() : i2.getDateWhenSetWaiting()); //waiting the longest first
+                        return (i1, i2) -> compareDate(i1.getWaitUntilDate() != null ? i1.getWaitUntilDate() : i1.getDateWhenSetWaiting(),
+                                i2.getWaitUntilDate() != null ? i2.getWaitUntilDate() : i2.getDateWhenSetWaiting()); //waiting the longest first
                     }
                 };
                 filter.setFilterName(PredefinedFilters.ROIoverRemaining_X.toString());
@@ -152,6 +153,7 @@ public class InspirationalLists {
                 filter.setHelp("**the highest value wrt remaining time (you 'earn' all the value by just finishing what is missing)");
 //                filter.setDefinition("What never gets done: Important, not Urgent and Challenging or time consuming");
                 break;
+        }
         }
         return filter;
     }

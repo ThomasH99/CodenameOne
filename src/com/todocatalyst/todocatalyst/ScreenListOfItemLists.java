@@ -85,12 +85,15 @@ public class ScreenListOfItemLists extends MyForm {
 //                            DAO.getInstance().save(cat);
 //                        });
 //    }
-    ScreenListOfItemLists(ItemListList itemListList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) {
-        this(itemListList.getText(), itemListList, previousForm, updateItemListOnDone);
-    }
+//    ScreenListOfItemLists(ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone) {
+//        this(itemListList.getText(), itemListList, previousForm, updateItemListOnDone);
+//    }
 
-    ScreenListOfItemLists(String title, ItemListList itemListList, MyForm previousForm, UpdateItemListAfterEditing updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
-        super(title, previousForm, () -> updateItemListOnDone.update(itemListList));
+    ScreenListOfItemLists(String title, ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone, String helpText) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+//        super(title, previousForm, () -> updateItemListOnDone.update(itemListList));
+        super(title, previousForm, updateItemListOnDone, helpText);
+//        addUpdateActionOnDone(() -> updateItemListOnDone.update2(itemListList));
+//        addUpdateActionOnDone(() -> updateItemListOnDone.update2(itemListList));
         setUniqueFormId("ScreenListOfItemLists");
         this.itemListList = itemListList;
         setScrollable(false);
@@ -120,7 +123,7 @@ public class ScreenListOfItemLists extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        ReplayLog.getInstance().clearSetOfScreenCommands(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
+        ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
         if (false) {
             getContentPane().removeAll(); //NOT necessary since getContentPane().add() will remove the previous content. AND it will remove components that are added later...
         }
@@ -195,14 +198,17 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
 //        getToolbar().addSearchCommand(makeSearchFunctionSimple(this.itemListList),MyPrefs.defaultIconSizeInMM.getFloat());
 //        MySearchBar mySearchBar = new MySearchBar(getToolbar(), makeSearchFunctionSimple(this.itemListList));
-        toolbar.addCommandToRightBar(new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(itemListList)));
+//        toolbar.addCommandToRightBar(new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(itemListList)));
+        setSearchCmd(new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(itemListList)));
+        toolbar.addCommandToRightBar(getSearchCmd());
 
         //NEW TASK to Inbox
         toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
 
         //NEW ITEMLIST
 //        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconNew, (e) -> {
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconListNew, (e) -> {
+//        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconListNew, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "Add List", Icons.iconListNew, (e) -> {
             ItemList itemList = new ItemList();
             setKeepPos(new KeepInSameScreenPosition());
             new ScreenItemListProperties(itemList, ScreenListOfItemLists.this, () -> {
@@ -214,14 +220,16 @@ public class ScreenListOfItemLists extends MyForm {
 //                    itemListList.addToList(0, itemList);
                     itemListList.addToList(itemList, !MyPrefs.insertNewItemListsInStartOfItemListList.getBoolean()); //TODO: why always add to start of list?! Make it a setting like elsewhere?
 //                    DAO.getInstance().saveNew(true,(ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                    DAO.getInstance().saveNew((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                    DAO.getInstance().saveNewExecuteUpdate();
+//                    DAO.getInstance().saveNew((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                    DAO.getInstance().saveNewTriggerUpdate();
+//                    DAO.getInstance().saveToParseNow((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                    DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    DAO.getInstance().saveInBackground((ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    previousForm.revalidate(); //refresh list to show new items(??)
 //                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
-                    if (false) {
-                        refreshAfterEdit();//refresh list to show new items(??)
-                    }
+//                    if (false) {
+//                        refreshAfterEdit();//refresh list to show new items(??)
+//                    }
                 }
             }).show();
         }
@@ -472,34 +480,41 @@ public class ScreenListOfItemLists extends MyForm {
             //SHOW/EDIT SUBTASKS OF LIST
 //        editItemPropertiesButton.setIcon(iconEdit);
 //            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-", itemList.getObjectIdP(), "", Icons.iconEditSymbolLabelStyle, (e) -> {
-            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-" + itemList.getObjectIdP(), "", Icons.iconEdit, (e) -> {
-                MyForm f = ((MyForm) mainCont.getComponentForm());
-                f.setKeepPos(new KeepInSameScreenPosition());
+            editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-" + itemList.getReplayId(), "", Icons.iconEdit,
+                    (ActionEvent e) -> {
+                        MyForm f = ((MyForm) mainCont.getComponentForm());
+                        f.setKeepPos(new KeepInSameScreenPosition());
 //                DAO.getInstance().fetchAllElementsInSublist((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
 //                new ScreenListOfItems(itemList.getText(), itemList, ScreenListOfItemLists.this, (iList) -> {
-                new ScreenListOfItems(itemList.getText(), () -> itemList, (MyForm) mainCont.getComponentForm(), (iList) -> {
-                    if (true) {
+                        new ScreenListOfItems(itemList.getText(), () -> itemList, (MyForm) mainCont.getComponentForm(),
+                                //                        (ItemAndListCommonInterface iList) -> {
+                                () -> {
+                                    if (false) {
+//                    if (true) {
 //                            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
-                        f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
-                        itemList.setList(iList.getListFull());
+                                        f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
+                                        itemList.setList(itemList.getListFull());
 //                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                        //TODO!!!! how to make below save run in background? (objId is needed eg for EditItemList-ObjId of new list)
+                                        //TODO!!!! how to make below save run in background? (objId is needed eg for EditItemList-ObjId of new list)
 //                        DAO.getInstance().saveAndWait((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveNew((ParseObject) itemList,true); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                        DAO.getInstance().saveNew((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                        DAO.getInstance().saveNewExecuteUpdate(); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                        DAO.getInstance().saveNew((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+//                        DAO.getInstance().saveNewTriggerUpdate(); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                                        DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                                    }
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
-                        if (false) {
-                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
-                        }
-                    } else {
-
-                    }
+//                        if (false) {
+//                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
+//                        }
+//                    } else {
+//
+//                    }
 //                        ((MyForm) mainCont.getComponentForm()).refreshAfterEdit();
-                    if (false) {
-                        f.refreshAfterEdit();
-                    }
+//                    if (false) {
+//                        f.refreshAfterEdit();
+//                    }
+//                        return true;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                categoryList.addItemAtIndex(category, 0);
 //                                DAO.getInstance().save(categoryList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
@@ -516,8 +531,8 @@ public class ScreenListOfItemLists extends MyForm {
 //                                itemList.addItem(newItemList);
 //                            }).show();
 //</editor-fold>
-                }, 0).show();
-            }
+                                }, 0).show();
+                    }
             )
             );
         }
@@ -549,7 +564,8 @@ public class ScreenListOfItemLists extends MyForm {
 //            WorkSlotList workSlots = itemList.getWorkSlotListN();
 //         workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0;
             if (true || !statisticsMode) {
-                numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(false);
+//                numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(false);
+                numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean());
                 ASSERT.that(!statisticsMode || numberItems > 0, "the list should only exist in statistics mode if it is not empty");
                 if (true || numberItems > 0) { //UI: show '0' number of subtasks for empty lists
 //                Button subTasksButton = new Button();
@@ -596,8 +612,8 @@ public class ScreenListOfItemLists extends MyForm {
         if (!statisticsMode) {
             if (MyPrefs.listOfItemListsShowRemainingEstimate.getBoolean()) {
 
-                long remainingEffort = itemList.getRemaining();
-                long totalEffort = MyPrefs.listOfItemListsShowTotalTime.getBoolean() ? itemList.getEstimate() : 0;
+                long remainingEffort = itemList.getRemainingTotal();
+                long totalEffort = MyPrefs.listOfItemListsShowTotalTime.getBoolean() ? itemList.getEstimateTotal() : 0;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long workTime = itemList.getWorkSlotListN().getWorkTimeSum();
 //        if (remainingEffort != 0) {
@@ -609,7 +625,7 @@ public class ScreenListOfItemLists extends MyForm {
 //</editor-fold>
                 String effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
                         + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
-                if (workTimeSumMillis != 0) {
+                if (workTimeSumMillis != 0 && MyPrefs.listOfItemListsShowWorkTime.getBoolean()) {
                     effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
                 }
 //                east.addComponent(new Label((remainingEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
@@ -622,12 +638,12 @@ public class ScreenListOfItemLists extends MyForm {
                 east.addComponent(editItemListPropertiesButton);
             }
         } else { //statisticsMode
-            long actualEffort = itemList.getActual();
+            long actualTotal = itemList.getActualTotal();
 //            long estimatedEffort = itemList.getEffortEstimate();
 //            east.addComponent(new Label("Act:" + MyDate.formatDurationStd(actualEffort),Icons.iconActualEffort));
-            Label actualEffortLabel = new Label(MyDate.formatDurationStd(actualEffort));
-            actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);
-            east.addComponent(actualEffortLabel);
+            Label actualTotalLabel = new Label(MyDate.formatDurationStd(actualTotal));
+            actualTotalLabel.setMaterialIcon(Icons.iconActualEffortCust);
+            east.addComponent(actualTotalLabel);
 //                    + "/E" + MyDate.formatTimeDuration(estimatedEffort)
 //                    + "/W" + MyDate.formatTimeDuration(workTimeSumMillis)));
             east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"
@@ -645,17 +661,30 @@ public class ScreenListOfItemLists extends MyForm {
                         Container southDetailsContainer = new Container(new FlowLayout(Container.RIGHT));
                         southDetailsContainer.setUIID("StatisticsGroupDetails");
                         southDetailsContainer.setName("southDetailsContainer");
+
 //                        long remainingEffort = itemList.getRemainingEffort();
                         long estimatedEffort = itemList.getEstimate(true);
 //                        Label estimateLabel = new Label("Estimate " + MyDate.formatDurationStd(estimatedEffort), "StatisticsDetail");
                         Label estimateLabel = new Label(MyDate.formatDurationStd(estimatedEffort), "StatisticsDetail");
-                        estimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+//                        estimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+                        estimateLabel.setFontIcon(Icons.myIconFont, Icons.iconEstimateCust);
                         estimateLabel.setName("estimateLabel");
-                            estimateLabel.setGap(GAP_LABEL_ICON);
+//                        if(false) 
+                        estimateLabel.setGap(GAP_LABEL_ICON); //setting this gap makes the icon too close to the text - WHY here and not elsewhere?
                         southDetailsContainer.addAll(estimateLabel);
 
+                        long actualEffort = ((ItemBucket) itemList).getActualTotal();
+//                        Label estimateLabel = new Label("Estimate " + MyDate.formatDurationStd(estimatedEffort), "StatisticsDetail");
+                        Label actualLabel = new Label(MyDate.formatDurationStd(actualEffort), "StatisticsDetail");
+//                        estimateLabel.setMaterialIcon(Icons.iconEstimateMaterial);
+                        actualLabel.setFontIcon(Icons.myIconFont, Icons.iconActualFinalCust);
+                        actualLabel.setName("actualLabel");
+//                        if(false) 
+                        actualLabel.setGap(GAP_LABEL_ICON); //setting this gap makes the icon too close to the text - WHY here and not elsewhere?
+                        southDetailsContainer.addAll(actualLabel);
+
 //                        if (itemBucket.hashValue != null) {
-                        if (false&&itemBucket.hashValue instanceof ItemAndListCommonInterface) {
+                        if (false && itemBucket.hashValue instanceof ItemAndListCommonInterface) {
                             List<WorkSlot> workslots = ((ItemAndListCommonInterface) itemBucket.hashValue).getWorkSlots(itemBucket.getStartTime(), itemBucket.getEndTime());
                             long workTimeMillis = 0;
                             for (WorkSlot w : workslots) {
@@ -668,11 +697,13 @@ public class ScreenListOfItemLists extends MyForm {
                             durationLabel.setGap(GAP_LABEL_ICON);
                             southDetailsContainer.addAll(durationLabel);
                         }
-                        Label durationLabel = new Label(MyDate.formatDurationStd(WorkSlot.getWorkTimeSum(itemList.getWorkSlotsFromParseN())), "StatisticsDetail");
-                        durationLabel.setMaterialIcon(Icons.iconWorkSlot);
-                        durationLabel.setName("durationLabel");
-                        durationLabel.setGap(GAP_LABEL_ICON);
-                        southDetailsContainer.addAll(durationLabel);
+
+                        Label workTimeLabel = new Label(MyDate.formatDurationStd(WorkSlot.getWorkTimeSum(itemList.getWorkSlotsFromParseN())), "StatisticsDetail");
+                        workTimeLabel.setMaterialIcon(Icons.iconWorkSlot);
+                        workTimeLabel.setName("durationLabel");
+//                        if(false) 
+                        workTimeLabel.setGap(GAP_LABEL_ICON_LARGE); //need slightly larger gap since workslot icon is larger
+                        southDetailsContainer.addAll(workTimeLabel);
 //                        southDetailsContainer.addAll(estimateLabel, durationLabel);
 //                        southDetailsContainer.setHidden(!showDetails); //hide details by default
                         mainCont.addComponent(BorderLayout.SOUTH, southDetailsContainer);

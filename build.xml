@@ -550,10 +550,6 @@
             <fileset dir="native/javase" excludes="*.java,*.jar"/>
             <fileset dir="lib/impl/native/javase" excludes="*.java,*.jar"/>
         </copy>        
-        <copy todir="native/internal_tmp">
-            <fileset dir="native/javase" excludes="*.java,*.jar"/>
-            <fileset dir="lib/impl/native/javase" excludes="*.java,*.jar"/>
-        </copy>        
     </target>
 
     <target name="-post-clean" depends="refresh-libs-impl">

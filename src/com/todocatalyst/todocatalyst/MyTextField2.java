@@ -25,6 +25,10 @@ public class MyTextField2 extends TextField {
     }
 
     private UITimer timer;
+    
+    public String toString() {
+        return "\""+getText()+"\" "+super.toString();
+    }
 
     public void pointerReleased(int x, int y) {
         super.pointerReleased(x, y);

@@ -41,6 +41,7 @@ class MyPopupMenu extends Dialog {
     MyPopupMenu(String groupStyle, Button cancel, Button... commands) {
         super();
         setDialogUIID("Container");
+        getContentPane().setUIID("MyPopupContentPane");
         setLayout(BoxLayout.y());
         setDisposeWhenPointerOutOfBounds(true); //close if clicking outside menu
 
@@ -115,7 +116,7 @@ class MyPopupMenu extends Dialog {
 //        Command result = dlg.showStretched(BorderLayout.SOUTH, true);
         Command choice = showStretched(BorderLayout.SOUTH, true);
 //        if (choice != null && choice != cancelCmd) {
-        if (choice != null ) {
+        if (false&&choice != null ) { //NO need to run actionPerformed here, it's already done by added buttons
             choice.actionPerformed(null);
         }
 //                        pop.addActionListener(e -> {

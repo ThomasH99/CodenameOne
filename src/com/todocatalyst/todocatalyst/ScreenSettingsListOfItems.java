@@ -36,7 +36,7 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
-        ScreenType screenType = previousForm.getScreenType();
+        ScreenType screenType = parentForm.getScreenType();
 //       if (screenType)
         switch (screenType) {
             case TODAY:
@@ -45,7 +45,7 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeWaitingExpiringToday);
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeAlarmsExpiringToday);
                 addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeWorkSlotsCoveringToday);
-                addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewShowProjectsInsteadOfLeafTasks);
+                addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewShowLeafTasksInsteadOfProjects);
                 addSettingInt(content, parseIdMap2, MyPrefs.todayViewIncludeOverdueFromThisManyPastDays, 0, 60, 1); //UI: max 60 days of overdue
                 content.add(makeSpacer());
                 break;
@@ -83,15 +83,20 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
         addSettingTitle(content, "Settings shared for all task lists:");
 
         addSettingBoolean(content, parseIdMap2, MyPrefs.showDetailsForAllTasks);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenInTaskLists);
 //        cont.setScrollableY(true);
+
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualEvenIfZero);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone);
+        
         if (Config.TEST) {
             addSettingExplanation(content, "Test text to show a fairly long explanation for an individual setting");
         }
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowRemainingEvenIfZero);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListHideRemainingWhenDefaultValue);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListEffortEstimate);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListDontShowValueIfEarnedValuePerHourIsNonZero);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowEffortEstimateEvenIfZero);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowEarnedValuePerHourEvenIfZero);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowEarnedValueIfEarnedValuePerHourIsZero);
         addSettingInt(content, parseIdMap2, MyPrefs.earnedValueDecimals, 0, 2, 1);
 
         content.add(makeSpacer());
@@ -109,8 +114,11 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
 
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.hideStickyHeadersForSortedLists);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenOnScrollingDown);
+        if (false) {
+            addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenOnScrollingUp);
+        }
         addSettingBoolean(content, parseIdMap2, MyPrefs.titleAutoSize);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowIconForDueDate);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropLeftDropZoneWidth, 0, 30, 1);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropRightDropZoneWidth, 0, 30, 1);
     }

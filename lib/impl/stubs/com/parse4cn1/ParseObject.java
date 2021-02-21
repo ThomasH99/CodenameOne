@@ -14,6 +14,8 @@ package com.parse4cn1;
  */
 public class ParseObject implements Parse.IPersistable, com.codename1.io.Externalizable {
 
+	public static final String GUID = "guid";
+
 	protected ParseObject(String className) {
 	}
 
@@ -23,6 +25,15 @@ public class ParseObject implements Parse.IPersistable, com.codename1.io.Externa
 
 	@java.lang.Override
 	public String getObjectId() {
+	}
+
+	public void setSaveIsPending(boolean saveIsPending) {
+	}
+
+	public boolean isSaveIsPending() {
+	}
+
+	public void waitUntilSaved() {
 	}
 
 	@java.lang.Override
@@ -62,6 +73,51 @@ public class ParseObject implements Parse.IPersistable, com.codename1.io.Externa
 	 *  @return This Parse object's Id.
 	 */
 	public String getObjectIdP() {
+	}
+
+	/**
+	 *  source from here:
+	 *  http://developer.classpath.org/doc/java/lang/Integer-source.html *
+	 *  Converts the <code>int</code> to a <code>String</code> using the
+	 *  specified radix (base). If the radix exceeds
+	 *  <code>Character.MIN_RADIX</code> or <code>Character.MAX_RADIX</code>, 10
+	 *  is used instead. If the result is negative, the leading character is '-'
+	 *  ('\\u002D'). The remaining characters come from
+	 *  <code>Character.forDigit(digit, radix)</code> ('0'-'9','a'-'z').
+	 * 
+	 *  @param num the <code>int</code> to convert to <code>String</code>
+	 *  @param radix the radix (base) to use in the conversion
+	 * 
+	 * 
+	 *  @return the <code>String</code> representation of the argument 139:
+	 */
+	public static String longToBaseN(long num, int radix, int length) {
+	}
+
+	/**
+	 *  Return the guid. The guid is set upon object creation (contrary to
+	 *  ObjectId which is set by the Parse server when the object is first
+	 *  saved).
+	 * 
+	 *  @return This Parse object's guid.
+	 */
+	public String getGuid() {
+	}
+
+	public void setGuid(String guid) {
+	}
+
+	/**
+	 *  Accessor to the object id. An object id is assigned as soon as an object
+	 *  is saved to the server. The combination of a className and an objectId
+	 *  uniquely identifies an object in your application.
+	 * 
+	 *  @return This Parse object's Id.
+	 */
+	public boolean isNotCreated() {
+	}
+
+	public boolean isSaved() {
 	}
 
 	/**
@@ -362,12 +418,27 @@ public class ParseObject implements Parse.IPersistable, com.codename1.io.Externa
 	public void setDirty(boolean dirty) {
 	}
 
+	public boolean isDirty(String key) {
+	}
+
+	public boolean needsSaving() {
+	}
+
 	@java.lang.Override
 	public boolean isDataAvailable() {
 	}
 
 	@java.lang.Override
 	public void save() {
+	}
+
+	/**
+	 *  cancel all unsaved changes (added, changed, removed fields). Not sure
+	 *  this will work in cases where the underlying object is changed (in which
+	 *  case oldData and data will both point to save object and cancel won't
+	 *  work)s
+	 */
+	public void cancelEditsXXX() {
 	}
 
 	/**
@@ -468,6 +539,16 @@ public class ParseObject implements Parse.IPersistable, com.codename1.io.Externa
 	 *  @throws ParseException if anything goes wrong.
 	 */
 	public ParseObject fetchIfNeeded() {
+	}
+
+	/**
+	 *  force a fetch, for example to cancel any changes
+	 * 
+	 *  @param <T>
+	 *  @return
+	 *  @throws ParseException
+	 */
+	public ParseObject fetch() {
 	}
 
 	/**

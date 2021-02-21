@@ -1,0 +1,33 @@
+
+u
+java:S2293"YReplace the type specification in this constructor call with the diamond operator ("<>").(²ÒÛüÿÿÿÿÿ
+i
+java:S3776¯"RRefactor this method to reduce its Cognitive Complexity from 16 to the 15 allowed.(©¶„¨
+[
+java:S3358ã"DExtract this nested ternary operation into an independent statement.(¯ê§
+Y
+java:S1854¶"=Remove this useless assignment to local variable "!unknown!".(Öè¿Åùÿÿÿÿ
+U
+java:S4838Ì"9Change "ClassFile" to the type handled by the Collection.(øşş¢şÿÿÿÿ
+t
+java:S2293V"YReplace the type specification in this constructor call with the diamond operator ("<>").(Ì±è‚ıÿÿÿÿ
+p
+java:S2293…"YReplace the type specification in this constructor call with the diamond operator ("<>").(Íø¦
+[
+java:S3358ä"DExtract this nested ternary operation into an independent statement.(ğ³‰»
+o
+java:S2293C"YReplace the type specification in this constructor call with the diamond operator ("<>").(É ë‡
+Y
+java:S1854´"=Remove this useless assignment to local variable "!unknown!".( üÜŞıÿÿÿÿ
+n
+java:S3776¹"RRefactor this method to reduce its Cognitive Complexity from 23 to the 15 allowed.(ÁƒúĞıÿÿÿÿ
+n
+java:S3776ƒ"RRefactor this method to reduce its Cognitive Complexity from 20 to the 15 allowed.(È°Ôäùÿÿÿÿ
+o
+java:S2293¢"YReplace the type specification in this constructor call with the diamond operator ("<>").(È‚ßi
+t
+java:S2293g"YReplace the type specification in this constructor call with the diamond operator ("<>").(²¹¦Çşÿÿÿÿ
+T
+java:S1854¡"=Remove this useless assignment to local variable "!unknown!".(ãòÃ«
+p
+java:S2293ª"YReplace the type specification in this constructor call with the diamond operator ("<>").(šÖéó

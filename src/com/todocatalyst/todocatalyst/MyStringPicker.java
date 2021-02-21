@@ -45,6 +45,7 @@ class MyStringPicker extends Picker {
         this.setSelectedString(stringArray[get.get()]);
         if (parseIdMap != null) {
             parseIdMap.put(this, () -> {
+                if(false){
                 String str = this.getSelectedString();
                 for (int i = 0; i < stringArray.length; i++) {
                     if (stringArray[i].equals(str)) {
@@ -54,8 +55,13 @@ class MyStringPicker extends Picker {
                         return;
                     }
                 }
+                }
+                set.accept(this.getSelectedStringIndex());
             });
         }
+        addActionListener(e -> {
+            set.accept(this.getSelectedStringIndex());
+        });
     }
 
 };

@@ -28,6 +28,7 @@ import com.codename1.ui.layouts.Layout;
 import com.codename1.ui.spinner.Picker;
 import com.codename1.ui.table.TableLayout;
 import com.codename1.util.StringUtil;
+import com.diamonddevgroup.device.Device;
 import com.parse4cn1.ParseBatch;
 import com.parse4cn1.ParseException;
 import java.io.IOException;
@@ -36,6 +37,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.TimeZone;
+import com.codename1.calendar.DeviceCalendar;
+import com.codename1.calendar.EventInfo;
+import java.util.Collection;
+import java.util.Iterator;
 import net.informaticalibera.cn1.nativelogreader.NativeLogs;
 
 /**
@@ -55,7 +60,7 @@ public class ScreenRepair extends MyForm {
     ScreenRepair(MyForm mainScreen) { // throws ParseException, IOException {
         super(SCREEN_TITLE, null, () -> {
         });
-        this.previousForm = mainScreen;
+        this.parentForm = mainScreen;
         setLayout(new BoxLayout(BoxLayout.Y_AXIS));
         setScrollableY(true);
         addCommandsToToolbar();
@@ -237,7 +242,10 @@ public class ScreenRepair extends MyForm {
         TableLayout.Constraint right = new TableLayout.Constraint().horizontalAlign(Component.RIGHT);
         hi.setScrollableY(true);
 
-        hi.
+        hi. //using Diamond's device info library:
+                add(w40, new SpanLabel("Device name:")).add(right, new SpanLabel(Device.getName())).
+                add(w40, new SpanLabel("Device model:")).add(right, new SpanLabel(Device.getModel())).
+                add(w40, new SpanLabel("Device manufacturer:")).add(right, new SpanLabel(Device.getManufacturer())).
                 add(w40, new SpanLabel("Density:")).add(right, new SpanLabel(density)).
                 //                add(" ").
                 add(w40, new SpanLabel("Platform Name:")).add(right, new SpanLabel(d.getPlatformName())).
@@ -262,6 +270,7 @@ public class ScreenRepair extends MyForm {
                 //                add(" ").
                 add(w40, new SpanLabel("Currency Symbol:")).add(right, new SpanLabel(l10n.getCurrencySymbol())).
                 //                add(" ").
+                add(span2, uneditableCheck("isBuiltinSoundsEnabled ", d.isBuiltinSoundsEnabled())).
                 add(span2, uneditableCheck("Is sound available for " + Display.SOUND_TYPE_ALARM, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_ALARM))).
                 add(span2, uneditableCheck("Is sound available for " + Display.SOUND_TYPE_BUTTON_PRESS, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_BUTTON_PRESS))).
                 add(span2, uneditableCheck("Is sound available for " + Display.SOUND_TYPE_CONFIRMATION, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_CONFIRMATION))).
@@ -269,7 +278,6 @@ public class ScreenRepair extends MyForm {
                 add(span2, uneditableCheck("Is sound available for " + Display.SOUND_TYPE_INFO, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_INFO))).
                 add(span2, uneditableCheck("Is sound available for " + Display.SOUND_TYPE_WARNING, d.isBuiltinSoundAvailable(Display.SOUND_TYPE_WARNING))).
                 add(span2, uneditableCheck("isAllowMinimizing ", d.isAllowMinimizing())).
-                add(span2, uneditableCheck("isBuiltinSoundsEnabled ", d.isBuiltinSoundsEnabled())).
                 add(span2, uneditableCheck("isNativePicker supported for Calendar", d.isNativePickerTypeSupported(Display.PICKER_TYPE_CALENDAR))).
                 add(span2, uneditableCheck("isNativePicker supported for Date", d.isNativePickerTypeSupported(Display.PICKER_TYPE_DATE))).
                 add(span2, uneditableCheck("isNativePicker supported for Date and Time", d.isNativePickerTypeSupported(Display.PICKER_TYPE_DATE_AND_TIME))).
@@ -731,12 +739,12 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
-        Label labelCoord = new Label("LabelCoord");
-        SpanLabel labelInfo = new SpanLabel("LabelInfo\nline2\nline3\nline4\nLine5\nLine6\nLine7");
-
-        content.add(new Button(new Command("Test Pinch") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        if (false) {
+            Label labelCoord = new Label("LabelCoord");
+            SpanLabel labelInfo = new SpanLabel("LabelInfo\nline2\nline3\nline4\nLine5\nLine6\nLine7");
+            content.add(new Button(new Command("Test Pinch") {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                initPinch();
 //                pointerDragged(new int[]{50, 100}, new int[]{50, 100});
@@ -745,24 +753,24 @@ public class ScreenRepair extends MyForm {
 //                initPinch();
 //                fPinchOut.show();
 //</editor-fold>
-                MyForm pinchForm = new MyForm("TestPinch", ScreenRepair.this, () -> {
-                }) {
+                    MyForm pinchForm = new MyForm("TestPinch", ScreenRepair.this, () -> {
+                    }) {
 
 //                    @Override
-                    protected void displayTest(int[] x, int[] y, boolean inPinch) {
-                        Component compAbove2 = getContentPane().getComponentAt(x[0], y[0]);
-                        Component compAbove3 = getComponentForm().getComponentAt(x[0], y[0]);
-                        Component compAbove1 = getComponentAt(x[0], y[0]);
-                        Component compAbove = findDropTargetAt(x[0], y[0]);
-                        Component responder = getResponderAt(x[0], y[0]);
-                        Component dropTarget = findDropTargetAt(x[0], y[0]);
-                        Component closest = getClosestComponentTo(x[0], y[0]);
-                        Container parentContAbove = compAbove != null ? compAbove.getParent() : null;
+                        protected void displayTest(int[] x, int[] y, boolean inPinch) {
+                            Component compAbove2 = getContentPane().getComponentAt(x[0], y[0]);
+                            Component compAbove3 = getComponentForm().getComponentAt(x[0], y[0]);
+                            Component compAbove1 = getComponentAt(x[0], y[0]);
+                            Component compAbove = findDropTargetAt(x[0], y[0]);
+                            Component responder = getResponderAt(x[0], y[0]);
+                            Component dropTarget = findDropTargetAt(x[0], y[0]);
+                            Component closest = getClosestComponentTo(x[0], y[0]);
+                            Container parentContAbove = compAbove != null ? compAbove.getParent() : null;
 //                        MyDragAndDropSwipeableContainer dropComponentAbove = MyForm.findDropContainerStartingFrom(compAbove);
-                        MyDragAndDropSwipeableContainer dropCompAbove = MyDragAndDropSwipeableContainer.findMyDDContStartingFrom(parentContAbove);
-                        ItemAndListCommonInterface objAbove = dropCompAbove != null
-                                ? (ItemAndListCommonInterface) dropCompAbove.getDragAndDropObject()
-                                : null;
+                            MyDragAndDropSwipeableContainer dropCompAbove = MyDragAndDropSwipeableContainer.findMyDDContStartingFrom(parentContAbove);
+                            ItemAndListCommonInterface objAbove = dropCompAbove != null
+                                    ? (ItemAndListCommonInterface) dropCompAbove.getDragAndDropObject()
+                                    : null;
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                        String txt = "cont=" + (compAbove != null ? compAbove.getName() : "nullx")
@@ -773,49 +781,50 @@ public class ScreenRepair extends MyForm {
 //                                + "\ndrop=" + (dropCompAbove != null ? dropCompAbove.getName() : "nullx")
 //                                + "\nelt.text=" + (objAbove != null ? objAbove.getText() : "nullx");
 //</editor-fold>
-                        String txt = "cont=" + disp(compAbove)
-                                + "\ndropTarget=" + disp(dropTarget)
-                                + "\nresponder=" + disp(responder)
-                                + "\nclosest=" + disp(closest)
-                                + "\nparent=" + disp(parentContAbove)
-                                + "\ndrop=" + disp(dropCompAbove)
-                                + "\nelt.text=" + (objAbove != null ? objAbove.getText() : "nullx");
-                        labelInfo.setText(txt);
-                        labelCoord.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
+                            String txt = "cont=" + disp(compAbove)
+                                    + "\ndropTarget=" + disp(dropTarget)
+                                    + "\nresponder=" + disp(responder)
+                                    + "\nclosest=" + disp(closest)
+                                    + "\nparent=" + disp(parentContAbove)
+                                    + "\ndrop=" + disp(dropCompAbove)
+                                    + "\nelt.text=" + (objAbove != null ? objAbove.getText() : "nullx");
+                            labelInfo.setText(txt);
+                            labelCoord.setText("(x[0],y[0])=(" + x[0] + "," + y[0] + ")");
 //                        fPinchOut.revalidate();
 //                        getComponentForm().revalidate();
-                        labelCoord.repaint();
-                        labelInfo.repaint();
+                            labelCoord.repaint();
+                            labelInfo.repaint();
+                        }
+                    };
+                    pinchForm.setLayout(BorderLayout.center());
+                    pinchForm.setPinchInsertEnabled(false);
+                    pinchForm.getContentPane().setName("ContentPane");
+                    pinchForm.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenRepair.this.showBack()));
+
+                    Container cont = new Container(BoxLayout.y());
+                    cont.setScrollableY(true);
+                    cont.setName("Container.y");
+                    for (Item item : new Item[]{new Item("item1 5m", true), new Item("item22 2h1", true), new Item("item3", true),
+                        new Item("item4 3h", true), new Item("item5 5min", true)}) {
+                        Component itemCont = ScreenListOfItems.buildItemContainer(ScreenRepair.this, item, null, null);
+                        itemCont.setName("itemCont:" + item.getText());
+                        Container contCont = new Container(BorderLayout.center());
+                        contCont.setName("WrapContNorth (" + item.getText() + ")");
+                        contCont.addComponent(BorderLayout.NORTH, itemCont);
+                        cont.addComponent(contCont);
                     }
-                };
-                pinchForm.setLayout(BorderLayout.center());
-                pinchForm.setPinchInsertEnabled(false);
-                pinchForm.getContentPane().setName("ContentPane");
-                pinchForm.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenRepair.this.showBack()));
+                    pinchForm.addComponent(BorderLayout.CENTER, cont);
 
-                Container cont = new Container(BoxLayout.y());
-                cont.setScrollableY(true);
-                cont.setName("Container.y");
-                for (Item item : new Item[]{new Item("item1 5m", true), new Item("item22 2h1", true), new Item("item3", true),
-                    new Item("item4 3h", true), new Item("item5 5min", true)}) {
-                    Component itemCont = ScreenListOfItems.buildItemContainer(ScreenRepair.this, item, null, null);
-                    itemCont.setName("itemCont:" + item.getText());
-                    Container contCont = new Container(BorderLayout.center());
-                    contCont.setName("WrapContNorth (" + item.getText() + ")");
-                    contCont.addComponent(BorderLayout.NORTH, itemCont);
-                    cont.addComponent(contCont);
+                    Container south = new Container(BoxLayout.y());
+                    south.setName("SouthCont");
+                    south.addAll(labelCoord, labelInfo);
+                    pinchForm.addComponent(BorderLayout.SOUTH, south);
+                    labelCoord.setName("LabelCoord");
+                    labelInfo.setName("LabelInfo");
+                    pinchForm.show();
                 }
-                pinchForm.addComponent(BorderLayout.CENTER, cont);
-
-                Container south = new Container(BoxLayout.y());
-                south.setName("SouthCont");
-                south.addAll(labelCoord, labelInfo);
-                pinchForm.addComponent(BorderLayout.SOUTH, south);
-                labelCoord.setName("LabelCoord");
-                labelInfo.setName("LabelInfo");
-                pinchForm.show();
-            }
-        }));
+            }));
+        }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        content.add(new Button(new Command("Move workslots into owners' list") {
@@ -831,6 +840,18 @@ public class ScreenRepair extends MyForm {
 //            }
 //        }));
 //</editor-fold>
+        content.add(new Button(Command.create("Login form", null, (e9) -> {
+//            Form hi = new MyForm("Native Logs Reader", BoxLayout.y());
+            ScreenLogin loginScreen = new ScreenLogin(ScreenRepair.this, true);
+            loginScreen.go(true);
+        })));
+        
+        content.add(new Button(MyReplayCommand.create("Welcome screen", null, (e9) -> {
+//            Form hi = new MyForm("Native Logs Reader", BoxLayout.y());
+            ScreenWelcome loginScreen = new ScreenWelcome(ScreenRepair.this, true);
+            loginScreen.show();
+        })));
+
         content.add(new Button(Command.create("Native logs", null, (e9) -> {
 //            Form hi = new MyForm("Native Logs Reader", BoxLayout.y());
             Form hi = new MyForm("Native Logs Reader", null, null);
@@ -863,14 +884,39 @@ public class ScreenRepair extends MyForm {
         })));
 
         content.add(new Button(Command.create("Play all built-in sounds", null, (e9) -> {
-            Display.getInstance().isBuiltinSoundAvailable(SCREEN_TITLE);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_BUTTON_PRESS);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_CONFIRMATION);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ERROR);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_INFO);
-            Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_WARNING);
+            MyForm hi = new MyForm("Test built-in sounds", ScreenRepair.this, null);
+
+            hi.setLayout(BoxLayout.y());
+
+//            hi.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenRepair.this.showBack()));
+            hi.getToolbar().addCommandToLeftBar(hi.makeDoneUpdateWithParseIdMapCommand());
+
+//            hi.add(new Button("", null, e->
+            Display d = Display.getInstance();
+            hi.add(new Button(Command.create("SOUND_TYPE_BUTTON_PRESS " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_BUTTON_PRESS), null,
+                    e -> d.playBuiltinSound(Display.SOUND_TYPE_BUTTON_PRESS))));
+            hi.add(new Button(Command.create("SOUND_TYPE_ALARM " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_ALARM), null,
+                    e -> d.playBuiltinSound(Display.SOUND_TYPE_ALARM))));
+            hi.add(new Button(Command.create("SOUND_TYPE_CONFIRMATION " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_CONFIRMATION), null, e -> d.playBuiltinSound(Display.SOUND_TYPE_CONFIRMATION))));
+            hi.add(new Button(Command.create("SOUND_TYPE_ERROR " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_ERROR), null, e -> d.playBuiltinSound(Display.SOUND_TYPE_ERROR))));
+            hi.add(new Button(Command.create("SOUND_TYPE_INFO " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_INFO), null, e -> d.playBuiltinSound(Display.SOUND_TYPE_INFO))));
+            hi.add(new Button(Command.create("SOUND_TYPE_WARNING " + d.isBuiltinSoundAvailable(Display.SOUND_TYPE_WARNING), null, e -> d.playBuiltinSound(Display.SOUND_TYPE_WARNING))));
+
+            hi.show();
+
         })));
+
+        {
+            content.add(new Button(Command.create("Buzz (200ms, ignored on iPhone)", null, (e9) -> {
+                Display.getInstance().vibrate(200);
+            })));
+            content.add(new Button(Command.create("Buzz (1s, ignored on iPhone)", null, (e9) -> {
+                Display.getInstance().vibrate(1000);
+            })));
+            content.add(new Button(Command.create("Buzz (6s, ignored on iPhone)", null, (e9) -> {
+                Display.getInstance().vibrate(6000);
+            })));
+        }
 
 //        content.add(new Button(MyCommand.create("Force current time", null, (e) -> {
         content.add(new Button(Command.create("Force current time", null, (e) -> {
@@ -935,45 +981,46 @@ public class ScreenRepair extends MyForm {
             }
         }));
 
-        content.add(
-                new Button(new Command("Simulate notification", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
-                        if (false) {
-                            Date alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 14);
-                            Item item = new Item("TestAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
-                            item.setAlarmDate(alarm);
-//                            DAO.getInstance().saveNew(item, true);
-                            DAO.getInstance().saveNew(item);
-                            DAO.getInstance().saveNewExecuteUpdate();
-                            alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 12);
-                            item = new Item("TestWaitingAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
-                            item.setWaitingAlarmDate(alarm);
-//                            DAO.getInstance().saveNew(item, true);
-                            DAO.getInstance().saveNew(item);
-                            DAO.getInstance().saveNewExecuteUpdate();
-                        }
-                        switch (3) {
-                            case 1:
-                                AlarmHandler.getInstance().simulateNotificationReceived_TEST(15);
-                                break;
-                            case 2:
-                                //test alarm and waiting on same time
-                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test2", MyDate.makeDate(20), 15, 15);
-                                break;
-                            case 3:
-                                //test two alarms expiring on same time
-                                Date alarm = MyDate.makeDate(20);
-                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test1 in 30s", null, MyDate.makeDate(30), null);
-                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test2 in 30s", null, MyDate.makeDate(30), null);
-                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test3 in 60s", null, MyDate.makeDate(60), null);
-                                break;
-                        }
-//                        AlarmHandler.getInstance().simulateNotificationReceived_TEST(60);
-                    }
-                }
-                ));
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        content.add(
+//                new Button(new Command("Simulate notification", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
+//                    @Override
+//                    public void actionPerformed(ActionEvent evt) {
+//                        if (false) {
+//                            Date alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 14);
+//                            Item item = new Item("TestAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
+//                            item.setAlarmDate(alarm);
+////                            DAO.getInstance().saveNew(item, true);
+//                            DAO.getInstance().saveNew(item);
+//                            DAO.getInstance().saveNewTriggerUpdate();
+//                            alarm = new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 12);
+//                            item = new Item("TestWaitingAlarm on " + alarm, 25, new Date(System.currentTimeMillis() + MyDate.DAY_IN_MILLISECONDS * 28));
+//                            item.setWaitingAlarmDate(alarm);
+////                            DAO.getInstance().saveNew(item, true);
+//                            DAO.getInstance().saveNew(item);
+//                            DAO.getInstance().saveNewTriggerUpdate();
+//                        }
+//                        switch (3) {
+//                            case 1:
+//                                AlarmHandler.getInstance().simulateNotificationReceived_TEST(15);
+//                                break;
+//                            case 2:
+//                                //test alarm and waiting on same time
+//                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test2", MyDate.makeDate(20), 15, 15);
+//                                break;
+//                            case 3:
+//                                //test two alarms expiring on same time
+//                                Date alarm = MyDate.makeDate(20);
+//                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test1 in 30s", null, MyDate.makeDate(30), null);
+//                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test2 in 30s", null, MyDate.makeDate(30), null);
+//                                AlarmHandler.getInstance().simulateNotificationReceived_TEST("test3 in 60s", null, MyDate.makeDate(60), null);
+//                                break;
+//                        }
+////                        AlarmHandler.getInstance().simulateNotificationReceived_TEST(60);
+//                    }
+//                }
+//                ));
+//</editor-fold>
         content.add(
                 new Button(new Command("Simulate LocalNotif reception", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
                     @Override
@@ -996,38 +1043,40 @@ public class ScreenRepair extends MyForm {
                 }
                 ));
 
-        content.add(
-                new Button(new Command("Refresh first alarms", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
-                        List<Item> itemsWithAlarms = DAO.getInstance().getItemsWithAlarms(10000, new Date(0), new Date(0), new Date(0), 10000);
-                        List<Item> updated = new ArrayList();
-                        for (int i = 0, size = itemsWithAlarms.size(); i < size; i++) {
-                            Item expItem = itemsWithAlarms.get(i);
-                            Date oldFirstAlarm = expItem.getNextcomingAlarmFromParseN();
-                            expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
-                            Date newFirstAlarm = expItem.getNextcomingAlarmFromParseN(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
-                            if ((oldFirstAlarm == null && newFirstAlarm != null) //newFirst now defined
-                                    || (newFirstAlarm == null && oldFirstAlarm != null) //oldFirst now invalid
-                                    || (newFirstAlarm != null && oldFirstAlarm != null && oldFirstAlarm.getTime() != newFirstAlarm.getTime()) //First has changed
-                                    ) {
-                                updated.add(expItem); //save for a ParseServer update whether now null or with new value
+        if (false) {
+            content.add(
+                    new Button(new Command("Refresh first alarms", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
+                        @Override
+                        public void actionPerformed(ActionEvent evt) {
+                            List<Item> itemsWithAlarms = DAO.getInstance().getItemsWithAlarms(10000, new Date(0), new Date(0), new Date(0), 10000);
+                            List<Item> updated = new ArrayList();
+                            for (int i = 0, size = itemsWithAlarms.size(); i < size; i++) {
+                                Item expItem = itemsWithAlarms.get(i);
+                                Date oldFirstAlarm = expItem.getNextcomingAlarmFromParseN();
+                                expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
+                                Date newFirstAlarm = expItem.getNextcomingAlarmFromParseN(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
+                                if ((oldFirstAlarm == null && newFirstAlarm != null) //newFirst now defined
+                                        || (newFirstAlarm == null && oldFirstAlarm != null) //oldFirst now invalid
+                                        || (newFirstAlarm != null && oldFirstAlarm != null && oldFirstAlarm.getTime() != newFirstAlarm.getTime()) //First has changed
+                                        ) {
+                                    updated.add(expItem); //save for a ParseServer update whether now null or with new value
+                                }
                             }
-                        }
 
-                        // save the updated Items in a batch //optimization: do this as background task to avoid blocking the event thread
-                        if (!updated.isEmpty()) {
-                            try {
-                                ParseBatch parseBatch = ParseBatch.create();
-                                parseBatch.addObjects(updated, ParseBatch.EBatchOpType.UPDATE);
-                                parseBatch.execute();
-                            } catch (ParseException ex) {
-                                Log.e(ex);
+                            // save the updated Items in a batch //optimization: do this as background task to avoid blocking the event thread
+                            if (!updated.isEmpty()) {
+                                try {
+                                    ParseBatch parseBatch = ParseBatch.create();
+                                    parseBatch.addObjects(updated, ParseBatch.EBatchOpType.UPDATE);
+                                    parseBatch.execute();
+                                } catch (ParseException ex) {
+                                    Log.e(ex);
+                                }
                             }
                         }
                     }
-                }
-                ));
+                    ));
+        }
 
         content.add(new Button(new Command("Show local notifications") {
             @Override
@@ -1050,7 +1099,7 @@ public class ScreenRepair extends MyForm {
                 List<ItemAndListCommonInterface> todayList = DAO.getInstance().getToday();
                 long end = System.currentTimeMillis();
 
-                List<ItemAndListCommonInterface> todayLeafList = DAO.getTodayLeafTaskList(todayList);
+                List<ItemAndListCommonInterface> todayLeafList = DAO.getTodayLeafTaskListZZZ(todayList);
 
 //                Dialog.show("INFO", "Today Badge Count = " + DAO.getInstance().getBadgeCount(true, true), "OK", null);
                 Dialog.show("INFO", "Today Badge Count = " + todayLeafList.size() + "; millis=" + (end - start)
@@ -1143,7 +1192,8 @@ public class ScreenRepair extends MyForm {
 //                    compList.animateLayout(ANIMATION_TIME_FAST);
 //                }, MyPrefs.defaultIconSizeInMM.getFloat());
 
-                logForm.getToolbar().addSearchCommand(new MySearchCommand(logForm.getContentPane(), (e) -> {
+//                logForm.getToolbar().addSearchCommand(new MySearchCommand(logForm.getContentPane(), (e) -> {
+                setSearchCmd(new MySearchCommand(logForm, (e) -> {
                     String txt = (String) e.getSource();
                     boolean searchOnLowerCaseOnly;
 //                    if (!txt.equals(txt.toLowerCase()))
@@ -1161,6 +1211,7 @@ public class ScreenRepair extends MyForm {
                     }
                     compList.animateLayout(ANIMATION_TIME_FAST);
                 }));
+                logForm.getToolbar().addSearchCommand(getSearchCmd());
 
                 Container c = null;
                 for (String s : list) {
@@ -1183,7 +1234,11 @@ public class ScreenRepair extends MyForm {
 //                String log = Log.getLogContent();
                         if (Dialog.show("Send log", "", "OK", "Cancel")) {
 //                            Log.sendLog();
-                            DAO.emailLog(evt);
+                            try {
+                                DAO.emailLog(evt);
+                            } catch (Exception e) {
+                                Dialog.show("Send log", "Send email not working. Exception: " + e.toString(), "OK", null);
+                            }
                         }
                     }
                 }
@@ -1266,37 +1321,95 @@ public class ScreenRepair extends MyForm {
                 ));
 
         content.add(
-                new Button(new Command("Test Done/Next button on virtual keyboard", Icons.iconSettings) {
+                new Button(new Command("DeviceCalender", Icons.iconSettings) {
+                    //build hints: https://stackoverflow.com/questions/42762183/codename-one-use-google-calendar
+                    //https://stackoverflow.com/questions/45057045/codenameone-devicecalendar-getinstance-dc-getcalendars-is-returning-null-on
+                    //https://github.com/chen-fishbein/codenameone-calendar/issues/5
+                    //https://github.com/codenameone/CodenameOne/issues/2871
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        Label status = new Label("Safe area OFF");
-                        MyForm hi = new MyForm("Hi World", ScreenRepair.this, null);
-                        hi.setScrollableY(true);
-                        hi.getContentPane().setSafeArea(false);
-                        if (false) {
-                            hi.getToolbar().addCommandToOverflowMenu("Safe area ON", null, ev -> {
-                                hi.getContentPane().setSafeArea(true);
-                                status.setText("Safe ON");
-                                hi.revalidate();
-                                System.out.println("Item 1 selected");
-                            });
-                            hi.getToolbar().addCommandToOverflowMenu("Safe area OFF", null, ev -> {
-                                hi.getContentPane().setSafeArea(false);
-                                status.setText("Safe OFF");
-                                hi.revalidate();
-                                System.out.println("Item 2 selected");
-                            });
+                        if (DeviceCalendar.getInstance() == null) {
+                            Dialog.show("Calendars", "DeviceCalendar.getInstance()==null", "OK", null);
+                        } else if (!DeviceCalendar.getInstance().hasPermissions()) {
+                            Dialog.show("Calendars", "no permission!", "OK", null);
+                        } else {
+                            Collection<String> calendars = DeviceCalendar.getInstance().getCalendars();
+                            if (calendars == null) {
+                                Dialog.show("Calendars", "DeviceCalendar.getInstance().getCalendars()==null", "OK", null);
+                            } else {
+                                String res = "";
+                                for (String cal : calendars) {
+                                    res += cal + "\n";
+                                }
+                                Dialog.show("Calendars (" + calendars.size() + ")", res, "OK", null);
+
+                                //show events from each calendar
+                                for (String cal : calendars) {
+                                    res = "";
+                                    String calendarId = DeviceCalendar.getInstance().openCalendar(cal, false);
+                                    Collection<EventInfo> events = DeviceCalendar.getInstance().getEvents(calendarId, new MyDate(), new MyDate(System.currentTimeMillis() + 30 * MyDate.DAY_IN_MILLISECONDS));
+                                    if (events == null) {
+                                        Dialog.show("Calendars", "DeviceCalendar.getInstance().getEvents()==null", "OK", null);
+                                    } else {
+                                        Iterator it = events.iterator();
+                                        for (int i = 0; i < 5; i++) {
+                                            Object o = it.next();
+                                            if (o instanceof EventInfo) {
+                                                EventInfo event = (EventInfo) o;
+                                                res += "Id=" + event.getID();
+                                                res += "; Title=" + event.getTitle();
+                                                res += "; Description=" + event.getDescription();
+                                                res += "; start=" + event.getStartTime();
+                                                res += "; end=" + event.getEndTime();
+                                                res += "; reminders=" + event.getReminders();
+                                                res += "\n";
+                                            } else {
+                                                res += "Event not instanceof EventInfo (=" + o + ")";
+                                            }
+                                        }
+                                        Log.p(res);
+                                        Dialog.show("Cal=" + cal + " (" + events.size() + ")", res, "OK", null);
+                                    }
+                                }
+                            }
                         }
-                        hi.add(new Label("Hi World"));
-                        hi.add(status);
+                    }
+                }
+                ));
 
-                        Tabs tabs = new Tabs();
-                        hi.add(tabs);
+        if (false) {
+            content.add(
+                    new Button(new Command("Test Done/Next button on virtual keyboard", Icons.iconSettings) {
+                        @Override
+                        public void actionPerformed(ActionEvent evt) {
+                            Label status = new Label("Safe area OFF");
+                            MyForm hi = new MyForm("Hi World", ScreenRepair.this, null);
+                            hi.setScrollableY(true);
+                            hi.getContentPane().setSafeArea(false);
+                            if (false) {
+                                hi.getToolbar().addCommandToOverflowMenu("Safe area ON", null, ev -> {
+                                    hi.getContentPane().setSafeArea(true);
+                                    status.setText("Safe ON");
+                                    hi.revalidate();
+                                    System.out.println("Item 1 selected");
+                                });
+                                hi.getToolbar().addCommandToOverflowMenu("Safe area OFF", null, ev -> {
+                                    hi.getContentPane().setSafeArea(false);
+                                    status.setText("Safe OFF");
+                                    hi.revalidate();
+                                    System.out.println("Item 2 selected");
+                                });
+                            }
+                            hi.add(new Label("Hi World"));
+                            hi.add(status);
 
-                        Container statusCont = new Container(BoxLayout.y());
-                        Container statusCont2 = new Container(BoxLayout.y());
-                        tabs.addTab("Tab1", statusCont);
-                        tabs.addTab("Tab1", statusCont2);
+                            Tabs tabs = new Tabs();
+                            hi.add(tabs);
+
+                            Container statusCont = new Container(BoxLayout.y());
+                            Container statusCont2 = new Container(BoxLayout.y());
+                            tabs.addTab("Tab1", statusCont);
+                            tabs.addTab("Tab1", statusCont2);
 
 //            TextField textEntryField = new MyTextField2(); //TODO!!!! need field to enter edit mode
 //            textEntryField.setUIID("ListPinchInsertTextField");
@@ -1304,86 +1417,86 @@ public class ScreenRepair extends MyForm {
 //            textEntryField.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
 //            statusCont.add(textEntryField);
 //            statusCont.add("ENormal TextField from InlineInsert:");
-                        TextField textEntryField2 = new TextField("TextField,-Trvs: Kbd:next, bar:Done"); //TODO!!!! need field to enter edit mode
+                            TextField textEntryField2 = new TextField("TextField,-Trvs: Kbd:next, bar:Done"); //TODO!!!! need field to enter edit mode
 //            textEntryField2.setUIID("ListPinchInsertTextField");
 //            textEntryField2.setHint("Normal TextField from InlineInsert");
-                        textEntryField2.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
-                        textEntryField2.setTraversable(false);
-                        statusCont.add(textEntryField2);
+                            textEntryField2.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
+                            textEntryField2.setTraversable(false);
+                            statusCont.add(textEntryField2);
 
-                        statusCont.add("Normal TextField, noCaps:");
-                        TextField textEntryField3 = new TextField(""); //TODO!!!! need field to enter edit mode
-                        textEntryField3.setUIID("ListPinchInsertTextField");
-                        textEntryField3.setHint("Normal TextField from InlineInsert ");
-                        textEntryField3.setConstraint(TextField.ANY); //UI: automatically set caps sentence (first letter uppercase)
-                        textEntryField3.setTraversable(false);
-                        statusCont.add(textEntryField3);
+                            statusCont.add("Normal TextField, noCaps:");
+                            TextField textEntryField3 = new TextField(""); //TODO!!!! need field to enter edit mode
+                            textEntryField3.setUIID("ListPinchInsertTextField");
+                            textEntryField3.setHint("Normal TextField from InlineInsert ");
+                            textEntryField3.setConstraint(TextField.ANY); //UI: automatically set caps sentence (first letter uppercase)
+                            textEntryField3.setTraversable(false);
+                            statusCont.add(textEntryField3);
 
-                        statusCont.add("Enter a decimal value (non-travesable):");
-                        TextField numField = new TextField();
-                        numField.setConstraint(TextArea.DECIMAL);
-                        numField.setTraversable(false);
-                        statusCont.add(numField);
+                            statusCont.add("Enter a decimal value (non-travesable):");
+                            TextField numField = new TextField();
+                            numField.setConstraint(TextArea.DECIMAL);
+                            numField.setTraversable(false);
+                            statusCont.add(numField);
 
-                        statusCont.add("Enter a decimal value (travesable):");
-                        TextField numField2 = new TextField();
-                        numField2.setConstraint(TextArea.DECIMAL);
-                        numField2.setTraversable(true);
-                        statusCont.add(numField2);
+                            statusCont.add("Enter a decimal value (travesable):");
+                            TextField numField2 = new TextField();
+                            numField2.setConstraint(TextArea.DECIMAL);
+                            numField2.setTraversable(true);
+                            statusCont.add(numField2);
 
-                        TextArea textField2 = new TextArea("TextArea", 3, 80);
-                        textField2.setConstraint(TextArea.ANY);
-                        statusCont.add(textField2);
+                            TextArea textField2 = new TextArea("TextArea", 3, 80);
+                            textField2.setConstraint(TextArea.ANY);
+                            statusCont.add(textField2);
 
-                        TextArea textField5 = new TextArea("TextArea, no constraint", 3, 80);
+                            TextArea textField5 = new TextArea("TextArea, no constraint", 3, 80);
 //                textField5.setConstraint(TextArea.ANY);
-                        statusCont.add(textField5);
+                            statusCont.add(textField5);
 
-                        TextField textField1 = new TextField("TextField", "TextField", 3, 80);
-                        textField1.setConstraint(TextArea.ANY);
-                        statusCont.add(textField1);
+                            TextField textField1 = new TextField("TextField", "TextField", 3, 80);
+                            textField1.setConstraint(TextArea.ANY);
+                            statusCont.add(textField1);
 
-                        statusCont.add("MyDateAndTimePicker:");
-                        statusCont.add(new MyDateAndTimePicker());
+                            statusCont.add("MyDateAndTimePicker:");
+                            statusCont.add(new MyDateAndTimePicker());
 
-                        statusCont.add("Normal date Picker:");
-                        Picker datetimepicker = new Picker();
-                        datetimepicker.setType(Display.PICKER_TYPE_DATE_AND_TIME);
-                        statusCont.add(datetimepicker);
+                            statusCont.add("Normal date Picker:");
+                            Picker datetimepicker = new Picker();
+                            datetimepicker.setType(Display.PICKER_TYPE_DATE_AND_TIME);
+                            statusCont.add(datetimepicker);
 
-                        statusCont.add("Normal date Picker w lead:");
-                        Picker datetimepicker2 = new Picker();
-                        datetimepicker2.setType(Display.PICKER_TYPE_DATE_AND_TIME);
-                        Container visibleField = BorderLayout.centerCenterEastWest(datetimepicker2, new Button(">"), null);
-                        ((Container) visibleField).setLeadComponent(datetimepicker2);
-                        statusCont.add(visibleField);
+                            statusCont.add("Normal date Picker w lead:");
+                            Picker datetimepicker2 = new Picker();
+                            datetimepicker2.setType(Display.PICKER_TYPE_DATE_AND_TIME);
+                            Container visibleField = BorderLayout.centerCenterEastWest(datetimepicker2, new Button(">"), null);
+                            ((Container) visibleField).setLeadComponent(datetimepicker2);
+                            statusCont.add(visibleField);
 
-                        statusCont2.add("Enter a decimal value (non-travesable):");
-                        statusCont2.add("Normal date Picker inSwipe:");
-                        Picker datetimepicker4 = new Picker();
-                        datetimepicker4.setType(Display.PICKER_TYPE_DATE_AND_TIME);
-                        SwipeableContainer swipeCont = new SwipeableContainer(new Button("Swipe"), datetimepicker4);
-                        statusCont2.add(swipeCont);
+                            statusCont2.add("Enter a decimal value (non-travesable):");
+                            statusCont2.add("Normal date Picker inSwipe:");
+                            Picker datetimepicker4 = new Picker();
+                            datetimepicker4.setType(Display.PICKER_TYPE_DATE_AND_TIME);
+                            SwipeableContainer swipeCont = new SwipeableContainer(new Button("Swipe"), datetimepicker4);
+                            statusCont2.add(swipeCont);
 
-                        statusCont2.add("Enter a decimal value (non-travesable):");
-                        statusCont2.add("Date Picker in Swipe+Lead:");
-                        Picker datetimepicker5 = new Picker();
-                        datetimepicker5.setType(Display.PICKER_TYPE_DATE_AND_TIME);
-                        Container visibleField2 = BorderLayout.centerCenterEastWest(datetimepicker5, new Button(">"), null);
-                        ((Container) visibleField2).setLeadComponent(datetimepicker5);
-                        SwipeableContainer swipeCont2 = new SwipeableContainer(new Button("Swipe"), visibleField2);
-                        statusCont2.add(swipeCont2);
+                            statusCont2.add("Enter a decimal value (non-travesable):");
+                            statusCont2.add("Date Picker in Swipe+Lead:");
+                            Picker datetimepicker5 = new Picker();
+                            datetimepicker5.setType(Display.PICKER_TYPE_DATE_AND_TIME);
+                            Container visibleField2 = BorderLayout.centerCenterEastWest(datetimepicker5, new Button(">"), null);
+                            ((Container) visibleField2).setLeadComponent(datetimepicker5);
+                            SwipeableContainer swipeCont2 = new SwipeableContainer(new Button("Swipe"), visibleField2);
+                            statusCont2.add(swipeCont2);
 
-                        statusCont2.add("Enter a decimal value (non-travesable):");
-                        TextField numField3 = new TextField();
-                        numField3.setConstraint(TextArea.DECIMAL);
-                        numField3.setTraversable(false);
-                        statusCont2.add(numField3);
+                            statusCont2.add("Enter a decimal value (non-travesable):");
+                            TextField numField3 = new TextField();
+                            numField3.setConstraint(TextArea.DECIMAL);
+                            numField3.setTraversable(false);
+                            statusCont2.add(numField3);
 
-                        TextField textEntryField4 = new TextField("TextField,-Trvs: Kbd:next, bar:Done"); //TODO!!!! need field to enter edit mode
-                        textEntryField4.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
-                        textEntryField4.setTraversable(false);
-                        statusCont2.add(textEntryField4);
+                            TextField textEntryField4 = new TextField("TextField,-Trvs: Kbd:next, bar:Done"); //TODO!!!! need field to enter edit mode
+                            textEntryField4.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //UI: automatically set caps sentence (first letter uppercase)
+                            textEntryField4.setTraversable(false);
+                            statusCont2.add(textEntryField4);
 
 //            MyTextField textField3 = new MyTextField("Simple MyTextField", 3, 80);
 //            statusCont.add(textField3);
@@ -1391,10 +1504,11 @@ public class ScreenRepair extends MyForm {
 ////                  MyTextField(String hint, int columns, int rows, int maxRows, int maxTextSize, int constraint,  int alignment) {
 //            MyTextField textField4 = new MyTextField("Normal MyTextField", 80, 3, 5, 200, TextArea.DECIMAL);
 //            statusCont.add(textField4);
-                        hi.show();
+                            hi.show();
+                        }
                     }
-                }
-                ));
+                    ));
+        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        content.add(
 //                new Button(new Command("Edit RepeatRule", null/*FontImage.create(" \ue838 ", iconStyle)*/) {

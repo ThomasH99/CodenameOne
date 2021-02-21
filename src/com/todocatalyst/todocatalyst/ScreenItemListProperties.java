@@ -6,6 +6,8 @@ import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
 import com.codename1.ui.Label;
+import com.codename1.ui.TextArea;
+import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.table.TableLayout;
@@ -40,13 +42,15 @@ public class ScreenItemListProperties extends MyForm {
     ScreenItemListProperties(ItemList itemList, MyForm previousForm) { //throws ParseException, IOException {
         this(itemList, previousForm, null);
     }
-    
+
     ScreenItemListProperties(ItemList itemList, MyForm previousForm, Runnable doneAction) { //throws ParseException, IOException {
         super("", previousForm, doneAction);
         setTitle(itemList instanceof Category ? Category.CATEGORY : ItemList.ITEM_LIST);
 //        ScreenItemP.item = item;
         this.itemList = itemList;
         setUniqueFormId("ScreenItemListProperties");
+        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId());
+
 //        ScreenItemP.previousForm = previousForm;
 //        this.previousForm = previousForm;
 //        this.updateActionOnDone = doneAction;
@@ -64,7 +68,7 @@ public class ScreenItemListProperties extends MyForm {
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
     }
-    
+
     @Override
     public void refreshAfterEdit() {
         getContentPane().removeAll();
@@ -81,7 +85,7 @@ public class ScreenItemListProperties extends MyForm {
     public static String checkItemListIsValidForSaving(String itemListName, ItemList itemList) {
         return checkItemListIsValidForSaving(itemListName, itemList, true);
     }
-    
+
     public static String checkItemListIsValidForSaving(String itemListName, ItemList itemList, boolean showErrorDialog) {
         //TODO extend to check valid subcategories, auto-words, ...
         String errorMsg = null;
@@ -92,13 +96,13 @@ public class ScreenItemListProperties extends MyForm {
             errorMsg = Format.f("{0 category_or_list} name cannot be empty", ItemList.ITEM_LIST);
         } else if (ItemListList.getInstance().findItemListWithName(itemListName) != null
                 && ItemListList.getInstance().findItemListWithName(itemListName) != itemList
-                && !MyPrefs.itemListAllowDuplicateListNames.getBoolean()) //                return "Category \"" + description.getText() + "\" already exists";
-        //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
-        //            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", ItemList.ITEM_LIST, itemListName);
-        {
+                && !MyPrefs.itemListAllowDuplicateListNames.getBoolean()) {
+//                return "Category \"" + description.getText() + "\" already exists";
+            //                return Format.f("Category \"{1 just_entered_category_name}\" already exists",categoryName.getText());
+            //            errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists", ItemList.ITEM_LIST, itemListName);
             errorMsg = Format.f("{0 category_or_itemlist} \"{1 just_entered_category_name}\" already exists, and more than one {0} with same name is not allowed. Please set a different name.", ItemList.ITEM_LIST, itemListName);
         }
-        
+
         if (errorMsg != null) {
             if (showErrorDialog) {
                 Dialog.show("Error", errorMsg, "OK", null);
@@ -108,9 +112,9 @@ public class ScreenItemListProperties extends MyForm {
             return errorMsg; //true;
         }
     }
-    
+
     public void addCommandsToToolbar(Toolbar toolbar) {
-        
+
         super.addCommandsToToolbar(toolbar);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Image icon = FontImage.createMaterial(FontImage.MATERIAL_ARROW_BACK, toolbar.getStyle());
@@ -133,17 +137,18 @@ public class ScreenItemListProperties extends MyForm {
 //        toolbar.addCommandToLeftBar(cmd);
 //</editor-fold>
         toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand());
-        
+
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemListSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsItemListProperties(ScreenItemListProperties.this, () -> {
-                if (false) {
-                    refreshAfterEdit();
-                }
+//                if (false) {
+//                    refreshAfterEdit();
+//                }
             }).show();
         }
         ));
-        
+
         if (true || MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
 //                Log.p("Clicked");
 ////            item.revert(); //forgetChanges***/refresh
@@ -152,9 +157,10 @@ public class ScreenItemListProperties extends MyForm {
 ////                previousForm.show(); //drop any changes
 //                showPreviousScreen(true); //false);
 //            });
+//</editor-fold>
             toolbar.addCommandToOverflowMenu(makeCancelCommand());
         }
-        
+
         if (false && Config.TEST) {
             if (MyPrefs.getBoolean(MyPrefs.enableRepairCommandsInMenus)) {
                 toolbar.addCommandToOverflowMenu("Show data issues", null, (e) -> {
@@ -167,7 +173,7 @@ public class ScreenItemListProperties extends MyForm {
                 });
             }
         }
-        
+
     }
 
     /**
@@ -184,6 +190,9 @@ public class ScreenItemListProperties extends MyForm {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container content) {
         parseIdMap2.parseIdMapReset();
+
+        boolean hide = MyPrefs.hideIconsInEditTaskScreen.getBoolean();
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Container content = new Container();
 //        if (false) {
@@ -200,45 +209,71 @@ public class ScreenItemListProperties extends MyForm {
 //            content.setLayout(tl);
 //        }
 //</editor-fold>
-        MyTextField name = new MyTextField("List name", parseIdMap2, () -> itemList.getText(), (s) -> itemList.setText(s));
+        content.add(makeSpacerThin());
+
+//        MyTextField name = new MyTextField("List name", parseIdMap2, () -> itemList.getText(), (s) -> itemList.setText(s));
+        MyTextField description = new MyTextField(Item.DESCRIPTION_HINT, 20, 1, 1, MyPrefs.taskMaxSizeInChars.getInt(), TextArea.ANY);
+        description.getHintLabel().setUIID("ScreenItemTaskTextHint");
+        description.setConstraint(TextField.INITIAL_CAPS_SENTENCE); //start with initial caps automatically - TODO!!!! NOT WORKING LIKE THIS!!
+
 //        content.add(new Label("List name")).add(name);
 //        content.add(layoutN(false, "List name", name, "**"));
 //        content.add(layoutN(null, name, "**", true));
-        content.add(name);
-        name.addActionListener((e) -> setTitle(name.getText())); //update the form title when text is changed
-        setEditOnShow(name); //UI: start editing this field
+//        AutoSaveTimer nameSaveTimer = new AutoSaveTimer(this, name, null, null); //normal that this appear as non-used!
+        description.addActionListener((e) -> setTitle(description.getText())); //update the form title when text is changed
+        initField(Item.PARSE_TEXT, description,
+                () -> itemList.getText(),
+                (t) -> itemList.setText((String) t),
+                () -> description.getText(),
+                (t) -> description.setText((String) t));
+        setEditOnShow(description); //UI: start editing this field
+        content.add(description);
+
+        content.add(makeSpacerThin());
 
 //        MyTextField description = new MyTextField("Description", parseIdMap2, () -> itemList.getComment(), (s) -> itemList.setComment(s));
-        MyTextField description = new MyTextField("Description", parseIdMap2, () -> itemList.getComment(), (s) -> itemList.setComment(s));
+//        MyTextField comment = new MyTextField("Description", parseIdMap2, () -> itemList.getComment(), (s) -> itemList.setComment(s));
+        MyTextField comment = new MyTextField(Item.COMMENT_HINT, 20, 1, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
+        comment.setSingleLineTextArea(false);
+        comment.setUIID("ScreenItemComment");
+        comment.getHintLabel().setUIID("ScreenItemCommentHint");
 //        content.add(new Label("Description")).add(description).add(new SpanLabel("If necessary, use the description to describe the purpose of the list. It will be shown at the top of the screen when showing the list of tasks."));
 //        content.add(layoutN(false, "Description", description, "If necessary, use the description to describe the purpose of the list. It will be shown at the top of the screen when showing the list of tasks."));
 //        content.add(layoutN( null, description, "If necessary, use the description to describe the purpose of the list. It will be shown at the top of the screen when showing the list of tasks.",true));
-        content.add(description);
+        initField(Item.PARSE_COMMENT, comment,
+                () -> itemList.getComment(),
+                (t) -> itemList.setComment((String) t),
+                () -> comment.getText(),
+                (t) -> comment.setText((String) t));
+        content.add(comment);
+
+        content.add(makeSpacerThin());
+//        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, null, null); //normal that this appear as non-used!
 
 //        Label createdDate = new Label(itemList.getCreatedAt() == null || itemList.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(itemList.getCreatedAt())); //"<date set when saved>"
         Label createdDate = new Label(itemList.getCreatedAt() == null || itemList.getCreatedAt().getTime() == 0 ? MyDate.formatDateNew(new MyDate()) : MyDate.formatDateNew(itemList.getCreatedAt())); //"<date set when saved>"
 //        content.add(new Label(Item.CREATED_DATE)).add(createdDate);
-        content.add(layoutN(Item.CREATED_DATE, createdDate, "**", true));
+        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hide ? null : Icons.iconCreatedDate));
 
 //        Label lastModifiedDate = new Label(itemList.getUpdatedAt() == null || itemList.getUpdatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(itemList.getUpdatedAt()));
         Label lastModifiedDate = new Label(itemList.getUpdatedAt() == null || itemList.getUpdatedAt().getTime() == 0 ? MyDate.formatDateNew(new MyDate()) : MyDate.formatDateNew(itemList.getUpdatedAt()));
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        content.add(layoutN(Item.UPDATED_DATE, lastModifiedDate, "**", true));
-        
+        content.add(layoutN(Item.PARSE_UPDATED_AT,Item.UPDATED_DATE, lastModifiedDate, "**", true, hide ? null : Icons.iconModifiedDate));
+
         if (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(itemList.getObjectIdP() == null ? "<set on save>" : itemList.getObjectIdP(), "ScreenItemValueUneditable");
-            content.add(layoutN(Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true));
+            content.add(layoutN(Item.PARSE_OBJECT_ID_VIRT, Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hide ? null : Icons.iconObjectId));
         }
         if (Config.TEST) {
             if (!itemList.getSystemName().isEmpty()) {
                 Label systemNameLabel = new Label(itemList.getSystemName());
-                content.add(layoutN(Item.SYSTEM_NAME, systemNameLabel, "**", true));
+                content.add(layoutN(ItemList.PARSE_SYSTEM_NAME, Item.SYSTEM_NAME, systemNameLabel, "**", true));
             }
         }
 
 //        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), (ItemList) itemList.getOwner()));
-        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), itemList) == null);
-        
+        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(description.getText(), itemList) == null);
+
         return content;
     }
 }

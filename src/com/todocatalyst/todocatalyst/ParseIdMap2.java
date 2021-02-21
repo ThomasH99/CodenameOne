@@ -26,7 +26,9 @@ public class ParseIdMap2 {//extends HashMap {
     }
 
     public Object put(Object key, Runnable value) {
-        if (Config.TEST) ASSERT.that(value != null, "SaveEditedValuesLocally put " + key + " with null value - missing objectIdP??");
+        if (Config.TEST) {
+            ASSERT.that(value != null, "SaveEditedValuesLocally put " + key + " with null value - missing objectIdP??");
+        }
         Object previousValue = parseIdMap2.put(key, value);
         return previousValue;
     }
@@ -42,20 +44,35 @@ public class ParseIdMap2 {//extends HashMap {
 //    void addPostSaveXXX(Runnable r) {
 //        runnablesXXX.add(r);
 //    }
-
     void update() {
-        Runnable repeatRule = null;
+        update(true);
+    }
+
+    /**
+     * run the update functions, do not remove them from parseIdMap2 (case of
+     * updating a template generated from a task with picker values)
+     *
+     * @param updateRepeatRule
+     */
+    public void update(boolean updateRepeatRule) {
+        if (true) {
+            return;
+        }
+        Runnable repeatRuleAction = null;
         if (true) { //need to execute this after updating the element, since it will be added to list of done/undone in RR and logic won't work if all fields not set before generating repeat instances!
-            repeatRule = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
+            repeatRuleAction = parseIdMap2.remove(REPEAT_RULE_KEY); //set a repeatRule aside for execution last (after restoring all fields)
         }
 
         for (Object parseId : parseIdMap2.keySet()) {
             parseIdMap2.get(parseId).run();
         }
-        if (true)
-            if (repeatRule != null) {
-                repeatRule.run();
+        if (updateRepeatRule) {
+            if (repeatRuleAction != null) {
+                repeatRuleAction.run();
             }
+        } else {
+            parseIdMap2.put(REPEAT_RULE_KEY, repeatRuleAction); //set a repeatRule aside for execution last (after restoring all fields)
+        }
     }
 
     public Set<Object> keySet() {
@@ -67,10 +84,11 @@ public class ParseIdMap2 {//extends HashMap {
 //            r.run();
 //        }
 //    }
-
     void parseIdMapReset() {
         parseIdMap2.clear();
-        if (false)runnablesXXX.clear();
+        if (false) {
+            runnablesXXX.clear();
+        }
     }
 
 }

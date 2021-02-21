@@ -1,3 +1,0 @@
-What version of the product are you using? On what operating system?
-
-Trunk revision 372. Windows 7 32 bit, Netbeans 7.2 with plugin 1.0.16. Using the Simulator. 

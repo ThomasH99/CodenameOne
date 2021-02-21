@@ -47,6 +47,9 @@ public class ParseACL implements com.codename1.io.Externalizable {
 	public static void setDefaultACL(ParseACL acl, boolean withAccessForCurrentUser) {
 	}
 
+	public String toString() {
+	}
+
 	@java.lang.Override
 	public int getVersion() {
 	}

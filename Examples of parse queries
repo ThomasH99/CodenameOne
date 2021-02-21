@@ -1,0 +1,36 @@
+[EDT] 0:0:0,164 - using server https://parseapi.back4app.com (ONLINE)
+
+[EDT] 0:0:0,168 - Data to be sent: {}
+[EDT] 0:0:0,169 - Request URL: https://parseapi.back4app.com/users/me
+[EDT] 0:0:12,865 - Raw response (as string): {"objectId":"adufFHCm5y","username":"iphone19apr2020@hjelm.name","email":"iphone19apr2020@hjelm.name","emailVerified":false,"createdAt":"2020-04-19T17:02:01.156Z","updatedAt":"2020-04-19T17:02:01.156Z","ACL":{"*":{"read":true},"adufFHCm5y":{"read":true,"write":true}},"__type":"Object","className":"_User","sessionToken":"r:997030100d394a566fcf18efbdf3ed48"}
+[EDT] 0:0:12,868 - Parse GET Command took 12700 milliseconds
+
+[EDT] 0:0:12,903 - Data to be sent: {"keys":"","where":"{\"status\":{\"$nin\":[\"DONE\",\"CANCELLED\"]},\"deletedDate\":{\"$exists\":false},\"template\":{\"$exists\":false},\"nextAlarm\":{\"$exists\":true}}","limit":"64","order":"nextAlarm"}
+[EDT] 0:0:12,904 - Request URL: https://parseapi.back4app.com/classes/Item
+[EDT] 0:0:13,294 - Raw response (as string): {"results":[]}
+[EDT] 0:0:13,297 - Parse GET Command took 393 milliseconds
+
+[EDT] 0:0:13,386 - Data to be sent: {"where":"{\"deletedDate\":{\"$exists\":false}}","limit":"100000","order":"createdAt"}
+[EDT] 0:0:13,386 - Request URL: https://parseapi.back4app.com/classes/Timer
+[EDT] 0:0:15,934 - Raw response (as string): {"results":[{"objectId":"AZCkHbCrx2","item":{"__type":"Pointer","className":"Item","objectId":"0g1HoboecK"},"startTime":{"__type":"Date","iso":"2020-07-07T11:16:51.953Z"},"createdAt":"2020-07-07T09:16:53.556Z","updatedAt":"2020-07-07T09:16:53.556Z","ACL":{"adufFHCm5y":{"read":true,"write":true}}},{"objectId":"Vh6nYcn6or","item":{"__type":"Pointer","className":"Item","objectId":"0g1HoboecK"},"startTime":{"__type":"Date","iso":"2020-07-07T11:16:51.953Z"},"createdAt":"2020-07-07T09:16:54.029Z","updatedAt":"2020-07-07T09:16:54.029Z","ACL":{"adufFHCm5y":{"read":true,"write":true}}},{"objectId":"EG0ln5vyU6","item":{"__type":"Pointer","className":"Item","objectId":"0g1HoboecK"},"startTime":{"__type":"Date","iso":"2020-07-07T11:16:51.953Z"},"createdAt":"2020-07-07T09:16:54.332Z","updatedAt":"2020-07-07T13:17:39.130Z","ACL":{"adufFHCm5y":{"read":true,"write":true}}}]}
+[EDT] 0:0:15,937 - Parse GET Command took 2551 milliseconds
+
+[EDT] 0:0:16,20 - Data to be sent: {"keys":"","where":"{\"status\":\"DONE\",\"deletedDate\":{\"$exists\":false},\"completedDate\":{\"$gte\":{\"iso\":\"2020-06-07T22:49:10.545Z\",\"__type\":\"Date\"},\"$lte\":{\"iso\":\"2020-07-07T22:49:10.545Z\",\"__type\":\"Date\"}},\"template\":{\"$exists\":false},\"subtasks\":{\"$exists\":false}}","limit":"100000"}
+[EDT] 0:0:16,20 - Request URL: https://parseapi.back4app.com/classes/Item
+[EDT] 0:0:16,488 - Raw response (as string): {"results":[{"objectId":"DbHBEInZ7e","createdAt":"2020-06-24T19:28:30.458Z","updatedAt":"2020-06-25T08:20:33.551Z"},{"objectId":"sHa9v8DFMk","createdAt":"2020-06-24T19:24:49.127Z","updatedAt":"2020-06-27T21:54:38.886Z"}]}
+[EDT] 0:0:16,489 - Parse GET Command took 469 milliseconds
+
+[EDT] 0:0:39,838 - Data to be sent: {}
+[EDT] 0:0:39,838 - Request URL: https://parseapi.back4app.com/classes/FilterSortDef/BWjOfPjELO
+[EDT] 0:0:40,485 - Raw response (as string): {"code":101,"error":"Object not found."}
+[EDT] 0:0:40,488 - Parse GET Command took 650 milliseconds
+
+[EDT] 0:1:7,983 - Data to be sent: {"data":{"requests":[{"method":"PUT","body":{"ACL":{"adufFHCm5y":{"read":true,"write":true}},"description":"T24->T444 0123456789-><>"},"path":"/classes/Item/0g1HoboecK"}]}}
+[EDT] 0:1:7,984 - Request URL: https://parseapi.back4app.com/batch
+[EDT] 0:1:9,888 - Raw response (as string): [{"success":{"updatedAt":"2020-07-07T20:50:04.236Z"}}]
+[EDT] 0:1:9,891 - Parse POST Command took 1907 milliseconds
+
+[EDT] 0:2:43,932 - Data to be sent: {"data":{"elapsedMillis":41686478,"startTime":{"__op":"Delete"}}}
+[EDT] 0:2:43,933 - Request URL: https://parseapi.back4app.com/classes/Timer/Vh6nYcn6or
+[EDT] 0:2:44,565 - Raw response (as string): {"updatedAt":"2020-07-07T20:51:38.969Z"}
+[EDT] 0:2:44,568 - Parse PUT Command took 635 milliseconds

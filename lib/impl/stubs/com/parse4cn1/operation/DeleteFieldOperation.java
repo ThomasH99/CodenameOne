@@ -2,9 +2,10 @@ package com.parse4cn1.operation;
 
 
 /**
- *  This class defines an operation to delete a field (key-value pair) from a ParseObject.
+ *  This class defines an operation to delete a field (key-value pair) from a
+ *  ParseObject.
  */
-public class DeleteFieldOperation implements ParseOperation {
+public class DeleteFieldOperation implements ParseOperation, com.codename1.io.Externalizable {
 
 	public DeleteFieldOperation() {
 	}
@@ -15,5 +16,21 @@ public class DeleteFieldOperation implements ParseOperation {
 
 	@java.lang.Override
 	public Object encode(com.parse4cn1.encode.IParseObjectEncodingStrategy objectEncoder) {
+	}
+
+	@java.lang.Override
+	public void externalize(java.io.DataOutputStream out) {
+	}
+
+	@java.lang.Override
+	public void internalize(int version, java.io.DataInputStream in) {
+	}
+
+	@java.lang.Override
+	public int getVersion() {
+	}
+
+	@java.lang.Override
+	public String getObjectId() {
 	}
 }

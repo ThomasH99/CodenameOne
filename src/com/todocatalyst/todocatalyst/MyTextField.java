@@ -48,12 +48,14 @@ class MyTextField extends TextField {
         setBlockLead(false);//xxx;
 //        setPreferredTabIndex(1);
         setTraversable(false); //ensures Done button on virtual keyboard?
-        if(false)putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
-
+        if (false) {
+            putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
+        }
         setAlignment(alignment);
         setAutoDegradeMaxSize(true);
-        if (rows > maxRows)
+        if (rows > maxRows) {
             rows = maxRows;
+        }
 //            if (false) 
         setRows(rows);
         setGrowByContent(rows < maxRows);
@@ -61,29 +63,37 @@ class MyTextField extends TextField {
         setGrowLimit(maxRows);
         if (false && rows > 0) {
 //                setRows(rows);
-            if (maxRows > rows)
+            if (maxRows > rows) {
                 setGrowLimit(maxRows);
+            }
         }
 //            setGrowLimit(maxRows);
         setHint(hint);
 //            setMaxSize(MyPrefs.getInt(MyPrefs.commentsAddTimedEntriesWithDateButNoTime));
         setMaxSize(maxTextSize);
-        if (getValue != null)
+        if (getValue != null) {
             setText(getValue.get());
-        if (parseIdMap != null && setValue != null)
+        }
+        if (parseIdMap != null && setValue != null) {
             parseIdMap.put(this, () -> setValue.accept(getText()));
+        }
     }
-    
-        MyTextField(String hint, int columns,  int constraint) {
+
+    MyTextField(String hint, int columns, int constraint) {
 //        super("", hint, columns, constraint);
         this(hint, columns, 1, 1, 2000, ANY, null, null, null, LEFT);
         setBlockLead(false);//xxx;
-        putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
-
+        if (false) {
+            putClientProperty("iosHideToolbar", Boolean.TRUE); //TRUE will hide the toolbar and only show Done button
+        }
         setAutoDegradeMaxSize(true);
         setHint(hint);
     }
 
+    @Override
+    public String toString() {
+        return "MyTxFld=\"" + getText() + "\" " + super.toString();
+    }
 
 }
 

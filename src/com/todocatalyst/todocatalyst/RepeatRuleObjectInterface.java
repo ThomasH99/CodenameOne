@@ -41,7 +41,7 @@ public interface RepeatRuleObjectInterface {
      */
     RepeatRuleObjectInterface createRepeatCopy(Date referenceTime);
 
-    void updateRepeatInstanceRelativeDates(Date newDueDateTime);
+    void updateRelativeDates(Date newDueDateTime);
 
     /**
      * returns the parentList of an RepeatRuleObject. Eg Used to determine in
@@ -95,39 +95,39 @@ public interface RepeatRuleObjectInterface {
         INSERT_TAIL_OF_OWNER_LIST, INSERT_BEFORE_REF_ELEMENT, INSERT_AFTER_REF_ELEMENT
     }
 
-    public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance);
+//    public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance);
 //    default public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance, RepatInsertPosition insertPosition);
 
-    default public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance, RepeatRuleObjectInterface.RepatInsertPosition insertPosition) {
-//        ItemAndListCommonInterface owner = getOwner();
-        ItemAndListCommonInterface owner = null;
-        if (this instanceof ItemAndListCommonInterface) {
-            owner = ((ItemAndListCommonInterface) this).getOwner();
-        }
-        if (owner != null && newRepeatRuleInstance instanceof ItemAndListCommonInterface) {
-            ItemAndListCommonInterface refElt = (ItemAndListCommonInterface) newRepeatRuleInstance;
-            switch (insertPosition) {
-                case INSERT_HEAD_OF_OWNER_LIST:
-                    owner.addToList(owner, false);
-                    break;
-                case INSERT_TAIL_OF_OWNER_LIST:
-                    owner.addToList(owner, true);
-                    break;
-                case INSERT_BEFORE_REF_ELEMENT:
-                    owner.addToList(owner, refElt, false);
-                    break;
-                case INSERT_AFTER_REF_ELEMENT:
-                    owner.addToList(owner, refElt, true);
-                    break;
-            }
-        }
-//        if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()) {// && (ownerList.indexOf(this)) != -1) {
-//            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); ///NB. no need to check if 'this' is in list since this insert defaults normal add if not
-//        } else {
-//            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+//    default public ItemAndListCommonInterface insertIntoList(RepeatRuleObjectInterface newRepeatRuleInstance, RepeatRuleObjectInterface.RepatInsertPosition insertPosition) {
+////        ItemAndListCommonInterface owner = getOwner();
+//        ItemAndListCommonInterface owner = null;
+//        if (this instanceof ItemAndListCommonInterface) {
+//            owner = ((ItemAndListCommonInterface) this).getOwner();
 //        }
-        return owner;
-    }
+//        if (owner != null && newRepeatRuleInstance instanceof ItemAndListCommonInterface) {
+//            ItemAndListCommonInterface refElt = (ItemAndListCommonInterface) newRepeatRuleInstance;
+//            switch (insertPosition) {
+//                case INSERT_HEAD_OF_OWNER_LIST:
+//                    owner.addToList(owner, false);
+//                    break;
+//                case INSERT_TAIL_OF_OWNER_LIST:
+//                    owner.addToList(owner, true);
+//                    break;
+//                case INSERT_BEFORE_REF_ELEMENT:
+//                    owner.addToList(owner, refElt, false);
+//                    break;
+//                case INSERT_AFTER_REF_ELEMENT:
+//                    owner.addToList(owner, refElt, true);
+//                    break;
+//            }
+//        }
+////        if (MyPrefs.insertNewRepeatInstancesJustAfterRepeatOriginator.getBoolean()) {// && (ownerList.indexOf(this)) != -1) {
+////            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, this, true); ///NB. no need to check if 'this' is in list since this insert defaults normal add if not
+////        } else {
+////            owner.addToList((ItemAndListCommonInterface) newRepeatRuleInstance, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+////        }
+//        return owner;
+//    }
 
         /**
      * update this element to have same values as refElement. Used eg to update future workslot repeat instances when one of them is edited, updates duration and text.

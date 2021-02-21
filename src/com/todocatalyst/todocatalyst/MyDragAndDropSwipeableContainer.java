@@ -14,6 +14,7 @@ import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.events.ActionEvent.Type;
+import com.codename1.ui.events.ScrollListener;
 import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.Layout;
@@ -39,6 +40,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     private Component lastDropTarget = null;
     private Component lastDraggedOverXXX = null;
 //    private MyDragAndDropSwipeableContainer lastDraggedOverMyDD = null;
+    private long lastScroll;
 
     interface Call {
 
@@ -182,7 +184,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @param itemOrItemList
      * @param insertAfterRefItemOrEndOfList
      */
-    private void moveItemOrItemListAndSave(ItemAndListCommonInterface oldOwner, ItemAndListCommonInterface newOwner,
+    private static void moveItemOrItemListAndSave(ItemAndListCommonInterface oldOwner, ItemAndListCommonInterface newOwner,
             ItemAndListCommonInterface itemOrItemList, ItemAndListCommonInterface refItem, boolean insertAfterRefItemOrEndOfList) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //Container draggedParent;
@@ -207,21 +209,25 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //</editor-fold>
             oldOwner.moveToPositionOf(itemOrItemList, refItem, insertAfterRefItemOrEndOfList);
 //            DAO.getInstance().saveInBackground((ParseObject) oldList, (ParseObject) itemOrItemList);
-            DAO.getInstance().saveNew((ParseObject) oldOwner, false); //no need to save itemOrItemList since owner is the same
+//            DAO.getInstance().saveNew((ParseObject) oldOwner); //no need to save itemOrItemList since owner is the same
+            DAO.getInstance().saveToParseNow((ParseObject) oldOwner); //no need to save itemOrItemList since owner is the same
         } else {
             oldOwner.removeFromList(itemOrItemList);
 //            newOwner.addToList(newPos, itemOrItemList);
             newOwner.addToList(itemOrItemList, refItem, insertAfterRefItemOrEndOfList);
-            DAO.getInstance().saveNew(false, (ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
+//            DAO.getInstance().saveNew(false, (ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
+//            DAO.getInstance().saveNew((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
+//            DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) newOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
+            DAO.getInstance().saveToParseNow((ParseObject) oldOwner, (ParseObject) itemOrItemList); //save triggered after drop operation
         }
     }
 
-    private void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner, ItemAndListCommonInterface itemOrItemList,
+    private static void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner, ItemAndListCommonInterface itemOrItemList,
             ItemAndListCommonInterface refItem, boolean insertAfterRefItemOrEndOfList) {
         moveItemOrItemListAndSave(itemOrItemList.getOwner(), newOwner, itemOrItemList, refItem, insertAfterRefItemOrEndOfList);
     }
 
-    private void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner,
+    private static void moveItemOrItemListAndSave(ItemAndListCommonInterface newOwner,
             ItemAndListCommonInterface itemOrItemList, boolean insertAfterRefItemOrEndOfList) {
         moveItemOrItemListAndSave(itemOrItemList.getOwner(), newOwner, itemOrItemList, null, insertAfterRefItemOrEndOfList);
     }
@@ -326,7 +332,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @param item
      * @param newPos
      */
-    private void moveItemBetweenCategoriesAndSave(Category oldCategory, Category newCategory, Item item, Item refItem, boolean insertAfterOrEndOfList) {
+    private static void moveItemBetweenCategoriesAndSave(Category oldCategory, Category newCategory, Item item, Item refItem, boolean insertAfterOrEndOfList) {
         if (oldCategory == newCategory && oldCategory != null) { //if within same Category (and categories not null)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (newPos > oldCategory.getItemIndex(item)) {
@@ -338,21 +344,27 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //            }
 //</editor-fold>
             oldCategory.moveToPositionOf(item, refItem, insertAfterOrEndOfList);
-            DAO.getInstance().saveNew(false, (ParseObject) oldCategory, (ParseObject) item); //only save list once
+//            DAO.getInstance().saveNew( (ParseObject) oldCategory, (ParseObject) item); //only save list once
+//            DAO.getInstance().saveToParseNow((ParseObject) oldCategory, (ParseObject) item); //only save list once
         } else { //oldCategory != newCategory || oldCategory == null
             if (oldCategory != null && newCategory != null) { //different categories, but both non-null: remove from old and add to new at newPos (~'normal' case)
                 oldCategory.removeItemFromCategory(item, true);
 //                newCategory.addItemToCategory(item, newPos, true);
                 newCategory.addItemToCategory(item, refItem, true, insertAfterOrEndOfList);
-                DAO.getInstance().saveNew(false, (ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
+//                DAO.getInstance().saveToParseNow((ParseObject) oldCategory, (ParseObject) newCategory, (ParseObject) item);
+                DAO.getInstance().saveToParseNow((ParseObject) oldCategory, (ParseObject) item);
             } else if (newCategory != null) { //item was dragged into a category, but not from another category (e.g. a subtask of a project) (~not very intuitive since the dragged item will be added to the category, but also stay in place where it was before, but I guess OK - "what you do is what you get")
 //                newCategory.addItemToCategory(item, newPos, true);
                 newCategory.addItemToCategory(item, refItem, true, insertAfterOrEndOfList);
-                DAO.getInstance().saveNew(false, (ParseObject) newCategory, (ParseObject) item);
+//                DAO.getInstance().saveNew( (ParseObject) newCategory, (ParseObject) item);
+//                DAO.getInstance().saveToParseNow((ParseObject) newCategory, (ParseObject) item);
+                DAO.getInstance().saveToParseNow((ParseObject) item);
             } else if (false && oldCategory != null) { //item was eg dragged from category into a subtask of an expanded project (in an expanded category)
                 //should this case even be supported? Visible effect: drag from an expanded Category into a subtask, and it disappears from the Category
+//                oldCategory.removeItemFromCategory(item, true);
                 oldCategory.removeItemFromCategory(item, true);
-                DAO.getInstance().saveNew(false, (ParseObject) oldCategory, (ParseObject) item);
+//                DAO.getInstance().saveNew(false, (ParseObject) oldCategory, (ParseObject) item);
+                DAO.getInstance().saveToParseNow((ParseObject) oldCategory, (ParseObject) item);
             }
         }
     }
@@ -878,6 +890,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         return null;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * find the
      *
@@ -885,29 +898,29 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @return
      */
 //    protected static MyDragAndDropSwipeableContainer findMyDDContAtTopLevelAbove(Component comp) {
-    protected static Category findPrecedingCategory(Component comp) {
-//        while (comp != null) {
-//            if (comp instanceof MyDragAndDropSwipeableContainer && ((MyDragAndDropSwipeableContainer) comp).getDragAndDropCategory() != null) {
-//                return ((MyDragAndDropSwipeableContainer) comp).getDragAndDropCategory();
-//            } else {
-//                comp = comp.getParent();
-//            }
+//    protected static Category findPrecedingCategory(Component comp) {
+////        while (comp != null) {
+////            if (comp instanceof MyDragAndDropSwipeableContainer && ((MyDragAndDropSwipeableContainer) comp).getDragAndDropCategory() != null) {
+////                return ((MyDragAndDropSwipeableContainer) comp).getDragAndDropCategory();
+////            } else {
+////                comp = comp.getParent();
+////            }
+////        }
+////        return null;
+//        MyDragAndDropSwipeableContainer categoryCont = findMyDDContAboveHoldingCategory(comp);
+//        if (categoryCont != null) {
+//            return (Category) categoryCont.getDragAndDropObject();
+//        } else {
+//            return null;
 //        }
-//        return null;
-        MyDragAndDropSwipeableContainer categoryCont = findMyDDContAboveHoldingCategory(comp);
-        if (categoryCont != null) {
-            return (Category) categoryCont.getDragAndDropObject();
-        } else {
-            return null;
-        }
-    }
-
-    protected static MyDragAndDropSwipeableContainer findMyDDContAboveHoldingCategory(Component comp) {
+//    }
+//</editor-fold>
+    protected static MyDragAndDropSwipeableContainer findMyDDContAboveHoldingCategory(MyDragAndDropSwipeableContainer comp) {
         Component c = comp;
         while (c != null) {
             if (c instanceof MyDragAndDropSwipeableContainer
-                    && ((((MyDragAndDropSwipeableContainer) c).getDragAndDropObject() instanceof Category)
-                    || (((MyDragAndDropSwipeableContainer) c).getDragAndDropCategory() instanceof Category))) {
+                    && ((((MyDragAndDropSwipeableContainer) c).getDragAndDropObject() instanceof Category) //                    || (((MyDragAndDropSwipeableContainer) c).getDragAndDropCategory() instanceof Category) //this would wrongfully return the MyDDCont of an expanded Item belonging to the Category
+                    )) {
                 return ((MyDragAndDropSwipeableContainer) c);
             } else {
                 c = c.getParent();
@@ -1958,18 +1971,24 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     public void close() {
         Form f = getComponentForm();
         if (f instanceof MyForm) {
-            if (((MyForm) f).openSwipeContainer != this) {
+//            SwipeableContainer openSwipeContainer = ((MyForm) f).openSwipeContainer;
+            if (((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                ((MyForm) f).openSwipeContainer.close(); //close any previously open container (correct?! - will fix fact that several can stay open at same time?!)
                 ((MyForm) f).openSwipeContainer = null; //ensure last open container is reset if closed normally (e.g. swipe to close)
             }
         }
         super.close();
     }
 
-//    @Override
+    @Override
     public void openToLeft() {
         Form f = getComponentForm();
         if (f instanceof MyForm) {
             if (false && ((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                ((MyForm) f).openSwipeContainer.close();
+            }
+//            SwipeableContainer openSwipeContainer = ((MyForm) f).openSwipeContainer;
+            if (((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
                 ((MyForm) f).openSwipeContainer.close();
             }
             ((MyForm) f).openSwipeContainer = this;
@@ -1977,11 +1996,15 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         super.openToLeft();
     }
 
-//    @Override
+    @Override
     public void openToRight() {
         Form f = getComponentForm();
         if (f instanceof MyForm) {
             if (false && ((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                ((MyForm) f).openSwipeContainer.close();
+            }
+//            SwipeableContainer openSwipeContainer = ((MyForm) f).openSwipeContainer;
+            if (((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
                 ((MyForm) f).openSwipeContainer.close();
             }
             ((MyForm) f).openSwipeContainer = this;
@@ -2000,6 +2023,29 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         setDraggable(false); //set false by default to allow scrolling. LongPress will activate, drop will deactivate it
         setUIID("MyDragAndDropSwipeableContainer");
 
+        //copied from KitchenSink demo, Contacts: close swipeable on scroll
+        addSwipeOpenListener(e -> {
+            // auto fold the swipe when we go back to scrolling
+            addScrollListener(new ScrollListener() {
+                int initial = -1;
+
+                @Override
+                public void scrollChanged(int scrollX, int scrollY, int oldscrollX, int oldscrollY) {
+                    // scrolling is very sensitive on devices...
+                    if (initial < 0) {
+                        initial = scrollY;
+                    }
+                    lastScroll = System.currentTimeMillis();
+                    if (Math.abs(scrollY - initial) > top.getHeight() / 2) {
+                        if (getParent() != null) {
+                            close();
+                        }
+                        getParent().removeScrollListener(this);
+                    }
+                }
+            });
+        });
+        
         if (false) {
             addSwipeOpenListener((e) -> {
                 Form f = getComponentForm();
@@ -2981,7 +3027,8 @@ T3
                             moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, newCat, true);
                         };
                         insertDropPlaceholder = (dropPh) -> {
-                            addDropPlaceholderToAppropriateParentCont(beforeCategoryCont, dropPh, 1);
+//                            addDropPlaceholderToAppropriateParentCont(beforeCategoryCont, dropPh, 1);
+                            addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
                         };
                     }
                 } else if (beforeElement instanceof Category && (afterElement instanceof Category || afterMyDDCont == null)) {
@@ -3968,7 +4015,7 @@ before getting to here, we've already covered the following cases where both bef
                         } else {
                             Log.p("**********Comp.drop , NO ACTION!!! dropTarget=" + dropTarget1.getName() + ", dragged=" + drag1.getName(), Log.DEBUG);
                         }
-                        DAO.getInstance().triggerParseUpdate();
+//                        DAO.getInstance().saveNewTriggerUpdate();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                dragged.dropSucceeded = true;
 //                                getComponentForm().animateHierarchy(300);
@@ -3984,10 +4031,15 @@ before getting to here, we've already covered the following cases where both bef
 //                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //doesn't work since newDrop may not have been initiazed
 //                        }
 //</editor-fold>
-                        ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //doesn't work since newDrop may not have been initiazed
+                        Form form = getComponentForm();
+                        if (form instanceof MyForm) { //error where form may be null - done to reduce risk of crashing on device
+                            ((MyForm) getComponentForm()).setKeepPos(new KeepInSameScreenPosition()); //doesn't work since newDrop may not have been initiazed
 //                            super.drop(draggedMyDDCont, x, y); //Container.drop implements the first quick move of the container itself
-                        super.drop(this, x, y); //Container.drop implements the first quick move of the container itself
-                        ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
+                            super.drop(this, x, y); //Container.drop implements the first quick move of the container itself
+                            ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
+                        } else {
+                            super.drop(this, x, y); //Container.drop implements the first quick move of the container itself
+                        }
                     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    protected Image getDragImageXXX() {
@@ -4292,7 +4344,6 @@ before getting to here, we've already covered the following cases where both bef
 //        ((MyForm) getComponentForm()).refreshAfterEdit(); //refresh/redraw
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private boolean dropItemInCategoryViewXXX(ItemAndListCommonInterface before, ItemAndListCommonInterface after, ItemAndListCommonInterface dragged,
@@ -5371,8 +5422,14 @@ before getting to here, we've already covered the following cases where both bef
 //                    Log.p("***MyDragAndD.dragFinished: no parent() for dropPlaceholder=" + dropPlaceholder.getName());
 //                }
 //</editor-fold>
-            dropPlaceholder.remove(); //remove the old placeholder ( not done in successful drop)
-            dropPlaceholder = null;
+            if (true) {
+                Label temp = new Label(dragImage2);
+                compToAnimate.replace(dropPlaceholder, temp, null); //simply insert dragged image until list is redrawn (with new values for dragged and following list elements)
+                temp.repaint();
+            } else {
+                dropPlaceholder.remove(); //remove the old placeholder ( not done in successful drop)
+                dropPlaceholder = null;
+            }
 //            animate = true;
         }
         //always removeFromCache (eg if dropped outside a droptarget)
