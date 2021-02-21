@@ -843,6 +843,8 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //            Toolbar.setPermanentSideMenu(true); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
         Toolbar.setPermanentSideMenu(Display.getInstance().isTablet()); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
         Display.getInstance().setPureTouch(true);
+        
+        UIManager.getInstance().getLookAndFeel().setFadeScrollBar(false) ; //https://stackoverflow.com/questions/50223939/codename-one-fading-scrollbar
 
 //        Display d = Display.getInstance();
 //        Label supported = new Label();

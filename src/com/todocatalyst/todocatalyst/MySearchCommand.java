@@ -31,7 +31,7 @@ import com.codename1.ui.plaf.UIManager;
  * @author thomashjelm
  */
 public class MySearchCommand extends CommandTracked {
-
+    
     public static String SEARCH_KEY = "SearchActive";
     public static String SEARCH_TEXT_KEY = "SearchText";
     public static String SEARCH_HINT = "Search";
@@ -40,7 +40,7 @@ public class MySearchCommand extends CommandTracked {
 //    private Container searchContParent;
     Container searchCont;
     MyForm myForm;
-    private TextField search;
+    private TextField searchField;
 //    private Object positionInHolder;
     private InsertSearchFct insertSearchContFct;
     String hintText;
@@ -50,13 +50,14 @@ public class MySearchCommand extends CommandTracked {
     private KeepInSameScreenPosition keepPos; //restore scroll position after search
 
     interface InsertSearchFct {
-
+        
         void insert(Component searchContainer);
     }
-
+    
     private MySearchCommand() {
         super("");
     }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    interface OnSearch {
 //
 //        void doSearch(String text);
@@ -64,11 +65,12 @@ public class MySearchCommand extends CommandTracked {
 //    MySearchBar(Container searchHolder, Object positionInContainer, String hintTxt, char clearTextIcon, ActionListener onSrch){//OnSearch onSearch) {
 //    public static MySearchBar createSearch(Object positionInContainer, String hintTxt, char clearTextIcon, ActionListener onSrch){//OnSearch onSearch) {
 
-//    private MySearchCommand(Container searchHolder, Object positionInHolder, String hintTxt, 
+//    private MySearchCommand(Container searchHolder, Object positionInHolder, String hintTxt,
 //            char clearTextIcon, ActionListener onSrch, String analyticsId) {//OnSearch onSearch) {
 //        this(searchHolder, positionInHolder, hintTxt, clearTextIcon, onSrch, analyticsId, insertSearchContFct)
 //    }
 //    private MySearchCommand(MyForm myForm, Object positionInHolder, String hintTxt,
+//</editor-fold>
     private MySearchCommand(MyForm myForm, String hintTxt,
             char clearTextIcon, ActionListener onSrch, String analyticsId, InsertSearchFct insertSearchContFct) {//OnSearch onSearch) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -86,36 +88,39 @@ public class MySearchCommand extends CommandTracked {
         this.onSearch = onSrch;
         this.insertSearchContFct = insertSearchContFct;
         if (this.insertSearchContFct == null) {
+            //default insert Search Container in NORTH of contentPane
             this.insertSearchContFct = (searchCont) -> {
-                Container contentPane = myForm.getContentPane();
-                Layout contentPaneLayout = contentPane.getLayout();
-                if (contentPaneLayout instanceof BorderLayout) {
-                    Component prevNorthComp = ((BorderLayout) contentPaneLayout).getNorth();
-                    if (prevNorthComp instanceof Container) {
-                        ((Container) prevNorthComp).addComponent(0, searchCont); //add search at pos 0 (above eg a StickyHeader)
-                    } else if (prevNorthComp != null) { //if only a single componentn in north, create a new container for both previous component and searchCont
-                        Container northCont = new Container(BoxLayout.y());
-//                        Container parent = northComp.getParent();
-                        northCont.add(searchCont); //add search at pos 0
-                        prevNorthComp.remove();
-                        northCont.add(prevNorthComp); //and existing content (e.g. StickyHeader) at pos 1
-//                        parent.add(northCont);
-                        contentPane.add(BorderLayout.NORTH, northCont);
-                    } else { //no North comp
-                        contentPane.add(BorderLayout.NORTH, searchCont);
-                    }
-                }
+//                Container contentPane = myForm.getContentPane();
+//                Layout contentPaneLayout = contentPane.getLayout();
+//                if (contentPaneLayout instanceof BorderLayout) {
+//                    Component prevNorthComp = ((BorderLayout) contentPaneLayout).getNorth();
+//                    if (prevNorthComp instanceof Container) {
+//                        ((Container) prevNorthComp).addComponent(0, searchCont); //add search at pos 0 (above eg a StickyHeader or HelpText)
+//                    } else if (prevNorthComp != null) { //if only a single componentn in north, create a new container for both previous component and searchCont
+//                        Container northCont = new Container(BoxLayout.y());
+////                        Container parent = northComp.getParent();
+//                        northCont.add(searchCont); //add search at pos 0
+//                        prevNorthComp.remove();
+//                        northCont.add(prevNorthComp); //and existing content (e.g. StickyHeader) at pos 1
+////                        parent.add(northCont);
+//                        contentPane.add(BorderLayout.NORTH, northCont);
+//                    } else { //no North comp
+//                        contentPane.add(BorderLayout.NORTH, searchCont);
+//                    }
+//                }
+                MyForm.addToNorthOfContentPane(myForm.getContentPane(), searchCont);
             };
         }
+//        setUIID("SearchIcon");
         setMaterialIcon(FontImage.MATERIAL_SEARCH);
         setAnalyticsActionId(analyticsId);
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        ((MyForm) this.searchContParent.getComponentForm()).setSearchCmd(this); //always set searchCmd for Replay (NPE if 
 //        MyForm myForm = (MyForm) searchHolder.getComponentForm();
 //        if (myForm.previousValues != null && myForm.previousValues.get(MySearchCommand.SEARCH_KEY) != null) {
 //            actionPerformed(null); //re-activate Search, null=>reuse locally stored text
 //        }
-//<editor-fold defaultstate="collapsed" desc="comment">
 //        MySearchBar searchCmd = this;
 //
 //        searchCmd.cont = new Container();
@@ -185,6 +190,7 @@ public class MySearchCommand extends CommandTracked {
 //</editor-fold>
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private MySearchCommand(Container containerForSearch, Object positionInHolder, String hintTxt, char clearTextIcon, ActionListener onSrch) {//OnSearch onSearch) {
 //        this(containerForSearch, positionInHolder, hintTxt, clearTextIcon, onSrch,
 //                containerForSearch != null && containerForSearch.getComponentForm() instanceof MyForm
@@ -197,6 +203,7 @@ public class MySearchCommand extends CommandTracked {
 //    public MySearchCommand(Container containerForSearch, ActionListener onSearch) { //OnSearch onSearch) {
 //        this(containerForSearch, BorderLayout.NORTH, SEARCH_HINT, SEARCH_ICON, onSearch);
 //    }
+//</editor-fold>
     /**
      * installs
      *
@@ -207,7 +214,7 @@ public class MySearchCommand extends CommandTracked {
 //        this((Container) ((BorderLayout) myForm.getContentPane().getLayout()).getNorth(), null, SEARCH_HINT, SEARCH_ICON, onSearch, null);
         this(myForm, SEARCH_HINT, SEARCH_ICON, onSearch, "Search-" + myForm.getUniqueFormId(), null);
     }
-
+    
     @Override
     public void actionPerformed(ActionEvent evt) {
         super.actionPerformed(evt); //To change body of generated methods, choose Tools | Templates.
@@ -216,18 +223,17 @@ public class MySearchCommand extends CommandTracked {
 //        MyForm myForm = (MyForm) searchContParent.getComponentForm();
         //initialize search container on first activation:
         if (searchCont == null) {
-            searchCont = new Container();
+            searchCont = new Container(new BorderLayout(), "SearchFieldContainer");
 
 //        searchHolder.addCommandToRightBar(Command.createMaterial("", FontImage.MATERIAL_SEARCH, (e) -> {hideShow();}));
 //            setMaterialIcon(FontImage.MATERIAL_SEARCH);
-            if (hintText == null) {
-                hintText = "Search";
-            }
-            searchCont.setLayout(new BorderLayout());
-            searchCont.setUIID("SearchFieldContainer");
-
-            search = new TextField();
-            search.setUIID("SearchFieldText");
+//            if (hintText == null) {
+//                hintText = "Search";
+//            }
+            searchField = new TextField();
+            searchField.setHint("Search text");
+            searchField.setConstraint(TextField.ANY); //ensures *not*starting with uppercase first letter on Android?!
+            searchField.setUIID("SearchFieldText");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        search.putClientProperty("searchField", Boolean.TRUE);
 //        Image img;
@@ -238,59 +244,63 @@ public class MySearchCommand extends CommandTracked {
 //        }
 //        String s = getUIManager().localize("m.search", "Search");
 //</editor-fold>
-            if (clearTextIcon == -1) {
-                clearTextIcon = Icons.iconCloseCircle; //FontImage.MATERIAL_SEARCH;
-            }
+//            if (clearTextIcon == -1) {
+//                clearTextIcon = Icons.iconCloseCircle; //FontImage.MATERIAL_SEARCH;
+//            }
             if (false) {
-                Label hint = search.getHintLabel(); //new Label(s, img);
+                Label hint = searchField.getHintLabel(); //new Label(s, img);
 //            hint.setMaterialIcon(clearTextIcon);
                 hint.setUIID("TextHintSearch");
             } else {
-                search.setHint(hintText);
-                Label hint = search.getHintLabel(); //new Label(s, img);
+                searchField.setHint(hintText == null ? "Search" : hintText);
+                Label hint = searchField.getHintLabel(); //new Label(s, img);
 //            hint.setMaterialIcon(clearTextIcon);
                 hint.setUIID("TextHintSearch");
             }
 //        search.setHintLabelImpl(hint);
 
-            search.addDataChangedListener(new DataChangedListener() {
-
+            searchField.addDataChangedListener(new DataChangedListener() {
+                
                 public void dataChanged(int type, int index) {
 //                    onSearch.doSearch(search.getText());
-                    onSearch.actionPerformed(new ActionEvent(search.getText()));
+                    onSearch.actionPerformed(new ActionEvent(searchField.getText()));
                 }
             });
-
-            Button clearButton = new Button(Command.createMaterial("", clearTextIcon, e -> {
-                search.clear();
-                search.startEditingAsync(); //seems necessary to stay in field after clearing
+            
+            Button clearButton = new Button(Command.createMaterial("", clearTextIcon == -1 ? Icons.iconCloseCircle : clearTextIcon, e -> {
+                searchField.clear();
+                searchField.startEditingAsync(); //seems necessary to stay in field after clearing
             }));
-
-            searchCont.add(BorderLayout.CENTER, search);
+            
+            searchCont.add(BorderLayout.CENTER, searchField);
             searchCont.add(BorderLayout.EAST, clearButton);
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            toolbar.add(BorderLayout.SOUTH, this);
 //            Container form = cont.getComponentForm();
 //            MyForm myForm = (MyForm) searchContParent.getComponentForm();
-            if (true || myForm != null) { //should never be null
-//                Container contentPane = myForm.getContentPane();
-//                if (contentPane.getLayout() instanceof BorderLayout && ((BorderLayout) contentPane.getLayout()).getNorth() == null) {
-//                    contentPane.add(BorderLayout.NORTH, searchCont);
-////                    contentPane.animateHierarchy(300);
-//                } else {
-//                    ASSERT.that("Trying to add MySearchCommand to ContentPane which is BorderLayout or where North is not empty, form=" + myForm.getUniqueFormId());
-//                }
-                insertSearchContFct.insert(searchCont);
-            }
+//            if (true || myForm != null) { //should never be null
+////                Container contentPane = myForm.getContentPane();
+////                if (contentPane.getLayout() instanceof BorderLayout && ((BorderLayout) contentPane.getLayout()).getNorth() == null) {
+////                    contentPane.add(BorderLayout.NORTH, searchCont);
+//////                    contentPane.animateHierarchy(300);
+////                } else {
+////                    ASSERT.that("Trying to add MySearchCommand to ContentPane which is BorderLayout or where North is not empty, form=" + myForm.getUniqueFormId());
+////                }
+//                insertSearchContFct.insert(searchCont);
+//            }
+//</editor-fold>
+            insertSearchContFct.insert(searchCont);
             searchCont.setHidden(true);  //hide by default (immediately unhidden below on first call)
         }
 //                hideShow();
         boolean isHidden = searchCont.isHidden();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Form f = cont.getComponentForm();
-//        MyForm myForm = null; //only support 
+//        MyForm myForm = null; //only support
 //        if ((f instanceof MyForm)) {
 //        MyForm myForm = (MyForm) searchCont.getComponentForm();
 //        }
+//</editor-fold>
         if (isHidden) { //start showing searchbar
             //            search.startEditingAsync();
 //            f.setKeepPos();
@@ -301,22 +311,22 @@ public class MySearchCommand extends CommandTracked {
 //            Container searchContParent = searchCont.getParent();
 //            if (searchContParent.getComponentForm() == Display.getInstance().getCurrent()) {
             if (myForm == Display.getInstance().getCurrent()) {
-                search.startEditingAsync();
+                searchField.startEditingAsync();
             } else {
 //                if (searchContParent.getComponentForm() != null) {
 //                    searchContParent.getComponentForm().setEditOnShow(search);
 //                }
-                myForm.setEditOnShow(search);
+                myForm.setEditOnShow(searchField);
             }
-            onSearch.actionPerformed(new ActionEvent(search.getText()));
+            onSearch.actionPerformed(new ActionEvent(searchField.getText()));
             if (myForm.previousValues != null) { //may be null in CategorySelector form
                 myForm.previousValues.put(SEARCH_KEY, true);
             }
-        } else { //start hiding searchbar
+        } else { //hide searchbar
             //            search.clear();
 //            onSearch.doSearch(""); //keep search text in field it user wants to search again
             onSearch.actionPerformed(new ActionEvent(""));
-            search.stopEditing();
+            searchField.stopEditing();
             if (true || myForm != null) {
                 myForm.setKeepPos(keepPos);
                 myForm.restoreKeepPos();
@@ -325,7 +335,7 @@ public class MySearchCommand extends CommandTracked {
                 myForm.previousValues.remove(SEARCH_KEY);
             }
         }
-
+        
         searchCont.setHidden(!isHidden);
 //        getParent().animateHierarchy(300);
 //        getComponentForm().animateHierarchy(300);
@@ -333,6 +343,10 @@ public class MySearchCommand extends CommandTracked {
             searchCont.getParent().animateLayout(300);
         }
 //        toolbar.animateHierarchy(300);
+    }
+    
+    public boolean isSearchActive() {
+        return !searchCont.isHidden();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

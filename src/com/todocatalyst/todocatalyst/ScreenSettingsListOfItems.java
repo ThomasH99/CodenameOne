@@ -85,8 +85,10 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
         addSettingBoolean(content, parseIdMap2, MyPrefs.showDetailsForAllTasks);
         addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenInTaskLists);
 //        cont.setScrollableY(true);
- 
-addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone);
+
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualEvenIfZero);
+        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone);
+        
         if (Config.TEST) {
             addSettingExplanation(content, "Test text to show a fairly long explanation for an individual setting");
         }
@@ -112,7 +114,9 @@ addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowActualIfNonZeroEvenI
 
         content.add(makeSpacer());
         addSettingBoolean(content, parseIdMap2, MyPrefs.hideStickyHeadersForSortedLists);
-        if(false)addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenOnScrollingUp);
+        if (false) {
+            addSettingBoolean(content, parseIdMap2, MyPrefs.scrollToolbarOffScreenOnScrollingUp);
+        }
         addSettingBoolean(content, parseIdMap2, MyPrefs.titleAutoSize);
         addSettingBoolean(content, parseIdMap2, MyPrefs.itemListShowIconForDueDate);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropLeftDropZoneWidth, 0, 30, 1);

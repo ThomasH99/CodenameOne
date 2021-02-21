@@ -41,6 +41,7 @@ class MyPopupMenu extends Dialog {
     MyPopupMenu(String groupStyle, Button cancel, Button... commands) {
         super();
         setDialogUIID("Container");
+        getContentPane().setUIID("MyPopupContentPane");
         setLayout(BoxLayout.y());
         setDisposeWhenPointerOutOfBounds(true); //close if clicking outside menu
 

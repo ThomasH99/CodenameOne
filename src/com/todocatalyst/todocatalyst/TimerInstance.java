@@ -78,12 +78,12 @@ public class TimerInstance extends ParseObject {
 
     public String toString() {
         return ((getTimedItemListN() != null ? " List:" + getTimedItemListN().getText() : "")
-                + (getTimedProject() != null ? " Proj:" + getTimedProject().getText() : "")
-                + (getTimedItemN() != null ? "Task:" + getTimedItemN().getText() : "")
-                + (getStartTimeD().getTime() != 0 ? " Start:" + getStartTimeD() : "")
-                + (getElapsedTime() != 0 ? " Duration:" + MyDate.formatDurationShort(getElapsedTime()) : "")
-                + (isRunning() ? " Running" : " Stopped")
-                + (isFullScreen() ? " BIG" : " SMALL")
+                + (getTimedProject() != null ? "; Proj:" + getTimedProject().getText() : "")
+                + (getTimedItemN() != null ? "; Task:" + getTimedItemN().getText() : "")
+                + (getStartTimeD().getTime() != 0 ? "; Start:" + getStartTimeD() : "")
+                + (getElapsedTime() != 0 ? "; Duration:" + MyDate.formatDurationShort(getElapsedTime()) : "")
+                + (isRunning() ? "; Running" : "; Stopped")
+                + (isFullScreen() ? "; BIG" : "; SMALL")
                 + " [" + getObjectIdP() + "]");
 //                +(isAutostart());
     }

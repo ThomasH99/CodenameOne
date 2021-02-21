@@ -53,8 +53,6 @@ import javafx.scene.effect.DisplacementMap;
  */
 public class ScreenListOfAlarms extends MyForm {
 
-    public static String screenTitle = "Reminders"; //"Past reminders"; //"Past reminders", "Expired reminders"
-    public static String screenHelp = "Shows past reminders that have not yet been cancelled or snoozed. Starting Timer on a task or editing it will cancel the reminder"; //"See active reminders"
 //    private LocalNotificationsShadowList notificationList;
     private long now; //represent 'now' wrt latest update of the screen <8eg to ensure that an alarm that expires just after the screen is updated may be cancelled w/o being shown/seen
     /**
@@ -80,9 +78,9 @@ public class ScreenListOfAlarms extends MyForm {
 
 //    ScreenListOfAlarms(LocalNotificationsShadowList notificationList) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
     private ScreenListOfAlarms() { //, GetUpdatedList updateList) { //throws ParseException, IOException {
-        super(screenTitle, null, () -> {
-        });
-        setTextToShowIfEmptyList("No Reminders to deal with"); //"No Reminders to deal with",
+        super(ScreenType.ALARMS.getTitle(), null, null,ScreenType.ALARMS.getHelpText());
+//        setTextToShowIfEmptyList("No Reminders to deal with"); //"No Reminders to deal with",
+        setTextToShowIfEmptyList(ScreenType.ALARMS.getEmptyScreenText()); //"No Reminders to deal with",
         setScreenType(ScreenType.ALARMS);
         setUIID("AlarmsForm");
         setUniqueFormId("ScreenListOfAlarms");

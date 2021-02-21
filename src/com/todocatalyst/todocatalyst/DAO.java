@@ -7823,7 +7823,7 @@ public class DAO {
             }
             processedList.clear();
 
-            if (!waitForCompletion) {
+            if (!waitForCompletion) { 
                 setSavePending(saveList, true); //mark all to-be-saved parseobjects as pending save to prevent modification (via .set()) until saved
             }
 
@@ -7914,7 +7914,7 @@ public class DAO {
 //                for (ParseObject p : stillNeedsSaving) {
             for (ParseObject p : saveList) {
                 ASSERT.that(!p.isDirty(), () -> "ERROR: parseObject still dirty after 2nd save, parseObject=" + p);
-                if (!waitForCompletion) {
+                if (true||!waitForCompletion) { //make sure it is ALWAYS set to false, otherwise may HALT UI
                     p.setSaveIsPending(false);
                 }
                 if (p instanceof ItemAndListCommonInterface) {

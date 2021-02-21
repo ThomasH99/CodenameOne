@@ -16,6 +16,7 @@ import com.codename1.ui.CheckBox;
 import com.codename1.ui.Component;
 import com.codename1.ui.Form;
 import com.codename1.ui.Dialog;
+import com.codename1.ui.Font;
 import com.codename1.ui.Image;
 import com.codename1.ui.RadioButton;
 import com.codename1.ui.SwipeableContainer;
@@ -36,8 +37,10 @@ import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.Item.COPY_EXCLUDE_CATEGORIES;
 import static com.todocatalyst.todocatalyst.MyForm.REPEAT_RULE_KEY;
+import com.todocatalyst.todocatalyst.ScreenObjectPicker2.GetLists;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -161,7 +164,7 @@ public class ScreenItem2 extends MyForm {
 //    protected static String FORM_UNIQUE_ID = "ScreenEditItem"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
     private static String REPEAT_RULE_DELETED_MARKER = "REPEAT_RULE_DELETED";
-    private float TAB_ICON_SIZE_IN_MM = 4; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
+    static float TAB_ICON_SIZE_IN_MM = 4; //true when effortEstimate has 'just' been set automatically (by a change to remainingEffort)
     Date dueDateEditedInRepeatRuleScreen = null;
 
     protected static int callDepth; //use to ensure unique names to locallyStored data
@@ -191,9 +194,12 @@ public class ScreenItem2 extends MyForm {
         return (isTemplate ? "TEMPLATE: " : "") + title;
     }
 
-    ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues) { //throws ParseException, IOException {
+    ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues, String helpText) { //throws ParseException, IOException {
 //        this(item, previousForm, doneAction, null, templateEditMode, previousValues, false);
-        this(item, previousForm, doneAction, null, templateEditMode, previousValues, !previousForm.isTriggerSaveOnExit());
+        this(item, previousForm, doneAction, null, templateEditMode, previousValues, !previousForm.isTriggerSaveOnExit(),helpText);
+    }
+    ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues) { //throws ParseException, IOException {
+        this(item, previousForm, doneAction, doneAction, templateEditMode, previousValues, templateEditMode, null);
     }
 
 //    ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues, boolean triggerSaveOnExit) { //throws ParseException, IOException {
@@ -204,16 +210,16 @@ public class ScreenItem2 extends MyForm {
 //    }
     ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, Runnable cancelAction, boolean templateEditMode, SaveEditedValuesLocally previousValuesN) { //throws ParseException, IOException {
 //        this(item, previousForm, doneAction, cancelAction, templateEditMode, previousValuesN, false);
-        this(item, previousForm, doneAction, cancelAction, templateEditMode, previousValuesN, !previousForm.isTriggerSaveOnExit());
+        this(item, previousForm, doneAction, cancelAction, templateEditMode, previousValuesN, !previousForm.isTriggerSaveOnExit(),null);
     }
 
     private ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, Runnable cancelAction, boolean templateEditMode,
-            SaveEditedValuesLocally previousValuesN, boolean triggerSaveOnExit) { //throws ParseException, IOException {
+            SaveEditedValuesLocally previousValuesN, boolean triggerSaveOnExit, String helpText) { //throws ParseException, IOException {
 //        super("Task", previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
 //        super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, cancelAction);
-        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, cancelAction); //cancelAction handled below
+        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, cancelAction, helpText); //cancelAction handled below
         increaseCallDepth();
         setUniqueFormId("ScreenEditItem");
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
@@ -605,17 +611,18 @@ public class ScreenItem2 extends MyForm {
 //</editor-fold>
 //                    new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, DAO.getInstance().getTemplateList(), selectedTemplates, ScreenItem.this, () -> {
 
-                    new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), null, selectedTemplates, ScreenItem2.this, () -> {
-                        if (selectedTemplates.size() >= 1) {
-                            Item templateOrg = (Item) selectedTemplates.get(0);
+                    if (false) {
+                        new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), null, selectedTemplates, ScreenItem2.this, () -> {
+                            if (selectedTemplates.size() >= 1) {
+                                Item templateOrg = (Item) selectedTemplates.get(0);
 //                            Dialog ip = new InfiniteProgress().showInfiniteBlocking();
 //                            template.copyMeInto(item, Item.CopyMode.COPY_FROM_TEMPLATE);
 //                            if (false) {
 //                                addTemplateToPickers(itemOrg, templateOrg);
 //                                refreshAfterEdit();
 //                            } else {
-                            addTemplate(itemOrg, templateOrg);
-                            refreshAfterEdit();
+                                addTemplate(itemOrg, templateOrg);
+                                refreshAfterEdit();
 //                            }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                            else {
@@ -671,18 +678,34 @@ public class ScreenItem2 extends MyForm {
 //                            ip.dispose();
 //                            refreshAfterEdit(); //DONE on Back from ScreenObjectPicker
 //</editor-fold>
-                        }
+                            }
 //                        else {
 //                            Dialog.show("INFO", "No templates yet. \n\nGo to " + ScreenMain.SCREEN_TEMPLATES_TITLE + " to create templates or save existing tasks or projects as templates", "OK", null);
 //                        }
-                    }, (obj) -> {
-                        if (obj instanceof Item) {
-                            return ((Item) obj).getText();
-                        } else {
-                            return obj.toString();
-                        }
-                    }, 0, 1, true, false, false).show(); //0: Ok to not select any template => nothing inserted
-//                    if (template != null) {
+                        }, (obj) -> {
+                            if (obj instanceof Item) {
+                                return ((Item) obj).getText();
+                            } else {
+                                return obj.toString();
+                            }
+                        }, 0, 1, true, false, false).show(); //0: Ok to not select any template => nothing inserted
+                    }//                    if (template != null) {
+                    else {
+                        new ScreenObjectPicker2(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), Icons.iconMainTemplates, null,
+                                selectedTemplates, ScreenItem2.this, () -> {
+                                    if (selectedTemplates.size() >= 1) {
+                                        Item templateOrg = (Item) selectedTemplates.get(0);
+                                        addTemplate(itemOrg, templateOrg);
+                                        refreshAfterEdit();
+                                    }
+                                }, (obj) -> {
+                                    if (obj instanceof Item) {
+                                        return ((Item) obj).getText();
+                                    } else {
+                                        return obj.toString();
+                                    }
+                                }, 0, 1, true, false, false).show(); //0: Ok to not select any template => nothing inserted
+                    }
                 };
             }));
 
@@ -1846,8 +1869,9 @@ public class ScreenItem2 extends MyForm {
                 (t) -> description.setText((String) t));
 
         //https://stackoverflow.com/questions/34531047/how-to-add-donelistener-to-textarea-in-codename-one: "putClientProperty("searchField", true);, putClientProperty("sendButton", true);and putClientProperty("goButton", true); would place a button on the keyboard"
-        if (false)description.putClientProperty("goButton", true); //this works
-//        description.setUIID("ScreenItemTaskText");
+        if (false) {
+            description.putClientProperty("goButton", true); //this works
+        }//        description.setUIID("ScreenItemTaskText");
         description.setUIID(itemCopy.isStarred() ? "ScreenItemTaskTextStarred" : "ScreenItemTaskText");
         description.getHintLabel().setUIID("ScreenItemTaskTextHint");
 //        description.getHintLabel().setUIID("ScreenItemCommentHint");
@@ -2015,15 +2039,18 @@ public class ScreenItem2 extends MyForm {
                     List<ItemAndListCommonInterface> locallyEditedOwner = new ArrayList(Arrays.asList(itemOrg.getOwner())); //fetch the actual owner 
 
 //            ItemAndListCommonInterface previousOwner = locallyEditedOwner.get(0);
-                    ScreenObjectPicker ownerPicker = new ScreenObjectPicker("Select " + Item.OWNER /*+ " for " + item.getText()*/,
-                            ItemListList.getInstance(),
-                            projects,
-                            //                    itemOrg.getOwner(), 
-                            locallyEditedOwner,
-                            ScreenItem2.this,
-                            () -> {
-                                if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
-                                    ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
+                    ScreenObjectPicker ownerPicker;
+                    ScreenObjectPicker2 ownerPicker2;
+                    if (false) {
+                        ownerPicker = new ScreenObjectPicker("Select " + Item.OWNER /*+ " for " + item.getText()*/,
+                                ItemListList.getInstance(),
+                                projects,
+                                //                    itemOrg.getOwner(), 
+                                locallyEditedOwner,
+                                ScreenItem2.this,
+                                () -> {
+                                    if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
+                                        ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                            if (false) {
 //                                if (selectedOwner.equals(itemOrg.getOwner())) {
@@ -2041,20 +2068,39 @@ public class ScreenItem2 extends MyForm {
 //                                }
 //                            }
 //</editor-fold>
-                                    itemOrg.setOwner(selectedOwner);
-                                } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
-                                    //SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected
+                                        itemOrg.setOwner(selectedOwner);
+                                    } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
+                                        //SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected
 //                                ASSERT.that("SHOULD never happen (current parameters of ScreenObjectPicker imposes exactly when owner selected");
 //                                if (itemOrg.getOwner() == null) {
 //                                    previousValues.removeOwners(); //remove previousValue, e.g. no owner before, none selected now
 //                                } else {
 //                                    previousValues.putOwners(locallyEditedOwner); //store empty list (e.g. if previous owner was deselected)
 //                                }
-                                    ASSERT.that(false, "should not be possible to not select an owner");
-                                }
-                                editOwnerButton.setText(itemOrg.getOwner().getText());
-                            }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
-                    ownerPicker.show();
+                                        ASSERT.that(false, "should not be possible to not select an owner");
+                                    }
+                                    editOwnerButton.setText(itemOrg.getOwner().getText());
+                                }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
+                    } else {
+                        List tempListOfItemListsInclInbox =new ArrayList();
+                        tempListOfItemListsInclInbox.add(Inbox.getInstance()); //add Inox to start of list
+                        tempListOfItemListsInclInbox.addAll(ItemListList.getInstance());
+                        ownerPicker2 = new ScreenObjectPicker2("Select " + Item.OWNER,
+                                new GetLists[]{() -> tempListOfItemListsInclInbox, () -> projects},
+                                new String[]{ItemList.ITEM_LIST, Item.PROJECT}, new Character[]{Icons.iconMainListsCust, Icons.iconMainProjects}, new Font[]{null, null},
+                                locallyEditedOwner,
+                                ScreenItem2.this,
+                                () -> {
+                                    if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
+                                        ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
+                                        itemOrg.setOwner(selectedOwner);
+                                    } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
+                                        ASSERT.that(false, "should not be possible to not select an owner");
+                                    }
+                                    editOwnerButton.setText(itemOrg.getOwner().getText());
+                                }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
+                    }
+                    ownerPicker2.show();
                 }
                 );
                 editOwnerButton.setCommand(editOwnerCmd);
@@ -3066,7 +3112,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         String actualTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF : Item.EFFORT_ACTUAL;
         String actualHelpTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF_HELP : Item.EFFORT_ACTUAL_HELP;
         String actualParseId = isProject ? Item.PARSE_ACTUAL_EFFORT_TASK_ITSELF : Item.PARSE_ACTUAL_EFFORT;
-      
+
 //        MyDurationPicker actualEffort;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        actualEffort = new MyDurationPicker(parseIdMap2, () -> (int) itemLS.getActualEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS,
@@ -3120,11 +3166,11 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> actualEffortTask.getDuration(),
                 (ms) -> actualEffortTask.setDuration((long) ms));
 
-        timeCont.add(layoutN(actualParseId,actualTxt, isTemplate ? null : actualEffortTask, actualHelpTxt,
+        timeCont.add(layoutN(actualParseId, actualTxt, isTemplate ? null : actualEffortTask, actualHelpTxt,
                 //                hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconActualEffort),Icons.myIconFont));
                 hideIcons ? null : (isDone
-                        ?(isProject ? Icons.iconActualFinalPrjCust : Icons.iconActualFinalCust)
-                        :(isProject ? Icons.iconActualCurrentPrjCust : Icons.iconActualCurrentCust)), Icons.myIconFont));
+                                ? (isProject ? Icons.iconActualFinalPrjCust : Icons.iconActualFinalCust)
+                                : (isProject ? Icons.iconActualCurrentPrjCust : Icons.iconActualCurrentCust)), Icons.myIconFont));
 
         //ESTIMATE************
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
@@ -3136,7 +3182,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         String estimateHelpTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT_HELP : Item.EFFORT_ESTIMATE_HELP;
         String estimateParseId = isProject ? Item.PARSE_EFFORT_ESTIMATE_PROJECT_TASK_ITSELF : Item.PARSE_EFFORT_ESTIMATE;
 //        timeCont.add(layoutN(estimateTxt, effortEstimate, estimateHelpTxt, hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconEstimateMaterial)));
-        timeCont.add(layoutN(estimateParseId,estimateTxt, effortEstimate, estimateHelpTxt,
+        timeCont.add(layoutN(estimateParseId, estimateTxt, effortEstimate, estimateHelpTxt,
                 hideIcons ? null : (isProject ? Icons.iconEstimatePrjCust : Icons.iconEstimateCust), Icons.myIconFont));
 
         timeCont.add(makeSpacerThin());
@@ -3336,7 +3382,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> itemCopy.isPriorityInherited(priority.getSelectedIndex() + 1)
         );
 //        prioCont.add(layoutN(Item.PRIORITY, priority, Item.PRIORITY_HELP));//, null, true, false, false, true));
-        prioCont.add(layoutN(Item.PARSE_PRIORITY,Item.PRIORITY, priority, Item.PRIORITY_HELP, hideIcons ? null : Icons.iconPriority));//, null, true, false, false, true));
+        prioCont.add(layoutN(Item.PARSE_PRIORITY, Item.PRIORITY, priority, Item.PRIORITY_HELP, hideIcons ? null : Icons.iconPriority));//, null, true, false, false, true));
         updateUIIDForInherited(priority, itemCopy.isPriorityInherited(priority.getSelectedIndex()));
 //        prioCont.add(layout(Item.PRIORITY, priority, Item.PRIORITY_HELP, true, false, true));
 
@@ -3378,7 +3424,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        prioCont.add(Item.IMPORTANCE).add(FlowLayout.encloseCenterMiddle(importance));
 //        prioCont.add(layout(Item.IMPORTANCE, FlowLayout.encloseCenterMiddle(importance), "**"));
 //        prioCont.add(layout(Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP, true, false, true));
-        prioCont.add(layoutN(Item.PARSE_IMPORTANCE,Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP, hideIcons ? null : Icons.iconImportanceLabel));//, null, false, false, true, true));
+        prioCont.add(layoutN(Item.PARSE_IMPORTANCE, Item.IMPORTANCE, importance, Item.IMPORTANCE_HELP, hideIcons ? null : Icons.iconImportanceLabel));//, null, false, false, true, true));
 //        updateUIIDForInherited(importance, itemCopy.isImportanceInherited(importance.getSelectedString() != null ? HighMediumLow.getValue(importance.getSelectedString()) : null));
         updateUIIDForInherited(importance, itemCopy.isImportanceInherited(importance.getSelectedValue() != null ? HighMediumLow.valueOf((String) importance.getSelectedValue()) : null));
 
@@ -3407,7 +3453,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 (enumName) -> urgency.selectValue(enumName),
                 () -> itemCopy.isUrgencyInherited(urgency.getSelectedValue() != null ? HighMediumLow.valueOf((String) urgency.getSelectedValue()) : null)
         );
-        prioCont.add(layoutN(Item.PARSE_URGENCY,Item.URGENCY, urgency, Item.URGENCY_HELP, hideIcons ? null : Icons.iconUrgencyLabel));//, null, false, false, true, true));
+        prioCont.add(layoutN(Item.PARSE_URGENCY, Item.URGENCY, urgency, Item.URGENCY_HELP, hideIcons ? null : Icons.iconUrgencyLabel));//, null, false, false, true, true));
         updateUIIDForInherited(urgency, itemCopy.isUrgencyInherited(urgency.getSelectedValue() != null ? HighMediumLow.valueOf((String) urgency.getSelectedValue()) : null));
 
         prioCont.add(makeSpacerThin());
@@ -3477,14 +3523,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        );
 //        prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, hideIcons ? null : Icons.iconFun));//, null, false, false, true, true));
 //        prioCont.add(layoutN(Item.FUN_DREAD, dreadFun, Item.FUN_DREAD_HELP, hideIcons ? null : Icons.iconFun));//, null, false, false, true, true));
-        prioCont.add(layoutN(Item.PARSE_DREAD_FUN_VALUE,Item.DREAD_FUN, dreadFun, Item.DREAD_FUN_HELP, hideIcons ? null : Icons.iconFunDreadLabel));//, null, false, false, true, true));
+        prioCont.add(layoutN(Item.PARSE_DREAD_FUN_VALUE, Item.DREAD_FUN, dreadFun, Item.DREAD_FUN_HELP, hideIcons ? null : Icons.iconFunDreadLabel));//, null, false, false, true, true));
         updateUIIDForInherited(dreadFun, itemCopy.isDreadFunInherited(dreadFun.getSelectedValue() != null ? DreadFunValue.valueOf((String) dreadFun.getSelectedValue()) : null));
 
         prioCont.add(makeSpacerThin());
 
 //        MyNumericTextField earnedValue = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValue(), (d) -> item.setEarnedValue(d));
         earnedValue = new MyNumericTextField("");
-        earnedValue.setUIID("ScreenItemEarnedValue");
 //        earnedValue.setColumns(2); //result: only shows/truncates to 2 columns when field is not edited
 
 //        prioCont.add(new Label(Item.EARNED_VALUE)).add(earnedValue);
@@ -3498,6 +3543,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 (s) -> earnedValue.setText((String) s)); //TODO!!! localize number of decimal points (2)??
 //        prioCont.add(layoutN(Item.EARNED_VALUE, earnedValue, Item.EARNED_VALUE_HELP, null, false, true, false, false));
         prioCont.add(layoutN(Item.PARSE_EARNED_VALUE, Item.EARNED_VALUE, earnedValue, Item.EARNED_VALUE_HELP, null, false, true, false, false, false, hideIcons ? null : Icons.iconEarnedValue));
+        earnedValue.setUIID("ScreenItemEarnedValue");
 
 //        MyNumericTextField earnedValuePerHour = new MyNumericTextField("<set>", parseIdMap2, () -> item.getEarnedValuePerHour(), (d) -> {
 //        MyNumericTextField earnedValuePerHour = new MyNumericTextField("", parseIdMap2, () -> itemLS.getEarnedValuePerHour(), (d) -> {
@@ -4166,7 +4212,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             statusCont.add(layoutN(Item.PARSE_EDITED_DATE, Item.EDITED_DATE, lastEditedDateSubtasks, "**", true, hideIcons ? null : Icons.iconEditedDate));
         } else {
             Label lastEditedDate = new Label(itemOrg.getEditedDate().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getEditedDate()));
-            statusCont.add(layoutN(Item.PARSE_EDITED_DATE,Item.EDITED_DATE, lastEditedDate, Item.EDITED_DATE_HELP, true, hideIcons ? null : Icons.iconEditedDate));
+            statusCont.add(layoutN(Item.PARSE_EDITED_DATE, Item.EDITED_DATE, lastEditedDate, Item.EDITED_DATE_HELP, true, hideIcons ? null : Icons.iconEditedDate));
         }
 
         if (itemOrg.isProject()) {
@@ -4284,7 +4330,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             initField(Item.PARSE_TEMPLATE, isTemplateSwitch, () -> itemCopy.isTemplate(), (b) -> itemOrg.setTemplate((boolean) b),
                     () -> isTemplateSwitch.isValue(), (b) -> isTemplateSwitch.setValue((boolean) b));
 //        statusCont.add(layoutN(Item.INTERRUPT_TASK, interruptTask, "This task interrupted another task", true));
-            statusCont.add(layoutN(Item.PARSE_TEMPLATE,Item.TEMPLATE, isTemplateSwitch, "This task is a Template", true, hideIcons ? null : Icons.iconMainTemplates));
+            statusCont.add(layoutN(Item.PARSE_TEMPLATE, Item.TEMPLATE, isTemplateSwitch, "This task is a Template", true, hideIcons ? null : Icons.iconMainTemplates));
 
         }
         if (MyPrefs.testPickersOnDevice.getBoolean()) {

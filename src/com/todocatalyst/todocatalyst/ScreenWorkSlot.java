@@ -9,6 +9,7 @@ import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
+import com.codename1.ui.Font;
 import com.codename1.ui.Label;
 import com.codename1.ui.SwipeableContainer;
 import com.codename1.ui.TextArea;
@@ -17,8 +18,10 @@ import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.table.TableLayout;
+import static com.todocatalyst.todocatalyst.MyForm.layoutN;
 //import static com.todocatalyst.todocatalyst.MyForm.putEditedValues2;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
@@ -330,14 +333,53 @@ public class ScreenWorkSlot extends MyForm {
                 ownerLabelTxt = Item.BELONGS_TO_LIST;
             }
         }
-        SpanLabel ownerLabel = new SpanLabel(ownerText);
-        //NB!! If adding support for EDITING owner, don't allow it for repeating rules!
+        boolean editOwner = true;
+        if (editOwner) {
+            SpanButton editOwnerButton = new SpanButton();
+            editOwnerButton.setText(workSlot.getOwner() != null ? workSlot.getOwner().getText() : "");
+            Command editOwnerCmd = MyReplayCommand.create("EditOwner", null, null, (e) -> {
+                List projects = DAO.getInstance().getAllProjects(false); //TODO optimization: slow to fetch all projects each time!
+
+                List<ItemAndListCommonInterface> locallyEditedOwner = new ArrayList(Arrays.asList(workSlot.getOwner())); //fetch the actual owner 
+
+                ScreenObjectPicker ownerPicker;
+                ScreenObjectPicker2 ownerPicker2;
+                {
+                    List tempListOfItemListsInclInbox = new ArrayList();
+                    tempListOfItemListsInclInbox.add(Inbox.getInstance()); //add Inox to start of list
+                    tempListOfItemListsInclInbox.addAll(ItemListList.getInstance());
+                    ownerPicker2 = new ScreenObjectPicker2("Select " + Item.OWNER,
+                            new ScreenObjectPicker2.GetLists[]{() -> projects, () -> CategoryList.getInstance(), () -> tempListOfItemListsInclInbox,},
+                            new String[]{Item.PROJECT, Category.CATEGORY, ItemList.ITEM_LIST},
+                            new Character[]{Icons.iconMainProjectsCust, Icons.iconCategory, Icons.iconMainListsCust}, 
+                            new Font[]{Icons.myIconFont, null, Icons.myIconFont},
+                            locallyEditedOwner,
+                            ScreenWorkSlot.this,
+                            () -> {
+                                if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
+                                    ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
+                                    workSlot.setOwner(selectedOwner);
+                                } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
+                                    ASSERT.that(false, "should not be possible to not select an owner");
+                                }
+                                editOwnerButton.setText(workSlot.getOwner().getText());
+                            }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
+                }
+                ownerPicker2.show();
+            }
+            );
+            editOwnerButton.setCommand(editOwnerCmd);
+            content.add(layoutN(Item.PARSE_OWNER_ITEM, Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, false, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+
+        } else {
+            SpanLabel ownerLabel = new SpanLabel(ownerText);
+            //NB!! If adding support for EDITING owner, don't allow it for repeating rules!
 
 //        statusCont.add(new Label(Item.BELONGS_TO)).add(owner); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //        content.add(layout(Item.BELONGS_TO, owner, "**", true)); //.add(new SpanLabel("Click to move task to other projects or lists"));
-        content.add(layoutN(WorkSlot.PARSE_OWNER_ITEM, ownerLabelTxt, ownerLabel, WorkSlot.BELONGS_TO_HELP, true, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+            content.add(layoutN(WorkSlot.PARSE_OWNER_ITEM, ownerLabelTxt, ownerLabel, WorkSlot.BELONGS_TO_HELP, true, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 //        owner.setConstraint(TextArea.UNEDITABLE); //DOESN'T WORK        
-
+        }
         long now = MyDate.currentTimeMillis();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        MyDateAndTimePicker startByDate = new MyDateAndTimePicker("<start work on this date>", parseIdMap2,

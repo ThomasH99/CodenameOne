@@ -846,7 +846,7 @@ class TimerStack {
         if (!timerText.equals("")) {
             timerText = " for \"" + timerText + "\"";
         }
-        return Dialog.show("", "Pause timer" + timerText + " and start timing "
+        return Dialog.show("TIMER", "Pause timer" + timerText + " and start timing "
                 + (newTimedElt instanceof Item && ((Item) newTimedElt).isInteruptOrInstantTask() ? "Interrupt" : "\"" + newTimedElt.getText() + "\"?"),
                 "OK", "Cancel");
     }
@@ -1219,7 +1219,7 @@ class TimerStack {
      * @param previousForm
      * @param doneAction
      */
-    private void startTimer(Item timedItemOrProject, ItemList itemList, MyForm previousForm, boolean interruptOrInstantTask) {
+    private void startTimerXXX(Item timedItemOrProject, ItemList itemList, MyForm previousForm, boolean interruptOrInstantTask) {
         startTimer(timedItemOrProject, itemList, previousForm, interruptOrInstantTask, false);
     }
 
@@ -3392,12 +3392,13 @@ class TimerStack {
 //                timedItem.setText(description.getText());
 //                DAO.getInstance().saveInBackground(timedItem);
 //            });
-
-            if (timedItem.isInteruptOrInstantTask() && description.getText().equals("")) {
+            if (false) { //NOT good UI on phones since keyboard will pop up!
+                if (timedItem.isInteruptOrInstantTask() && description.getText().equals("")) {
 //                    contentPane.getComponentForm().setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
-                myForm.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
-            } else {
-                myForm.setEditOnShow(comment); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
+                    myForm.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
+                } else if (false) {
+                    myForm.setEditOnShow(comment); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
+                }
             }
             description.setText(timedItem.getText());
         } else { //smallTimer

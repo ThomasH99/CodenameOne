@@ -220,8 +220,8 @@ public class MyPrefs {
     static PrefEntry timerMayPauseAlreadyRunningTimer
             = new PrefEntry("Starting Timer on a new task or list will pause an already running timer", "timerMayPauseAlreadyRunningTimer", prod ? true : true,
                     "**");
-    static PrefEntry hideIconsInEditTaskScreen
-            = new PrefEntry("Hiden the icons when editing a task",
+    static PrefEntry hideIconsInEditTaskScreen //also used for SCreenWorkSlot!
+            = new PrefEntry("Hide the icons when editing to save screen space",
                     "hideIconsInEditTaskScreen", prod ? false : false, "Get a cleaner or more space-efficient look");
 
     //COMMENTS
@@ -678,10 +678,10 @@ public class MyPrefs {
             prod ? false : false, "**");
     static PrefEntry itemListHideRemainingWhenDefaultValue = new PrefEntry(Format.f("Hide {0} with default value", Item.EFFORT_REMAINING), "itemListHideRemainingWhenDefaultValue",
             prod ? false : false, "**");
-    static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry(Format.f("Show {0} for tasks not {1}", Item.EFFORT_ACTUAL, ItemStatus.DONE.getName()),
-            "itemListShowActualIfNonZeroEvenIfNotDone", prod ? false : true, "**");
     static PrefEntry itemListShowActualEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ACTUAL),
             "itemListShowActualEvenIfZero", prod ? false : true, "**");
+    static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry(Format.f("Show {0} for tasks not {1}", Item.EFFORT_ACTUAL, ItemStatus.DONE.getName()),
+            "itemListShowActualIfNonZeroEvenIfNotDone", prod ? false : true, "**");
     static PrefEntry itemListShowEffortEstimateEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ESTIMATE), "itemListShowEffortEstimateEvenIfZero",
             prod ? false : true, "**");
     static PrefEntry itemListAllowDuplicateListNames = new PrefEntry("Allow use of same name for different lists", "itemListAllowDuplicateListNames",
@@ -705,8 +705,8 @@ public class MyPrefs {
     static PrefEntry overdueLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_OVERDUE_TITLE, "overdueLogInterval",
             prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_OVERDUE_TITLE);
 
-    static PrefEntry touchedLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_TOUCHED, "touchedLogInterval",
-            prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED);
+    static PrefEntry touchedLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_TOUCHED_TITLE, "touchedLogInterval",
+            prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED_TITLE);
     static PrefEntry nextInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_NEXT_TITLE, "nextInterval",
             prod ? 30 : 30, "How many days ahead in time are included in " + ScreenMain.SCREEN_NEXT_TITLE);
 

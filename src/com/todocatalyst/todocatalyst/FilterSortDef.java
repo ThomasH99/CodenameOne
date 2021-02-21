@@ -800,7 +800,7 @@ public class FilterSortDef extends ParseObject {
 
         showProjectsOnly = filterOptions.contains(FILTER_SHOW_PROJECTS_ONLY);
         showInterruptTasksOnly = filterOptions.contains(FILTER_SHOW_INTERRUPT_TASKS_ONLY);
-        showInterruptTasksOnly = filterOptions.contains(FILTER_SHOW_STARRED_TASKS_ONLY);
+        showStarredTasksOnly = filterOptions.contains(FILTER_SHOW_STARRED_TASKS_ONLY);
         showWithoutEstimatesOnly = filterOptions.contains(FILTER_SHOW_WITHOUT_ESTIMATES_ONLY);
         showWithActualsOnly = filterOptions.contains(FILTER_SHOW_WITH_ACTUALS_ONLY);
         showWithRemainingOnly = filterOptions.contains(FILTER_SHOW_WITH_REMAINING_ONLY);
@@ -874,7 +874,7 @@ public class FilterSortDef extends ParseObject {
                 + (showExpiresOnDate ? FILTER_SHOW_EXPIRES_ON_DATE + " " : "")
                 + (showProjectsOnly ? FILTER_SHOW_PROJECTS_ONLY + " " : "")
                 + (showInterruptTasksOnly ? FILTER_SHOW_INTERRUPT_TASKS_ONLY + " " : "")
-                + (showInterruptTasksOnly ? FILTER_SHOW_STARRED_TASKS_ONLY + " " : "")
+                + (showStarredTasksOnly ? FILTER_SHOW_STARRED_TASKS_ONLY + " " : "")
                 + (showWithoutEstimatesOnly ? FILTER_SHOW_WITHOUT_ESTIMATES_ONLY + " " : "")
                 + (showWithActualsOnly ? FILTER_SHOW_WITH_ACTUALS_ONLY + " " : "");
 //        put(PARSE_FILTER_OPTIONS, filterOptions);
@@ -1885,10 +1885,10 @@ public class FilterSortDef extends ParseObject {
     }
 
     /**
-     * @param showStarredTasksOnly the showInterruptTasksOnly to set
+     * @param showInterruptTasksOnly the showInterruptTasksOnly to set
      */
-    public void setShowInterruptTasksOnly(boolean showStarredTasksOnly) {
-        this.showInterruptTasksOnly = showStarredTasksOnly;
+    public void setShowInterruptTasksOnly(boolean showInterruptTasksOnly) {
+        this.showInterruptTasksOnly = showInterruptTasksOnly;
         updateAndSaveFilterOptions();
     }
 

@@ -85,13 +85,13 @@ public class ScreenListOfItemLists extends MyForm {
 //                            DAO.getInstance().save(cat);
 //                        });
 //    }
-    ScreenListOfItemLists(ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone) {
-        this(itemListList.getText(), itemListList, previousForm, updateItemListOnDone);
-    }
+//    ScreenListOfItemLists(ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone) {
+//        this(itemListList.getText(), itemListList, previousForm, updateItemListOnDone);
+//    }
 
-    ScreenListOfItemLists(String title, ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfItemLists(String title, ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone, String helpText) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListList));
-        super(title, previousForm, updateItemListOnDone);
+        super(title, previousForm, updateItemListOnDone, helpText);
 //        addUpdateActionOnDone(() -> updateItemListOnDone.update2(itemListList));
 //        addUpdateActionOnDone(() -> updateItemListOnDone.update2(itemListList));
         setUniqueFormId("ScreenListOfItemLists");
@@ -642,7 +642,7 @@ public class ScreenListOfItemLists extends MyForm {
 //            long estimatedEffort = itemList.getEffortEstimate();
 //            east.addComponent(new Label("Act:" + MyDate.formatDurationStd(actualEffort),Icons.iconActualEffort));
             Label actualTotalLabel = new Label(MyDate.formatDurationStd(actualTotal));
-            actualTotalLabel.setMaterialIcon(Icons.iconActualEffort);
+            actualTotalLabel.setMaterialIcon(Icons.iconActualEffortCust);
             east.addComponent(actualTotalLabel);
 //                    + "/E" + MyDate.formatTimeDuration(estimatedEffort)
 //                    + "/W" + MyDate.formatTimeDuration(workTimeSumMillis)));

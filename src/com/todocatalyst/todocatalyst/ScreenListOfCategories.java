@@ -46,8 +46,8 @@ public class ScreenListOfCategories extends MyForm {
     //TODO show only number/count of undone items in category (not getSize() as now)
     //DONE add sum of effort of subtasks in each category
 
-    public final static String SCREEN_TITLE = "Categories";
-    public final static String SCREEN_HELP = "Categories";
+//    public final static String SCREEN_TITLE = "Categories";
+//    public final static String SCREEN_HELP = "Categories";
     private CategoryList categoryList;
     private MyTree2 dt;
 //    protected static String FORM_UNIQUE_ID = "ScreenListOfCategories"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
@@ -70,7 +70,8 @@ public class ScreenListOfCategories extends MyForm {
     ScreenListOfCategories(CategoryList categoryList, MyForm previousForm, Runnable updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super(title == null ? SCREEN_TITLE : title, previousForm, () -> updateItemListOnDone.update(categoryList));
 //        super(SCREEN_TITLE, previousForm, () -> updateItemListOnDone.update(categoryList));
-        super(SCREEN_TITLE, previousForm, updateItemListOnDone);
+//        super(MyForm.SCREEN_CATEGORIES_TITLE, previousForm, updateItemListOnDone,MyForm.SCREEN_CATEGORIES_HELP);
+        super(ScreenType.CATEGORIES, previousForm, updateItemListOnDone);
 //        setUpdateActionOnCancel(() -> updateItemListOnDone.update2(categoryList));
         setUniqueFormId("ScreenListOfCategories");
 //        setUpdateItemListOnDone(updateItemListOnDone);

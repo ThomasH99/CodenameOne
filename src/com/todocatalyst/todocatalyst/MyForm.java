@@ -124,12 +124,13 @@ public class MyForm extends Form {
     private String showIfEmptyList; //holds Container with actual content, typically MyTree2
 
     SwipeableContainer openSwipeContainer = null; //stores the currently open SwipeContainer for this screen
-    public final static int ANIMATION_TIME_DEFAULT = 300; //in milliseconds
+    public final static int ANIMATION_TIME_DEFAULT = 200; //in milliseconds
     final static int ANIMATION_TIME_FAST = 150; //in milliseconds
     private Container smallTimer;
 
     private boolean triggerSaveOnExit;
     protected List<Runnable> refresh;
+//    protected String helpText;
 
     /**
      * return true if this screen or a parent form will trigger a save to Parse
@@ -163,6 +164,29 @@ public class MyForm extends Form {
 
     protected MySearchCommand getSearchCmd() {
         return searchCmd;
+    }
+
+    protected static void addToNorthOfContentPane(Container contentPane, Component searchCont) {
+        Layout contentPaneLayout = contentPane.getLayout();
+        if (contentPaneLayout instanceof BorderLayout) {
+            Component prevNorthComp = ((BorderLayout) contentPaneLayout).getNorth();
+//            if (prevNorthComp instanceof Container) { //NO, don't because an existing search field may be Container
+//                ((Container) prevNorthComp).addComponent(0, searchCont); //add search at pos 0 (above eg a StickyHeader or HelpText)
+//            } else 
+            if (prevNorthComp == null) {
+                //no North comp
+                contentPane.add(BorderLayout.NORTH, searchCont);
+            } else {
+                //if only a single componentn in north, create a new container for both previous component and searchCont
+                Container northCont = new Container(BoxLayout.y());
+//                        Container parent = northComp.getParent();
+                northCont.add(searchCont); //add search at pos 0
+                prevNorthComp.remove();
+                northCont.add(prevNorthComp); //and existing content (e.g. StickyHeader) at pos 1
+//                        parent.add(northCont);
+                contentPane.add(BorderLayout.NORTH, northCont);
+            }
+        }
     }
 
     protected void setSearchCmd(MySearchCommand searchCommand) {
@@ -311,49 +335,104 @@ public class MyForm extends Form {
 //    String SCREEN_TITLE = "";
     //TODO: move titles into Screens
     static final String SCREEN_LISTS_TITLE = "Lists";
-    static final String SCREEN_LISTS_HELP = "Lists";
+    static final String SCREEN_LISTS_HELP = "Lists of all task lists";
+    static final String SCREEN_CATEGORIES_TITLE = "Categories";
+    static final String SCREEN_CATEGORIES_HELP = "Lists of all categories";
+    static final String SCREEN_CATEGORIES_EMPTY = "**";
     static final String SCREEN_ALL_TASKS_TITLE = "All tasks";
     static final String SCREEN_ALL_TASKS_HELP = "Show all tasks and projects. Project subtasks are only shown under their project";
+    static final String SCREEN_ALARM_TITLE = "Reminders";
+    static final String SCREEN_ALARM_HELP = "Shows past reminders that have not yet been cancelled or snoozed. Starting Timer on a task or editing it will cancel the reminder"; //"See active reminders"
+    static final String SCREEN_ALARM_EMPTY = "No Reminders to deal with";
+    static final String SCREEN_TASK_LIST_TITLE = "Tasks";
+    static final String SCREEN_TASK_LIST_HELP = "Edit a list of tasks"; //"See active reminders"
+    static final String SCREEN_NEW_TASK_TITLE = "**not used (task text is title)";
+    static final String SCREEN_NEW_TASK_HELP = "Edit the task details"; //"See active reminders"
+    static final String SCREEN_FILTER_TITLE = "Edit Filter/Sort"; //"Sort and Filter";
+    static final String SCREEN_FILTER_HELP = "Select how the list is sorted and which tasks are shown or hidden"; //"See active reminders"
+    static final String SCREEN_FILTER_EMPTY = "Define your first filter"; //"See active reminders"
+    static final String SCREEN_TIMER_TITLE = "Timer";
+    static final String SCREEN_TIMER_HELP = "Timer: effortlessly track time used on each task"; //"See active reminders"
     static final String SCREEN_INBOX_TITLE = "Inbox"; // "Inbox (no owner)" "Inbox"
-    static final String SCREEN_INBOX_HELP = "Inbox"; // "Inbox (no owner)" "Inbox"
+    static final String SCREEN_INBOX_HELP = "The Inbox is the default task list"; // "Inbox (no owner)" "Inbox"
+    static final String SCREEN_INBOX_EMPTY = "No tasks in your inbox";
     static final String SCREEN_PROJECTS_TITLE = "All projects";
     static final String SCREEN_PROJECTS_HELP = "Projects";
     static final String SCREEN_TEMPLATES_TITLE = "Templates";
-    static final String SCREEN_TEMPLATES_HELP = "Templates";
+    static final String SCREEN_TEMPLATES_HELP = "Templates: define templates to easily create common tasks or projects";
     static final String SCREEN_COMPLETION_LOG_TITLE = "Completed"; //"Completed tasks""Log"; // "Work og", "Completion log", "Completed tasks"
-    static final String SCREEN_COMPLETION_LOG_HELP = "Your Log book of recent completed tasks"; //"Log"; // "Work og", "Completion log", "Completed tasks"
+    static final String SCREEN_COMPLETION_LOG_HELP = "Completed tasks show your recently completed tasks in order of completion"; //"Log"; // "Work og", "Completion log", "Completed tasks"
+    static final String SCREEN_COMPLETION_LOG_EMPTY = "No tasks completed the last " + MyPrefs.completionLogInterval.getInt() + " days";
     static final String SCREEN_TEMPLATE_PICKER = "Select Template";
     static final String SCREEN_CREATION_LOG_TITLE = "Created"; //"Task history""Diary"; // "Log book", "Creation log", "Created tasks"
-    static final String SCREEN_CREATION_LOG_HELP = "Your Diary of every created task"; // "Log book", "Creation log", "Created tasks"
+    static final String SCREEN_CREATION_LOG_HELP = "Created: a diary view of recent tasks ordered by when they were created"; // "Log book", "Creation log", "Created tasks"
+    static final String SCREEN_CREATION_LOG_EMPTY = "No tasks created the last " + MyPrefs.creationLogInterval.getInt() + " days";
     static final String SCREEN_NEXT_TITLE = "Next"; // "What's next", "Calendar"
-    static final String SCREEN_NEXT_HELP = "Have a look at what's up the next month";
+    static final String SCREEN_NEXT_HELP = "Next: tasks that are due in the coming days";
+    static final String SCREEN_NEXT_EMPTY = "No tasks due the next " + MyPrefs.nextInterval.getInt() + " days";
     static final String SCREEN_TODAY_TITLE = "Today"; // "Creation log", "Created tasks"
-    static final String SCREEN_TODAY_HELP = "What is scheduled for today, due tasks, waiting tasks scheduled for today and tasks that fit today's workslots";
+    static final String SCREEN_TODAY_HELP = "Today: tasks due today, starting today, waiting till today, and reserved time slots";
+    static final String SCREEN_TODAY_EMPTY = "Looks like you have no tasks to deal with today. Enjoy!";
+    static final String SCREEN_WORKSLOTS_TITLE = "Work time";
+    static final String SCREEN_WORKSLOTS_HELP = "Overview of work time reservations across lists, categories and projects";
+    static final String SCREEN_WORKSLOTS_EMPTY = "Click + to aLooks like you have no tasks to deal with today. Enjoy!";
     static final String SCREEN_OVERDUE_TITLE = "Overdue"; // "Creation log", "Created tasks"
-    static final String SCREEN_OVERDUE_HELP = "Overdue tasks, you probably want to deal with these before moving on to other tasks"; // "Creation log", "Created tasks"
+    static final String SCREEN_OVERDUE_HELP = "Overdue: tasks that were due in recent days but not yet completed"; // "Creation log", "Created tasks"
     static final String SCREEN_TUTORIAL = "Tutorial";
     static final String SCREEN_TUTORIAL_HELP = "Tutorial";
-    static final String SCREEN_TOUCHED = "Edited"; //"Touched";
-    static final String SCREEN_TOUCHED_HELP = "Touched";
+    static final String SCREEN_TOUCHED_TITLE = "Edited"; //"Touched";
+    static final String SCREEN_TOUCHED_HELP = "Edited: tasks that have been edited in recent days";
+    static final String SCREEN_TOUCHED_EMPTY = "No tasks changed the last " + MyPrefs.touchedLogInterval.getInt() + " days";
     static final String SCREEN_TOUCHED_24H = "Touched last 24h";
-    static final String SCREEN_STATISTICS = "Accomplished"; //"Achievements"; //"Statistics", "History"
+    static final String SCREEN_STATISTICS_TITLE = "Results"; //Achievements, Work, Progress, Feats, Outcome, Headway, "Review"; //"Accomplished"; //"Achievements"; //"Statistics", "History"
+    static final String SCREEN_STATISTICS_HELP = "Review: recently completed tasks grouped by day/week/month and list/category, with their estimated and actual effort."; //"Accomplished"; //"Achievements"; //"Statistics", "History"
+    static final String SCREEN_STATISTICS_EMPTY = "No completed tasks to show statistics for yet";
     static final String SCREEN_IMPROVE = "Improve"; //how to improve, more precise estimates, analysis per type of tasks (respect due date, estimates, split up, allow to become interrupted, ...)
     static final String SCREEN_IMPROVE_HELP = "Shows you insights on how well you do and gives feedback on how you may improve. COMING..."; //how to improve, more precise estimates, analysis per type of tasks (respect due date, estimates, split up, allow to become interrupted, ...)
     static final String SETTINGS_SCREEN_TITLE = "Settings for "; //"Statistics", "History"
 
     public enum ScreenType {
-        NOT_INIT("Not initialized"), ALARMS(ScreenListOfAlarms.screenTitle), LISTS(SCREEN_LISTS_TITLE), ALL_TASKS(SCREEN_ALL_TASKS_TITLE), TODAY(SCREEN_TODAY_TITLE), INBOX(SCREEN_INBOX_TITLE),
-        PROJECTS(SCREEN_PROJECTS_TITLE), TEMPLATES(SCREEN_TEMPLATES_TITLE),
-        COMPLETION_LOG(SCREEN_COMPLETION_LOG_TITLE), CREATION_LOG(SCREEN_CREATION_LOG_TITLE),
-        NEXT(SCREEN_NEXT_TITLE), OVERDUE(SCREEN_OVERDUE_TITLE), TOUCHED(SCREEN_TOUCHED), STATISTICS(SCREEN_STATISTICS);
+        NOT_INIT("Not initialized", ""),
+        ALARMS(SCREEN_ALARM_TITLE, SCREEN_ALARM_HELP, SCREEN_ALARM_EMPTY),
+        CATEGORIES(SCREEN_CATEGORIES_TITLE, SCREEN_CATEGORIES_HELP, SCREEN_CATEGORIES_EMPTY),
+        ALL_TASKS(SCREEN_ALL_TASKS_TITLE, SCREEN_ALL_TASKS_HELP),
+        FILTER(SCREEN_FILTER_TITLE, SCREEN_FILTER_HELP, SCREEN_FILTER_EMPTY),
+        LISTS(SCREEN_LISTS_TITLE, SCREEN_LISTS_HELP),
+        INBOX(SCREEN_INBOX_TITLE, SCREEN_INBOX_HELP, SCREEN_INBOX_EMPTY),
+        PROJECTS(SCREEN_PROJECTS_TITLE, SCREEN_PROJECTS_HELP),
+        TEMPLATES(SCREEN_TEMPLATES_TITLE, SCREEN_TEMPLATES_HELP),
+        COMPLETION_LOG(SCREEN_COMPLETION_LOG_TITLE, SCREEN_COMPLETION_LOG_HELP, SCREEN_COMPLETION_LOG_EMPTY),
+        CREATION_LOG(SCREEN_CREATION_LOG_TITLE, SCREEN_CREATION_LOG_HELP, SCREEN_CREATION_LOG_EMPTY),
+        NEXT(SCREEN_NEXT_TITLE, SCREEN_NEXT_HELP, SCREEN_NEXT_EMPTY),
+        OVERDUE(SCREEN_OVERDUE_TITLE, SCREEN_OVERDUE_HELP, "No overdue tasks the last " + MyPrefs.overdueLogInterval.getInt() + " days"),
+        TODAY(SCREEN_TODAY_TITLE, SCREEN_TODAY_HELP, SCREEN_TODAY_EMPTY),
+        TOUCHED(SCREEN_TOUCHED_TITLE, SCREEN_TOUCHED_HELP, SCREEN_TOUCHED_EMPTY),
+        WORKSLOTS(SCREEN_WORKSLOTS_TITLE, SCREEN_WORKSLOTS_HELP, SCREEN_WORKSLOTS_EMPTY),
+        STATISTICS(SCREEN_STATISTICS_TITLE, SCREEN_STATISTICS_HELP);
         private String screenTitle;
+        private String helpText;
+        private String emptyScrText;
 
-        ScreenType(String title) {
+        ScreenType(String title, String helpText, String emptyScreenText) {
             screenTitle = title;
+            this.helpText = helpText;
+            this.emptyScrText = emptyScreenText;
+        }
+
+        ScreenType(String title, String helpText) {
+            this(title, helpText, null);
         }
 
         String getTitle() {
             return screenTitle;
+        }
+
+        String getHelpText() {
+            return helpText;
+        }
+
+        String getEmptyScreenText() {
+            return emptyScrText;
         }
 
         static ScreenType getScreenType(String screenTitle) {
@@ -432,19 +511,23 @@ public class MyForm extends Form {
     private static int TIME_FOR_DOUBLE_TAP = 200; //50 works on simulator, but not on iPhone (probably too short)
 
     MyForm(ScreenType screenType, MyForm previousForm, Runnable updateActionOnDone) { //throws ParseException, IOException {
-        this(screenType.getTitle(), previousForm, updateActionOnDone);
+        this(screenType.getTitle(), previousForm, updateActionOnDone, screenType.getHelpText());
         this.screenType = screenType;
-
     }
 
-    MyForm(String title, MyForm previousForm, Runnable updateActionOnDone) { //throws ParseException, IOException {
-        this(title, previousForm, updateActionOnDone, null);
+    MyForm(String title, MyForm previousForm, Runnable updateActionOnDone, String helpText) { //throws ParseException, IOException {
+        this(title, previousForm, updateActionOnDone, null, helpText);
     }
 
-    MyForm(String title, MyForm previousForm, Runnable updateActionOnDone, Runnable updateActionOnCancel) { //throws ParseException, IOException {
+    MyForm(String title, MyForm previousForm, Runnable updateActionOnDone) {
+        this(title, previousForm, updateActionOnDone, "");
+    }
+
+    MyForm(String title, MyForm previousForm, Runnable updateActionOnDone, Runnable updateActionOnCancel, String helpText) { //throws ParseException, IOException {
 //    MyForm(String title, UpdateField updateActionOnDone) { //throws ParseException, IOException {
 //        super(title);
         super();
+//        this.helpText=helpText;
         getContentPane().setSafeArea(MyPrefs.enableSafeArea.getBoolean()); //protect scrollbar at bottom of screen from swipe commands
         setSafeAreaChanged();
         Log.p("contentPane.isSafeArea() = " + getContentPane().isSafeArea()
@@ -555,6 +638,8 @@ public class MyForm extends Form {
 //        }
 //</editor-fold>
         setTitle(title); //must do here to use overridden version of setTitle()
+        addTitleHelp(helpText); //must do here to use overridden version of setTitle()
+
         this.parentForm = previousForm;
         if (false) {
             setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
@@ -593,8 +678,16 @@ public class MyForm extends Form {
 //            setAutoSizeMode(true); //ensure title is centered even when icons are added
 //        }
 //        this.previousForm = previousForm;
-//        this.previousForm = getComponentForm();
+//        this.previousForm = getComponentForm();'
+        if (updateActionOnDone == null) {
+            updateActionOnDone = () -> {
+            };
+        }
         addUpdateActionOnDone(updateActionOnDone);
+        if (updateActionOnCancel == null) {
+            updateActionOnCancel = () -> {
+            };
+        }
         setUpdateActionOnCancel(updateActionOnCancel);
         setTransitionInAnimator(CommonTransitions.createSlide(CommonTransitions.SLIDE_HORIZONTAL, false, 200));
 //        setTransitionOutAnimator( CommonTransitions.createSlide(CommonTransitions.SLIDE_HORIZONTAL, false, 200));
@@ -822,70 +915,96 @@ public class MyForm extends Form {
 
     @Override
     public void setTitle(String title) {
+        setTitle(title, null, null);
+    }
+
+    public void setTitle(String title, Character icon, Font iconFont) {
         if (false) {
             super.setTitle(title);
         } else {
 //        Label titleComponent = new Label(getTitle(),"FormTitle") {
             Button titleComponent = new Button(title, "FormTitle");
-
-            if (false) {
-                titleComponent = new Button(title, "FormTitle") {
-
-                    public void pointerReleased(int x, int y) {
-                        super.pointerReleased(x, y);
-                        if (doubleTapTitleTimer == null) {
-                            doubleTapTitleTimer = UITimer.timer(TIME_FOR_DOUBLE_TAP, false, getComponentForm(), () -> {
-                                //SINGLE TAP - scroll list to top
-                                ContainerScrollY cont = findScrollableContYChild(getComponentForm());
-                                if (cont != null) {
-                                    prevScrollPos = cont.getScrollY();
-                                    Component firstComp = cont.getComponentAt(0); //scroll list to bottom
-                                    if (firstComp != null) {
-                                        cont.scrollComponentToVisible(firstComp);
-                                    }
-                                }
-                                doubleTapTitleTimer = null;
-                            });
-                        } else {
-                            doubleTapTitleTimer.cancel();
-                            doubleTapTitleTimer = null;
-                            //DOUBLE TAP - switch to previous position
-                            //scroll list to bottom //TODO!!! improve so that doubletap scrolls back and forth between top of list and the scroll point
-                            ContainerScrollY cont = findScrollableContYChild(getComponentForm());
-                            if (cont != null) {
-                                int currentScrollPos = cont.getScrollY();
-                                if (prevDoubleTapPos != -1) {
-                                    cont.setScrollYPublic(prevDoubleTapPos);
-//                            prevDoubleTapPos=currentScrollPos;
-                                } else if (prevScrollPos != -1) {
-                                    cont.setScrollYPublic(prevScrollPos);
-                                } else {
-                                    prevScrollPos = currentScrollPos;
-                                    if (MyPrefs.firstDoubleTapScrollsToBottomOfScreen.getBoolean()) {
-                                        int idx = cont.getComponentCount() - 1;
-                                        if (idx >= 0) {
-                                            Component lastComp = cont.getComponentAt(idx); //scroll list to bottom
-                                            if (lastComp != null) {
-                                                cont.scrollComponentToVisible(lastComp);
-                                            }
-                                        }
-                                    } else {
-                                        if (cont.getComponentCount() > 0) {
-                                            Component firstComp = cont.getComponentAt(0); //scroll list to bottom
-                                            if (true || firstComp != null) { //firstComp should never be null?!
-                                                cont.scrollComponentToVisible(firstComp);
-                                            }
-                                        }
-                                    }
-                                }
-                                prevDoubleTapPos = currentScrollPos;
-                            }
-                        }
-                    }
-
-//                @Override
-//                public void longPointerPress(int x, int y) {
-//                    super.longPointerPress(x, y);
+            titleComponent.setTextPosition(Label.RIGHT); //show icon on the left of title text
+            if (iconFont != null) {
+                titleComponent.setFontIcon(iconFont, icon);
+            } else if (icon != null) {
+                titleComponent.setMaterialIcon(icon);
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (false) {
+//                titleComponent = new Button(title, "FormTitle") {
+//
+//                    public void pointerReleased(int x, int y) {
+//                        super.pointerReleased(x, y);
+//                        if (doubleTapTitleTimer == null) {
+//                            doubleTapTitleTimer = UITimer.timer(TIME_FOR_DOUBLE_TAP, false, getComponentForm(), () -> {
+//                                //SINGLE TAP - scroll list to top
+//                                ContainerScrollY cont = findScrollableContYChild(getComponentForm());
+//                                if (cont != null) {
+//                                    prevScrollPos = cont.getScrollY();
+//                                    Component firstComp = cont.getComponentAt(0); //scroll list to bottom
+//                                    if (firstComp != null) {
+//                                        cont.scrollComponentToVisible(firstComp);
+//                                    }
+//                                }
+//                                doubleTapTitleTimer = null;
+//                            });
+//                        } else {
+//                            doubleTapTitleTimer.cancel();
+//                            doubleTapTitleTimer = null;
+//                            //DOUBLE TAP - switch to previous position
+//                            //scroll list to bottom //TODO!!! improve so that doubletap scrolls back and forth between top of list and the scroll point
+//                            ContainerScrollY cont = findScrollableContYChild(getComponentForm());
+//                            if (cont != null) {
+//                                int currentScrollPos = cont.getScrollY();
+//                                if (prevDoubleTapPos != -1) {
+//                                    cont.setScrollYPublic(prevDoubleTapPos);
+////                            prevDoubleTapPos=currentScrollPos;
+//                                } else if (prevScrollPos != -1) {
+//                                    cont.setScrollYPublic(prevScrollPos);
+//                                } else {
+//                                    prevScrollPos = currentScrollPos;
+//                                    if (MyPrefs.firstDoubleTapScrollsToBottomOfScreen.getBoolean()) {
+//                                        int idx = cont.getComponentCount() - 1;
+//                                        if (idx >= 0) {
+//                                            Component lastComp = cont.getComponentAt(idx); //scroll list to bottom
+//                                            if (lastComp != null) {
+//                                                cont.scrollComponentToVisible(lastComp);
+//                                            }
+//                                        }
+//                                    } else {
+//                                        if (cont.getComponentCount() > 0) {
+//                                            Component firstComp = cont.getComponentAt(0); //scroll list to bottom
+//                                            if (true || firstComp != null) { //firstComp should never be null?!
+//                                                cont.scrollComponentToVisible(firstComp);
+//                                            }
+//                                        }
+//                                    }
+//                                }
+//                                prevDoubleTapPos = currentScrollPos;
+//                            }
+//                        }
+//                    }
+//
+////                @Override
+////                public void longPointerPress(int x, int y) {
+////                    super.longPointerPress(x, y);
+////                    ContainerScrollY cont = findScrollableContYChild(getComponentForm());
+////                    if (cont != null) {
+////                        prevScrollPos = cont.getScrollY();
+////                        int idx = cont.getComponentCount() - 1;
+////                        if (idx >= 0) {
+////                            Component lastComp = cont.getComponentAt(idx); //scroll list to bottom
+////                            if (lastComp != null) {
+////                                cont.scrollComponentToVisible(lastComp);
+////                            }
+////                        }
+////                    }
+////                }
+//                };
+//            }
+//            if (false) {
+//                titleComponent.addLongPressListener((e) -> {
 //                    ContainerScrollY cont = findScrollableContYChild(getComponentForm());
 //                    if (cont != null) {
 //                        prevScrollPos = cont.getScrollY();
@@ -897,24 +1016,9 @@ public class MyForm extends Form {
 //                            }
 //                        }
 //                    }
-//                }
-                };
-            }
-            if (false) {
-                titleComponent.addLongPressListener((e) -> {
-                    ContainerScrollY cont = findScrollableContYChild(getComponentForm());
-                    if (cont != null) {
-                        prevScrollPos = cont.getScrollY();
-                        int idx = cont.getComponentCount() - 1;
-                        if (idx >= 0) {
-                            Component lastComp = cont.getComponentAt(idx); //scroll list to bottom
-                            if (lastComp != null) {
-                                cont.scrollComponentToVisible(lastComp);
-                            }
-                        }
-                    }
-                });
-            }
+//                });
+//            }
+//</editor-fold>
             titleComponent.setAutoSizeMode(MyPrefs.titleAutoSize.getBoolean());
 //        titleComponent.setMinAutoSize(2); //TODO!!!!! pull request to add this to CN1
             titleComponent.setVerticalAlignment(Component.CENTER);
@@ -1127,6 +1231,111 @@ public class MyForm extends Form {
             return true;
         }
         return false;
+    }
+
+    private SpanButton helpField;
+    private Label helpTitle;
+    private Container helpContainer;
+
+//    protected void addHelpContainer(boolean show) {
+    protected void addHelpContainerXXX() {
+        helpTitle = new Label();
+        helpTitle.setUIID("HelpTitle");
+        helpField = new SpanButton();
+//        helpField.setUIID("HelpField");
+        helpField.setTextUIID("HelpField");
+        helpField.addActionListener(e -> {
+            helpContainer.setHidden(!helpContainer.isHidden());
+            helpContainer.getParent().animateLayout(ANIMATION_TIME_DEFAULT);
+        });//clicking the help field makes it disappear
+
+        helpContainer = BoxLayout.encloseY(helpTitle, helpField);
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        Layout layout = getContentPane().getLayout();
+//        if (layout instanceof BorderLayout) {
+//            Component south = ((BorderLayout) layout).getSouth();
+//            if (south instanceof Container) {
+//                ((Container) south).add(helpContainer);
+//            } else if (south instanceof Component) {
+//                //enclose existing component with helpContainer in a BoxY container
+//                south.getParent().addComponent(BorderLayout.SOUTH, BoxLayout.encloseY(south, helpContainer));
+//            }
+//        } else {
+//            ASSERT.that(false, "trying to add helpContainer to ContentPane withouth BorderLayout");
+//        }
+//</editor-fold>
+        MyForm.addToNorthOfContentPane(getContentPane(), helpContainer); //add to North, after SearchCont 
+
+        helpContainer.setHidden(true); //initial state is hidden (first click will change this)
+    }
+
+    /**
+     *
+     * @param topic eg the name of the command for which help is shown
+     * @param helpText the help text
+     */
+    public void showHelp(String topic, String helpText) {
+        if (helpContainer != null) {
+            Component parent = helpContainer.getParent();
+            helpContainer.remove();
+            helpContainer = null;
+            if (parent instanceof Container) {
+                ((Container) parent).animateLayout(ANIMATION_TIME_DEFAULT);
+            }
+        } else {
+//            addHelpContainer(); //add 'lazily', after Form is initialized etc
+            helpField = new SpanButton();
+            helpField.setMaterialIcon(Icons.iconShowLess); //Icons.iconCloseCircle
+//        helpField.setUIID("HelpField");
+            helpField.setTextUIID("HelpField");
+            helpField.setIconUIID("HelpField");
+            helpField.setGap(0);
+            helpField.setText(helpText);
+            helpField.setTextPosition(TextArea.LEFT);
+            helpField.addActionListener(e -> {
+//                helpContainer.setHidden(!helpContainer.isHidden());
+//                helpContainer.getParent().animateLayout(ANIMATION_TIME_DEFAULT);
+                Component parent = helpContainer.getParent();
+                helpContainer.remove();
+                helpContainer = null;
+                if (parent instanceof Container) {
+                    ((Container) parent).animateLayout(ANIMATION_TIME_DEFAULT);
+                }
+            });//clicking the help field makes it disappear
+
+            if (topic != null && !topic.isEmpty()) {
+                helpTitle = new Label();
+                helpTitle.setUIID("HelpTitle");
+                helpTitle.setText(topic);
+                helpContainer = BoxLayout.encloseY(helpTitle, helpField);
+            } else {
+                helpContainer = BoxLayout.encloseY(helpField);
+            }
+            MyForm.addToNorthOfContentPane(getContentPane(), helpContainer); //add to North, after SearchCont 
+//            helpContainer.setHidden(true); //initial state is hidden (first click will change this)
+
+//        if (helpContainer.isHidden()) {
+//            helpContainer.setHidden(false);
+//            helpTitle.setText(topic);
+//            helpField.setText(helpText);
+            if (helpContainer.getParent() != null) {
+                helpContainer.getParent().animateLayout(ANIMATION_TIME_DEFAULT);
+            }
+//        } else {
+//            helpContainer.setHidden(true); //hide again on second click
+//        }
+        }
+    }
+
+    public void addTitleHelp(String helpText) {
+//        addHelpContainer(false);
+        if (helpText != null && !helpText.isEmpty()) {
+            Component titleComponent = getToolbar().getTitleComponent();
+            if (titleComponent instanceof Button) {
+                ((Button) titleComponent).addActionListener(e -> showHelp(null, helpText));
+            }
+        }
     }
 
     interface GetParseValue {
@@ -2435,12 +2644,8 @@ public class MyForm extends Form {
                         }
                     }
                 }
-                if (false) {
-                    if (nonLabelCount == 0 && prevLabel != null) {
-                        prevLabel.setHidden(true); //hide previous label if nothing is shown after it
-                    }
-                } else {
-                    prevLabel.setHidden(nonLabelCount == 0 && prevLabel != null); //hide/unhide previous label if nothing is shown after it
+                if (prevLabel != null) {
+                    prevLabel.setHidden(nonLabelCount == 0); //hide/unhide previous label if nothing is shown after it
                 }
             } else { //compList==null - should never happen???!
                 for (int i = 0, size = compList.getComponentCount(); i < size; i++) {
@@ -2936,7 +3141,7 @@ public class MyForm extends Form {
 //                    //TODO!!!! how to remove from eg Categories if finally the task is not saved??
 //                }
 //</editor-fold>
-            }, false, null).show(); //false=optionTemplateEditMode
+            }, false, null, SCREEN_NEW_TASK_HELP).show(); //false=optionTemplateEditMode
         });
         return cmd;
     }
@@ -3038,7 +3243,7 @@ public class MyForm extends Form {
                 } else {
                     DAO.getInstance().saveToParseNow(filterSortDef); //save possibly edited filter explicitly
                 }                //TODO any way to scroll to a meaningful place after applying a filter/sort? Probably not! Or: scroll to any previously visible task? Or scroll down 'as much' as before (if possible)?
-            }).show();
+            }, SCREEN_FILTER_HELP).show();
         }
         );
     }
@@ -3158,6 +3363,7 @@ public class MyForm extends Form {
     }
 
     static void showToastBar(String message, int timeMillis) {
+        ToastBar.getInstance().setPosition(Component.TOP);
         ToastBar.Status status = ToastBar.getInstance().createStatus();
         status.setMessage(message);
         int timeOut = timeMillis != 0 ? timeMillis : message.length() * TIME_REQUIRED_TO_READ_A_CHARACTER_IN_MILLIS + ADDITIONAL_TIME_REQUIRED_MAKE_TOASTBAR_APPEAR_AND_DISAPPEAR;
@@ -4811,7 +5017,7 @@ public class MyForm extends Form {
                             DAO.getInstance().fetchListOfItemsFromListOfGuids((List<String>) previousValues.get(ListSelector.CLASS_NAME)),
                             true, Integer.MAX_VALUE, true,
                             (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedGuids()),
-                            true, referenceSet); //put: save selected values locally
+                            0, referenceSet); //put: save selected values locally
 //                    selectedObjects = (ListSelector) previousValues.get(ListSelector.CLASS_NAME); //reuse locally saved selected values if any
 //                    List<String> objIds = (List<String>) previousValues.get(ListSelector.CLASS_NAME); //reuse locally saved selected values if any
 //                    for (String objId : objIds) {
@@ -4820,7 +5026,7 @@ public class MyForm extends Form {
                 } else {
                     ASSERT.that(selectedObjects == null);
                     selectedObjects = new ListSelector(null, true, Integer.MAX_VALUE, true,
-                            (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedGuids()), true, referenceSet); //put: save selected values locally
+                            (o, b) -> previousValues.put(ListSelector.CLASS_NAME, selectedObjects.getSelectedGuids()), 0, referenceSet); //put: save selected values locally
                 }
             }
         } else {

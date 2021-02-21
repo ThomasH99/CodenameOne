@@ -43,8 +43,6 @@ import java.util.List;
 public class ScreenListOfWorkSlots extends MyForm {
     //TODO!! make the workSlots editable directly inline in the list (more natural to edit in an overview of all workslots
 
-    static String SCREEN_TITLE = "Work time";
-    static String SCREEN_HELP = "Work time";
 //    private ItemList workSlotList;
 //    private Object owner;
     ItemAndListCommonInterface workSlotListOwner;
@@ -96,7 +94,8 @@ public class ScreenListOfWorkSlots extends MyForm {
             boolean showOwner, boolean enableAddWorkSlots) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super("Work time for " + nameOfOwner, previousForm, () -> updateItemListOnDone.update(workSlotList));
 //        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm,
-        super(SCREEN_TITLE + ((owner.getText() != null && owner.getText().length() > 0) ? " for " + owner.getText() : ""), previousForm, updateActionOnDone);
+        super(MyForm.SCREEN_WORKSLOTS_TITLE + ((owner.getText() != null && owner.getText().length() > 0) ? " for " + owner.getText() : ""), 
+                previousForm, updateActionOnDone,MyForm.SCREEN_WORKSLOTS_HELP);
         setUniqueFormId("ScreenListOfWorkSlots");
 //                () -> {
 //                    if (updateItemListOnDone != null) {

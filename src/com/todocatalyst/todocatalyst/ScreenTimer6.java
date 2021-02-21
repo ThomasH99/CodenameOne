@@ -61,9 +61,7 @@ public class ScreenTimer6 extends MyForm {
     //DONE Done (or set status) = long press on checkbox
     //DONE the Total should show the sum of the previous Actual and the Timer (and be updated as the timer is)
     //
-    final static String SCREEN_TITLE = "Timer";
 //    final static String TIMER_REPLAY = "StartTimer-";
-
 //    private TimerInstance timerInstance;//= new TimerStack();
     Command backCommand = null; //not private since accessed from TimerStack to exit Full screen timer
 //    protected static String FORM_UNIQUE_ID = "ScreenTimer"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
@@ -81,8 +79,7 @@ public class ScreenTimer6 extends MyForm {
     }
 
     ScreenTimer6(MyForm previousScreen, TimerInstance timerInstance, SaveEditedValuesLocally previousValues) {//,  Map<Object, UpdateField> parseIdMap2) {
-        super(SCREEN_TITLE, previousScreen, () -> {
-        });
+        super(MyForm.SCREEN_TIMER_TITLE, previousScreen, null, MyForm.SCREEN_TIMER_HELP);
         setUniqueFormId("ScreenTimer");
         setUIID("BigTimerForm");
         timerInstance.setFullScreen(true); //save full screen state
@@ -149,8 +146,8 @@ public class ScreenTimer6 extends MyForm {
 //        }, true); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
 //        toolbar.setBackCommand(backCommand); //make an Android back command https://www.codenameone.com/blog/toolbar-back-easier-material-icons.html
 //</editor-fold>
-        backCommand=addStandardBackCommand();
-        
+        backCommand = addStandardBackCommand();
+
         setCheckIfSaveOnExit(() -> {
             TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
             if (timerInstance != null) {//can be null if exiting after finishing with last timer?!
@@ -180,7 +177,9 @@ public class ScreenTimer6 extends MyForm {
 //        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("TimerSettings", null, Icons.iconSettingsLabelStyle, (e) -> {
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("TimerSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsTimer(ScreenTimer6.this, () -> {
-                if(false)refreshAfterEdit();
+                if (false) {
+                    refreshAfterEdit();
+                }
             }).show();
         }
         ));

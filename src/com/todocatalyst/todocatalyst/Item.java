@@ -2199,7 +2199,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
         if (defCopyPaste || defToRepeatInst || defToTempl || defToTemplInst) {
-            setEditedDateToNow(); //always set edited date on creation of new instance (also a 'user-edited action)
+            destination.setEditedDateToNow(); //always set edited date on creation of new instance (also a 'user-edited action)
         }
 
         return destination;
@@ -5783,7 +5783,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         boolean doneProject = (oldStatus == ItemStatus.DONE);
         int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
         return (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
-                || Dialog.show("INFO", "Change " + nbChgStatus + " subtasks to " + newStatus.getDescription() + "?", "OK", "Cancel"));
+                || Dialog.show("INFO", "Change status to " + newStatus.getName()+" for " + nbChgStatus + " subtasks in project \""+getText()+"\"?", "OK", "Cancel"));
     }
 
     public void refreshStatusFromSubtasks() {

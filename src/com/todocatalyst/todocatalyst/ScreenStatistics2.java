@@ -35,7 +35,7 @@ public class ScreenStatistics2 extends MyForm {
      * edit a list of statistics over recently done tasks
      *
      */
-    ScreenStatistics2(String screenTitle, MyForm previousForm, Runnable updateActionOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenStatistics2(String screenTitle, MyForm previousForm, Runnable updateActionOnDone, String helpText) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(screenTitle, previousForm, updateActionOnDone);
 //        this.itemListList = itemListList;
         setUniqueFormId("ScreenStatistics");

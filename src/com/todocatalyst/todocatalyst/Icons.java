@@ -130,7 +130,7 @@ public class Icons {
     final static char iconModifiedDate = FontImage.MATERIAL_HISTORY_TOGGLE_OFF; //voption (but not in CN1): CHANGE_CIRCLE; //MATERIAL_BORDER_COLOR; //TODO: custom icon
     final static char iconModifiedDateCust = 'd'; //TODO: custom icon
     final static char iconEditedDate = FontImage.MATERIAL_EDIT; //TODO: custom icon
-    final static char iconEditedDateCust = 'h'; //TODO: custom icon
+    final static char iconEditedDateCustXXX = 'h'; //TODO: custom icon
     final static char iconAutoCancelByDate = FontImage.MATERIAL_CANCEL_PRESENTATION; //TODO: custom icon
     final static char iconAutoCancelByDateCust = 'r'; //TODO: custom icon
 //    final static char iconExpireByDate = FontImage.MATERIAL_CANCEL;//FontImage.MATERIAL_EVENT_BUSY;
@@ -213,7 +213,7 @@ public class Icons {
     final static char iconMainToday = FontImage.MATERIAL_TODAY;
     final static char iconMainNextCust = 'e'; //FontImage.MATERIAL_ASSIGNMENT_RETURNED;
     final static char iconMainInbox = FontImage.MATERIAL_INBOX;
-    final static char iconMainLists = 'u'; //FontImage.MATERIAL_LIST; //_ALT; //FontImage.MATERIAL_FOLDER_OPEN;
+    final static char iconMainListsCust = 'u'; //FontImage.MATERIAL_LIST; //_ALT; //FontImage.MATERIAL_FOLDER_OPEN;
     final static char iconMainCategories = FontImage.MATERIAL_FOLDER_OPEN; //FontImage.MATERIAL_FOLDER_SPECIAL;
     final static char iconMainProjects = FontImage.MATERIAL_FORMAT_ALIGN_LEFT;
     final static char iconMainProjectsCust = '~'; //FontImage.MATERIAL_FORMAT_ALIGN_LEFT;
@@ -405,7 +405,7 @@ public class Icons {
 //    final static char iconEstimateMaterial = FontImage.MATERIAL_RESTORE;
 //    final static Image iconActualEffort = FontImage.createMaterial(FontImage.MATERIAL_TIMELAPSE, labelStyle);
 //    final static char iconActualEffort = FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
-    final static char iconActualEffort = ','; //FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
+    final static char iconActualEffortCust = ','; //FontImage.MATERIAL_HOURGLASS_FULL; //MATERIAL_WATCH_LATER, FontImage.MATERIAL_TIMELAPSE;
     final static char iconActualCurrentCust = ',';
     final static char iconActualCurrentPrjCust = '-';
     final static char iconActualCurrentSubCust = '1';
@@ -488,6 +488,7 @@ public class Icons {
 
     //LOGIN
 //    final static Image iconPerson = FontImage.createMaterial(FontImage.MATERIAL_PERSON, toolBarStyle);
+    final static char iconGetStarted = FontImage.MATERIAL_HOW_TO_REG;// (person w checkmark); MATERIAL_FORWARD (thick right arrow); MATERIAL_NAT (
     final static char iconPerson = FontImage.MATERIAL_PERSON;
 //    final static Image iconPersonNew = FontImage.createMaterial(FontImage.MATERIAL_PERSON_ADD, toolBarStyle);
     final static char iconPersonNew = FontImage.MATERIAL_PERSON_ADD;

@@ -34,8 +34,8 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
     //insert special characters on Mac keyboard: Cmd-ctrl-spacebar. NB ? and ? shows as question marks on Simulator. On iOS? on Android?
 //    private final static String ENTER_NORMAL_TASK_NO_SWIPE = "Insert task"; //"New subtask, <-for task"; //"New subtask, swipe left for task"; //"Enter subtask (swipe left: cancel)"; "New subtask, <-for task"
     private final static String ENTER_NORMAL_TASK_NO_SWIPE = "Add task"; //"New subtask, <-for task"; //"New subtask, swipe left for task"; //"Enter subtask (swipe left: cancel)"; "New subtask, <-for task"
-    private final static String ENTER_SUBTASK_SWIPE_LEFT_FOR_NORMAL_TASK = "Insert subtask. Swipe <- to insert level above"; //"New subtask, <-for task"; //"New subtask, swipe left for task"; //"Enter subtask (swipe left: cancel)"; "New subtask, <-for task"
-    private final static String ENTER_TASK_SWIPE_RIGHT_FOR_SUBTASK = "Swipe -> to insert as subtask"; //"Swipe right to insert subtask", "New task ->for subtask"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
+    private final static String ENTER_SUBTASK_SWIPE_LEFT_FOR_NORMAL_TASK = "Insert subtask. Swipe « to insert level above"; //"New subtask, <-for task"; //"New subtask, swipe left for task"; //"Enter subtask (swipe left: cancel)"; "New subtask, <-for task"
+    private final static String ENTER_TASK_SWIPE_RIGHT_FOR_SUBTASK = "Swipe » to insert as subtask"; //"Swipe right to insert subtask", "New task ->for subtask"; //"New task, swipe right for subtask)"; //"Task (swipe right: subtask)", "New task, ->for subtask)"
 //    private final static String ENTER_TASK_HINT_NORMAL_TASK = "New task"; //"Task (swipe right: subtask)"
     private final static String ENTER_TASK_HINT_NORMAL_TASK = "Add task"; //"Task (swipe right: subtask)"
 //    private final static String ENTER_TASK_HINT_SUBTASK = "New subtask"; //"Task (swipe right: subtask)"
@@ -707,6 +707,7 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
             if ((refItem != null && refItem.isTemplate()) || itemOrItemListForNewElements == TemplateList.getInstance()) {
                 newItem.setTemplate(true);
             }
+            newItem.setEditedDateToNow();
             return newItem;
         } else {
             return null;

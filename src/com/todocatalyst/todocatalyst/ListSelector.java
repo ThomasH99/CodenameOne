@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Set;
 import static com.codename1.io.Util.readObject;
 import static com.codename1.io.Util.writeObject;
+import com.codename1.ui.Dialog;
 import com.parse4cn1.ParseObject;
 
 /**
@@ -29,9 +30,10 @@ import com.parse4cn1.ParseObject;
 public class ListSelector<E> {//implements Externalizable { //implements Collection {
 
     private int maxNbSelectedObjects;// = Integer.MAX_VALUE;
+    private int minNbSelectedObjects;// = Integer.MAX_VALUE;
     private boolean removeFirstAddedObjectIfMoreThanMaxAreAdded;
     private boolean warnIfMoreThanMaxAreAdded; //TODO show pop up to warn that more than max is trying to selected and that you need to deselect some other ones first
-    private boolean allowNoSelection; //allow user to unselect all elements (have zero selected elements)
+//    private boolean allowNoSelection; //allow user to unselect all elements (have zero selected elements)
     private List<E> selectedObjects;// = new ArrayList();
     private SelectionUpdate selectionUpdate;
     private Collection referenceSet;
@@ -83,55 +85,53 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
      * @param allowNoSelection
      */
     ListSelector(List<E> selectedObjects, boolean createCopyOfSelectedObjects, int maxNbSelectedObjects, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded,
-            SelectionUpdate selectionUpdate, boolean allowNoSelection, Collection selectableObjects) {
+            SelectionUpdate selectionUpdate, int minNbSelectedObjects, Collection selectableObjects) {
         if (selectedObjects == null) {
             this.selectedObjects = new ArrayList();
         } else {
             this.selectedObjects = createCopyOfSelectedObjects ? new ArrayList(selectedObjects) : selectedObjects;
         }
         this.maxNbSelectedObjects = maxNbSelectedObjects;
+        this.minNbSelectedObjects = minNbSelectedObjects;
         this.removeFirstAddedObjectIfMoreThanMaxAreAdded = removeFirstAddedObjectIfMoreThanMaxAreAdded;
         this.selectionUpdate = selectionUpdate;
         if (this.selectionUpdate == null) {
             this.selectionUpdate = (a, b) -> {
             };
         }
-        this.allowNoSelection = allowNoSelection;
+//        this.allowNoSelection = allowNoSelection;
         setReferenceSetAndRefreshSelection(selectableObjects);
     }
 
     ListSelector(List<E> selectedObjects, boolean createCopyOfSelectedObjects, int maxNbSelectedObjects, boolean removeFirstAddedObjectIfMoreThanMaxAreAdded,
-            SelectionUpdate selectionUpdate, boolean allowNoSelection) {
-        this(selectedObjects, createCopyOfSelectedObjects, maxNbSelectedObjects, removeFirstAddedObjectIfMoreThanMaxAreAdded, selectionUpdate, allowNoSelection, null);
+            SelectionUpdate selectionUpdate, int minNbSelectedObjects) {
+        this(selectedObjects, createCopyOfSelectedObjects, maxNbSelectedObjects, removeFirstAddedObjectIfMoreThanMaxAreAdded, selectionUpdate, minNbSelectedObjects, null);
     }
 
     /**
      * listSelector allowing any number of selections (from 0 to all)
      */
-    public ListSelector() {
-        this(new ArrayList<E>(), false, Integer.MAX_VALUE, true, null, true);
-    }
-
+//    public ListSelector() {
+//        this(new ArrayList<E>(), false, Integer.MAX_VALUE, true, null, true);
+//    }
     /**
      * listSelector allowing one selection
      *
      * @param allowNoSelection if true possible to not select any item (0
      * selections)
      */
-    ListSelector(boolean allowNoSelection) {
-        this(new ArrayList<E>(), false, 1, true, null, allowNoSelection);
-    }
-
+//    ListSelector(boolean allowNoSelection) {
+//        this(new ArrayList<E>(), false, 1, true, null, allowNoSelection);
+//    }
     /**
      * create a simply listSelector
      *
      * @param maxNbSelectedObjects
      * @param allowNoSelection
      */
-    ListSelector(int maxNbSelectedObjects, boolean allowNoSelection) {
-        this(new ArrayList<E>(), false, maxNbSelectedObjects, true, null, allowNoSelection);
-    }
-
+//    ListSelector(int maxNbSelectedObjects, boolean allowNoSelection) {
+//        this(new ArrayList<E>(), false, maxNbSelectedObjects, true, null, allowNoSelection);
+//    }
     /**
      * set (new) referenceSet, and update the selection accordingly (remove any
      * previously selected objects that are not in referenceSet(
@@ -204,7 +204,8 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
 //                selectionUpdate.update(obj, false);
 //                return true;
 //            } else {
-            if (allowNoSelection || selectedObjects.size() > 1) { //if not allowNoSelection, only allow unselect if more than 1 object selected
+//            if (allowNoSelection || selectedObjects.size() > 1) { //if not allowNoSelection, only allow unselect if more than 1 object selected
+            if (minNbSelectedObjects == 0 || selectedObjects.size() > 1) { //if not allowNoSelection, only allow unselect if more than 1 object selected
                 selectedObjects.remove(obj);
                 if (selectionUpdate != null) {
                     selectionUpdate.update(obj, false);
@@ -286,7 +287,6 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
 //        return objIds;
 //    }
 //</editor-fold>
-
     public int getNumberSelected() {
         return selectedObjects.size();
     }
@@ -373,6 +373,52 @@ public class ListSelector<E> {//implements Externalizable { //implements Collect
 
     public void clear() {
         unselectAll();
+    }
+
+    public String getErrorMessage() {//int minNbOfSelected, int maxNbOfSelected) {
+        String errorMsgInSelection = "";
+//        int minNbSelectedObjects = allowNoSelection ? 0 : 1;
+        if (minNbSelectedObjects > 0) {
+            if (maxNbSelectedObjects == minNbSelectedObjects) {
+//                errorMsgInSelection = "Please select 1 element");
+//                errorMsgInSelection = "Please select %i elements";
+                errorMsgInSelection = "Please select " + minNbSelectedObjects + " element" + (minNbSelectedObjects > 1 ? "s" : "");
+            } else if (maxNbSelectedObjects > minNbSelectedObjects) {
+//                errorMsgInSelection = "Please select between %i and %i elements";
+                errorMsgInSelection = "Please select between " + minNbSelectedObjects + " and " + maxNbSelectedObjects + " elements";
+            }
+//            else {
+//                errorMsgInSelection = "Please select at least " + minNbOfSelected + " elements";
+//            }
+        } else {//if (maxNbOfSelected > 0) { //minNbOfSelected==0
+//            errorMsgInSelection = "Please select 1 element at most";
+//            errorMsgInSelection = "Please select %i elements at most";
+//            errorMsgInSelection = "Please select " + (this.maxNbOfSelected + 1) + " element" + (this.maxNbOfSelected > 1 ? "s" : "") + " at most";
+            if (this.maxNbSelectedObjects > 1) {
+                errorMsgInSelection = "Please select " + (maxNbSelectedObjects + 1) + " elements at most";
+            } else {
+                errorMsgInSelection = "Please select " + (maxNbSelectedObjects + 1) + " element at most";
+            }
+        }
+        return errorMsgInSelection;
+    }
+
+    public String checkObjectChoiceIsValid(int nbSelectedItems) {
+        String errorMsg = (nbSelectedItems >= minNbSelectedObjects && nbSelectedItems <= maxNbSelectedObjects)
+                ? null
+                : (minNbSelectedObjects == maxNbSelectedObjects ? "Please select 1 element"
+                        : Format.f("Please select {0} to {1} elements", "" + minNbSelectedObjects, "" + maxNbSelectedObjects));
+        return errorMsg;
+    }
+
+    public boolean checkObjectChoiceIsValidAndConfirmDialog(int nbSelectedItems) {
+        String errorMsg = checkObjectChoiceIsValid(nbSelectedItems);
+        if (errorMsg != null) {
+            Dialog.show("Error", errorMsg, "OK", null);
+            return false;
+        } else {
+            return true;
+        }
     }
 
 }

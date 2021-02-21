@@ -330,6 +330,11 @@ public class ScreenListOfItems extends MyForm {
         this(screenType, "", textIfListEmpty, itemListFct, previousForm, updateItemListOnDone, options, stickyHeaderGen);
     }
 
+    ScreenListOfItems(ScreenType screenType, GetItemListFct itemListFct, MyForm previousForm, Runnable updateItemListOnDone,
+            int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
+        this(screenType, "", null, itemListFct, previousForm, updateItemListOnDone, options, stickyHeaderGen);
+    }
+
     /**
      *
      * @param title
@@ -350,13 +355,14 @@ public class ScreenListOfItems extends MyForm {
             Runnable updateItemListOnDone, int options, MyTree2.StickyHeaderGenerator stickyHeaderGen) {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListOrg));
-        super(screenType == null ? title : screenType.getTitle(), previousForm, null);
+        super(screenType == null ? title : screenType.getTitle(), previousForm, null, screenType == null ? MyForm.SCREEN_TASK_LIST_HELP : screenType.getHelpText());
         setScreenType(screenType);
-        if (textIfListEmpty != null) {
-            setTextToShowIfEmptyList(textIfListEmpty);
-        } else {
-            setTextToShowIfEmptyList("Insert new task using + or pinch insert");
-        }
+//        if (textIfListEmpty != null) {
+//            setTextToShowIfEmptyList(textIfListEmpty);
+//        } else {
+//            setTextToShowIfEmptyList("Insert new task using + or pinch insert");
+//        }
+        setTextToShowIfEmptyList(textIfListEmpty != null ? textIfListEmpty : (screenType != null && screenType.getEmptyScreenText() != null ? screenType.getEmptyScreenText() : "Insert new task using + or pinch insert"));
 
         setUniqueFormId("ScreenListOfItems");
         if (false) {
@@ -1029,8 +1035,9 @@ public class ScreenListOfItems extends MyForm {
                         List selectedTemplates = new ArrayList();
 //                        List newTemplateCopies = new ArrayList();
                         int maxTemplatesToSelect = MyPrefs.maxNbTemplatesAllowedToChoseForInsertion.getInt(); //TODO make this a setting (>1 a paid option?)
-                        new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), null, selectedTemplates, ScreenListOfItems.this, () -> {
-                            for (Item selectedTemplate : (List<Item>) selectedTemplates) { //UI: can select multiple templates to insert at once
+                        if (false) {
+                            new ScreenObjectPicker(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), null, selectedTemplates, ScreenListOfItems.this, () -> {
+                                for (Item selectedTemplate : (List<Item>) selectedTemplates) { //UI: can select multiple templates to insert at once
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                Item newTemplateCopy = ((Item) templ).cloneMe(); //also sets source
 ////                                ((ItemAndListCommonInterface) itemListOrg).addToList(newTemplateCopy); //also sets source
@@ -1038,43 +1045,73 @@ public class ScreenListOfItems extends MyForm {
 ////                                newTemplateCopies.add(newTemplateCopy);
 //                                DAO.getInstance().saveNew(newTemplateCopy);
 //</editor-fold>
-                                if (false) {
+                                    if (false) {
 //                                Item newSubtask = templ.copyMeInto(new Item(false), Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK, 0);
-                                    Item newSubtask = selectedTemplate.copyMeInto(new Item(false), Item.CopyMode.COPY_TO_COPY_PASTE, 0);
-                                    itemListOrItemOrg.addToList(newSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
-                                } else {
-                                    Item templateCopy = selectedTemplate.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE);
-                                    if (itemListOrItemOrg instanceof Item && ((Item) itemListOrItemOrg).isDueDateInheritanceOn() && ((Item) itemListOrItemOrg).getDueDate().getTime() != 0) {
-                                        templateCopy.updateRelativeDates(((Item) itemListOrItemOrg).getDueDate());
-                                    } else { //UI: for ItemLists, Categories, Items w/o inherited due date, offer user to pick a date
-                                        Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //default due date
-                                        String optionalText = "";
-                                        if (selectedTemplates.size() > 1) {
-                                            optionalText = "Template \"" + templateCopy.getText() + "\" ";
+                                        Item newSubtask = selectedTemplate.copyMeInto(new Item(false), Item.CopyMode.COPY_TO_COPY_PASTE, 0);
+                                        itemListOrItemOrg.addToList(newSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+                                    } else {
+                                        Item templateCopy = selectedTemplate.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE);
+                                        if (itemListOrItemOrg instanceof Item && ((Item) itemListOrItemOrg).isDueDateInheritanceOn() && ((Item) itemListOrItemOrg).getDueDate().getTime() != 0) {
+                                            templateCopy.updateRelativeDates(((Item) itemListOrItemOrg).getDueDate());
+                                        } else { //UI: for ItemLists, Categories, Items w/o inherited due date, offer user to pick a date
+                                            Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //default due date
+                                            String optionalText = "";
+                                            if (selectedTemplates.size() > 1) {
+                                                optionalText = "Template \"" + templateCopy.getText() + "\" ";
+                                            }
+                                            newDueDate = showDialogSetDueDateN(newDueDate, optionalText);
+                                            if (newDueDate != null && newDueDate.getTime() != 0) {
+                                                templateCopy.setDueDate(newDueDate); //if new date entered, save it!
+                                                templateCopy.updateRelativeDates(newDueDate);
+                                            }
                                         }
-                                        newDueDate = showDialogSetDueDateN(newDueDate, optionalText);
-                                        if (newDueDate != null && newDueDate.getTime() != 0) {
-                                            templateCopy.setDueDate(newDueDate); //if new date entered, save it!
-                                            templateCopy.updateRelativeDates(newDueDate);
-                                        }
-                                    }
-                                    itemListOrItemOrg.addToList(templateCopy); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+                                        itemListOrItemOrg.addToList(templateCopy); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
 //                                    DAO.getInstance().saveNew(templateCopy); //save new subtasks (will be deleted again if Cancel
-                                    DAO.getInstance().saveToParseNow(templateCopy); //save new subtasks (will be deleted again if Cancel
-                                }
+                                        DAO.getInstance().saveToParseNow(templateCopy); //save new subtasks (will be deleted again if Cancel
+                                    }
 //                                DAO.getInstance().saveNew(newSubtask); //save new subtasks (will be deleted again if Cancel
-                            }
+                                }
 //                            DAO.getInstance().saveNew(newTemplateCopies, false);
 //                            DAO.getInstance().saveNew(newTemplateCopies);
 //                            DAO.getInstance().saveNew((ParseObject) itemListOrItemOrg);
 //                            DAO.getInstance().saveNewTriggerUpdate();
-                        }, (obj) -> {
-                            if (obj instanceof Item) {
-                                return ((Item) obj).getText(); //label to show for each pickable element, only Items allowed as templates
-                            } else {
-                                return obj.toString();
-                            }
-                        }, 0, maxTemplatesToSelect, true, false, false).show(); //0: Ok to not select any template => nothing inserted
+                            }, (obj) -> {
+                                if (obj instanceof Item) {
+                                    return ((Item) obj).getText(); //label to show for each pickable element, only Items allowed as templates
+                                } else {
+                                    return obj.toString();
+                                }
+                            }, 0, maxTemplatesToSelect, true, false, false).show(); //0: Ok to not select any template => nothing inserted
+                        } else {
+                            new ScreenObjectPicker2(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), Icons.iconMainTemplates, null,
+                                    selectedTemplates, ScreenListOfItems.this, () -> {
+                                        for (Item selectedTemplate : (List<Item>) selectedTemplates) { //UI: can select multiple templates to insert at once
+                                            Item templateCopy = selectedTemplate.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE);
+                                            if (itemListOrItemOrg instanceof Item && ((Item) itemListOrItemOrg).isDueDateInheritanceOn() && ((Item) itemListOrItemOrg).getDueDate().getTime() != 0) {
+                                                templateCopy.updateRelativeDates(((Item) itemListOrItemOrg).getDueDate());
+                                            } else { //UI: for ItemLists, Categories, Items w/o inherited due date, offer user to pick a date
+                                                Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //default due date
+                                                String optionalText = "";
+                                                if (selectedTemplates.size() > 1) {
+                                                    optionalText = "Template \"" + templateCopy.getText() + "\" ";
+                                                }
+                                                newDueDate = showDialogSetDueDateN(newDueDate, optionalText);
+                                                if (newDueDate != null && newDueDate.getTime() != 0) {
+                                                    templateCopy.setDueDate(newDueDate); //if new date entered, save it!
+                                                    templateCopy.updateRelativeDates(newDueDate);
+                                                }
+                                            }
+                                            itemListOrItemOrg.addToList(templateCopy); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+                                            DAO.getInstance().saveToParseNow(templateCopy); //save new subtasks (will be deleted again if Cancel
+                                        }
+                                    }, (obj) -> {
+                                        if (obj instanceof Item) {
+                                            return ((Item) obj).getText();
+                                        } else {
+                                            return obj.toString();
+                                        }
+                                    }, 0, 1, true, false, false).show(); //0: Ok to not select any template => nothing inserted
+                        }
                     };
                 }, "CreateFromTemplate"));
             }
@@ -2834,7 +2871,8 @@ public class ScreenListOfItems extends MyForm {
             }
         }
         //
-        if (!item.isTemplate() && ((actualTotal != 0 || MyPrefs.itemListShowActualEvenIfZero.getBoolean())
+        if (!item.isTemplate()
+                && ((actualTotal != 0 || MyPrefs.itemListShowActualEvenIfZero.getBoolean())
                 && (isDone || MyPrefs.itemListShowActualIfNonZeroEvenIfNotDone.getBoolean()))) {
             actualEffortLabel = new Label(MyDate.formatDurationShort(actualTotal, true).toString());
 //                actualEffortLabel.setMaterialIcon(Icons.iconActualEffort);

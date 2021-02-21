@@ -155,7 +155,7 @@ public class MyCacheMapHash {
                     + ", OLD= \"" + ItemAndListCommonInterface.toIdString(oldVal) + "\", NEW= \"" + ItemAndListCommonInterface.toIdString(value) + "\"");
 //            ASSERT.that(oldVal == null || oldVal == value, 
 //                    () -> "Cache key already points to a different object. Key=" + key ); //NB avoid object.toString since may create infinite loop
-            if (oldVal == null || oldVal != value) { //during testing, ignore overwrite which may be due to the debugger's use of toString which calls eg getListFull()
+            if (true || oldVal == null || oldVal != value) { //during testing, ignore overwrite which may be due to the debugger's use of toString which calls eg getListFull()-????
                 Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
                 memoryCache.put(key, value);
             } else {

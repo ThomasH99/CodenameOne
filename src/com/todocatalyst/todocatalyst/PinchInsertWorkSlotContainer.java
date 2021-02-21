@@ -204,6 +204,7 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
 //        if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(workSlotListOwner, null, newWorkSlot.getStartTimeD(), newWorkSlot.getDurationInMillis())) {
         if (ScreenWorkSlot.checkWorkSlotIsValidForSaving(refWorkSlotN.getOwner(), null, newWorkSlot.getStartTimeD(), newWorkSlot.getDurationInMillis())) {
             textEntryField.setText(""); //clear text, YES, necessary to avoid duplicate insertion when closing a previously open container
+            newWorkSlot.setEditedDateToNow();
             return newWorkSlot;
         } else {
             return null;

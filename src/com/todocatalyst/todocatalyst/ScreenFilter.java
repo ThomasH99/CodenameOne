@@ -33,7 +33,6 @@ public class ScreenFilter extends MyForm {
     //TODO: add support to sorting based on ROI "Value per hour"
 
 //    private static String SCREEN_TITLE = "Which tasks to show";
-    private static String SCREEN_TITLE = "Edit Filter/Sort"; //"Sort and Filter";
     FilterSortDef filterSortDef;
     private ItemAndListCommonInterface filterOwner;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -65,7 +64,11 @@ public class ScreenFilter extends MyForm {
 //</editor-fold>
 
     ScreenFilter(FilterSortDef filterSortDef, MyForm previousForm, ItemAndListCommonInterface filterOwner, Runnable updateActionOnDone) {
-        super(SCREEN_TITLE, previousForm, updateActionOnDone);
+        this(filterSortDef, previousForm, filterOwner, updateActionOnDone, null);
+    }
+
+    ScreenFilter(FilterSortDef filterSortDef, MyForm previousForm, ItemAndListCommonInterface filterOwner, Runnable updateActionOnDone, String helpText) {
+        super(ScreenType.FILTER, previousForm, updateActionOnDone);
         this.filterSortDef = filterSortDef;
         this.filterOwner = filterOwner;
 //        FilterPredicate filterPredicate, MyHashMap filterHashMap, 
@@ -230,17 +233,14 @@ public class ScreenFilter extends MyForm {
 //</editor-fold>
             filterSortDef.setSortFieldId(filterSortDef.getSortFields()[i]);
         });
-        
-        
-MyOnOffSwitch customFilterOnOff = new MyOnOffSwitch(parseIdMap2, () -> {
+
+        MyOnOffSwitch customFilterOnOff = new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isSortDescending();
         }, (b) -> {/*button value used directly*/
             filterSortDef.setSortDescending(b);
         });
         Component manualFilterCont = layoutSetting("Custom filter", customFilterOnOff, "**");
-        
-        
-        
+
         Component sortOnOffCont = layoutSetting("Sort", sortPicker, "**");
         Component sortReversed = layoutSetting("Reverse sort order", inverseOrder, "**");
 
@@ -345,29 +345,28 @@ MyOnOffSwitch customFilterOnOff = new MyOnOffSwitch(parseIdMap2, () -> {
 //        content.add(new SpanLabel("Show only certain types of tasks"));
         content.add(makeSpacerThin());
         //Starred
-         content.add(layoutSetting(Format.f("Show only {0} tasks",Item.STARRED), new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting(Format.f("Show only {0} tasks", Item.STARRED), new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowInterruptTasksOnly();
                 }, (b) -> {
                     filterSortDef.setShowInterruptTasksOnly(b);
                 }), "**"));
-         
 
         //Estimates all/with/without
 //        content.add(new SpanLabel("With estimates")).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutSetting(Format.f("Show only tasks without {0}",Item.EFFORT_ESTIMATE), new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutSetting(Format.f("Show only tasks without {0}", Item.EFFORT_ESTIMATE), new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowWithoutEstimatesOnly();
         }, (b) -> {
             filterSortDef.setShowWithoutEstimatesOnly(b);
         }), "**"));
-        
-        content.add(layoutSetting(Format.f("Show only tasks with {0}",Item.EFFORT_ACTUAL), new MyOnOffSwitch(parseIdMap2, () -> {
+
+        content.add(layoutSetting(Format.f("Show only tasks with {0}", Item.EFFORT_ACTUAL), new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowWithActualsOnly();
         }, (b) -> {
             filterSortDef.setShowWithActualsOnly(b);
         }), "**"));
-        
-        content.add(layoutSetting(Format.f("Show only tasks with {0}",Item.EFFORT_REMAINING), new MyOnOffSwitch(parseIdMap2, () -> {
+
+        content.add(layoutSetting(Format.f("Show only tasks with {0}", Item.EFFORT_REMAINING), new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowWithRemainingOnly();
         }, (b) -> {
             filterSortDef.setShowWithRemainingOnly(b);
@@ -387,10 +386,9 @@ MyOnOffSwitch customFilterOnOff = new MyOnOffSwitch(parseIdMap2, () -> {
 //                }, (b) -> {
 //                        filterSortDef.showProjectsOnly = b;
 //                }));
-
 //Interrupt tasks
 //       content.add(new SpanLabel("Interrupt tasks")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
-        content.add(layoutSetting(Format.f("Show only {0} tasks",Item.INTERRUPT_OR_INSTANT_TASK), new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting(Format.f("Show only {0} tasks", Item.INTERRUPT_OR_INSTANT_TASK), new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowInterruptTasksOnly();
                 }, (b) -> {
@@ -404,7 +402,6 @@ MyOnOffSwitch customFilterOnOff = new MyOnOffSwitch(parseIdMap2, () -> {
 //        }, (b) -> {
 //            filterSortDef.setShowWithActualsOnly(b);
 //        }), "**"));
-
         //Depending on tasks
 //        content.add(new SpanLabel("Tasks depending on other tasks")).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
         if (false) {

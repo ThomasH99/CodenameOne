@@ -31,16 +31,16 @@ public enum ItemStatus {
     
 //String[] descriptionList = new String[]{CREATED.description, ONGOING.getDescription(), WAITING.getDescription(), DONE.getDescription(), CANCELLED.getDescription()};
     final static String[] descriptionList = new String[]{values()[0].fullDescription, values()[1].fullDescription, values()[2].fullDescription, values()[3].fullDescription, values()[4].fullDescription};
-    final static String[] nameList = new String[]{values()[0].description, values()[1].description, values()[2].description, values()[3].description, values()[4].description};
+    final static String[] nameList = new String[]{values()[0].visibleName, values()[1].visibleName, values()[2].visibleName, values()[3].visibleName, values()[4].visibleName};
     final static int[] descriptionValues = new int[]{values()[0].ordinal(), values()[1].ordinal(), values()[2].ordinal(), values()[3].ordinal(), values()[4].ordinal()};
 //    static String iconStyle;
 //     static Image[] icons = new Image[]{Icons.iconCheckboxCreated, Icons.iconCheckboxOngoing, Icons.iconCheckboxWaiting, Icons.iconCheckboxDone, Icons.iconCheckboxCancelled};
 
-    private final String description;
+    private final String visibleName;
     final String fullDescription;
 
     ItemStatus(String name, String description) {
-        this.description = name;
+        this.visibleName = name;
         this.fullDescription = description;
     }
 
@@ -49,7 +49,7 @@ public enum ItemStatus {
 //    }
 
     public String getName() {
-        return description;
+        return visibleName;
     }
 
     public String getDescription() {
