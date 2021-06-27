@@ -17,6 +17,7 @@ import com.codename1.ui.Toolbar;
 //import com.codename1.ui.*;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import java.util.Arrays;
 import java.util.Date;
@@ -41,7 +42,7 @@ public class ScreenRepeatRule extends MyForm {
     /**
      * shorthand for the container holding all the fields
      */
-    private Container motherContainer;
+//    private Container container;
     private Container repeatRuleDetailsContainerXXX;
 //    MyDate defaultRepeatFromDate;
     private boolean allowEditingStartDateXXX;
@@ -365,14 +366,18 @@ public class ScreenRepeatRule extends MyForm {
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleInstancesOverview", "Show all instances", Icons.iconRepeatOverview, (e) -> {
             new ScreenRepeatRuleInstancesOverview(repeatRuleEdited, ScreenRepeatRule.this, () -> {
-                if(false)refreshAfterEdit();
+                if (false) {
+                    refreshAfterEdit();
+                }
             }).show();
         }
         ));
 
         toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleSettings", "Settings", Icons.iconSettings, (e) -> {
             new ScreenSettingsRepeatRules(ScreenRepeatRule.this, () -> {
-                if(false)refreshAfterEdit();
+                if (false) {
+                    refreshAfterEdit();
+                }
             }).show();
         }
         ));
@@ -423,9 +428,14 @@ public class ScreenRepeatRule extends MyForm {
 //        if (!initialized) {
         parseIdMap2.parseIdMapReset();
 
-        setLayout(BoxLayout.y());
-        setScrollableY(true);
-        motherContainer = getContentPane();
+//        container = new Container();//getContentPane();
+//        container.setLayout(BoxLayout.y());
+//        container.setScrollableY(true);
+        makeContainerBoxY();
+//        setLayout(BoxLayout.y());
+//        setScrollableY(true);
+//        motherContainer = getContentPane();
+//        getContentPane().addComponent(BorderLayout.CENTER, container);
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (repeatRuleEdited != null && repeatRuleEdited.getListOfUndoneInstances().size() > 0) {
@@ -608,7 +618,7 @@ public class ScreenRepeatRule extends MyForm {
 //        intervalField_1_NN_TextFieldCont = layoutN(RepeatRuleParseObject.REPEAT_RULE_FREQUENCY, intervalField_1_NN_TextField,
 //                RepeatRuleParseObject.REPEAT_RULE_FREQUENCY_HELP);
         intervalField_1_NN_TextFieldCont = BoxLayout.encloseY(layoutN(RepeatRuleParseObject.REPEAT_RULE_FREQUENCY, intervalField_1_NN_TextField,
-                RepeatRuleParseObject.REPEAT_RULE_FREQUENCY_HELP),makeSpacerThin());
+                RepeatRuleParseObject.REPEAT_RULE_FREQUENCY_HELP), makeSpacerThin());
 
         //Set up all fields with default selected valued
         //DAYS IN WEEK: MONDAY[ ] TUESDAY[ ]...
@@ -627,7 +637,7 @@ public class ScreenRepeatRule extends MyForm {
 //                repeatRuleEdited.getDaysInWeekAsVector(), -1);
 //        daysInWeek_MonSun_FieldCont = layoutN(RepeatRuleParseObject.REPEAT_RULE_DAYS_IN_WEEK, (MyToggleButton) daysInWeek_MonSun_Field,
 //        daysInWeek_MonSun_FieldCont = BoxLayout.encloseY(makeSpacerThin(), layoutN(RepeatRuleParseObject.REPEAT_RULE_DAYS_IN_WEEK, daysInWeek_MonSun_Field,
-        daysInWeek_MonSun_FieldCont = BoxLayout.encloseY( layoutN(RepeatRuleParseObject.REPEAT_RULE_DAYS_IN_WEEK, daysInWeek_MonSun_Field,
+        daysInWeek_MonSun_FieldCont = BoxLayout.encloseY(layoutN(RepeatRuleParseObject.REPEAT_RULE_DAYS_IN_WEEK, daysInWeek_MonSun_Field,
                 RepeatRuleParseObject.REPEAT_RULE_DAYS_IN_WEEK_HELP));
 //        daysInWeekField = new MyComponentGroup(MyDate.getShortWeekDayNamesMondayFirst(), RepeatRuleParseObject.getDayInWeekNumbers(), myRepeatRule.getDaysInWeekAsVector(), true);
 //        daysInWeek_MonSun_Field.setContainer(new Container(new GridLayout(7)));
@@ -733,7 +743,7 @@ public class ScreenRepeatRule extends MyForm {
         monthlyRepeatType_DayWeekdaysWeeks_SelectionBox = new MyComponentGroup(
                 new Object[]{MONTHLY_OPTION_DAY, MONTHLY_OPTION_WEEKDAYS, MONTHLY_OPTION_WEEK_NB}, new String[]{"Day", "Week days", "Week in month"}, false);
 //        monthlyRepeatType_DayWeekdaysWeeks_SelectionBoxCont = BoxLayout.encloseY(makeSpacerThin(), layoutN(RepeatRuleParseObject.REPEAT_RULE_MONTHLY_TYPE, monthlyRepeatType_DayWeekdaysWeeks_SelectionBox,
-        monthlyRepeatType_DayWeekdaysWeeks_SelectionBoxCont =  layoutN(RepeatRuleParseObject.REPEAT_RULE_MONTHLY_TYPE, monthlyRepeatType_DayWeekdaysWeeks_SelectionBox,
+        monthlyRepeatType_DayWeekdaysWeeks_SelectionBoxCont = layoutN(RepeatRuleParseObject.REPEAT_RULE_MONTHLY_TYPE, monthlyRepeatType_DayWeekdaysWeeks_SelectionBox,
                 RepeatRuleParseObject.REPEAT_RULE_MONTHLY_TYPE_HELP);
 
         //show dayInMonth if either field is defined, or if weekInMonth is not defined (covers both initial state and once defined)
@@ -976,36 +986,36 @@ public class ScreenRepeatRule extends MyForm {
     }
 
     private void fieldsAdd() {
-        motherContainer.removeAll();
+        container.removeAll();
 
         if (repeatRuleDetailsContainerXXX != null) {
-            motherContainer.addComponent(repeatRuleDetailsContainerXXX); //may be null if new rule
+            container.addComponent(repeatRuleDetailsContainerXXX); //may be null if new rule
         }
 //        motherContainer.addComponent(repeatFromDueOrCompletedFieldContainer);
         if (oldMode) {
-            motherContainer.addComponent(repeatFrom_NoneCompletedDue_Field);
+            container.addComponent(repeatFrom_NoneCompletedDue_Field);
         } else {
-            motherContainer.addComponent(repeatFrom_NoneCompletedDue_FieldCont);
+            container.addComponent(repeatFrom_NoneCompletedDue_FieldCont);
         }
 //        if (repeatFromDueOrCompletedField.getSelectedValue() == 1) //"due date
 //        {
         if (false && repeatStartDatePickerXXX != null) { //false: hide for now, shouldn't be needed anymore
-            motherContainer.addComponent(repeatStartDatePickerXXX);
+            container.addComponent(repeatStartDatePickerXXX);
         }
         if (repeatStartDateLabel != null) {
-            motherContainer.addComponent(repeatStartDateLabel);
+            container.addComponent(repeatStartDateLabel);
         }
         //Label("Create next repeat on specific dates" / "Repeat on a specific date" / 
 //        motherContainer.addComponent(onCompletionDatedRepeats);
-        motherContainer.addComponent(onCompletionDatedRepeatsCont);
+        container.addComponent(onCompletionDatedRepeatsCont);
 //        }
 
         //FREQUENCY: DAILY/MONTHLY BASIS
-        motherContainer.addComponent(frequency_DailyWeekMonthYearly_FieldCont);
+        container.addComponent(frequency_DailyWeekMonthYearly_FieldCont);
 
         //EVERY 1,2,3,.. DAYS/WEEKS/MONTHS/YEARS
 //        motherContainer.addComponent(intervalField); //TODO make interval show a list, e.g. every 2 weeks, every 3 weeks, or every month, every 2 months, ...
-        motherContainer.addComponent(intervalField_1_NN_TextFieldCont); //TODO make interval show a list, e.g. every 2 weeks, every 3 weeks, or every month, every 2 months, ...
+        container.addComponent(intervalField_1_NN_TextFieldCont); //TODO make interval show a list, e.g. every 2 weeks, every 3 weeks, or every month, every 2 months, ...
 
         //ADAPT rest according to type
 //        switch (myRepeatRule.getFrequency()) {
@@ -1014,35 +1024,35 @@ public class ScreenRepeatRule extends MyForm {
 //                RepeatRuleParseObject.getFreqText(frequency, false, false, true), 1, false, true);
 //         ** 
 //        motherContainer.addComponent(daysInWeekField);
-        motherContainer.addComponent(yearlyChoice_DayMonths_ComboCont);
+        container.addComponent(yearlyChoice_DayMonths_ComboCont);
 
         //Select day of year
-        motherContainer.addComponent(dayInYear_1_365_FieldCont);
+        container.addComponent(dayInYear_1_365_FieldCont);
 
-        motherContainer.addComponent(monthsInYear_JanDec_FieldCont);
+        container.addComponent(monthsInYear_JanDec_FieldCont);
 
         //Select yearly repeat on a monthly basis
 //        addMonthlyFieldsToContainer(motherContainer, myRepeatRule, true);
-        addMonthlyFieldsToContainer(motherContainer);//, myRepeatRule, false);
+        addMonthlyFieldsToContainer(container);//, myRepeatRule, false);
 
-        motherContainer.addComponent(repeatHowLong_ForeverUntilNumber_ChoiceComboCont);
+        container.addComponent(repeatHowLong_ForeverUntilNumber_ChoiceComboCont);
         //{"Repeat forever", "Repeat until", "Number of repeats"}
-        motherContainer.addComponent(repeatEndDateEditButtonCont);
-        motherContainer.addComponent(repeatHowManyTimesFieldCont);
+        container.addComponent(repeatEndDateEditButtonCont);
+        container.addComponent(repeatHowManyTimesFieldCont);
 
         //if Repeat from DUE DATE then add option to choose how many future instances to create (if repeat from Completed date, not ossible to create future instances with right date)
 //        motherContainer.addComponent(showHowManyContainer);
 //Show how many REPEAT INSTANCED
-        motherContainer.addComponent(showNumberFutureRepeatsCont);
+        container.addComponent(showNumberFutureRepeatsCont);
 //Show how many DAYS AHEAD
         if (false) {
-            motherContainer.addComponent(showNumberDaysAheadZZZ);
+            container.addComponent(showNumberDaysAheadZZZ);
         }
 
         if (false && Config.TEST && MyPrefs.repeatShowInternalDataInRepeatScreen.getBoolean()) {
-            motherContainer.addComponent(showDatesButton);
+            container.addComponent(showDatesButton);
 
-            motherContainer.addComponent(internalData);
+            container.addComponent(internalData);
         }
 
         if (false) {
@@ -1430,7 +1440,7 @@ public class ScreenRepeatRule extends MyForm {
                     && onCompletionDatedRepeatsSwitch.isOn())) {
 
 //            if (repeatFrom_NoneCompletedDue_Field != null) {
-                if (true||repeatFrom_NoneCompletedDue_Field.getSelectedAsInt() == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE) { //test not needed, done above
+                if (true || repeatFrom_NoneCompletedDue_Field.getSelectedAsInt() == RepeatRuleParseObject.REPEAT_TYPE_FROM_DUE_DATE) { //test not needed, done above
 //                        || repeatFrom_NoneCompletedDue_Field.getSelectedValue() == RepeatRuleParseObject.REPEAT_TYPE_FROM_SPECIFIED_DATE) {
 //                    if (showHowManyChoice.getSelectedIndex() == 0) //{"coming tasks", "days ahead"}
 //                    if (showHowMany_InstancesDaysAhead_Combo.getSelectedIndex() == SHOW_HOW_MANY_AHEAD_INSTANCES) { //{"coming tasks", "days ahead"}

@@ -5,6 +5,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.util.regex.RE;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -198,5 +199,80 @@ public final class PasswordGenerator {
         }
 //        return new String(password);
         return prefix != null ? prefix + password : password;
+    }
+
+    //make them static to only initialize once for the whole app
+    private static RE priority = new RE("[p|P][19]"); //eg "p1", "P9" but not "P0"
+
+    /**
+     * https://www.javacodeexamples.com/check-password-strength-in-java-example/668
+     *
+     * @param password
+     * @return
+     */
+    static int calculatePasswordStrength(String password) {
+
+        //total score of password
+        int iPasswordScore = 0;
+
+//        if (password.length() < 8) {
+        if (password.length() < 6) {
+            iPasswordScore = 0;
+        } else if (password.length() >= 10) {
+            iPasswordScore += 2;
+        } else {
+            iPasswordScore += 1;
+        }
+
+        //if it contains one digit, add 2 to total score
+        RE regExp = new RE("(?=.*[0-9]).*");
+//                if( password.matches("(?=.*[0-9]).*") )
+        if (regExp.match(password)) {
+            iPasswordScore += 2;
+        }
+
+        //if it contains one lower case letter, add 2 to total score
+        regExp = new RE("(?=.*[a-z]).*");
+//        if( password.matches("(?=.*[a-z]).*") )
+        if (regExp.match(password)) {
+            iPasswordScore += 2;
+        }
+
+        //if it contains one upper case letter, add 2 to total score
+        regExp = new RE("(?=.*[A-Z]).*");
+//        if( password.matches("(?=.*[A-Z]).*") )
+        if (regExp.match(password)) {
+            iPasswordScore += 2;
+        }
+
+        //if it contains one special character, add 2 to total score
+        regExp = new RE("(?=.*[~!@#$%^&*()_-]).*");
+//        if( password.matches("(?=.*[~!@#$%^&*()_-]).*") )
+        if (regExp.match(password)) {
+            iPasswordScore += 2;
+        }
+
+        return iPasswordScore;
+    }
+
+    static int calculatePasswordLevel(String password) {
+        int strength = calculatePasswordStrength(password);
+        if (strength > 8) {
+            return 2;
+        } else if (strength > 4) {
+            return 1;
+        } else {
+            return 0;
+        }
+    }
+    static String calculatePassword(String password) {
+        int strength = calculatePasswordStrength(password);
+        if (strength > 8) {
+            return "High"; //9+
+        } else if (strength > 4) {
+            return "Med"; //5-8
+        } else {
+            return "Low"; //0-4
+        }
     }
 }

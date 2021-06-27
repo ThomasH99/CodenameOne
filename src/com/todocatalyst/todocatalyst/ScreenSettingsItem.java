@@ -38,38 +38,38 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
     protected void buildContentPane(Container content) {
 //        cont.setScrollableY(true);
 //        addSettingInt(content, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 60, 1);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes); //TODO!!!! below setting to depend on this one
-        addSettingInt(content, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 120, 1);
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes)); //TODO!!!! below setting to depend on this one
+        content.add(makeEditIntSetting( parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 120, 1));
 
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemEditEnableSwipeBetweenTabs);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddToBeginningOfComment);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.hideIconsInEditTaskScreen);
-        addSettingInt(content, parseIdMap2, MyPrefs.itemDueDateDefaultDaysAheadInTime, 0, 31, 1);
-        addSettingTimeInMinutes(content, parseIdMap2, MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes);
-
-        content.add(makeSpacer());
-        addSettingBoolean(content, parseIdMap2, MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.askToEnterActualIfMarkingTaskWaitingOutsideTimer);
-        content.add(makeSpacer());
-        addSettingBoolean(content, parseIdMap2, MyPrefs.showTemplateListAfterCreatingNewTemplateFromExistingProject);
-
-        addSettingInt(content, parseIdMap2, MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation, 0, 10, 1);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress);
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.itemEditEnableSwipeBetweenTabs));
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.commentsAddToBeginningOfComment));
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.hideIconsInEditTaskScreen));
+        content.add(makeEditIntSetting( parseIdMap2, MyPrefs.itemDueDateDefaultDaysAheadInTime, 0, 31, 1));
+        content.add(makeEditTimeInMinutesSetting( parseIdMap2, MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes));
 
         content.add(makeSpacer());
-        Component inheritChallenge = settingBoolean(parseIdMap2, MyPrefs.itemInheritOwnerProjectChallenge);
-        Component inheritStarred = settingBoolean(parseIdMap2, MyPrefs.itemInheritOwnerProjectStarred);
-        Component inheritPriority = settingBoolean(parseIdMap2, MyPrefs.itemInheritOwnerProjectPriority);
-        Component inheritDreadFun = settingBoolean(parseIdMap2, MyPrefs.itemInheritOwnerProjectDreadFun);
-        Component inheritImportance = settingBoolean(parseIdMap2, MyPrefs.itemInheritOwnerProjectImportance);
-        Component inheritUrgency = settingBoolean(parseIdMap2, MyPrefs.itemInheritOwnerProjectUrgency);
-        Component inheritDueDate = settingBoolean(parseIdMap2, MyPrefs.itemInheritOwnerProjectDueDate);
-        Component inheritStartBy = settingBoolean(parseIdMap2, MyPrefs.itemInheritOwnerProjectStartByDate);
-        Component inheritWaitingTill = settingBoolean(parseIdMap2, MyPrefs.itemInheritOwnerProjectWaitUntilDate);
-        Component inheritDoneSubtasksInherit = settingBoolean(parseIdMap2, MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues);
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer));
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.askToEnterActualIfMarkingTaskWaitingOutsideTimer));
+        content.add(makeSpacer());
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.showTemplateListAfterCreatingNewTemplateFromExistingProject));
 
-        content.add(settingBoolean(parseIdMap2, MyPrefs.itemInheritOwnerProjectProperties, true,
+        content.add(makeEditIntSetting( parseIdMap2, MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation, 0, 10, 1));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress));
+
+        content.add(makeSpacer());
+        Component inheritChallenge = makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectChallenge);
+        Component inheritStarred = makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectStarred);
+        Component inheritPriority = makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectPriority);
+        Component inheritDreadFun = makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectDreadFun);
+        Component inheritImportance = makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectImportance);
+        Component inheritUrgency = makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectUrgency);
+        Component inheritDueDate = makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectDueDate);
+        Component inheritStartBy = makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectStartByDate);
+        Component inheritWaitingTill = makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectWaitUntilDate);
+        Component inheritDoneSubtasksInherit = makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues);
+
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectProperties, true,
                 inheritStarred, inheritPriority, inheritImportance, inheritUrgency, inheritChallenge, inheritDreadFun, 
                 inheritDueDate, inheritStartBy, inheritWaitingTill, inheritDoneSubtasksInherit        ));
         content.addAll(
@@ -85,21 +85,21 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
                 inheritDoneSubtasksInherit);
         //TODO!!! only show below settings when MyPrefs.itemInheritOwnerProjectProperties is true or just set true
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectChallenge);
-        if (false) {
-            content.add(settingBoolean(parseIdMap2, MyPrefs.itemInheritOwnerProjectChallenge));
-            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectStarred);
-            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectPriority);
-            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectDreadFun);
-            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectImportance);
-            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectUrgency);
-            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectDueDate);
-            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectStartByDate);
-            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectWaitUntilDate);
-            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues);
-        }
+//        if (false) {
+//            content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectChallenge));
+//            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectStarred);
+//            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectPriority);
+//            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectDreadFun);
+//            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectImportance);
+//            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectUrgency);
+//            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectDueDate);
+//            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectStartByDate);
+//            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritOwnerProjectWaitUntilDate);
+//            addSettingBoolean(content, parseIdMap2, MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues);
+//        }
 
         content.add(makeSpacer());
-        addSettingBoolean(content, parseIdMap2, MyPrefs.testPickersOnDevice);
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.testPickersOnDevice));
 
     }
 }

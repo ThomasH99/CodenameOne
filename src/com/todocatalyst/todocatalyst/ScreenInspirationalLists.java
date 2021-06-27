@@ -54,8 +54,9 @@ public class ScreenInspirationalLists extends MyForm {
         super(SCREEN_TITLE, mainScreen, () -> {
         });
 //        this.previousForm = mainScreen;
-        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
-        setScrollableY(true);
+//        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+//        setScrollableY(true);
+        makeContainerBoxY();
         addCommandsToToolbar();
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
@@ -63,8 +64,10 @@ public class ScreenInspirationalLists extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        getContentPane().removeAll();
-        buildContentPane(getContentPane());
+//        getContentPane().removeAll();
+        container.removeAll();
+//        buildContentPane(getContentPane());
+        buildContentPane(container);
 //        restoreKeepPos();
         super.refreshAfterEdit();
     }

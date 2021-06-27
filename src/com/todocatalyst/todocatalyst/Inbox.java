@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import static com.todocatalyst.todocatalyst.ItemList.PARSE_ITEMS;
+import static com.todocatalyst.todocatalyst.MyForm.ScreenType.INBOX;
 
 /**
  * stores the (manually sorted) list of categories defined by the user. Updated
@@ -44,6 +45,11 @@ public class Inbox extends ItemList {
 //            INSTANCE.inboxItemList = DAO.getInstance().getInbox();
         }
         return INSTANCE;
+    }
+    
+    @Override
+    public Character getItemListIcon() {
+        return INBOX.getIcon();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -108,7 +108,7 @@ public class MySearchCommand extends CommandTracked {
 //                        contentPane.add(BorderLayout.NORTH, searchCont);
 //                    }
 //                }
-                MyForm.addToNorthOfContentPane(myForm.getContentPane(), searchCont);
+                MyForm.addToNorthOfContentPane(myForm.getContentPane(), searchCont,1);
             };
         }
 //        setUIID("SearchIcon");

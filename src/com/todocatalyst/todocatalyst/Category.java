@@ -1041,12 +1041,13 @@ public class Category<E extends ItemAndListCommonInterface> extends ItemList imp
      * @param deleteDate
      */
     @Override
-    public void deletePrepare(Date deleteDate) {
+    public void onDelete(Date deleteDate) {
         
 //        List<ParseObject> modified = new ArrayList();
 
         //if a timer was active for this itemList, then remove that (and update any timed item even though it may get soft-deleted below)
-        TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
+//        TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
+        fireDeletedEvent();
 
         //remove category from all items referring to it
         List<Item> items = getListFull();

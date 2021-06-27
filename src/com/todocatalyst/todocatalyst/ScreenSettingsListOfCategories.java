@@ -35,12 +35,12 @@ public class ScreenSettingsListOfCategories extends ScreenSettingsCommon {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
 //        cont.setScrollableY(true);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowNumberUndoneTasks);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowTotalNumberOfLeafTasks);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowNumberDoneTasks);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowRemainingEstimate);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowTotalTime);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.listOfCategoriesShowWorkTime);
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.listOfCategoriesShowNumberUndoneTasks));
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.listOfCategoriesShowTotalNumberOfLeafTasks));
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.listOfCategoriesShowNumberDoneTasks));
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.listOfCategoriesShowRemainingEstimate));
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.listOfCategoriesShowTotalTime));
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.listOfCategoriesShowWorkTime));
 
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropLeftDropZoneWidth, 0, 30, 1);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropRightDropZoneWidth, 0, 30, 1);

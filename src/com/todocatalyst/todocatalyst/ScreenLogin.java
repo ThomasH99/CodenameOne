@@ -9,10 +9,13 @@ import com.codename1.messaging.Message;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
+import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
+import com.codename1.ui.Label;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
+import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.validation.Constraint;
 import com.codename1.ui.validation.RegexConstraint;
@@ -57,29 +60,52 @@ public class ScreenLogin extends MyForm {
 //    private final static String welcome2 = "For demanding users who need the features no other todo apps offer. See how new tasks impacts your deadlines or commitments. Be efficient.";
 //    private final static String welcome3 = "Master priorities. Master time. \nTime-saving features like templates, copy-paste, multiple selections, ...";
 //    private final static String welcome4 = "Time-saving features like templates, copy-paste, multiple selections, ...";
+    private final String FORGOT_PASSWORD = "Forgot password";
     TextField email;
 
     TextField password;
     private boolean test;
 
-    public ScreenLogin() {
-        //TODO change login screen to show 2 text/ad screens, swipe them left to get to login fields (like ?? app)
-        super("Login", null, () -> {
-        });
-//        AdMobManager ad;
-//        NTextField n;
-    }
-
     public ScreenLogin(MyForm previousForm, boolean forTesting) {
         //TODO change login screen to show 2 text/ad screens, swipe them left to get to login fields (like ?? app)
-        super("Login", previousForm, () -> {
+//        super("Login", previousForm, () -> {
+//        super("Welcome to TodoCatalyst", previousForm, () -> {
+//        super("Get started with TodoCatalyst", previousForm, () -> {
+        super("Get started", previousForm, () -> {
         });
         test = forTesting;
+//         setTitle("Welcome to TodoCatalyst");
+//        setLayout(BoxLayout.y());
+        getContentPane().setLayout(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
+//        makeContainerBoxY();
+//        setScrollableY(false);
+//        container = new Container(BoxLayout.y());
+//        container.setScrollableY(true);
+//        getContentPane().addComponent(BorderLayout.SOUTH, container);
+//Container buttonContainer = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
+//        buttonContainer.setScrollableY(true);
+//        getContentPane().addComponent(BorderLayout.CENTER, container);
+
+        if (test) {
+            addStandardBackCommand();
+        }
+//        setupLoginScreen(container);
+//        setupLoginScreen(container);
+        setupLoginScreen();
 //        AdMobManager ad;
 //        NTextField n;
     }
 
-    private void startUp(boolean refreshDataInBackground) {
+    public ScreenLogin() {
+        //TODO change login screen to show 2 text/ad screens, swipe them left to get to login fields (like ?? app)
+//        this("Login", null, () -> {
+//        });
+        this(null, false);
+//        AdMobManager ad;
+//        NTextField n;
+    }
+
+    private void startUpXXX(boolean refreshDataInBackground) {
         EasyThread thread = EasyThread.start("cacheUpdate");
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (true) {
@@ -140,14 +166,12 @@ public class ScreenLogin extends MyForm {
 //            }
 //</editor-fold>
         new ScreenMain(this).show(); //if pb with Timer relaunch, go to main screen instead
-
     }
 
-    public void go() {
-        go(false);
-    }
-
-    public void go(boolean forceLaunchForTest) {
+//    public void go() {
+//        go(false);
+//    }
+    public static boolean isAlreadyLoggedIn(boolean forceLaunchForTest) {
         //Check if already logged in, if so, removeFromCache cache
         //if not logged in, show window to create account or log in
 //        ParseUser parseUser = getLastUserSessionFromStorage();
@@ -156,20 +180,21 @@ public class ScreenLogin extends MyForm {
 
         if (!forceLaunchForTest && parseUser != null) { //already logged in
             setDefaultACL(parseUser); //TODO needed??
-            if (false) {
-                int count = -1;
-                ParseQuery<ParseObject> query = ParseQuery.getQuery(Item.CLASS_NAME);
-                try {
-                    count = query.count();
-                } catch (ParseException ex) {
-                    Log.e(ex);
-                }
-                Log.p("Count of Item in Parse = " + count, Log.DEBUG);
-            }
+            return true;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (false) {
+//                int count = -1;
+//                ParseQuery<ParseObject> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//                try {
+//                    count = query.count();
+//                } catch (ParseException ex) {
+//                    Log.e(ex);
+//                }
+//                Log.p("Count of Item in Parse = " + count, Log.DEBUG);
+//            }
 
 //            startUp(true);
-            startUp(MyPrefs.reloadChangedDataInBackground.getBoolean()); //for now, deactivate
-//<editor-fold defaultstate="collapsed" desc="comment">
+//            startUp(MyPrefs.reloadChangedDataInBackground.getBoolean()); //for now, deactivate
 //            //            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
 //            EasyThread thread = EasyThread.start("cacheUpdate");
 ////            if (true) {
@@ -217,21 +242,113 @@ public class ScreenLogin extends MyForm {
 ////                }
 ////            }
 //            new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+//        } else {
+////            setupLoginScreen();
+//////                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+//////            new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+////            show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+//        }
 //</editor-fold>
-
-        } else {
-            setupLoginScreen();
-//                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
-//            new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
-            show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
         }
+        return false;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public static void go(boolean forceLaunchForTest) {
+//        //Check if already logged in, if so, removeFromCache cache
+//        //if not logged in, show window to create account or log in
+////        ParseUser parseUser = getLastUserSessionFromStorage();
+////        Log.p("ParseUser=" + (parseUser == null ? "null" : parseUser));
+//        ParseUser parseUser = ParseUser.getCurrent();
+//
+//        if (!forceLaunchForTest && parseUser != null) { //already logged in
+//            setDefaultACL(parseUser); //TODO needed??
+//            if (false) {
+//                int count = -1;
+//                ParseQuery<ParseObject> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//                try {
+//                    count = query.count();
+//                } catch (ParseException ex) {
+//                    Log.e(ex);
+//                }
+//                Log.p("Count of Item in Parse = " + count, Log.DEBUG);
+//            }
+//
+////            startUp(true);
+//            startUp(MyPrefs.reloadChangedDataInBackground.getBoolean()); //for now, deactivate
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            //            DAO.getInstance().cacheLoadDataChangedOnServerAndInitIfNecessary(false);
+////            EasyThread thread = EasyThread.start("cacheUpdate");
+//////            if (true) {
+//////                thread.run(() -> {
+//////                    DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+//////                });
+//////            } else {
+//////                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+//////            }
+////            boolean refreshDataInBackground = true;
+////            if (refreshDataInBackground) {
+////                thread.run((success) -> {
+////                    if (DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean())) { //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+////                        success.onSucess(null);
+////                    }
+////                    thread.kill();
+//////                success.onSucess(success); //CN1 Support: is there an error in CN1 for the run(r,t) call?!!!
+////                }, (notUsed) -> {
+////                    Display.getInstance().callSerially(() -> {
+//////                if (newDataLoaded) {
+////                        Form f = Display.getInstance().getCurrent();
+////                        //don't removeFromCache: ScreenLogin (only shown on startup), ScreenMain (no item data shown), ScreenItem (could overwrite manually edited values)
+////                        if (f instanceof MyForm && !(f instanceof ScreenLogin) && !(f instanceof ScreenMain) && !(f instanceof ScreenItem)) {
+////                            //TODO!!! show "Running" symbyl after like 2 seconds
+//////                    Display.getInstance().Log.p("refreshing Screen: "+((MyForm) f).getTitle());
+////                            ((MyForm) f).refreshAfterEdit();
+////                            Log.p("Screen " + getComponentForm().getTitle() + " refreshed after loading new data from network");
+////                        }
+//////                    thread.kill();
+//////                }
+////                    });
+////                });
+////            } else {
+////                DAO.getInstance().cacheLoadDataChangedOnServer(MyPrefs.cacheLoadChangedElementsOnAppStart.getBoolean()); //TODO optimization: run in background (in ScreenMain?!) and removeFromCache as data comes in
+////            }
+////            //ALARMS - initialize
+////            AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
+////
+////            //TIMER - was running when app was moved to background? - now done with ReplayCommand
+//////            if (!ScreenTimer.getInstance().isTimerActive()) {
+//////                new ScreenMain().show(); //go directly to main screen if user already has a session
+//////            } else {
+//////                if (!ScreenTimer.getInstance().relaunchTimerOnAppRestart()) {
+//////                    new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+//////                }
+//////            }
+////            new ScreenMain().show(); //if pb with Timer relaunch, go to main screen instead
+////</editor-fold>
+//
+//        } else {
+//            setupLoginScreen();
+////                new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+////            new ScreenLogin(theme).show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+//            show(); //TODO!!!: optimization: don't create the ScreenMain before launching login!
+//        }
+//    }
+//</editor-fold>
+//    private void setupLoginScreen(Container container) {
     private void setupLoginScreen() {
+
+        getContentPane().setLayout(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
+//        makeContainerBoxY();
+        container = new Container(BoxLayout.y());
+        container.setScrollableY(false);
+//        container.setScrollableY(true);
+        getContentPane().addComponent(BorderLayout.SOUTH, container);
+
         //TODO intro quiz: you tired of running into limitations in (miss features) in other ToDO apps, your tasks tend to pile up endlessly?, it is important for to be fully control/appear professional?
 //        super("Welcome to TodoCatalyst", BoxLayout.y());
-        setTitle("Welcome to TodoCatalyst");
-        setLayout(BoxLayout.y());
+//        setTitle("Welcome to TodoCatalyst");
+////        setLayout(BoxLayout.y());
+//        makeContainerBoxY();
         if (test) {
             addStandardBackCommand();
         }
@@ -251,6 +368,12 @@ public class ScreenLogin extends MyForm {
         }
 
         password = new TextField("", "Password", 20, TextArea.PASSWORD);
+        password.addDataChangedListener((type, index) -> {
+            String passWordStrength = PasswordGenerator.calculatePassword(password.getText());
+            password.setUIID("Password"+passWordStrength);
+            password.repaint();
+        });
+        password.setHidden(true); //hide by default
 //        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        TextComponentPassword password = new TextComponentPassword(); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        password.constraint(TextArea.PASSWORD);
@@ -265,45 +388,67 @@ public class ScreenLogin extends MyForm {
 //        b1.defineLandscapeSwap(BorderLayout.NORTH, BorderLayout.WEST);
         Button signUp = new Button("", "BigButton");
         Button createAccount = new Button("", "BigButton");
+//        Component createAccountWithRandomPassword = ScreenSettingsCommon.makeEditBoolean("Send a generated password to my email",
+        Component createAccountWithRandomPassword = ScreenSettingsCommon.makeEditBoolean("Auto-generate a password and send it to my email",
+                "", () -> password.isHidden(), (b) -> {
+                    password.setHidden(b);
+                    password.getComponentForm().animateHierarchy(300);
+                });
+        SpanLabel createAccountHelp = new SpanLabel("Sign up back up your tasks", "ButtonHelpText");
+        Button createAccountLater = new Button("", "BigButton");
+        SpanLabel createAccountLaterHelp = new SpanLabel("Start with a trial account and sign up later to start backing up your tasks", "ButtonHelpText");
         Button connect = new Button("", "BigButton");
-        Button login = new Button("", "BigButton");
+        Button login = new Button("", "Button");
+//        Button showHelp = new MyOnOffSwitch(null, e->MyPrefs.addCommentWhenRemaningIsSetToZeroWhenTaskBecomesProject);
         Button backToSignupSignIn = new Button("", "SmallButton");
 //        Button forgottenPassword = new Button();
         Button forgottenPassword = new Button("", "SmallButton"); //Forgot your password?
 
-        SpanLabel introText = new SpanLabel("This is TodoCatalyst. \nProbably the world's most useful Todo app. \nLet's get you started...\n");
-        introText.setTextBlockAlign(Component.CENTER);
+        if (false) {
+//            SpanLabel introText = new SpanLabel("This is TodoCatalyst. \nProbably the world's most useful Todo app. \nLet's get you started...\n");
+            SpanLabel introText = new SpanLabel("Get TodoCatalyst. \nThe most powerful Todo and time manager. \n");
+            introText.setTextBlockAlign(Component.CENTER);
 
-        addComponent(introText);
-
+            addComponent(introText);
+        }
 //        addComponent(backToSignupSignIn);
 
-        addComponent(signUp);
-        addComponent(email);
-        addComponent(password);
-        addComponent(connect);
-        addComponent(createAccount);
-        addComponent(login);
-        addComponent(forgottenPassword);
-        
-        addComponent(backToSignupSignIn);
+        container.addComponent(signUp);
+        container.addComponent(email);
+        container.addComponent(connect);
+        container.addComponent(createAccount);
+        container.addComponent(createAccountWithRandomPassword);
+        container.addComponent(password);
+        container.addComponent(createAccountHelp);
+        container.addComponent(createAccountLater);
+        container.addComponent(createAccountLaterHelp);
+        getContentPane().addComponent(BorderLayout.NORTH, BoxLayout.encloseXRight(login));
+        container.addComponent(forgottenPassword);
+
+        container.addComponent(backToSignupSignIn);
 
         //hide everything except the two first buttons to chose Signin or SIgnUp
         email.setHidden(true);
         password.setHidden(true);
         connect.setHidden(true);
         createAccount.setHidden(true);
+        createAccountWithRandomPassword.setHidden(true);
+        createAccountHelp.setHidden(true);
         forgottenPassword.setHidden(true);
         backToSignupSignIn.setHidden(true);
 
         backToSignupSignIn.setCommand(Command.createMaterial("Back", Icons.iconBackToPreviousScreen, (e2) -> {
             signUp.setHidden(false);
-            signUp.setUIID("BigButton");
+            createAccountLater.setHidden(false);
+            createAccountLaterHelp.setHidden(false);
+//            signUp.setUIID("BigButton");
             login.setHidden(false);
-            login.setUIID("BigButton");
-
+//            login.setUIID("BigButton");
+            login.setHidden(false);
             connect.setHidden(true);
             createAccount.setHidden(true);
+            createAccountWithRandomPassword.setHidden(true);
+            createAccountHelp.setHidden(true);
             email.setHidden(true);
             password.setHidden(true);
             backToSignupSignIn.setHidden(true);
@@ -312,13 +457,19 @@ public class ScreenLogin extends MyForm {
             animateLayout(ANIMATION_TIME_DEFAULT);
         }));
 
-        signUp.setCommand(Command.createMaterial("Sign me up", Icons.iconPersonNew, (e2) -> {
-//            signUp.setHidden(true);
-            signUp.setUIID("BigButtonTitle");
+        signUp.setCommand(Command.createMaterial("Sign up", Icons.iconPersonNew, (e2) -> {
+            signUp.setHidden(true);
+            createAccountLater.setHidden(true);
+            createAccountLaterHelp.setHidden(true);
+//            signUp.setUIID("BigButtonTitle");
             login.setHidden(true);
 
             connect.setHidden(true);
+
             createAccount.setHidden(false);
+            createAccountWithRandomPassword.setHidden(false);
+            createAccountHelp.setHidden(true);
+
             email.setHidden(false);
             password.setHidden(true);
             forgottenPassword.setHidden(true);
@@ -328,12 +479,16 @@ public class ScreenLogin extends MyForm {
             email.startEditingAsync();
         }));
 
-        login.setCommand(Command.createMaterial("Log me in", Icons.iconPerson, (ev) -> { //Start/login**
+        login.setCommand(Command.createMaterial("Log in", Icons.iconPerson, (ev) -> { //Start/login**
             signUp.setHidden(true);
-//            login.setHidden(true);
-            login.setUIID("BigButtonTitle");
+            login.setHidden(true);
+//            login.setUIID("BigButtonTitle");
 
             createAccount.setHidden(true);
+            createAccountWithRandomPassword.setHidden(true);
+            createAccountHelp.setHidden(true);
+            createAccountLater.setHidden(true);
+            createAccountLaterHelp.setHidden(true);
             connect.setHidden(false);
             email.setHidden(false);
             //TODO!!! cn1 support setEditOnShow(email); //startup editor in email field
@@ -341,10 +496,19 @@ public class ScreenLogin extends MyForm {
 
             forgottenPassword.setHidden(false);
             backToSignupSignIn.setHidden(false);
-            animateLayout(ANIMATION_TIME_DEFAULT);
-            email.startEditingAsync();
+            if (email.getText().isEmpty()) {
+                email.startEditingAsync();
+            } else {
+                //if email is already filled out (re-login) then jump to password field
+                password.startEditingAsync();
+            }
+            animateHierarchyFade(ANIMATION_TIME_DEFAULT, 0x88);
 //            ScreenLogin.this.getContentPane().animateLayout(300);
         }));
+
+        String selectYourPasswordText = "Set my password now"; // (instead of having a random password emailed to me)";
+        String selectYourPasswordHelp = "To make signing up easy, you can start with an automatically generated password that is mailed to you. "
+                + "You can always change it later";
 
         createAccount.setCommand(Command.createMaterial("Create my account", Icons.iconPersonNew, (e2) -> {
             String errorMsg;
@@ -352,6 +516,30 @@ public class ScreenLogin extends MyForm {
             if ((errorMsg = createAccount(cleanEmail)) == null) {
                 MyPrefs.setString(MyPrefs.loginEmail, cleanEmail); //store email for future use
                 MyPrefs.setBoolean(MyPrefs.loginStoreEmail, true); //store email for future use
+                DAO.getInstance().startUp(false);
+                new ScreenMain(this).show();
+            } else {
+                Dialog.show("", errorMsg, "OK", null);
+            }
+//            ScreenLogin.this.getContentPane().animateLayout(300);
+        }));
+
+        //"Use with non-assigned account" "Use with anonymous account" "Use with trial account"
+        String trialAccountMessage = "A trial account lets you get started without providing an email. "
+                + "If you decide to continue using TodoCatalyst, you can add your email later. "
+                + "Be aware that since the account is anonymous, you will not"
+                + "be able to log in on other devices and if you log out of TodoCatalyst on this device, your data will be lost.";
+//        createAccountLater.setCommand(Command.createMaterial("Sign up laterStart with trial account", Icons.iconPersonAnonymous, (e2) -> {
+//        createAccountLater.setCommand(Command.createMaterial("Sign up later", Icons.iconPersonAnonymous, (e2) -> {
+        createAccountLater.setCommand(Command.createMaterial("Use now, sign up later", Icons.iconPersonAnonymous, (e2) -> {
+            String errorMsg;
+            String temporaryRandomLogin = PasswordGenerator.getInstance().generate("Trial-", 10, true, true, false, false); //avoid punctuation during testing
+            String temporaryRandomPassword = PasswordGenerator.getInstance().generate("", 10, true, true, false, false);
+
+            if ((errorMsg = createAccount("", temporaryRandomLogin, temporaryRandomPassword)) == null) {
+//                MyPrefs.setString(MyPrefs.loginEmail, temporaryRandomLogin); //store email for future use
+//                MyPrefs.setBoolean(MyPrefs.loginStoreEmail, true); //store email for future use
+                DAO.getInstance().startUp(false);
                 new ScreenMain(this).show();
             } else {
                 Dialog.show("", errorMsg, "OK", null);
@@ -360,7 +548,7 @@ public class ScreenLogin extends MyForm {
         }));
 
 //        connect.setCommand(Command.create("Connect", Icons.iconPerson, (ev) -> { //Start/login**
-        connect.setCommand(Command.createMaterial("Log me in", Icons.iconPerson, (ev) -> { //Start/login**
+        connect.setCommand(Command.createMaterial("Log in", Icons.iconPerson, (ev) -> { //Start/login**
             String errorMsg;
             String cleanEmail = cleanEmail(email.getText());
             if ((errorMsg = loginUser(cleanEmail, null, password.getText())) == null) {
@@ -368,14 +556,17 @@ public class ScreenLogin extends MyForm {
                     MyPrefs.setString(MyPrefs.loginEmail, cleanEmail); //store email for future use
                     MyPrefs.setBoolean(MyPrefs.loginStoreEmail, true); //store email for future use
                 }
+                DAO.getInstance().startUp(false);
                 new ScreenMain(this).show();
             } else {
-                Dialog.show("", errorMsg, "OK", null);
+                Dialog.show("Log in unsuccesful", errorMsg, "OK", null);
+//                new Dialog("Log in unsuccesful", errorMsg, "OK", null);
             }
-            ScreenLogin.this.getContentPane().animateLayout(ANIMATION_TIME_DEFAULT);
+//            ScreenLogin.this.getContentPane().animateLayout(ANIMATION_TIME_DEFAULT);
+            container.animateLayout(ANIMATION_TIME_DEFAULT);
         }));
 
-        forgottenPassword.setCommand(Command.create("Forgot password", null, (ev) -> {
+        forgottenPassword.setCommand(Command.create(FORGOT_PASSWORD, null, (ev) -> {
             String cleanEmail = cleanEmail(email.getText());
             String errorMsg = validEmail(cleanEmail);
             if (errorMsg == null) {
@@ -617,7 +808,7 @@ public class ScreenLogin extends MyForm {
         Log.p("Setting default ACL for user");
     }
 
-    private String validEmail(String email) {
+    static String validEmail(String email) {
         Constraint checkEmail = RegexConstraint.validEmail();
         if (email == null || email.length() == 0 || !checkEmail.isValid(email)) {
 //            Dialog.show("", "Please enter your email to reset your password.", "OK", null);
@@ -628,7 +819,7 @@ public class ScreenLogin extends MyForm {
         return null;
     }
 
-    private String validPassword(String password) {
+    static String validPassword(String password) {
         if (password == null || password.length() == 0) {
 //            return "Password missing, please enter a password and try again";
             return "Password missing. Please enter your password or change it if you forgot it**";
@@ -722,47 +913,68 @@ public class ScreenLogin extends MyForm {
     /**
      * create account and sign in
      *
-     * @param validEmail
+     * @param emptyOrValidEmail
      * @param validUserId if empty, email is used
      * @param password if empty a temporary one is automatically generated
      * @return
      */
+    private String createAccount(String emptyOrValidEmail, String userName, String password) {
+        ASSERT.that(userName != null && !userName.isEmpty());
+        try {
+            ParseUser parseUser = ParseUser.create(userName, password);
+            if (Config.TEST_STORE_PASSWORD_FOR_USER) {
+                parseUser.put("visiblePassword", password); //will this save the password (or rather, will the below signUp()?)?
+            }
+            if (emptyOrValidEmail != null && !emptyOrValidEmail.isEmpty()) {
+                parseUser.setEmail(emptyOrValidEmail);
+            }
+//            setDefaultACL(parseUser); //NB cannot set ACL for user with a null id
+            parseUser.signUp(); //perform sign up / account creation
+            setDefaultACL(parseUser); //NB cannot set ACL for user with a null id
+            saveCurrentUserSessionToStorage();
+//            Message msg = new Message();
+            Display.getInstance().sendMessage(new String[]{emptyOrValidEmail}, "Your TodoCatalyst account login info (" + emptyOrValidEmail + ")",
+                    new Message("\n\nTodoCatalyst login/email: " + emptyOrValidEmail + "\n\nYour auto-generated password (please change in TodoCatalyst app): " + password));
+            //No cache/memory setup needed for new account
+            return null;
+        } catch (ParseException ex) {
+            Log.p("***account creation failed***");
+            Log.p(ex.getMessage());
+            Log.e(ex);
+            return returnErrorString(ex.getCode());
+        }
+    }
+
     private String createAccount(String validEmail) {
 
         String errorMsg = validEmail(validEmail);
         if (errorMsg != null) {
             return errorMsg;
         }
-        String password;
-        if (Config.TEST_STORE_PASSWORD_FOR_USER) {
-            password = PasswordGenerator.getInstance().generate("", 6, true, true, true, false); //avoid punctuation during testing
-        } else {
-            password = PasswordGenerator.getInstance().generate(12);
-        }
-        if (validEmail.equals("thomas.hjelm@email.com")) {
-            password = "ItsThomas";
-        }
-        try {
-            ParseUser parseUser = ParseUser.create(validEmail, password);
+        String password = PasswordGenerator.getInstance().generate(12);
+        if (Config.TEST) {
             if (Config.TEST_STORE_PASSWORD_FOR_USER) {
-                parseUser.put("visiblePassword", password); //will this save the password (or rather, will the below signUp()?)?
+                password = PasswordGenerator.getInstance().generate("", 6, true, true, true, false); //avoid punctuation during testing
             }
-            parseUser.setEmail(validEmail);
-//            setDefaultACL(parseUser); //NB cannot set ACL for user with a null id
-            parseUser.signUp(); //perform sign up / account creation
-            setDefaultACL(parseUser); //NB cannot set ACL for user with a null id
-            saveCurrentUserSessionToStorage();
-//            Message msg = new Message();
-            Display.getInstance().sendMessage(new String[]{validEmail}, "Your TodoCatalyst account login info (" + validEmail + ")",
-                    new Message("\n\nTodoCatalyst login/email: " + validEmail + "\n\nYour auto-generated password (please change in TodoCatalyst app): " + password));
-            //No cache/memory setup needed for new account
-            return null;
-        } catch (ParseException ex) {
-            Log.p("***login failed***");
-            Log.p(ex.getMessage());
-            Log.e(ex);
-            return returnErrorString(ex.getCode());
+            if (validEmail.equals("thomas.hjelm@email.com")) {
+                password = "ItsThomas";
+            }
         }
+
+        String result = createAccount(validEmail, validEmail, password);
+        return result;
+    }
+
+    private String createTempAccount() {
+        String randomUserName = PasswordGenerator.getInstance().generate("temp-", 6, true, false, true, false); //6=>35^ = 1 838 265 625
+        String password = PasswordGenerator.getInstance().generate(8);
+        if (Config.TEST) {
+            if (Config.TEST_STORE_PASSWORD_FOR_USER) {
+                password = PasswordGenerator.getInstance().generate("", 6, true, true, true, false); //avoid punctuation during testing
+            }
+        }
+        String result = createAccount(null, randomUserName, password);
+        return result;
     }
 
     /**
@@ -804,7 +1016,7 @@ public class ScreenLogin extends MyForm {
             parseUser.login();//perform sign up / account creation
 //            setDefaultACL(parseUser); //TODO shoudn't be necessary, only at creation?!
             saveCurrentUserSessionToStorage();
-            startUp(false); //load existing data in foreground
+//            startUp(false); //load existing data in foreground
             return null;
         } catch (ParseException ex) {
 //<editor-fold defaultstate="collapsed" desc="Process error message">
@@ -816,13 +1028,14 @@ public class ScreenLogin extends MyForm {
             switch (errCode) {
                 //http://parseplatform.org/Parse-SDK-dotNET/api/html/T_Parse_ParseException_ErrorCode.htm
                 case ParseException.OBJECT_NOT_FOUND: //<=> login failed == ObjectNotFound	101	Error code indicating the specified object doesn't exist.
-//                    errorMsg = "Your email or password are not correct. Please check and try again (or reset your password if you forgot it)";
-                    errorMsg = "Your email or password are not correct or do not correspond to an existing account. \nTry again. \n\nYou can reset your password if you forgot it.";
-                    break;
                 case ParseException.EMAIL_TAKEN:
-                    //            Dialog.show("ERROR", "Your email already exists (or other error)", "Try again", null);
-                    errorMsg = "An account already exists for this email. If it is yours, please log in. ";
+//                    errorMsg = "Your email or password are not correct. Please check and try again (or reset your password if you forgot it)";
+                    errorMsg = "Your email or password are not correct or do not correspond to an existing account. \n¶nPlease try again. \n\nIf you forgot your password, you can reset it using [" + FORGOT_PASSWORD + "] below.";
                     break;
+//                case ParseException.EMAIL_TAKEN:
+//                    //            Dialog.show("ERROR", "Your email already exists (or other error)", "Try again", null);
+//                    errorMsg = "An account already exists for this email. If it is yours, please log in. ";
+//                    break;
 //                case ParseException.ACCOUNT_ALREADY_LINKED:
                 //Error code indicating that an an account being linked is already linked to another user.
                 case ParseException.INVALID_EMAIL_ADDRESS:
@@ -857,61 +1070,91 @@ public class ScreenLogin extends MyForm {
         }
     }
 
-    public static String logoutCurrentUser() {
-        ParseUser currentUser = ParseUser.getCurrent();
-        if (currentUser != null) {
-            try {
-                currentUser.logout();
-                if (false) {
-                    getLastUserSessionFromStorage();
-                }
-                deleteLastUserSessionFromStorage();
-                return null;
-            } catch (ParseException ex) {
-                Log.e(ex);
-                int errCode = ex.getCode();
-                String errorMsg;
-                switch (errCode) {
-                    //http://parseplatform.org/Parse-SDK-dotNET/api/html/T_Parse_ParseException_ErrorCode.htm
-                    //pb with login email or 
-                    case ParseException.CLOUD_ERROR:
-                    case ParseException.CONNECTION_FAILED: // 100	Error code indicating the connection to the Parse servers failed.
-                        errorMsg = "Cannot connect to the TodoCatalyst server. Please check your network connection.";
-                        break;
-                    case ParseException.OBJECT_NOT_FOUND: //<=> login failed == ObjectNotFound	101	Error code indicating the specified object doesn't exist.
+//    private void test() {
+//        try {
+//            if (false) {
+//                ParseUser parseUser = ParseUser.getCurrent();
+//                parseUser.logout();
+//            }
+//            ScreenLogin.logoutCurrentUser();
+//            DAO.getInstance().clearAllCacheAndStorage(false);
+//            showPreviousScreen(false); //back to Main screen
+//            if (parentForm.parentForm != null) {
+//                if (!Config.TEST && parentForm.parentForm instanceof ScreenLogin) { //keep mail+password during testing
+//                    if (((ScreenLogin) parentForm.parentForm).email != null) {
+//                        ((ScreenLogin) parentForm.parentForm).email.setText("");
+//                    }
+//                    if (((ScreenLogin) parentForm.parentForm).password != null) {
+//                        ((ScreenLogin) parentForm.parentForm).password.setText("");
+//                    }
+//                }
+//                parentForm.showPreviousScreen(false); //back out to Login screen
+//            }
+//        } catch (ParseException ex) {
+//            Log.p(ex.getMessage());
+//            Log.e(ex);
+//        }
+//
+//    }
+    public static String parseExceptionToString(int errCode) {
+        String errorMsg;
+        switch (errCode) {
+            //http://parseplatform.org/Parse-SDK-dotNET/api/html/T_Parse_ParseException_ErrorCode.htm
+            //pb with login email or 
+            case ParseException.CLOUD_ERROR:
+            case ParseException.CONNECTION_FAILED: // 100	Error code indicating the connection to the Parse servers failed.
+                errorMsg = "Cannot connect to the TodoCatalyst server. Please check your network connection.";
+                break;
+            case ParseException.OBJECT_NOT_FOUND: //<=> login failed == ObjectNotFound	101	Error code indicating the specified object doesn't exist.
 //                    errorMsg = "Your email or password are not correct. Please check and try again (or reset your password if you forgot it)";
 //                    break;
-                    case ParseException.EMAIL_TAKEN:
-                    //            Dialog.show("ERROR", "Your email already exists (or other error)", "Try again", null);
+            case ParseException.EMAIL_TAKEN:
+            //            Dialog.show("ERROR", "Your email already exists (or other error)", "Try again", null);
 //                    errorMsg = "An account already exists for this email";
 //                    break;
 //                case ParseException.ACCOUNT_ALREADY_LINKED:
-                    //Error code indicating that an an account being linked is already linked to another user.
-                    case ParseException.INVALID_EMAIL_ADDRESS:
-                    //EIther the email used as or the randomly generated userId duplicated a previous one
+            //Error code indicating that an an account being linked is already linked to another user.
+            case ParseException.INVALID_EMAIL_ADDRESS:
+            //EIther the email used as or the randomly generated userId duplicated a previous one
 //                    errorMsg = "Something seems to be wrong with your email, please correct and try again";
 //                    break;
 //                case ParseException.USERNAME_MISSING: //UsernameMissing	200	Error code indicating that the username is missing or empty.
 //                case ParseException.PASSWORD_MISSING: //PasswordMissing	201	Error code indicating that the password is missing or empty.                    
-                    //internal error, code NNN, please try again (or rather auto-retry)
-                    //internal error, please provide your email to be notified when the problem is resolved, or tray again later (or automatically send me an email)
-                    case ParseException.PASSWORD_MISSING: // 	PasswordMissing	201	Error code indicating that the password is missing or empty.
-                    //shoulnd't happen since we check password before passing it
-                    case ParseException.USERNAME_TAKEN: // UsernameTaken	202	Error code indicating that the username has already been taken.
-                    case ParseException.MUST_CREATE_USER_THROUGH_SIGNUP: // 	MustCreateUserThroughSignup	207	Error code indicating that a user can only be created through signup.
-                    case ParseException.EXCEEDED_QUOTA: // ExceededQuota	140	Error code indicating that an application quota was exceeded. Upgrade to resolve.
+            //internal error, code NNN, please try again (or rather auto-retry)
+            //internal error, please provide your email to be notified when the problem is resolved, or tray again later (or automatically send me an email)
+            case ParseException.PASSWORD_MISSING: // 	PasswordMissing	201	Error code indicating that the password is missing or empty.
+            //shoulnd't happen since we check password before passing it
+            case ParseException.USERNAME_TAKEN: // UsernameTaken	202	Error code indicating that the username has already been taken.
+            case ParseException.MUST_CREATE_USER_THROUGH_SIGNUP: // 	MustCreateUserThroughSignup	207	Error code indicating that a user can only be created through signup.
+            case ParseException.EXCEEDED_QUOTA: // ExceededQuota	140	Error code indicating that an application quota was exceeded. Upgrade to resolve.
 //                case ParseException.INCORRECT_TYPE: // Error code indicating that a field was set to an inconsistent type.
-                    case ParseException.INTERNAL_SERVER_ERROR: // 	1	Error code indicating that something has gone wrong with the server. If you get this error code, it is Parse's fault. Please report the bug to https://parse.com/help.
+            case ParseException.INTERNAL_SERVER_ERROR: // 	1	Error code indicating that something has gone wrong with the server. If you get this error code, it is Parse's fault. Please report the bug to https://parse.com/help.
 //                case ParseException.NOT_INITIALIZED: // NotInitialized	109	You must call Parse.initialize before using the Parse library.
-                    case ParseException.OTHER_CAUSE: //OtherCause	-1	Error code indicating that an unknown error or an error unrelated to Parse occurred.
-                    default:
-                        errorMsg = "Unknown problem occurred, please contact TodoCatalyst Support and provide this number: \"" + errCode + "\" and your email";
-                        break;
-                }
-//            Dialog.show("ERROR", err, "OK", null);
-                return errorMsg;
+            case ParseException.OTHER_CAUSE: //OtherCause	-1	Error code indicating that an unknown error or an error unrelated to Parse occurred.
+            default:
+                errorMsg = "Unknown problem occurred, please contact TodoCatalyst Support and provide this number: \"" + errCode + "\" and your email";
+                break;
+        }
+        return errorMsg;
+    }
 
+    public static String logoutCurrentUser(boolean deleteAllData) {
+        ParseUser currentUser = ParseUser.getCurrent();
+        if (currentUser != null) {
+            try {
+                currentUser.logout();
+//                if (false) {
+//                    getLastUserSessionFromStorage();
+//                }
+//                deleteLastUserSessionFromStorage();
+            } catch (ParseException ex) {
+                Log.e(ex);
+                int errCode = ex.getCode();
+                String errorMsg = parseExceptionToString(errCode);
+                return errorMsg;
             }
+            DAO.getInstance().clearAllCacheAndStorage(false);
+            return null;
         } else {
             return "Unknown problem occurred, logout did not succeed (currentUser==null), please contact TodoCatalyst Support with error code 999**";
         }

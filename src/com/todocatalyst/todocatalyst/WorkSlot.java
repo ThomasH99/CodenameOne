@@ -42,8 +42,9 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     public final static String CLASS_NAME = "WorkSlot";
 
 //    public static int MINUTES_IN_MILLISECONDS = MyDate.MINUTE_IN_MILLISECONDS; //60 * 1000;
-    final static String WORKSLOT = "Workslot";
-    final static String WORKSLOTS = "Workslots";
+    final static String WORKSLOT = "Time block"; //Workslot";
+    final static String WORKSLOTS = "Time blocks"; //Workslots";
+    final static String OWNER = Item.OWNER;
     final static String DESCRIPTION = "Description";//"Name";
     final static String DESCRIPTION_HELP = Format.f("Optional description of the {0 workslot}", WORKSLOT);//"Name";
     final static String DESCRIPTION_HINT = Format.f("Optional {0 workslot} description", WORKSLOT);//"Optional description";//"Name";
@@ -2200,7 +2201,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public void deletePrepare(Date deletedDate) {
+    public void onDelete(Date deletedDate) {
 
         //DELETE IN OWNER
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2267,7 +2268,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public void updateBeforeSave() {
+    public void onSave() {
         if (opsAfterSubtaskUpdates != null) {
             while (!opsAfterSubtaskUpdates.isEmpty()) {
                 Runnable f = opsAfterSubtaskUpdates.remove(0); //ensures that each operation is only called once, even if iterating (the run() calls an operation which calls saveInBackground triggering 

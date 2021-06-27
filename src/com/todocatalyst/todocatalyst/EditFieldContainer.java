@@ -8,6 +8,7 @@ package com.todocatalyst.todocatalyst;
 //import com.codename1.components.OnOffSwitch;
 import com.codename1.components.SpanButton;
 import com.codename1.components.SpanLabel;
+import com.codename1.components.Switch;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
@@ -266,7 +267,7 @@ public class EditFieldContainer extends Container {
             ((SpanLabel) fieldN).setUIID("Container");
             ((SpanLabel) fieldN).getTextComponent().setRTL(true);
 //        } else if (fieldN instanceof ComponentGroup || fieldN instanceof MyToggleButton) {
-        } else {
+        } else if(!(fieldN instanceof Switch)){
 //                field.setUIID(showAsFieldUneditable ? "LabelFixed" : "LabelValue");
             fieldN.setUIID(showAsFieldUneditable ? "ScreenItemValueUneditable" : "ScreenItemEditableValue");
         }

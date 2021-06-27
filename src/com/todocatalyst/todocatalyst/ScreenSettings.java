@@ -5,8 +5,10 @@ import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
+import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
+import com.codename1.ui.FontImage;
 import com.codename1.ui.Label;
 import com.parse4cn1.ParseException;
 //import com.codename1.ui.*;
@@ -33,8 +35,8 @@ public class ScreenSettings extends ScreenSettingsCommon {
     //DONE support option to update email (and change login id since email is normally used)
     //DONE skip login screen when already logged in
 
-    public final static String SCREEN_TITLE = "Global Settings";
-    public final static String SCREEN_HELP = "Global Settings";
+    public final static String SCREEN_TITLE = "Settings";
+    public final static String SCREEN_HELP = "Settings";
 // protected static String FORM_UNIQUE_ID = "ScreenSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 //    MyForm mainScreen;
@@ -43,230 +45,79 @@ public class ScreenSettings extends ScreenSettingsCommon {
         });
         setUniqueFormId("ScreenSettings");
     }
+    
+    protected static Component layoutN(String fieldLabelTxt, Button editSetting, String help) { //normal edit field with [>]e
+        editSetting.setUIID("SettingMenu");
+        Button editFieldButton = new Button("",Icons.iconEdit,"IconEdit");
+//        Button editFieldButton = new Button("","IconEdit");
+        editFieldButton.setMaterialIcon(Icons.iconEdit);
+        Container cont = BorderLayout.centerEastWest(null, editFieldButton, editSetting);
+        cont.setUIID("SettingMenuField");
+        cont.setLeadComponent(editSetting);
+        return cont;
+    }
+    
 
     /**
      * This method shows the main user interface of the app
      *
+     * @param content
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
+    @Override
     protected void buildContentPane(Container content) {
 
-        if (false) {
-            content.add(new Button(Command.create("Reload theme**", null, (ev) -> {
-                Resources theme;
-                if (MyPrefs.themeNameWithoutBackslash.getString().length() > 0) {
-                    theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
-                }
-            })));
-        }
+        content.add(layoutN("", new Button(MyReplayCommand.createMaterial("Global Settings", Icons.iconSettings, (e) -> {
+            new ScreenGlobalSettings(this).show();
+        })), "**"));
 
-//        if (MyPrefs.loginIncognitoMode.getBoolean()) {
-//            content.add(layout("Account email", new SpanLabel(ParseUser.getCurrent().getEmail(), "Button"), true));
-//            ;
-//        }
-        addSettingBoolean(content, parseIdMap2, MyPrefs.keepScreenAlwaysOnInApp);
+        content.add(layoutN("", new Button(MyReplayCommand.create("Account settings", Icons.iconEditAccount, (e) -> {
+            new ScreenAccount(this).show();
+        })), "**"));
 
-        if (Display.getInstance().canForceOrientation()) {
-            addSettingBoolean(content, parseIdMap2, MyPrefs.screenEnableDisplayRotationAwayFromPortrait,
-                    //                    () -> Display.getInstance().lockOrientation(false));
-                    () -> Display.getInstance().unlockOrientation(),
-                    () -> Display.getInstance().lockOrientation(true));
-        }
-        //Safe area on/off
-        addSettingBoolean(content, parseIdMap2, MyPrefs.enableSafeArea,
-                () -> {
-                    parentForm.setSafeArea(true);
-                    parentForm.setSafeAreaChanged();
-                },
-                () -> {
-                    parentForm.setSafeArea(false);
-                    parentForm.setSafeAreaChanged();
-                });
+        content.add(layoutN("", new Button(MyReplayCommand.create("Today view settings", Icons.iconMainToday, (e) -> {
+            new ScreenSettingsToday(this, null).show();
+        })), "**"));
 
-        if (true) {
-            addSettingBoolean(content, parseIdMap2, MyPrefs.hideStatusBar, () -> showStatusBar(false), () -> showStatusBar(true));
-        }
+        content.add(layoutN("", new Button(MyReplayCommand.create("Tasks", Icons.iconMainAllTasksCust, Icons.myIconFont, (e) -> {
+            new ScreenSettingsItem(null, this, null).show();
+        })), "**"));
 
-        if (false) {
-            addSettingBoolean(content, parseIdMap2, MyPrefs.encryptTaskTextAndComments);
-        }
-        if (false) {
-            addSettingBoolean(content, parseIdMap2, MyPrefs.deleteLocalStorageIfRestartedQuickly);
-        }
-        addSettingInt(content, parseIdMap2, MyPrefs.deleteLocalStorageIfRestartedBeforeSeconds, 5, 5, 120);
+        content.add(layoutN("", new Button(MyReplayCommand.create("Task list settings", Icons.iconMainListsCust, Icons.myIconFont, (e) -> {
+            new ScreenSettingsListOfItems(this, null).show();
+        })), "**"));
 
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemRemoveTrailingPrecedingSpacesAndNewlines);
+        content.add(layoutN("", new Button(MyReplayCommand.create("List settings", Icons.iconMainListsCust, Icons.myIconFont, (e) -> {
+            new ScreenSettingsListOfItemLists(this, null).show();
+        })), "**"));
 
-        addSettingBoolean(content, parseIdMap2, MyPrefs.showSourceItemInEditScreens);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.pinchInsertEnabled);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.pinchInsertActivateEditing);
-        content.add(makeSpacer());
-        addSettingBoolean(content, parseIdMap2, MyPrefs.enableShowingSystemInfo);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.showObjectIdsInEditScreens);
-        content.add(makeSpacer());
-        if (Config.TEST_STORE_PASSWORD_FOR_USER) {
-            try {
-                ParseUser parseUser = ParseUser.fetchBySession(ParseUser.getCurrent().getSessionToken()); //fetch password
-            } catch (ParseException ex) {
-                Log.p("error retrieving parseuser, exception=" + ex);
-            }
-            content.add(BorderLayout.centerEastWest(null, new Label(ParseUser.getCurrent().getEmail()), new Label("Email")));
-            content.add(BorderLayout.centerEastWest(null, new Label((String) ParseUser.getCurrent().get("visiblePassword")), new Label("Password")));
-        }
-        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice, () -> AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled());
-//        addSettingInt(content, parseIdMap2, MyPrefs.alarmDefaultSnoozeTimeInMinutes, 0, 120, 1);
-//        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText);
-//        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddToBeginningOfComment);
-//        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime);
+        content.add(layoutN("", new Button(MyReplayCommand.create("Category settings", Icons.iconMainCategories, (e) -> {
+            new ScreenSettingsListOfCategories(this, null).show();
+        })), "**"));
 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        content.add(layout("Account email", new SpanLabel(ParseUser.getCurrent().getEmail(), "Button"), true));
-//
-        Button logoutButton = new Button(new Command("Log out") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                try {
-                    if (false) {
-                        ParseUser parseUser = ParseUser.getCurrent();
-                        parseUser.logout();
-                    }
-                    ScreenLogin.logoutCurrentUser();
-                    DAO.getInstance().clearAllCacheAndStorage(false);
-                    showPreviousScreen(false); //back to Main screen
-                    if (parentForm.parentForm != null) {
-                        if (!Config.TEST && parentForm.parentForm instanceof ScreenLogin) { //keep mail+password during testing
-                            if (((ScreenLogin) parentForm.parentForm).email != null) {
-                                ((ScreenLogin) parentForm.parentForm).email.setText("");
-                            }
-                            if (((ScreenLogin) parentForm.parentForm).password != null) {
-                                ((ScreenLogin) parentForm.parentForm).password.setText("");
-                            }
-                        }
-                        parentForm.showPreviousScreen(false); //back out to Login screen
-                    }
-                } catch (ParseException ex) {
-                    Log.p(ex.getMessage());
-                    Log.e(ex);
-                }
-            }
-        });
-        content.add(layoutN("Log out of your account (require you to log in next time you start)", logoutButton, ""));
+        content.add(layoutN("", new Button(MyReplayCommand.create("Reminder settings", Icons.iconMainAlarms, (e) -> {
+            new ScreenSettingsAlarms(this, null).show();
+        })), "**"));
 
-//
-//        if (!MyPrefs.loginIncognitoMode.getBoolean()) { //DON'T enable logging out in Incognito mode since that would lose the login
-//            content.add(layout("Log out from my account", logoutButton, "After you logout, you must enter your email and password to access your data again.", true));
-//
-//            Button remindPsWdButton = new Button(new Command("Reset password") {
-//                @Override
-//                public void actionPerformed(ActionEvent evt) {
-//                    try {
-//                        ParseUser.requestPasswordReset(ParseUser.getCurrent().getEmail()); //TODO read password - copy Amazon usability
-////                    ParseUser.getCurrent().logout(); //needed to explicitly log out?
-//                    } catch (ParseException ex) {
-//                        Log.e(ex);
-//                    }
-//                }
-//            });
-////        content.add(remindPsWdButton).add(new SpanLabel("You will receive an email with a link to reset your password. NB. This will log you out until you have entered a new password."));
-//            content.add(layout("Reset my password", remindPsWdButton, "You will receive an email with a link to reset your password. NB. This will log you out until you have entered a new password."));
-//        }
-//
-        if (true) { //TODO really necessary? Not if uninstalling, but maybe if starting from a fresh after playing with data??
-            Button deleteAllData = new Button(new Command("DELETE data") {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
-                    //TODO add WARNING: this will delete xx tasks, yy lists, zz categories as well as work time, finished tasks etc. Do NOT use this unless you have a backup of your data or really want to erase all your data in Sharper
-                    DAO.getInstance().deleteAllUserDataOnParseServerCannotBeUndone(false);
-//                    DAO.getInstance().resetAndDeleteAndReloadAllCachedData(); //NOT enough since it would leave all local data stored 
-                    DAO.getInstance().clearAllCacheAndStorage(false); //NB! will also delete the login token
-                    DAO.getInstance().resetAndDeleteAndReloadAllCachedData();
+        content.add(layoutN("", new Button(MyReplayCommand.create("Timer settings", Icons.iconLaunchTimer, (e) -> {
+            new ScreenSettingsTimer(this, null).show();
+        })), "**"));
 
-//                    ParseUser parseUser = ParseUser.getCurrent();
-//                    parseUser.delete();
-                }
-            });
-            content.add(layoutN("Delete ALL data (tasks etc) permanently", deleteAllData,
-                    "This will permanently delete all your data (tasks, lists, categories etc) from your account. The deleted data can NOT be restored in any way afterwards (there is .")); //TODO!!! show how many tasks etc, ask to enter email to confirm, add "I confirm I delete all my data and that they cannot be restored [v]"
-        }
-//
-        if (true) {
-            Button deleteMyAccountButton = new Button(new Command("DELETE my account") {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
-                    //TODO: "please type in your email address to confirm deleting all your data permanently"
-                    //clear cache //
-                    //delete user with user.delete() BUT data:
-//http://stackoverflow.com/questions/31351168/parse-com-delete-a-user-account-including-related-objects,
-//background task: http://stackoverflow.com/questions/28366161/parse-remove-user-and-its-related-records
-                    //TODO!!! ask "A few last words to help us understand why you delete your account?"
-                    DAO.getInstance().deleteAllUserDataOnParseServerCannotBeUndone(true);
-                    DAO.getInstance().clearAllCacheAndStorage(false); //will also delete the login token
-                    ParseUser parseUser = ParseUser.getCurrent();
-                    try {
-                        parseUser.logout();
-                    } catch (ParseException ex) {
-                        Log.p("error trying to logout user=" + parseUser.getUsername() + ", email=" + parseUser.getEmail());
-                    }
-                    new ScreenLogin().go();
-                }
-            });
-            content.add(layoutN("Delete my account and all my data permanently (all your data will be permanently deleted and CANNOT be recovered)", deleteMyAccountButton, "**"));
-        }
-//try {
-//    Resources theme = Resources.openLayered("/theme");
-//    UIManager.getInstance().setThemeProps(theme.getTheme(theme.getThemeResourceNames()[0]));
-//} catch(IOException e){
-//    e.printStackTrace();
-//}
-//                Resources resource = xx;
-//                String[] themeNames = resource.getResourceNames();
-//                UIManager.initNamedTheme(SCREEN_MAIN_NAME, SCREEN_MAIN_NAME)
-//                String log = Log.getLogContent();
-//                if (Dialog.show("Send log", log, "OK", "Cancel")) {
-//                    Log.sendLog();
-//                }
-//            }
-//        });
-//</editor-fold>
-        if (false) { //NO support for changing themes for now
-            if (false) {
-                content.add(new SpanLabel(MyPrefs.themeNameWithoutBackslash.helpText));
-            }
-//        addSettingBoolean(content, parseIdMap2, new SpanLabel(MyPrefs.themeNameWithoutBackslash.helpText));
-            Resources res = null;
-            try {
-                res = Resources.openLayered("/theme");
-            } catch (IOException ex) {
-                Log.e(ex);
-            }
-//    ; res.getResourceNames();
-            String[] files = res.getResourceNames();
-            ArrayList resFiles = new ArrayList();
-            for (String s : files) {
-                if (s.endsWith(".res")) {
-                    resFiles.add(s);
-                }
-            }
+        content.add(layoutN("", new Button(MyReplayCommand.create("Template settings", Icons.iconMainTemplates, (e) -> {
+            new ScreenSettingsTemplates(this, null).show();
+        })), "**"));
 
-            MyStringPicker resFilePicker = new MyStringPicker((String[]) resFiles.toArray(new String[]{}), MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
-            resFilePicker.addActionListener((e) -> {
-                String newTheme = resFilePicker.getSelectedString();
-                if (newTheme != null && !newTheme.equals("") && !newTheme.equals(MyPrefs.getString(MyPrefs.themeNameWithoutBackslash))) {
-                    MyPrefs.setString(MyPrefs.themeNameWithoutBackslash, newTheme);
-                    Resources theme = null;
-                    try {
-                        theme = Resources.openLayered("/" + newTheme);
-                    } catch (IOException ex) {
-                        Log.e(ex);
-                    }
-                    if (theme != null) {
-//                if (theme.getThemeResourceNames().length>1)
-                        Log.p("Themes in theme file \"" + newTheme + "\": " + theme.getThemeResourceNames());
-                        UIManager.getInstance().setThemeProps(theme.getTheme(theme.getThemeResourceNames()[0]));
-                    }
-                }
-            });
-        }
-//        return content;
+        content.add(layoutN("", new Button(MyReplayCommand.create("Repeat settings", Icons.iconRepeat, (e) -> {
+            new ScreenSettingsRepeatRules(this, null).show();
+        })), "**"));
+
+        content.add(layoutN("", new Button(MyReplayCommand.create(WorkSlot.WORKSLOT+" settings", Icons.iconMainWorkSlots, (e) -> {
+            new ScreenSettingsWorkSlot(this, null).show();
+        })), "**"));
+
+        content.add(layoutN("", new Button(MyReplayCommand.create("Help", Icons.iconHelp, (e) -> {
+            new ScreenGettingStarted(this, true).show();
+        })), "**"));
+
     }
 }

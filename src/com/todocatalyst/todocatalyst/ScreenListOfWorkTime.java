@@ -38,8 +38,9 @@ public class ScreenListOfWorkTime extends MyForm {
 //        this.workSlotList = workSLotList;
         this.owner = owner;
         addCommandsToToolbar(getToolbar());
-        setLayout(BoxLayout.y());
-        getContentPane().setScrollableY(true);
+//        setLayout(BoxLayout.y());
+//        getContentPane().setScrollableY(true);
+        makeContainerBoxY();
 //        String expandedObjectsFileName = getUniqueFormId() + owner.getObjectIdP();
 //        expandedObjects = new ExpandedObjects(expandedObjectsFileName); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         expandedObjects = new ExpandedObjects(getUniqueFormId(), (ParseObject) owner); //no persistance if filename and is empty (e.g. like with list of project subtasks)
@@ -59,10 +60,10 @@ public class ScreenListOfWorkTime extends MyForm {
         //CANCEL - not relevant, all edits are done immediately so not possible to cancel
     }
 
-    protected void buildContentPaneForWorkSlotList(WorkTimeSlices workTime) {
+    protected void buildContentPaneForWorkSlotList(Container container, WorkTimeSlices workTime) {
 //        Container cont =  new Container(BoxLayout.y());
-        Container cont = getContentPane();
-        cont.removeAll();
+//        Container container = getContentPane();
+        container.removeAll();
         if (workTime != null) {
             for (WorkSlotSlice workSlice : workTime.getWorkSlotSlices()) {
                 if (false && workSlice.getDurationInMillis() == 0) { //don't filter these since they are used for 
@@ -79,10 +80,10 @@ public class ScreenListOfWorkTime extends MyForm {
                 }
 //                    .add(new Label(MyDate.formatDateNew(workSlice.getStartTime())))
 //                    .add(new Label(MyDate.formatTimeDuration(workSlice.getDurationInMillis())));
-                cont.add(sliceCont);
+                container.add(sliceCont);
             }
         } else {
-            cont.add("No workslots**");
+            container.add("No workslots**");
         }
 //        return cont;
     }
@@ -91,7 +92,7 @@ public class ScreenListOfWorkTime extends MyForm {
     public void refreshAfterEdit() {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 //        ASSERT.that("Not supported yet.");
-        buildContentPaneForWorkSlotList(workTime);
+        buildContentPaneForWorkSlotList(container, workTime);
         super.refreshAfterEdit();
 
     }

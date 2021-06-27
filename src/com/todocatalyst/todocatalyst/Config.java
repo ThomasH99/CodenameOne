@@ -16,10 +16,11 @@ public abstract class Config {
      * app.
      */
     public static final boolean PRODUCTION_RELEASE = false; //if true will disable all error flags
+    
     public static final boolean PROD_LOG = true || PRODUCTION_RELEASE; //log to keep in production
     public static final boolean ENABLELOGGING = true && !PRODUCTION_RELEASE;
 
-    public static final boolean TEST = true && !PRODUCTION_RELEASE; //false;
+    public static boolean TEST = !MyPrefs.productionView.getBoolean() && !PRODUCTION_RELEASE; //false;
     
     public static final boolean FULLY_LOCAL_MODE = true && !PRODUCTION_RELEASE; //used without Internet connection so disable access to remote server (use local laptop) and Analytics
     public static final boolean PARSE_DB_OFFLINE = (false || FULLY_LOCAL_MODE) && !PRODUCTION_RELEASE; //used without Internet connection so disable access to remote server (use local laptop) and Analytics

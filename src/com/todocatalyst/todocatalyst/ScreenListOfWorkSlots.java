@@ -94,8 +94,8 @@ public class ScreenListOfWorkSlots extends MyForm {
             boolean showOwner, boolean enableAddWorkSlots) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super("Work time for " + nameOfOwner, previousForm, () -> updateItemListOnDone.update(workSlotList));
 //        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm,
-        super(MyForm.SCREEN_WORKSLOTS_TITLE + ((owner.getText() != null && owner.getText().length() > 0) ? " for " + owner.getText() : ""), 
-                previousForm, updateActionOnDone,MyForm.SCREEN_WORKSLOTS_HELP);
+        super(MyForm.SCREEN_WORKSLOTS_TITLE + ((owner.getText() != null && owner.getText().length() > 0) ? " for " + owner.getText() : ""),
+                previousForm, updateActionOnDone, MyForm.SCREEN_WORKSLOTS_HELP);
         setUniqueFormId("ScreenListOfWorkSlots");
 //                () -> {
 //                    if (updateItemListOnDone != null) {
@@ -122,10 +122,10 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        addCommandsToToolbar(getToolbar(), theme);
 //        setScrollable(false); //disable scrolling of form, necessary to let lists handle their own scrolling 
 //        getContentPane().setScrollableY(true);
-        if (!(getLayout() instanceof BorderLayout)) { //enable small timer?!
+        if (false && !(getLayout() instanceof BorderLayout)) { //enable small timer?!
             setLayout(new BorderLayout());
         }
-        getContentPane().setScrollableY(false);
+//        getContentPane().setScrollableY(false);
 //        expandedObjects = new ExpandedObjects(getUniqueFormId(), (ParseObject) owner); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         expandedObjects = new ExpandedObjects(owner.getObjectIdP()); //no persistance if filename and is empty (e.g. like with list of project subtasks)
         this.enableAddWorkSlots = enableAddWorkSlots;
@@ -332,12 +332,18 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        return buildWorkSlotContainer(workSlot, myForm, keepPos, expandItemsInWorkSlot, true);
 //    }
 //</editor-fold>
-    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos, boolean expandItemsInWorkSlot, boolean showOwner) {
-        return buildWorkSlotContainer(workSlot, myForm, keepPos, expandItemsInWorkSlot, showOwner, MyDate.currentTimeMillis());
+    protected static Container buildWorkSlotContainer(MyForm myForm, WorkSlot workSlot) {
+        return buildWorkSlotContainer(myForm, workSlot, false, true, MyDate.currentTimeMillis());
     }
 
-    protected static Container buildWorkSlotContainer(WorkSlot workSlot, MyForm myForm, KeepInSameScreenPosition keepPos,
-            boolean expandItemsInWorkSlot, boolean showOwner, long now) {
+    protected static Container buildWorkSlotContainer(MyForm myForm, WorkSlot workSlot, boolean expandItemsInWorkSlot, boolean showOwner) {
+        return buildWorkSlotContainer(myForm, workSlot, false, showOwner, MyDate.currentTimeMillis());
+    }
+
+//    protected static Container buildWorkSlotContainer(MyForm myForm,WorkSlot workSlot,  KeepInSameScreenPosition keepPosXXX,
+//            boolean expandItemsInWorkSlot, boolean showOwner, long now) {
+    protected static Container buildWorkSlotContainer(MyForm myForm, WorkSlot workSlot, boolean expandItemsInWorkSlot, boolean showOwner, long now) {
+        KeepInSameScreenPosition keepPos = myForm.keepPos;
         Container cont = new Container();
         MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(null, null, cont) {
             @Override
@@ -399,6 +405,7 @@ public class ScreenListOfWorkSlots extends MyForm {
         editWorkSlotButton.setCommand(editWorkSlot);
         editWorkSlot.setAnalyticsActionId("EditWorkSlotFromListOfWorkSlots");
         editWorkSlotButton.setUIID("ListOfItemsEditItemIcon");
+        editWorkSlotButton.setGap(0); //no minimum space after icon (set space in UIID)
 
 //        editItemButton.setUIID("Label");
         Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -636,21 +643,21 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        return cont;}
 //</editor-fold>
         if (workSlotListN != null && workSlotListN.size() > 0) {
-            MyTree2 myTree = new MyTree2(workSlotListN, expandedObjects, getPinchInsertContainer(), stickyHeaderGen) {//                    lastInsertNewElementContainer != null ? 
-                @Override
-                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
-                    Container cmp = null;
-                    if (node instanceof WorkSlot) {
-                        cmp = buildWorkSlotContainer((WorkSlot) node, ScreenListOfWorkSlots.this, null, false, showOwner, now);
-                        return cmp;
-                    } else if (node instanceof Item) {
-                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfWorkSlots.this, (Item) node, null, null);
-                    } else {
-                        assert false;
-                    }
-                    setIndent(cmp, depth);
-                    return cmp;
-                }
+            MyTree2 myTree = new MyTree2(this,workSlotListN, expandedObjects, getPinchInsertContainer(), stickyHeaderGen) {//                    lastInsertNewElementContainer != null ? 
+//                @Override
+//                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
+//                    Container cmp = null;
+//                    if (node instanceof WorkSlot) {
+//                        cmp = buildWorkSlotContainer((WorkSlot) node, ScreenListOfWorkSlots.this, null, false, showOwner, now);
+//                        return cmp;
+//                    } else if (node instanceof Item) {
+//                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfWorkSlots.this, (Item) node, null, null);
+//                    } else {
+//                        assert false;
+//                    }
+//                    setIndent(cmp, depth);
+//                    return cmp;
+//                }
             };
             return myTree;
         } else {

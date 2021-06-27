@@ -402,8 +402,9 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         Log.p("Time since last app start (call to init())= " + MyDate.formatDurationStd(timeSinceLastInit, true));
 
 //        if (MyPrefs.deleteLocalStorageIfRestartedQuickly.getBoolean()&&timeSinceLastInit < MyDate.MINUTE_IN_MILLISECONDS) {
-        if ((MyPrefs.deleteLocalStorageIfRestartedQuickly.getBoolean() || !Display.getInstance().isSimulator())
-                && timeSinceLastInit < MyPrefs.deleteLocalStorageIfRestartedBeforeSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS) {
+        if ((MyPrefs.deleteLocalStorageIfRestartedQuickly.getBoolean() && !Display.getInstance().isSimulator())
+                && timeSinceLastInit < MyPrefs.deleteLocalStorageIfRestartedBeforeSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS
+                && Dialog.show("", "You have restarted TodoCatalyst quickly which could mean you have trouble starting it. \n\nDo you want to refresh data from the server and restore local settings to initial values?", "Yes", "No")) {
 //            Log.p("Time since last restart less than " + MyDate.formatDuration(timeSinceLastInit,true) + " - deleting Replay");
             Log.p("Time since last restart less than " + MyDate.formatDuration(timeSinceLastInit, true));
             if (ReplayLog.getInstance().deleteReplayInfo()) {
@@ -463,9 +464,9 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                 throw new IllegalArgumentException("Unsupported class name: " + className);
             }
         });
+
         ParseRegistry.registerSubclass(Category.class, Category.CLASS_NAME);
 //        ParseRegistry.registerParseFactory(ParseObjectTask.CLASS_NAME, new Parse.IParseObjectFactory() {
-
         ParseRegistry.registerParseFactory(Category.CLASS_NAME, new Parse.IParseObjectFactory() {
 
             @Override
@@ -478,6 +479,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             }
         });
 
+        ParseRegistry.registerSubclass(WorkSlot.class, WorkSlot.CLASS_NAME);
         ParseRegistry.registerParseFactory(WorkSlot.CLASS_NAME, new Parse.IParseObjectFactory() {
 
             @Override
@@ -490,6 +492,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             }
         });
 
+        ParseRegistry.registerSubclass(CategoryList.class, CategoryList.CLASS_NAME);
         ParseRegistry.registerParseFactory(CategoryList.CLASS_NAME, new Parse.IParseObjectFactory() {
 
             @Override
@@ -502,6 +505,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             }
         });
 
+        ParseRegistry.registerSubclass(ItemListList.class, ItemListList.CLASS_NAME);
         ParseRegistry.registerParseFactory(ItemListList.CLASS_NAME, new Parse.IParseObjectFactory() {
 
             @Override
@@ -514,6 +518,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             }
         });
 
+        ParseRegistry.registerSubclass(TemplateList.class, TemplateList.CLASS_NAME);
         ParseRegistry.registerParseFactory(TemplateList.CLASS_NAME, new Parse.IParseObjectFactory() {
 
             @Override
@@ -526,6 +531,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             }
         });
 
+        ParseRegistry.registerSubclass(FilterSortDef.class, FilterSortDef.CLASS_NAME);
         ParseRegistry.registerParseFactory(FilterSortDef.CLASS_NAME, new Parse.IParseObjectFactory() {
 
             @Override
@@ -538,6 +544,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             }
         });
 
+        ParseRegistry.registerSubclass(RepeatRuleParseObject.class, RepeatRuleParseObject.CLASS_NAME);
         ParseRegistry.registerParseFactory(RepeatRuleParseObject.CLASS_NAME, new Parse.IParseObjectFactory() {
 
             @Override
@@ -550,13 +557,14 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             }
         });
 
-        ParseRegistry.registerParseFactory(TimerInstance.CLASS_NAME, new Parse.IParseObjectFactory() {
+        ParseRegistry.registerSubclass(TimerInstance2.class, TimerInstance2.CLASS_NAME);
+        ParseRegistry.registerParseFactory(TimerInstance2.CLASS_NAME, new Parse.IParseObjectFactory() {
 
             @Override
             public <T extends ParseObject> T create(String className) {
-                if (TimerInstance.CLASS_NAME.equals(className)) {
+                if (TimerInstance2.CLASS_NAME.equals(className)) {
 //                    return (T) new ParseObjectTask();
-                    return (T) new TimerInstance();
+                    return (T) new TimerInstance2();
                 }
                 throw new IllegalArgumentException("Unsupported class name: " + className);
             }
@@ -567,7 +575,14 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //        MyAnalyticsService.setAppsMode(true);
         //THEME
         if (MyPrefs.themeNameWithoutBackslash.getString().length() > 0) {
+//            try {
             theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
+//            theme = UIManager.getInstance().initNamedTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash),"");
+//                theme = Resources.openLayered("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
+//                 UIManager.getInstance().setThemeProps(theme.getTheme(theme.getThemeResourceNames()[0]));
+//            } catch (IOException ex) {
+//                Log.p( ex.getLocalizedMessage());
+//            }
         }
 //            theme = UIManager.initFirstTheme("/" + MyPrefs.getString(MyPrefs.themeNameWithoutBackslash));
 
@@ -843,8 +858,8 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //            Toolbar.setPermanentSideMenu(true); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
         Toolbar.setPermanentSideMenu(Display.getInstance().isTablet()); //https://www.codenameone.com/blog/permanent-sidemenu-getAllStyles-scrollbar-and-more.html
         Display.getInstance().setPureTouch(true);
-        
-        UIManager.getInstance().getLookAndFeel().setFadeScrollBar(false) ; //https://stackoverflow.com/questions/50223939/codename-one-fading-scrollbar
+
+        UIManager.getInstance().getLookAndFeel().setFadeScrollBar(false); //https://stackoverflow.com/questions/50223939/codename-one-fading-scrollbar
 
 //        Display d = Display.getInstance();
 //        Label supported = new Label();
@@ -978,9 +993,17 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             setDefaultACL(parseUser);
         }
 
-        Log.p("init() - DONE - go to login screen...");
+//        Log.p("init() - DONE - go to login screen...");
+        Log.p("init() - DONE - go to welcome screen...");
 
-        new ScreenLogin().go();
+//        new ScreenLogin().go();
+        if (ScreenLogin.isAlreadyLoggedIn(false)) {
+            DAO.getInstance().startUp(false);
+            new ScreenMain(null).show(); //if pb with Timer relaunch, go to main screen instead
+        } else {
+//            new ScreenWelcome(null, false).show();
+            new ScreenLogin(null, false).show();
+        }
     }
 
     //<editor-fold defaultstate="collapsed" desc="comment">

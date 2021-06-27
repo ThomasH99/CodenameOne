@@ -399,6 +399,9 @@ class MyComponentGroup extends ComponentGroup {
                         buttonsArray[i].setMaterialIcon(icons[i]);
                     }
                     buttonsArray[i].setTextPosition(Label.RIGHT);
+                    if (names == null) {
+                        buttonsArray[i].setGap(0); //avoid gap if no text
+                    }
                 }
                 buttonsArray[i].setUIID("RadioButton");
             } else {
@@ -417,6 +420,9 @@ class MyComponentGroup extends ComponentGroup {
                         radioButton.setMaterialIcon(icons[i]);
                     }
                     radioButton.setTextPosition(Label.RIGHT);
+                    if (names == null) {
+                        radioButton.setGap(0); //avoid gap if no text
+                    }
                 }
 
 //                radioButton.setToggle(true); //allow to de-select a selected button

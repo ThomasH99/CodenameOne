@@ -69,7 +69,7 @@ public class ScreenWorkSlot extends MyForm {
 //        this.previousValues = new SaveEditedValuesLocally(getUniqueFormId("-" + this.workSlot.getObjectIdP()));
 //        initLocalSaveOfEditedValues(getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
         String prevValId = this.workSlot.getObjectIdP() != null ? this.workSlot.getObjectIdP() : ("From-" + previousForm.getUniqueFormId());
-        addUpdateActionOnDone(() -> {
+        addDoneUpdateAction(() -> {
             if (this.workSlot.hasSaveableData()) {
                 if (workSlot.hasUserModifiedData()) {
                     workSlot.setEditedDateToNow();
@@ -81,8 +81,12 @@ public class ScreenWorkSlot extends MyForm {
 //        previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + this.workSlot.getObjectIdP());
         previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + prevValId);
 //        }
-        setLayout(BoxLayout.y());
-        getContentPane().setScrollableY(true);
+//        setLayout(BoxLayout.y());
+//        getContentPane().setScrollableY(true);
+//        container = new Container(BoxLayout.y());
+//        container.setScrollableY(true);
+        makeContainerBoxY();
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        ScreenItemP.previousForm = previousForm;
 //        this.previousForm = previousForm;
@@ -123,8 +127,10 @@ public class ScreenWorkSlot extends MyForm {
     @Override
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
-        getContentPane().removeAll();
-        buildContentPane(getContentPane());
+//        getContentPane().removeAll();
+        container.removeAll();
+//        buildContentPane(getContentPane());
+        buildContentPane(container);
 //        restoreKeepPos();
         super.refreshAfterEdit();
     }
@@ -342,30 +348,41 @@ public class ScreenWorkSlot extends MyForm {
 
                 List<ItemAndListCommonInterface> locallyEditedOwner = new ArrayList(Arrays.asList(workSlot.getOwner())); //fetch the actual owner 
 
-                ScreenObjectPicker ownerPicker;
+//                ScreenObjectPicker ownerPicker;
                 ScreenObjectPicker2 ownerPicker2;
                 {
                     List tempListOfItemListsInclInbox = new ArrayList();
                     tempListOfItemListsInclInbox.add(Inbox.getInstance()); //add Inox to start of list
                     tempListOfItemListsInclInbox.addAll(ItemListList.getInstance());
-                    ownerPicker2 = new ScreenObjectPicker2("Select " + Item.OWNER,
-                            new ScreenObjectPicker2.GetLists[]{() -> projects, () -> CategoryList.getInstance(), () -> tempListOfItemListsInclInbox,},
-                            new String[]{Item.PROJECT, Category.CATEGORY, ItemList.ITEM_LIST},
-                            new Character[]{Icons.iconMainProjectsCust, Icons.iconCategory, Icons.iconMainListsCust}, 
-                            new Font[]{Icons.myIconFont, null, Icons.myIconFont},
-                            locallyEditedOwner,
-                            ScreenWorkSlot.this,
-                            () -> {
-                                if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
-                                    ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
-                                    workSlot.setOwner(selectedOwner);
-                                } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
-                                    ASSERT.that(false, "should not be possible to not select an owner");
-                                }
-                                editOwnerButton.setText(workSlot.getOwner().getText());
-                            }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
-                }
+                    if (false) {
+                        ownerPicker2 = new ScreenObjectPicker2("Select " + WorkSlot.OWNER,
+                                new ScreenObjectPicker2.GetLists[]{() -> projects, () -> CategoryList.getInstance(), () -> tempListOfItemListsInclInbox,},
+                                new String[]{Item.PROJECT, Category.CATEGORY, ItemList.ITEM_LIST},
+                                new Character[]{Icons.iconMainProjectsCust, Icons.iconCategory, Icons.iconMainListsCust},
+                                new Font[]{Icons.myIconFont, null, Icons.myIconFont},
+                                locallyEditedOwner,
+                                ScreenWorkSlot.this,
+                                () -> {
+                                    if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
+                                        ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
+                                        workSlot.setOwner(selectedOwner);
+                                    } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
+                                        ASSERT.that(false, "should not be possible to not select an owner");
+                                    }
+                                    editOwnerButton.setText(workSlot.getOwner().getText());
+                                }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
                 ownerPicker2.show();
+                    }
+                     ScreenObjectPicker2.makePickPrjLstCat("Select " + WorkSlot.OWNER, true, locallyEditedOwner, ScreenWorkSlot.this, () -> {
+                        if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
+                            ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
+                            workSlot.setOwner(selectedOwner);
+                        } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
+                            ASSERT.that(false, "should not be possible to not select an owner");
+                        }
+                        editOwnerButton.setText(workSlot.getOwner().getText());
+                    }).show();
+                }
             }
             );
             editOwnerButton.setCommand(editOwnerCmd);

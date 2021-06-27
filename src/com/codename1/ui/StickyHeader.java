@@ -9,6 +9,7 @@ package com.codename1.ui;
 import com.codename1.ui.events.ScrollListener;
 import com.codename1.ui.geom.Rectangle;
 import com.codename1.ui.layouts.BorderLayout;
+import com.todocatalyst.todocatalyst.Config;
 import com.todocatalyst.todocatalyst.Icons;
 import com.todocatalyst.todocatalyst.MyForm;
 import java.util.ArrayList;
@@ -44,15 +45,35 @@ public class StickyHeader extends Button implements ScrollListener {
 
     private int previousPosition;
     private boolean hidden = false;
-//    private Button hideShowButton = new Button();
+    private boolean longPressShowsThisAndHidesOthers; //if true, longPress shows the current and hide the others
 
+//    private Button hideShowButton = new Button();
     private boolean needToCheck = false;
     private static String KEY_STICKY = "sticky";
     boolean longPress = false;
     private boolean DEACTIVATE_STICKYNESS = true;
 
+    public StickyHeader(String uiid) {
+        this();
+        setUIID(uiid);
+    }
+
+    public StickyHeader(String text, String uiid) {
+        this();
+        setText(text);
+        setUIID(uiid);
+    }
+
+    public StickyHeader(String text, String uiid, boolean longPressShowsThisAndHidesOthers) {
+        this(text, uiid);
+        setLongPressShowsAndHidesOthers(longPressShowsThisAndHidesOthers);
+    }
+
     public StickyHeader() {
         super();
+        if (Config.TEST) {
+            setName(getText());
+        }
         setTextPosition(LEFT);
         if (false) {
             setGrabsPointerEvents(true);  //prevent event to be send to component *below* stickyHeader (below glasspane)? 
@@ -63,12 +84,17 @@ public class StickyHeader extends Button implements ScrollListener {
             if (longPress) {
                 longPress = false;
             } else {
+//                if (longPressShowsThisAndHidesOthers) {
+//                    hidden = false;
+//                } else {
+//                    hidden = !hidden;
+//                }
                 hidden = !hidden;
 //            hideFollowingComponents(hidden);
                 Container parent = getParent();
-                int index = parent.getComponentIndex(this);
-                int count = parent.getComponentCount();
-                for (int i = index + 1; i < count; i++) {
+//                int index = parent.getComponentIndex(this);
+//                int count = parent.getComponentCount();
+                for (int i = parent.getComponentIndex(this) + 1, count = parent.getComponentCount(); i < count; i++) {
                     Component comp = parent.getComponentAt(i);
                     if (comp instanceof StickyHeader) {
                         break;
@@ -90,24 +116,67 @@ public class StickyHeader extends Button implements ScrollListener {
 //        hideShowButton.addLongPressListener((e) -> {
         addLongPressListener((e) -> {
             longPress = true;
-            if (hidden) {
-                for (Component comp : getParent().getChildrenAsList(true)) {
-                    if (comp instanceof StickyHeader) {
-                        ((StickyHeader) comp).hidden = false;
-//                        ((StickyHeader) comp).hideShowButton.setMaterialIcon(Icons.iconCollapseListStickyHeader);
-                        ((StickyHeader) comp).setMaterialIcon(Icons.iconCollapseListStickyHeader);
-                    } else {
-                        comp.setHidden(false);
-                    }
-                }
+            boolean hideOthers = false;
+            if (longPressShowsThisAndHidesOthers) {
+                hidden = false; //show this
+                hideOthers = true; //hide others
             } else {
-                for (Component comp : getParent().getChildrenAsList(true)) {
+                hidden = !hidden; //flip state of this
+                hideOthers = hidden; //and of others
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (false) {
+//                if (hidden) {
+//                    for (Component comp : getParent().getChildrenAsList(true)) {
+//                        if (comp instanceof StickyHeader) {
+//                            ((StickyHeader) comp).hidden = false;
+////                        ((StickyHeader) comp).hideShowButton.setMaterialIcon(Icons.iconCollapseListStickyHeader);
+//                            ((StickyHeader) comp).setMaterialIcon(Icons.iconCollapseListStickyHeader);
+//                        } else {
+//                            comp.setHidden(false);
+//                        }
+//                    }
+//                } else {
+//                    for (Component comp : getParent().getChildrenAsList(true)) {
+//                        if (comp instanceof StickyHeader) {
+//                            ((StickyHeader) comp).hidden = true;
+////                        ((StickyHeader) comp).hideShowButton.setMaterialIcon(Icons.iconExpandListStickyHeader);
+//                            ((StickyHeader) comp).setMaterialIcon(Icons.iconExpandListStickyHeader);
+//                        } else {
+//                            comp.setHidden(true);
+//                        }
+//                    }
+//                }
+//            }
+//</editor-fold>
+            //flip state of this header
+//            hidden = !hidden;
+            setMaterialIcon(hidden ? Icons.iconExpandListStickyHeader : Icons.iconCollapseListStickyHeader);
+
+            boolean insideThisHeader = false;
+            for (Component comp : getParent().getChildrenAsList(true)) {
+                if (longPressShowsThisAndHidesOthers) {
                     if (comp instanceof StickyHeader) {
-                        ((StickyHeader) comp).hidden = true;
-//                        ((StickyHeader) comp).hideShowButton.setMaterialIcon(Icons.iconExpandListStickyHeader);
-                        ((StickyHeader) comp).setMaterialIcon(Icons.iconExpandListStickyHeader);
+                        if (comp == this) { //show this (no matter the previous state)
+                            insideThisHeader = true;
+                            ((StickyHeader) comp).setMaterialIcon(Icons.iconCollapseListStickyHeader);
+                        } else {
+                            insideThisHeader = false;
+                            ((StickyHeader) comp).hidden = true;
+//                        ((StickyHeader) comp).hideShowButton.setMaterialIcon(Icons.iconCollapseListStickyHeader);
+                            ((StickyHeader) comp).setMaterialIcon(Icons.iconExpandListStickyHeader);
+                        }
                     } else {
-                        comp.setHidden(true);
+                        comp.setHidden(!insideThisHeader); //hide all other elements, except when 'inside' (after) this header
+                    }
+                } else { //normal longpress == flip hidden state of current and set the same state for all others
+                    if (comp instanceof StickyHeader) {
+                        if (comp != this) {
+                            ((StickyHeader) comp).hidden =  hidden ;
+                            ((StickyHeader) comp).setMaterialIcon(((StickyHeader) comp).hidden ? Icons.iconExpandListStickyHeader : Icons.iconCollapseListStickyHeader);
+                        } 
+                    } else {
+                        comp.setHidden(hidden); //hide all other elements, except when 'inside' (after) this header
                     }
                 }
             }
@@ -119,13 +188,12 @@ public class StickyHeader extends Button implements ScrollListener {
 //        super.add(BorderLayout.EAST, hideShowButton);
     }
 
-    public void pointerPressed(int x, int y) {
-        super.pointerPressed(x, y);
+    public void setLongPressShowsAndHidesOthers(boolean on) {
+        longPressShowsThisAndHidesOthers = on;
     }
 
-    public StickyHeader(String uiid) {
-        this();
-        this.setUIID(uiid);
+    public void pointerPressed(int x, int y) {
+        super.pointerPressed(x, y);
     }
 
 //    public StickyHeader(String uiid, String iconUiid) {

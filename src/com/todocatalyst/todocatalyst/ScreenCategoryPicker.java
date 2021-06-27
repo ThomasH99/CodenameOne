@@ -85,9 +85,9 @@ public class ScreenCategoryPicker extends MyForm {
 //        this.item = item;
         setPinchInsertEnabled(true);
 //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
-        setLayout(new BorderLayout());
+//        setLayout(new BorderLayout());
 //        setScrollable(false); //disable scrolling of form, necessary to let lists handle their own 
-        setScrollableY(true); //disable scrolling of form, necessary to let lists handle their own scrolling 
+//        setScrollableY(true); //disable scrolling of form, necessary to let lists handle their own scrolling 
 //        addSearchToTitle();
 //        setToolbar(new Toolbar());
         addCommandsToToolbar(getToolbar());

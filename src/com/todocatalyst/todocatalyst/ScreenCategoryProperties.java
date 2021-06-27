@@ -67,9 +67,9 @@ public class ScreenCategoryProperties extends MyForm {
 //        setTitle(screenTitle);
 //</editor-fold>
 
-        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
-        setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
-
+//        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+//        setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
+makeContainerBoxY();
 //        previousValues = new SaveEditedValuesLocally(getUniqueFormId());
 
         addCommandsToToolbar(getToolbar());//, theme);
@@ -111,8 +111,10 @@ public class ScreenCategoryProperties extends MyForm {
     @Override
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
-        getContentPane().removeAll();
-        buildContentPane(getContentPane());
+//        getContentPane().removeAll();
+        container.removeAll();
+//        buildContentPane(getContentPane());
+        buildContentPane(container);
 //        restoreKeepPos();
         super.refreshAfterEdit();
     }
@@ -253,22 +255,24 @@ public class ScreenCategoryProperties extends MyForm {
 
         boolean hide = MyPrefs.hideIconsInEditTaskScreen.getBoolean();
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Container content = new Container();
-        if (false) {
-            TableLayout tl;
-//        int spanButton = 2;
-            int nbFields = 8;
-            if (Display.getInstance().isTablet()) {
-                tl = new TableLayout(nbFields, 2);
-            } else {
-                tl = new TableLayout(nbFields * 2, 1);
-//            spanButton = 1;
-            }
-            tl.setGrowHorizontally(true);
-            content.setLayout(tl);
-        } else {
-
-        }
+//        if (false) {
+//            TableLayout tl;
+////        int spanButton = 2;
+//            int nbFields = 8;
+//            if (Display.getInstance().isTablet()) {
+//                tl = new TableLayout(nbFields, 2);
+//            } else {
+//                tl = new TableLayout(nbFields * 2, 1);
+////            spanButton = 1;
+//            }
+//            tl.setGrowHorizontally(true);
+//            content.setLayout(tl);
+//        } else {
+//
+//        }
+//</editor-fold>
         content.add(makeSpacerThin());
 
 //        MyTextField description = new MyTextField("Category name", parseIdMap2, () -> category.getText(), (s) -> category.setText(s));
@@ -282,7 +286,8 @@ public class ScreenCategoryProperties extends MyForm {
                 (t) -> category.setText((String) t),
                 () -> description.getText(),
                 (t) -> description.setText((String) t));
-        setEditOnShow(description); //UI: start editing this field
+        if (category.getText().isEmpty())
+        setEditOnShow(description); //UI: start editing this field, only when empty
 //        content.add(layoutN(Category.CATEGORY, categoryName, "**", true));
         content.add(description);
 
@@ -304,6 +309,26 @@ public class ScreenCategoryProperties extends MyForm {
         content.add(comment);
 
         content.add(makeSpacerThin());
+                content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_NUMBER_UNDONE_TASKS_TEXT, Item.SHOW_NUMBER_UNDONE_TASKS_HELP,
+                () -> category.getShowNumberUndoneTasks(), (b) -> category.setShowNumberUndoneTasks(b)));
+
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_NUMBER_DONE_TASKS_TEXT, Item.SHOW_NUMBER_DONE_TASKS_HELP,
+                () -> category.getShowNumberDoneTasks(), (b) -> category.setShowNumberDoneTasks(b)));
+
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_LEAF_TASKS_TEXT, Item.SHOW_LEAF_TASKS_HELP,
+                () -> category.getShowNumberLeafTasks(), (b) -> category.setShowNumberLeafTasks(b)));
+
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_REMAINING_TEXT, Item.SHOW_REMAINING_HELP,
+                () -> category.getShowRemaining(), (b) -> category.setShowRemaining(b)));
+
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_TOTAL_TEXT, Item.SHOW_TOTAL_HELP,
+                () -> category.getShowTotal(), (b) -> category.setShowTotal(b)));
+
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_WORK_TIME_TEXT, Item.SHOW_WORK_TIME_HELP,
+                () -> category.getShowWorkTime(), (b) -> category.setShowWorkTime(b)));
+
+        content.add(makeSpacerThin());
+        
 
         //CREATED
         Label createdDate = new Label(category.getCreatedAt() == null || category.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getCreatedAt()));
@@ -347,7 +372,9 @@ public class ScreenCategoryProperties extends MyForm {
         if (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(category.getObjectIdP() == null ? "<set on save>" : category.getObjectIdP(), "ScreenItemValueUneditable");
             content.add(layoutN(Item.PARSE_OBJECT_ID_VIRT,Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hide ? null : Icons.iconObjectId));
-            content.add(layoutN(Item.PARSE_GUID_VIRT,Item.GUID, itemObjectId, Item.OBJECT_GUID_HELP, true, hide ? null : Icons.iconObjectId));
+         
+            Label itemObjectId2 = new Label(category.getGuid());
+            content.add(layoutN(Item.PARSE_GUID_VIRT,Item.GUID, itemObjectId2, Item.OBJECT_GUID_HELP, true, hide ? null : Icons.iconObjectId));
         }
 
         setCheckIfSaveOnExit(()

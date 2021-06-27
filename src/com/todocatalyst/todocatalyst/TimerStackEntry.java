@@ -7,7 +7,7 @@ package com.todocatalyst.todocatalyst;
 
 import com.codename1.io.Externalizable;
 import com.codename1.io.Util;
-import com.todocatalyst.todocatalyst.Item.Condition;
+import com.todocatalyst.todocatalyst.ItemAndListCommonInterface.Condition;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;

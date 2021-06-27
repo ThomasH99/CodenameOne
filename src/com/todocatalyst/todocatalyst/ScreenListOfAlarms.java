@@ -68,26 +68,29 @@ public class ScreenListOfAlarms extends MyForm {
 
     private Command backCommand;
 
-    public static ScreenListOfAlarms getInstance() {
-        if (INSTANCE == null) {
-//            INSTANCE = new ScreenListOfAlarms(AlarmHandler.getInstance().notificationList);
-            INSTANCE = new ScreenListOfAlarms();
-        }
-        return INSTANCE;
-    }
+//    public static ScreenListOfAlarms getInstance() {
+//        if (INSTANCE == null) {
+////            INSTANCE = new ScreenListOfAlarms(AlarmHandler.getInstance().notificationList);
+//            INSTANCE = new ScreenListOfAlarms();
+//        }
+//        return INSTANCE;
+//    }
 
 //    ScreenListOfAlarms(LocalNotificationsShadowList notificationList) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
-    private ScreenListOfAlarms() { //, GetUpdatedList updateList) { //throws ParseException, IOException {
-        super(ScreenType.ALARMS.getTitle(), null, null,ScreenType.ALARMS.getHelpText());
+//    private ScreenListOfAlarms() { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+//        
+//    }
+     ScreenListOfAlarms(MyForm previousScreen) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+        super(ScreenType.ALARMS.getTitle(), previousScreen, null, ScreenType.ALARMS.getHelpText());
 //        setTextToShowIfEmptyList("No Reminders to deal with"); //"No Reminders to deal with",
         setTextToShowIfEmptyList(ScreenType.ALARMS.getEmptyScreenText()); //"No Reminders to deal with",
-        setScreenType(ScreenType.ALARMS);
+        configureWithScreenType(ScreenType.ALARMS);
         setUIID("AlarmsForm");
         setUniqueFormId("ScreenListOfAlarms");
 
 //        this.notificationList=notificationList;
-        setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
-        if (!(getLayout() instanceof BorderLayout)) {
+//        setScrollable(false); //don't set form scrollable when containing a (scrollable) list: https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
+        if (false && !(getLayout() instanceof BorderLayout)) {
             setLayout(new BorderLayout());
         }
 
@@ -97,20 +100,20 @@ public class ScreenListOfAlarms extends MyForm {
         expandedObjectsInit("");
 
         addCommandsToToolbar(getToolbar());
-//        refreshAfterEdit();
+        refreshAfterEdit();
     }
 
-    @Override
-    void showPreviousScreen(boolean callRefreshAfterEdit) {
+//    @Override
+    void showPreviousScreenXXX(boolean callRefreshAfterEdit) {
         individuallySetSnoozeTimeMillis = 0; //since the alarm screen is a singleton, values not kept between invocations must be explicitly reset
         super.showPreviousScreen(callRefreshAfterEdit);
     }
 
-    @Override
-    public void show() {
+//    @Override
+    public void showXXX() {
         ASSERT.that(false, "shouldn't be called - since it won't add previousForm");
         if (false) {
-            show(parentForm);
+            showXXX(parentForm);
         } else {
             exitOnEmptyAlarmList = false;
             refreshAfterEdit();
@@ -119,6 +122,7 @@ public class ScreenListOfAlarms extends MyForm {
 
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public void showBackXXX(boolean popCommand) {
 //        if (false) {
@@ -137,8 +141,6 @@ public class ScreenListOfAlarms extends MyForm {
 ////        backCommand.actionPerformed(null);
 ////        super.showBack(popCommand);
 //    }
-
-//<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public void showBackXXX() {
 //        if (AlarmHandler.getInstance().getExpiredAlarms().size() == 0 && exitOnEmptyAlarmList) {
@@ -153,11 +155,11 @@ public class ScreenListOfAlarms extends MyForm {
 //        }
 //    }
 //</editor-fold>
-    public void show(MyForm previousForm) {
-        show(previousForm, false);
+    public void showXXX(MyForm previousForm) {
+        showXXX(previousForm, false);
     }
 
-    public void show(MyForm previousForm, boolean flipTransition) {
+    public void showXXX(MyForm previousForm, boolean flipTransition) {
         if (false) {
             ASSERT.that(previousForm != null, "shouldn't be called s previousForm==null");
 
@@ -400,7 +402,8 @@ public class ScreenListOfAlarms extends MyForm {
 //        Container itemCont = ScreenListOfItems.buildItemContainer(item, null, ()->false, ()->refreshOnItemEdits, false,null, null, keepPos, null, null, false, false);
 //        Container itemCont = ScreenListOfItems.buildItemContainer(item, null, () -> false, refreshOnItemEdits, false, null, null, keepPos, null, null, false, false);
 //</editor-fold>
-        Container itemCont = ScreenListOfItems.buildItemContainer(myForm, item, null, null, expandedObjects, e -> {
+//        Container itemCont = ScreenListOfItems.buildItemContainer(myForm, item, null, null, expandedObjects, e -> {
+        Container itemCont = ScreenListOfItems.buildItemContainer(myForm, item, null,e -> {
             List<AlarmRecord> allAlarmDatesForEditedItem = item.getAllAlarmRecords(new MyDate(MyDate.MIN_DATE), true);
             myForm.exitOnEmptyAlarmList = true; //MUST call before since showBack gets called on Back from ScreenEdit2 (before the lambda function below)
             //UI: updating an alarm (Reminder/Waiiting) to the future will cancel the alarm AND snoozed alarms
@@ -435,19 +438,19 @@ public class ScreenListOfAlarms extends MyForm {
 
         SpanLabel alarmHeader;
         if ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.waitingRepeat)) {
-            alarmHeader = new SpanLabel("Waiting " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true,true,true), "ScreenAlarmsWaitingTitle");
+            alarmHeader = new SpanLabel("Waiting " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true, true, true), "ScreenAlarmsWaitingTitle");
 //            alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
-            alarmHeader.setFontIcon(Icons.myIconFont,Icons.iconWaitingAlarmExpiredCust);
+            alarmHeader.setFontIcon(Icons.myIconFont, Icons.iconWaitingAlarmExpiredCust);
         } else if ((expiredAlarm.type == AlarmType.snoozedWaiting)) {
-            alarmHeader = new SpanLabel("Snooze Waiting " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true,true,true), "ScreenAlarmsWaitingTitle"); //"Waiting snoozed "
+            alarmHeader = new SpanLabel("Snooze Waiting " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true, true, true), "ScreenAlarmsWaitingTitle"); //"Waiting snoozed "
 //            alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
-            alarmHeader.setFontIcon(Icons.myIconFont,Icons.iconWaitingAlarmExpiredCust);
+            alarmHeader.setFontIcon(Icons.myIconFont, Icons.iconWaitingAlarmExpiredCust);
         } else if ((expiredAlarm.type == AlarmType.snoozedNotif)) {
-            alarmHeader = new SpanLabel("Snooze Reminder " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true,true,true), "ScreenAlarmsWaitingTitle");
+            alarmHeader = new SpanLabel("Snooze Reminder " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true, true, true), "ScreenAlarmsWaitingTitle");
 //            alarmHeader.setMaterialIcon(Icons.iconWaitingAlarm);
-            alarmHeader.setFontIcon(Icons.myIconFont,Icons.iconWaitingAlarmExpiredCust);
+            alarmHeader.setFontIcon(Icons.myIconFont, Icons.iconWaitingAlarmExpiredCust);
         } else {//     if ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.waitingRepeat)) {
-            alarmHeader = new SpanLabel("Reminder " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true,true,true), "ScreenAlarmsWaitingTitle");
+            alarmHeader = new SpanLabel("Reminder " + MyDate.formatDateSmart(expiredAlarm.alarmTime, true, true, true), "ScreenAlarmsWaitingTitle");
             alarmHeader.setMaterialIcon(Icons.iconAlarmTriggered);
         }
         alarmHeader.setIconUIID("ScreenAlarmsWaitingTitle");
@@ -571,9 +574,10 @@ public class ScreenListOfAlarms extends MyForm {
         };
 
         if (expiredAlarms.size() > 0) {
-            MyTree2 myTree = new MyTree2(xx, expandedObjects, null, (StickyHeaderGenerator) null) {//                    lastInsertNewElementContainer != null ? 
+            MyTree2 myTree = new MyTree2(this,xx, expandedObjects, null, (StickyHeaderGenerator) null) {//                    lastInsertNewElementContainer != null ? 
                 @Override
-                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
+//                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
+                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList) {
                     ExpiredAlarm notif = (ExpiredAlarm) node;
                     Item item = DAO.getInstance().fetchItem(notif.guid);
                     showDetails.add(item); //hack to always show alarmTime even if normally hidden in details
@@ -589,6 +593,7 @@ public class ScreenListOfAlarms extends MyForm {
         }
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    protected Container buildContentPaneForAlarmListOLD(List<ExpiredAlarm> expiredAlarms, MyForm previousForm) {
 //        parseIdMap2.parseIdMapReset();
 //        if (expiredAlarms != null && expiredAlarms.size() > 0) {
@@ -615,4 +620,5 @@ public class ScreenListOfAlarms extends MyForm {
 //            return BorderLayout.centerCenter(new SpanLabel(getTextToShowIfEmptyList()));
 //        }
 //    }
+//</editor-fold>
 }

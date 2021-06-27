@@ -36,8 +36,10 @@ public class ScreenSettingsSystem extends ScreenSettingsCommon {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
-        addSettingBoolean(content, parseIdMap2, MyPrefs.showDebugInfoInLabelsEtc);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.cacheLoadChangedElementsOnAppStart);
+//        addSettingBoolean(content, parseIdMap2, MyPrefs.showDebugInfoInLabelsEtc);
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.showDebugInfoInLabelsEtc));
+//        addSettingBoolean(content, parseIdMap2, MyPrefs.cacheLoadChangedElementsOnAppStart);
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.cacheLoadChangedElementsOnAppStart));
 
     }
 }

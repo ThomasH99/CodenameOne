@@ -76,8 +76,9 @@ public class ScreenFilter extends MyForm {
 //        this.filterSortDef.filterMap = filterMap;
 //        this.updateActionOnDone = updateActionOnDone; //() -> {}; //no action (updating the filters are done in parseIdMap
 //        setScrollableY(true); //set by default
-        setLayout(BoxLayout.y());
-        setScrollableY(true);
+//        setLayout(BoxLayout.y());
+//        setScrollableY(true);
+        makeContainerBoxY();
         addCommandsToToolbar(getToolbar());
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
@@ -87,8 +88,10 @@ public class ScreenFilter extends MyForm {
     @Override
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
-        getContentPane().removeAll();
-        buildContentPane(getContentPane());
+//        getContentPane().removeAll();
+        container.removeAll();
+//        buildContentPane(getContentPane());
+        buildContentPane(container);
 //        restoreKeepPos();
         super.refreshAfterEdit();
     }
@@ -147,7 +150,7 @@ public class ScreenFilter extends MyForm {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     private Container buildContentPane(Container content) {
-        content.setScrollableY(true);
+//        content.setScrollableY(true);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Container content = new Container();
 //TableLayout tl = new TableLayout(2, 3);
@@ -234,6 +237,15 @@ public class ScreenFilter extends MyForm {
             filterSortDef.setSortFieldId(filterSortDef.getSortFields()[i]);
         });
 
+        MyOnOffSwitch stickyHeadersOnSwitch = new MyOnOffSwitch(parseIdMap2,
+                () -> {
+                    return filterSortDef.isStickyHeadersOn();
+                },
+                (b) -> {
+                    filterSortDef.setStickyHeadersOn(b);
+                });
+        Component headerSort = layoutSetting("Show headers for sorted list", stickyHeadersOnSwitch, "**");
+
         MyOnOffSwitch customFilterOnOff = new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isSortDescending();
         }, (b) -> {/*button value used directly*/
@@ -245,7 +257,7 @@ public class ScreenFilter extends MyForm {
         Component sortReversed = layoutSetting("Reverse sort order", inverseOrder, "**");
 
         sortSelectorContainer
-                = Container.encloseIn(BoxLayout.y(), sortOnOffCont, sortReversed
+                = Container.encloseIn(BoxLayout.y(), sortOnOffCont, sortReversed, headerSort
                 //                        MyBorderLayout.west(new SpanLabel("Sort on")).add(MyBorderLayout.EAST, sortPicker),
                 //                        MyBorderLayout.west(new SpanLabel("Reverse sort order")).add(MyBorderLayout.EAST, inverseOrder)
                 );
@@ -347,9 +359,9 @@ public class ScreenFilter extends MyForm {
         //Starred
         content.add(layoutSetting(Format.f("Show only {0} tasks", Item.STARRED), new MyOnOffSwitch(parseIdMap2,
                 () -> {
-                    return filterSortDef.isShowInterruptTasksOnly();
+                    return filterSortDef.isShowStarredTasksOnly();
                 }, (b) -> {
-                    filterSortDef.setShowInterruptTasksOnly(b);
+                    filterSortDef.setShowStarredTasksOnly(b);
                 }), "**"));
 
         //Estimates all/with/without

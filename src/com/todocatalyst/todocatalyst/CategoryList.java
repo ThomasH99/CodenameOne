@@ -7,6 +7,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.io.Externalizable;
 import com.codename1.io.Util;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.Item.CATEGORIES;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import static com.todocatalyst.todocatalyst.ItemList.PARSE_ITEMS;
+import com.todocatalyst.todocatalyst.MyForm.ScreenType;
 
 /**
  * stores the (manually sorted) list of categories defined by the user. Updated
@@ -34,7 +36,9 @@ public class CategoryList extends ItemList {
      */
     public CategoryList() {
         super(CLASS_NAME);
-        if (Config.TEST) setText("CategoryList");
+//        if (Config.TEST) setText("CategoryList");
+//        if (Config.TEST) 
+        setText("Categories");
     }
 
     static synchronized public CategoryList getInstance() {
@@ -98,9 +102,10 @@ public class CategoryList extends ItemList {
         if (categoryName == null || categoryName.length() == 0) {
             return null;
         }
-        String search=categoryName;
-        if (ignoreCase)
-            search=search.toLowerCase();
+        String search = categoryName;
+        if (ignoreCase) {
+            search = search.toLowerCase();
+        }
         for (Category cat : getListFull()) {
             if (cat.getText().toLowerCase().equals(categoryName.toLowerCase())) {
                 return cat;
@@ -129,6 +134,10 @@ public class CategoryList extends ItemList {
 //        }
 //        return false;
 //    }
+    @Override
+    public Character getItemListIcon() {
+        return ScreenType.CATEGORIES.getIcon();
+    }
 
     @Override
     public int getVersion() {

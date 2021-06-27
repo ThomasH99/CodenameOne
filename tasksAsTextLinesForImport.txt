@@ -1,0 +1,55 @@
+tasks1 
+-subtask1 10m
+-----subErr1 20m
+--subErr1 30m
+-subtask2 1h30
+
+tasks1
+-subtask1
+-----subErr1
+-subtask2
+---subErr1
+---subErr
+--subErr3
+-subtask4
+---subErr1
+-----subErr2
+----subErr3
+-subtask3
+
+task2
+
+task1
+-subtask1.1
+-subtask1.2
+-subtask1.3
+-subtask1.4
+-subtask1.5
+task2
+-subtask2.1
+-subtask2.2
+-subtask2.3
+-subtask2.4
+-subtask2.5
+task3
+-subtask3.1
+-subtask3.2
+-subtask3.3
+-subtask3.4
+-subtask3.5
+task4
+-subtask4.1
+-subtask4.2
+-subtask4.3
+-subtask4.4
+-subtask4.5
+task5
+task6
+task7
+task8
+task9
+task10
+task11
+task12
+task13
+task14

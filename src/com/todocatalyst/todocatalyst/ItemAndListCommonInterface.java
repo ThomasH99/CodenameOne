@@ -8,6 +8,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.io.Log;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.util.EventDispatcher;
+import com.codename1.util.StringUtil;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 //import static com.todocatalyst.todocatalyst.Item.PARSE_FILTER_SORT_DEF;
@@ -20,6 +21,10 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+//import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 
 /**
  *
@@ -103,6 +108,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @param workSlotList
      * @return
      */
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    default public WorkSlotList getWorkSlotListN() {
 ////        return getWorkSlotListN(true);
 //        return getWorkSlotListN();
@@ -124,6 +130,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        workSlotList.setOwner(this);
 //        setWorkSlotsInParse(workSlotList.getWorkSlotListFull());
 //    }
+//</editor-fold>
     /**
      * return overlapping workslots, or null if none
      *
@@ -1377,7 +1384,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @param deletedDate
      * @return
      */
-    public void deletePrepare(Date deletedDate);
+    public void onDelete(Date deletedDate);
 
     default void checkOwners(List<ItemAndListCommonInterface> list) {
         if (false) {
@@ -1442,7 +1449,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * changes like inserting templates, changing categories etc which impact
      * other elements but which many be cancelled
      */
-    default public void updateBeforeSave() {
+    default public void onSave() {
 //        assert false; //Do nothing unless specified by specialized object
     }
 
@@ -1549,6 +1556,425 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         } else {
             return "<not ItemAndListCommonInterface>?!";
         }
+    }
+
+    default public String[] convertToCSV() {
+        return new String[]{"CSV export of " + this.getClass().toString() + " not supported yet"};
+    }
+
+    ;
+
+   default public void exportToCsv(String filename) {
+        try {
+            Writer w;
+            if (true) {
+                w = new StringWriter();
+            } else {
+//                w = new FileWriter(filename);
+            }
+            CSVHelper.writeLine(w, Arrays.asList(Item.csvFieldList));
+            CSVHelper.writeLine(w, Arrays.asList(convertToCSV()));
+
+            List<E> list = getListFull();
+            for (E elt : list) {
+                CSVHelper.writeLine(w, Arrays.asList(elt.convertToCSV()));
+            }
+
+            Log.p(w.toString());
+        } catch (Exception ex) {
+            Log.p(ex.getLocalizedMessage());
+        }
+    }
+
+    default public void exportToCsv() {
+        exportToCsv(null);
+    }
+
+    static int countIndentChars(StringBuffer s, String indentChars) {
+        int indent = 0;
+        if (s == null || s.length() == 0) {
+            return 0;
+        }
+//        for (int i = 0, size = s.length(); i < size; i++) {
+//            if (indentChars.contains(s.subSequence(i, 1))) {
+//                s.deleteCharAt(0);
+//                indent++;
+//            } else {
+//                break;
+//            }
+//        }
+        while (s.length() >= 1 && indentChars.contains(s.subSequence(0, 1))) {
+            s.deleteCharAt(0);
+            indent++;
+        }
+        return indent;
+    }
+
+    /**
+     *
+     * @param tasksAsTextLines
+     * @return
+     */
+    //tasks1        0
+    //-subtask1     1
+    //-----subErr1  2
+    //--subErr1     2
+    //-subtask2
+    //tasks1
+    //-subtask1
+    //-----subErr1
+    //-subtask2
+    //---subErr1
+    //---subErr2
+    //--subErr3
+    //-subtask4
+    //---subErr1
+    //-----subErr2
+    //----subErr3
+    //-subtask3
+    //task2
+//    public static boolean createProject(ItemAndListCommonInterface ownerElement, String projectText) {
+    default public boolean importTaskListAsTextLines(String tasksAsTextLines) {
+        ItemAndListCommonInterface ownerElement = this;
+        boolean success = true;
+        int currentLevel = 0;
+//        int previousIndent = -1;
+//        int tooMuchIndent = 0;
+        ItemAndListCommonInterface motherElement = ownerElement;
+        ItemAndListCommonInterface lastItem = ownerElement; //used in case first line is indented
+//        String line = projectText;
+//https://stackoverflow.com/questions/39745935/how-to-read-textfile-line-by-line-into-textarea-in-codename-one
+        for (String line : StringUtil.tokenize(tasksAsTextLines, '\n')) {
+            // line represents each line in the file...
+//            boolean addAsSubtasks = false;
+            if (line.isEmpty()) {
+                continue; //ignore empty lines
+            }
+            StringBuffer line2 = new StringBuffer(line);
+            int indentLevel = countIndentChars(line2, "-\t ");
+            Item newItem = new Item(line2.toString());
+            if (indentLevel > currentLevel) { //if indent is at a higher level than before
+                currentLevel++; //incrase current level by 1 only
+//                previousIndent++;
+//                    addAsSubtasks = true;
+                lastItem.addToList(newItem, true); //add as subtask
+                motherElement = lastItem;
+            } else if (indentLevel < currentLevel) { //new element is less indented than previous element
+                int nbExdents = currentLevel - indentLevel; //how many levels higher up?
+                currentLevel = indentLevel; //use new level (can be any value between 0..currentLevel-1
+//                motherElement = lastItem;
+                while (nbExdents > 0 && motherElement.getOwner() != null) {
+                    motherElement = motherElement.getOwner();
+                    nbExdents--;
+//                    currentLevel--;
+                }
+                motherElement.addToList(newItem, true);
+            } else { //save level as before
+                motherElement.addToList(newItem, true);
+            }
+            lastItem = newItem;
+        }
+        return success;
+    }
+
+    default public boolean getShowNumberUndoneTasks() {
+        return MyPrefs.listOfItemListsShowNumberUndoneTasks.getBoolean();
+    }
+
+    default public void setShowNumberUndoneTasks(boolean set) {
+        ASSERT.that("setShowNumberUndoneTasks called wrongly with set=" + set);
+    }
+
+    default public boolean getShowNumberDoneTasks() {
+        return MyPrefs.listOfItemListsShowNumberDoneTasks.getBoolean();
+    }
+
+    default public void setShowNumberDoneTasks(boolean set) {
+        ASSERT.that("setShowNumberDoneTasks called wrongly with set=" + set);
+    }
+
+    default public boolean getShowNumberLeafTasks() {
+        return MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean();
+    }
+
+    default public void setShowNumberLeafTasks(boolean set) {
+        ASSERT.that("setShowNumberLeafTasks called wrongly with set=" + set);
+    }
+
+    default public boolean getShowRemaining() {
+        return MyPrefs.listOfItemListsShowRemainingEstimate.getBoolean();
+    }
+
+    default public void setShowRemaining(boolean set) {
+        ASSERT.that("setShowRemaining called wrongly with set=" + set);
+    }
+
+    default public boolean getShowTotal() {
+        return MyPrefs.listOfItemListsShowTotalTime.getBoolean();
+    }
+
+    default public void setShowTotal(boolean set) {
+        ASSERT.that("setShowTotal called wrongly with set=" + set);
+    }
+
+    default public boolean getShowWorkTime() {
+        return MyPrefs.listOfItemListsShowWorkTime.getBoolean();
+    }
+
+    default public void setShowWorkTime(boolean set) {
+        ASSERT.that("setShowWorkTime called wrongly with set=" + set);
+    }
+
+    default public void setShowWhatListStats(String set) {
+        ASSERT.that("setShowWhatListStats called wrongly with set=" + set);
+    }
+
+    interface Condition {
+
+        boolean meets(Item item);
+    }
+
+    /**
+     * returns a sequential list of all leaf tasks (or the Item itself if not a
+     * project) that meet the Condition (null: no filter/all tasks included),
+     * starting with the first subtask of the first subtask etc.
+     *
+     * @param leaftasks the (already initialized) list to which to add all
+     * leaftasks
+     * @param useFullListFilteredOnCondition if true, use the full list of
+     * elements (NOT using a defined filter) and add only elements matching
+     * condition
+     * @param condition condition or null (will match all items)
+     */
+//    List<ItemAndListCommonInterface> getLeafTasksAsList(Condition condition) {
+    default void addLeafTasksToList(List<Item> leaftasks, boolean useFullListFilteredOnCondition, Condition condition) {
+        List<E> subElements = useFullListFilteredOnCondition ? getListFull() : getList(); //full to ensure every subtask matching condition is returned
+        if (subElements == null || subElements.isEmpty()) {
+            if (this instanceof Item && (!useFullListFilteredOnCondition || condition == null || condition.meets((Item) this))) {
+                leaftasks.add((Item) this);
+            }
+        } else {
+            for (E elt : subElements) {
+                elt.addLeafTasksToList(leaftasks, useFullListFilteredOnCondition, condition);
+            }
+        }
+    }
+
+    default void addLeafTasksToList(List<Item> leaftasks) {
+        addLeafTasksToList(leaftasks, false, null);
+    }
+
+//    default List<Item> getLeafTasksToList(boolean useFullListFilteredOnCondition, Condition condition) {
+    default List<Item> getLeafTasksAsListN(Condition condition) {
+        List<Item> leaftasks = new ArrayList<>();
+//        addLeafTasksToList(leaftasks, useFullListFilteredOnCondition, condition);
+        addLeafTasksToList(leaftasks, false, condition);
+        return leaftasks;
+    }
+
+    default List<Item> getLeafTasksAsListN() {
+//        return getLeafTasksToList(false, null);
+        return getLeafTasksAsListN(null);
+    }
+
+    /**
+     * returns the hierarchical list of lists/categories/projects/subprojects
+     * leading from 'this' to the
+     * leafTask.Eg.{Cat1,Proj1,Subprj1,Subprj2,leafTask}-
+     *
+     * @param leafTask
+     * @param useFullListFilteredOnCondition
+     * @param condition
+     * @return List, or null if leafTask was not found
+     */
+    default List<ItemAndListCommonInterface> getLeafTaskPath(Item leafTask, boolean useFullListFilteredOnCondition, Condition condition) {
+        List<E> subElements = useFullListFilteredOnCondition ? getListFull() : getList(); //full to ensure every subtask matching condition is returned
+        if (subElements == null || subElements.isEmpty()) {
+            if (this instanceof Item && (!useFullListFilteredOnCondition || condition == null || condition.meets((Item) this)) && this == leafTask) {
+                return new ArrayList(Arrays.asList((ItemAndListCommonInterface) this)); //when leafTask found, create and return array containing it
+            } else {
+                return null;
+            }
+        } else {
+            for (E elt : subElements) {
+                List pathList = elt.getLeafTaskPath(leafTask, useFullListFilteredOnCondition, condition);
+                if (pathList != null) { //if leafTask was found somwhere inside elt, add 'this' to the list and return to upper level
+                    pathList.add(0, this); //add in natural order: top list element first in list, leafTask last...
+                    return pathList;
+                }
+            }
+            return null;
+        }
+    }
+
+    /**
+     * will return first subtask if previousItem is null
+     *
+     * @param previousItem
+     * @param condition
+     * @param previousItemAlreadyFound must be set true if previousItem==null!!
+     * (optimization)
+     * @return null if previousItem was not found or
+     */
+//    private Item getNextLeafItemMeetingConditionImpl(Item previousItem, boolean excludeWaiting, boolean previousItemAlreadyFound) {
+//    Item getNextLeafItemMeetingConditionImpl(Item previousItem, Condition condition, boolean[] previousItemAlreadyFound) {
+    default Item getLeafItemAfterThis(Item previousItem, Condition condition, Boolean previousItemAlreadyFound) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        List<Item> leafSubtaskList = getLeafTasksAsList(condition);
+//        int index = leafSubtaskList.indexOf(previousItem);
+//        if (previousItem == null && leafSubtaskList.size() > 0) { //if called w null, return first item (if any)
+//            return leafSubtaskList.get(0);
+//        } else if (index >= 0 && index + 1 < leafSubtaskList.size()) {
+//            return leafSubtaskList.get(index + 1);
+//        } else {
+//            return null;
+//        }
+//</editor-fold>
+        List<Item> leaftasks = getLeafTasksAsListN();
+        int prevItemIndex = leaftasks.indexOf(previousItem);
+        if (previousItem == null && leaftasks.size() > 0) { //if called w null, return first item (if any)
+            if (leaftasks.get(0) instanceof Item) {
+                return leaftasks.get(0);
+            }
+        } else if (prevItemIndex >= 0 && prevItemIndex + 1 < leaftasks.size()) {
+            return leaftasks.get(prevItemIndex + 1);
+        }
+        return null;
+    }
+
+    public static String getOwnerHierarchyAsString(List projectHierarchyList, boolean addQuotationMarks) {
+        String hierarchyStr = "";
+        String sep = "";
+        for (int i = 0, size = projectHierarchyList.size(); i < size; i++) {
+//                    hierarchy = hierarchy + sep + ((Item) hierarchyList.get(i)).getText();
+            hierarchyStr = (addQuotationMarks ? "\"" : "") + ((Item) projectHierarchyList.get(i)).getText() + (addQuotationMarks ? "\"" : "") + sep + hierarchyStr;
+            sep = " / ";
+            //TODO indent margin (i*15)
+        }
+//        if (projectHierarchyList.size() <= 1) {
+//            hierarchyStr = "Project: " + hierarchyStr;
+//        } else {
+//            hierarchyStr = "Project hierarchy: " + hierarchyStr; //format "directOnwer / nextLevelOwner / Top-levelProject
+//        }
+
+        return hierarchyStr.isEmpty() ? null : hierarchyStr;
+    }
+
+    /**
+     * return the hierarchy starting from the projectHierarchyList down to the
+     * owner of leaf task (so excluding leaf task itself) to find the
+     * leafElement and then return the string, return null if
+     * projectHierarchyList is empty or only contains leafElement
+     *
+     * @param projectHierarchyList list that contains (either a ItemList, a
+     * Category or an Project)
+     * @param addQuotationMarks
+     * @return the leafString or null if no result (no hierarchy above
+     * leafElement9
+     */
+    public static String getHierarchyAsStringNOLD(ItemAndListCommonInterface projectHierarchyList, ItemAndListCommonInterface leafElement, boolean addQuotationMarks) {
+//        for (int i = 0, size = projectHierarchyList.size(); i < size; i++) {
+        if (projectHierarchyList == null || leafElement == null || projectHierarchyList == leafElement) {
+            return null;
+        } else if (Objects.equals(projectHierarchyList, leafElement)) {
+//            return leafElement.getText();
+            return (addQuotationMarks ? "\"" : "") + leafElement.getText() + (addQuotationMarks ? "\"" : "");
+        } else {
+            for (int i = 0, size = projectHierarchyList.size(); i < size; i++) {
+                ItemAndListCommonInterface elt = (ItemAndListCommonInterface) projectHierarchyList.get(i);
+                String subHierarcyStr = getHierarchyAsStringNOLD(elt, leafElement, addQuotationMarks);
+                if (!subHierarcyStr.isEmpty()) {
+//            return (addQuotationMarks ? "\"" : "") + ((Item) projectHierarchyList.get(i)).getText() + (addQuotationMarks ? "\"" : "") + sep + hierarchyStr;
+                    return (addQuotationMarks ? "\"" : "") + elt.getText() + (addQuotationMarks ? "\"" : "") + " / " + subHierarcyStr;
+                }
+            }
+            return "";
+        }
+    }
+
+    public static String getHierarchyAsStringN(ItemAndListCommonInterface owner, ItemAndListCommonInterface leafElement, boolean addQuotationMarks, boolean includeLeafElement) {
+        if (leafElement == null) {
+            return null;
+        } else if (owner == null && includeLeafElement) {
+            return ((addQuotationMarks ? "\"" : "") + leafElement.getText() + (addQuotationMarks ? "\"" : ""));
+//        } else if (leafTopLevelOwner == leafElement) {
+////            return includeLeafElement ? ((addQuotationMarks ? "\"" : "") + leafElement.getText() + (addQuotationMarks ? "\"" : "")) : "";
+//            return includeLeafElement ? ((addQuotationMarks ? "\"" : "") + leafElement.getText() + (addQuotationMarks ? "\"" : "")) : "";
+        } else {
+            for (int i = 0, size = owner.size(); i < size; i++) {
+                ItemAndListCommonInterface elt = (ItemAndListCommonInterface) owner.get(i);
+                if (elt == leafElement) {
+                    String str = ((addQuotationMarks ? "\"" : "") + owner.getText() + (addQuotationMarks ? "\"" : ""));
+                    if (includeLeafElement) {
+                        return str + ((addQuotationMarks ? "\"" : "") + leafElement.getText() + (addQuotationMarks ? "\"" : ""));
+                    } else {
+                        return str;
+                    }
+                } else if (elt.size() > 0) {
+                    String subHierarcyStr = getHierarchyAsStringN(elt, leafElement, addQuotationMarks, includeLeafElement);
+                    if (subHierarcyStr != null) {
+                        return (addQuotationMarks ? "\"" : "") + elt.getText() + (addQuotationMarks ? "\"" : "") + (subHierarcyStr.isEmpty() ? "" : " / " + subHierarcyStr);
+                    }
+                } else {
+                    return null;
+                }
+            }
+            return null; //for other leafElements, return null
+        }
+    }
+
+    default String getOwnerHierarchyAsString(ItemAndListCommonInterface projectHierarchyList) {
+        return getOwnerHierarchyAsString(projectHierarchyList, MyPrefs.timerAddQuotationMarksToSourceHierarchy.getBoolean(), false);
+    }
+
+    default String getOwnerHierarchyAsString(ItemAndListCommonInterface projectHierarchyList, boolean addQuotationMarks, boolean includeLeafElement) {
+        return getHierarchyAsStringN(projectHierarchyList, this, addQuotationMarks, includeLeafElement);
+    }
+
+    static public String getTypeString(ItemAndListCommonInterface element) {
+        String typeStr = (element instanceof Category ? Category.CATEGORY : (element instanceof ItemList ? ItemList.ITEM_LIST : Item.ITEM)).toLowerCase();
+        return typeStr;
+    }
+
+    default public TodaySortOrder getTodaySortOrder() {
+        return TodaySortOrder.TODAY_OTHER;
+    }
+
+    default public Date[] getTodayDates() {
+        return null;
+    }
+
+    /**
+     * return true if one of the Item's dates is today
+     *
+     * @return
+     */
+    default public boolean hasTodayDates() {
+        for (Date d : getTodayDates()) {
+            if (MyDate.isToday(d)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    default public boolean isValidItemForTimer() {
+        return false;
+    }
+
+    default public void addActionListener(ActionListener l) {
+        throw new IllegalArgumentException("Not possible to add actionListener for this object=" + this);
+    }
+
+    /**
+     * Removes the given action listener from the switch
+     *
+     * Copied from CN1 OnOffSwitch.java
+     *
+     * @param l implementation of the action listener interface
+     */
+    default public void removeActionListener(ActionListener l) {
+        throw new IllegalArgumentException("Not possible to add actionListener for this object=" + this);
     }
 
 }

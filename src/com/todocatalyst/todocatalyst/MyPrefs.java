@@ -16,7 +16,7 @@ import java.util.Date;
  */
 public class MyPrefs {
 
-    final static boolean prod = !Config.TEST;
+    static boolean prod = Config.PRODUCTION_RELEASE;
     //TODAY view
     static PrefEntry todayViewIncludeWaitingExpiringToday
             = new PrefEntry("In Today, include tasks until today", "todayViewIncludeWaitingExpiringToday", prod ? true : true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
@@ -30,6 +30,8 @@ public class MyPrefs {
             = new PrefEntry("In Today, leaf tasks instead of top-level projects instead of leaf tasks", "todayViewShowLeafTasksInsteadOfProjects", prod ? false : false, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
     static PrefEntry todayViewIncludeOverdueFromThisManyPastDays
             = new PrefEntry("In Today, include tasks from this many past days", "todayViewIncludeOverdueFromThisManyPastDays", prod ? 0 : 1, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+    static PrefEntry todayViewShowDueTodayByTaskStatus
+            = new PrefEntry("In Today, show due today sorted by task status (Ongoing first)", "todayViewShowDueTodayByTaskStatus", prod ? false : true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
 
 //ESTIMATES
     static PrefEntry automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining
@@ -101,6 +103,9 @@ public class MyPrefs {
     static PrefEntry dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask
             = new PrefEntry("Approximate width in millimeters of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
                     "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", prod ? 5 : 10, "**");
+    static PrefEntry simulatedPinchZoneWidth
+            = new PrefEntry("Approximate width in millimeters of center screen zone where dragging will simulate a two finger pinch",
+                    "simulatedPinchZoneWidth", prod ? 8 : 10, "**");
 
 //    static PrefEntry dragDropLeftDropZoneWidth
 //            = new PrefEntry("Width of the left-hand drop zone (%)", "dragDropLeftDropZoneWidth", 10, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
@@ -131,6 +136,8 @@ public class MyPrefs {
     //TODO! setting update interval to minutes (60sec) should also prevent showing seconds in timer display (otherwise you may end up with eg 36s frozen, but changing sometimes due to relative imprecision of timer update!! and only minutes advancing)
     static PrefEntry timerShowSecondsInTimer
             = new PrefEntry("Show seconds in Timer", "showSecondsInTimer", prod ? true : true, "Hiding seconds may feel less stressful but doesn't visually show that the Timer is running");
+    static PrefEntry timerShowSecondsInSmallTimer
+            = new PrefEntry("Show seconds in small Timer", "timerShowSecondsInSmallTimer", prod ? false : true, "Hiding seconds may feel less stressful but doesn't visually show that the Timer is running");
 
     static PrefEntry timerBuzzerActive
             = new PrefEntry("Buzz at regular intervals to remind that Timer is running", "timerBuzzerActive", prod ? false : false, ""); //, "Reminder vibration interval when Timer is running");
@@ -142,6 +149,9 @@ public class MyPrefs {
 
     static PrefEntry timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds
             = new PrefEntry("Minimum timer threshold (seconds)", "timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds", (int) (prod ? 15 : 5), "Tasks will not be marked ongoing and the time will not be saved until after this number seconds. Useful to avoid that skipping a task in Timer marks it ongoing"); //, "Reminder vibration interval when Timer is running");
+    
+    static PrefEntry timerMaxDurationMillis
+            = new PrefEntry("Maximum time for the Timer (hh:mm)", "timerMaxDurationMillis", (int) (prod ? 99 * MyDate.HOUR_IN_MILISECONDS + 59 * MyDate.MINUTE_IN_MILLISECONDS : 1 * MyDate.HOUR_IN_MILISECONDS), "Tasks will not be marked ongoing and the time will not be saved until after this number seconds. Useful to avoid that skipping a task in Timer marks it ongoing"); //, "Reminder vibration interval when Timer is running");
 
     static PrefEntry timerShowEffortEstimateDetails
             = new PrefEntry("Show Estimate, total time and Remaining time for task", "timerShowEffortEstimateDetails", prod ? false : false,
@@ -223,6 +233,9 @@ public class MyPrefs {
     static PrefEntry hideIconsInEditTaskScreen //also used for SCreenWorkSlot!
             = new PrefEntry("Hide the icons when editing to save screen space",
                     "hideIconsInEditTaskScreen", prod ? false : false, "Get a cleaner or more space-efficient look");
+    static PrefEntry timerAddQuotationMarksToSourceHierarchy 
+            = new PrefEntry("Add quotation marks when showing the hierarchy of the timed tasks",
+                    "timerAddQuotationMarksToSourceHierarchy", prod ? true : true, "**");
 
     //COMMENTS
     static PrefEntry commentsAddToBeginningOfComment
@@ -536,10 +549,13 @@ public class MyPrefs {
     static PrefEntry reloadChangedDataInBackground
             = new PrefEntry("Refresh changed data in background", "reloadChangedDataInBackground",
                     prod ? false : false, "** - NOT END USER");
+    static PrefEntry fingerTracking
+            = new PrefEntry("Show finger position (for demos)", "fingerTracking",
+                    prod ? false : false, "** - NOT END USER");
 
 //    static PrefEntry defaultIconSizeInMM = new PrefEntry("Default icons size in millimeters", "defaultIconSizeInMM", Float.parseFloat(Form.getUIManager().getThemeConstant("menuImageSize", "4.5")), "** - NOT END USER");
     static PrefEntry defaultIconSizeInMM = new PrefEntry("Default icons size in millimeters",
-            "defaultIconSizeInMM", 6.0f, "** - NOT END USER"); //NB! Also set in theme.css/#Constants: overflowImageSize and menuImageSize
+            "defaultIconSizeInMM", 5.0f, "** - NOT END USER"); //NB! Also set in theme.css/#Constants: overflowImageSize and menuImageSize
 
     static PrefEntry defaultIconGapInMM
             = new PrefEntry("Default icons size in 0.1 millimeters", "defaultIconGapInMM", 0.5f, "** - NOT END USER");
@@ -598,6 +614,8 @@ public class MyPrefs {
     //TESTING settings
     static PrefEntry testPickersOnDevice
             = new PrefEntry("Activate different pickers in ScreenItem2 to test pickers on iOS", "testPickersOnDevice", prod ? false : true, "**");
+    static PrefEntry productionView
+            = new PrefEntry("Show production view (TEST=FALSE)", "productionView", prod ? false : false, "**");
 
 //PINCH
     static PrefEntry pinchAdjustUpper //used to play with/tune the adjustment factor used if pinch fingers are far apart
@@ -707,6 +725,8 @@ public class MyPrefs {
 
     static PrefEntry touchedLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_TOUCHED_TITLE, "touchedLogInterval",
             prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED_TITLE);
+    static PrefEntry editedLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_EDITED_TITLE, "editedLogInterval",
+            prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED_TITLE);
     static PrefEntry nextInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_NEXT_TITLE, "nextInterval",
             prod ? 30 : 30, "How many days ahead in time are included in " + ScreenMain.SCREEN_NEXT_TITLE);
 
@@ -781,18 +801,19 @@ public class MyPrefs {
             "listOfCategoriesShowTotalNumberOfLeafTasks", prod ? false : true, "**");
 
     //LIST OF ITEMLISTS
-    static PrefEntry listOfItemListsShowNumberUndoneTasks = new PrefEntry("Show number of tasks", "listOfItemListsShowNumberUndoneTasks",
+    static PrefEntry listOfItemListsShowNumberUndoneTasks = new PrefEntry(Item.SHOW_NUMBER_UNDONE_TASKS_TEXT, "listOfItemListsShowNumberUndoneTasks",
             prod ? true : true, "**");
-    static PrefEntry listOfItemListsShowNumberDoneTasks = new PrefEntry("Show number of completed tasks, e.g. 7/23", "listOfItemListsShowNumberDoneTasks",
+    static PrefEntry listOfItemListsShowNumberDoneTasks = new PrefEntry(Item.SHOW_NUMBER_DONE_TASKS_TEXT, "listOfItemListsShowNumberDoneTasks",
             prod ? false : true, "**");
-    static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry("Show sum of Remaining estimates for remaining tasks",
+    static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry(Item.SHOW_REMAINING_TEXT,
             "listOfItemListsShowRemainingEstimate", prod ? true : true, "**"); //, "e.g. 3h20", Only shown if not-zero. NB. May make displaying the list slower for very large lists or slow devices
-    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry(Format.f("Show sum of {0 estimate} for remaining tasks", Item.EFFORT_ESTIMATE),
+//    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry(Format.f("Show sum of {0 estimate} for remaining tasks", Item.EFFORT_ESTIMATE),
+    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry(Item.SHOW_TOTAL_TEXT,
             "listOfItemListsShowTotalTime", prod ? false : true, "**");
-    static PrefEntry listOfItemListsShowWorkTime = new PrefEntry("Show sum of defined work time for the list",
-            "listOfItemListsShowWorkTime", prod ? false : true, "**"); //"e.g. 1h10/23h12/[4h00]
-    static PrefEntry listOfItemListsShowTotalNumberOfLeafTasks = new PrefEntry("Show number of leaf tasks instead of number of projects",
+    static PrefEntry listOfItemListsShowTotalNumberOfLeafTasks = new PrefEntry(Item.SHOW_LEAF_TASKS_TEXT,
             "listOfItemListsShowTotalNumberOfLeafTasks", prod ? false : true, "**");
+    static PrefEntry listOfItemListsShowWorkTime = new PrefEntry(Item.SHOW_WORK_TIME_TEXT,
+            "listOfItemListsShowWorkTime", prod ? false : true, "**"); //"e.g. 1h10/23h12/[4h00]
 
     static PrefEntry hideStickyHeadersForSortedLists = new PrefEntry("Do not show group headers for sorted lists",
             "showStickyHeadersForSortedLists", prod ? false : false, "**"); //show as 'flat' lists

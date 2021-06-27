@@ -12,8 +12,11 @@ import com.codename1.ui.Command;
 import com.codename1.ui.Display;
 import com.codename1.ui.Image;
 import com.codename1.ui.events.ActionEvent;
+import static com.todocatalyst.todocatalyst.MyForm.showToastBar;
 
 /**
+ * listens to longPress (and ONLY triggers longPress whereas a longPressListener
+ * also triggers a shortPress)
  *
  * @author Thomas
  */
@@ -59,7 +62,7 @@ public class MyButtonLongPress extends Button {
     public MyButtonLongPress() {
         super();
     }
-    
+
     public MyButtonLongPress(Command shortPressCmd, Command longPressCmd, Image icon) {
         super(shortPressCmd);
 //        this.shortPressCmd = shortPressCmd;
@@ -67,28 +70,19 @@ public class MyButtonLongPress extends Button {
         setCommand(shortPressCmd);
         setUIID("Label");
     }
-    
+
     public MyButtonLongPress(Command shortPressCmd, Command longPressCmd) {
         this(shortPressCmd, longPressCmd, null);
     }
-    
+
+    public MyButtonLongPress(Command shortPressCmd, String longPressHelpText) {
+        this(shortPressCmd, CommandTracked.create(null, null, (e) -> {
+            showToastBar(longPressHelpText);
+        }, "LongPressHelp-" + shortPressCmd.getCommandName()), null);
+    }
+
     public void setLongPressCommand(Command longPressCmd) {
         this.longPressCmd = longPressCmd;
-    }
-    
-    public Command getLongPressCommand() {
-        return longPressCmd;
-    }
-    
-    @Override
-    public void longPointerPress(int x, int y) {
-        longPointerPress = true;
-        Log.p("MyButtonLongPress.longPointerPress(" + x + ", " + y + ")");
-//        if (false) 
-        super.longPointerPress(x, y); //don't call, since it creates
-        if (longPressCmd != null) {
-            longPressCmd.actionPerformed(new ActionEvent(this, x, y));
-        }
     }
 
     /*

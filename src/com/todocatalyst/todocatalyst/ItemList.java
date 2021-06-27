@@ -3,6 +3,9 @@ package com.todocatalyst.todocatalyst;
 //package todo;
 import com.codename1.io.Log;
 import com.codename1.ui.Component;
+import com.codename1.ui.Font;
+import com.codename1.ui.events.ActionEvent;
+import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.events.DataChangedListener;
 import com.codename1.ui.events.SelectionListener;
 import com.codename1.ui.tree.TreeModel;
@@ -65,8 +68,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     final static String PARSE_SYSTEM_NAME = "systemName"; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
     final static String PARSE_EDITED_DATE = Item.PARSE_EDITED_DATE; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
     final static String PARSE_DELETED_DATE = Item.PARSE_DELETED_DATE; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
+
+    final static String PARSE_SHOW_WHAT_LIST_STATS = "show";
+    final static String SHOW_NUMBER_UNDONE_TASKS = "Undone";
+    final static String SHOW_NUMBER_DONE_TASKS = "Done";
+    final static String SHOW_LEAF_TASKS = "Leaf";
+    final static String SHOW_TOTAL = "Total";
+    final static String SHOW_REMAINING = "Remaining";
+    final static String SHOW_WORK_TIME = "WorkTime";
+    final static String SHOW_WORK_ALL = SHOW_NUMBER_UNDONE_TASKS + SHOW_NUMBER_DONE_TASKS + SHOW_LEAF_TASKS + SHOW_TOTAL + SHOW_REMAINING + SHOW_WORK_TIME;
 //    final static String PARSE_DELETED = "deleted"; //has this object been deleted on some device?
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
+    final static int ACTION_EVENT_CHANGED = DataChangedListener.CHANGED;
+    final static int ACTION_EVENT_REMOVED = DataChangedListener.REMOVED;
 
     public boolean hasUserModifiedData() {
         boolean userModifiedData
@@ -89,14 +103,16 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * contains the list of workslots (if defined, otherwise null)
      */
 //    private WorkTimeDefinition workTimeDefinition; //STORED inline
-    private EventDispatcher dataListener; // = new EventDispatcher();
-    private EventDispatcher selectionListener; // = new EventDispatcher();
+//    private EventDispatcher dataListener; // = new EventDispatcher();
+//    private EventDispatcher selectionListener; // = new EventDispatcher();
+    private EventDispatcher listeners; // = new EventDispatcher();
 //    private Bag<E> itemBag; // = new HashtableAddedDirectly();
 //    private List<WorkSlot> workSlotListBuffer;
 //    private WorkSlotList workSlotListBuffer;
 //    private WorkTimeDefinition workTimeDefinitionBuffer;
     private WorkTimeAllocator workTimeAllocator; //calculated when needed
     private Character itemListIcon;
+    private Font iconFont;
 
     public void setItemListIcon(char itemListIcon) {
         this.itemListIcon = itemListIcon;
@@ -104,6 +120,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     public Character getItemListIcon() {
         return itemListIcon;
+    }
+
+    public void setItemListIconFont(Font iconFont) {
+        this.iconFont = iconFont;
+    }
+
+    public Font getItemListIconFont() {
+        return iconFont;
     }
 
     /**
@@ -1832,15 +1856,16 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param deleteDate
      */
     @Override
-    public void deletePrepare(Date deleteDate) {
+    public void onDelete(Date deleteDate) {
 
         //if a timer was active for this itemList, then remove that (and update any timed item even though it may get soft-deleted below)
-        TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
+//        TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
+        fireDeletedEvent();
 
         //since we're deleting the list, and thus soft-deleting all its tasks (and their subtasks, recursively), we don't need to remove the list as the tasks' owner!
         List<Item> tasks = (List) getListFull(); //w/o copy get a java.util.ConcurrentModificationException
         for (Item item : tasks) {
-            item.deletePrepare(deleteDate); //item.deletePrepare will remove item from its owner, in this case, this list
+            item.onDelete(deleteDate); //item.deletePrepare will remove item from its owner, in this case, this list
         }
         DAO.getInstance().deleteLater((List) tasks, false); //save soft-deleted state of all subtasks
 
@@ -2484,36 +2509,42 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                countUndone += ((ItemAndListCommonInterface) elt).getNumberOfUndoneItems(countLeafTasks);
 //            }
 //</editor-fold>
-            countUndone += ((ItemAndListCommonInterface) elt).getNumberOfUndoneItems(countLeafTasks);
+            if (elt instanceof WorkSlot) {
+                countUndone += 1;
+            } else if (elt instanceof ItemList) {
+                countUndone += 1;
+            } else {
+                countUndone += ((ItemAndListCommonInterface) elt).getNumberOfUndoneItems(countLeafTasks);
+            }
         }
         return countUndone;
     }
+    //<editor-fold defaultstate="collapsed" desc="comment">
+    //    static public int getNumberOfUndoneItemsOLD(List list, boolean recurse) {
+    //        if (list == null || list.size() == 0) {
+    //            return 0;
+    //        }
+    //        int countUndone = 0;
+    ////        for (Object item : itemList) {
+    ////        for (E item : itemList) {
+    //        for (Object item : list) {
+    ////            if (!((ItemAndListCommonInterface) item).isDone()) {
+    //            if (item instanceof ItemAndListCommonInterface && !(((ItemAndListCommonInterface) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
+    //                countUndone++;
+    //                //only count undone subtasks if project is not done
+    ////                if (includeSubTasks) {
+    //////                    countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems();
+    ////                    countUndone += ((Item) item).getNumberOfUndoneItems();
+    ////                }
+    //            }
+    //            if (recurse && list instanceof ItemAndListCommonInterface) {
+    //                countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems(true);
+    //            }
+    //        }
+    //        return countUndone;
+    //    }
+    //</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    static public int getNumberOfUndoneItemsOLD(List list, boolean recurse) {
-//        if (list == null || list.size() == 0) {
-//            return 0;
-//        }
-//        int countUndone = 0;
-////        for (Object item : itemList) {
-////        for (E item : itemList) {
-//        for (Object item : list) {
-////            if (!((ItemAndListCommonInterface) item).isDone()) {
-//            if (item instanceof ItemAndListCommonInterface && !(((ItemAndListCommonInterface) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
-//                countUndone++;
-//                //only count undone subtasks if project is not done
-////                if (includeSubTasks) {
-//////                    countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems();
-////                    countUndone += ((Item) item).getNumberOfUndoneItems();
-////                }
-//            }
-//            if (recurse && list instanceof ItemAndListCommonInterface) {
-//                countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems(true);
-//            }
-//        }
-//        return countUndone;
-//    }
-//</editor-fold>
     public static int getNumberOfItemsThatWillChangeStatus(List list, boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
         if (list == null || list.size() == 0) {
             return 0;
@@ -4146,16 +4177,23 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public static FilterSortDef getSystemDefaultFilter(ScreenType screenType) {
         switch (screenType) {
             case NEXT:
-                return new FilterSortDef(screenType.name(), Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_DUE_DATE,
+                        FilterSortDef.FILTER_SHOW_NEW_TASKS
+                        + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
                         + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false, false);
             case OVERDUE:
-                return new FilterSortDef(screenType.name(), Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_DUE_DATE,
+                        FilterSortDef.FILTER_SHOW_NEW_TASKS
+                        + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
+                        + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
             case COMPLETION_LOG:
-                return new FilterSortDef(screenType.name(), Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, false);
             case CREATION_LOG:
-                return new FilterSortDef(screenType.name(), Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
             case TOUCHED:
-                return new FilterSortDef(screenType.name(), Item.PARSE_UPDATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
+            case TODAY:
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
         }
         return null;
     }
@@ -4210,6 +4248,123 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public Date getEditedDate() {
         Date date = getDate(PARSE_EDITED_DATE);
         return (date == null) ? new MyDate(0) : date;
+    }
+
+    private String setString(String full, String str, boolean set) {
+        if (set) {
+            if (full != null) {
+                if (!full.contains(str)) {
+                    full += str;
+                }
+            } else {
+                full = str;
+            }
+        } else {
+            full = MyUtil.replaceSubstring(full, str, "");
+        }
+        return full;
+    }
+
+    @Override
+    public boolean getShowNumberUndoneTasks() {
+        return getString(PARSE_SHOW_WHAT_LIST_STATS) != null && getString(PARSE_SHOW_WHAT_LIST_STATS).contains(SHOW_NUMBER_UNDONE_TASKS);
+    }
+
+    @Override
+    public void setShowNumberUndoneTasks(boolean set) {
+        put(PARSE_SHOW_WHAT_LIST_STATS, setString(getString(PARSE_SHOW_WHAT_LIST_STATS), SHOW_NUMBER_UNDONE_TASKS, set));
+    }
+
+    @Override
+    public boolean getShowNumberDoneTasks() {
+        return getString(PARSE_SHOW_WHAT_LIST_STATS) != null && getString(PARSE_SHOW_WHAT_LIST_STATS).contains(SHOW_NUMBER_DONE_TASKS);
+    }
+
+    @Override
+    public void setShowNumberDoneTasks(boolean set) {
+        put(PARSE_SHOW_WHAT_LIST_STATS, setString(getString(PARSE_SHOW_WHAT_LIST_STATS), SHOW_NUMBER_DONE_TASKS, set));
+    }
+
+    @Override
+    public boolean getShowNumberLeafTasks() {
+        return getString(PARSE_SHOW_WHAT_LIST_STATS) != null && getString(PARSE_SHOW_WHAT_LIST_STATS).contains(SHOW_LEAF_TASKS);
+    }
+
+    @Override
+    public void setShowNumberLeafTasks(boolean set) {
+        put(PARSE_SHOW_WHAT_LIST_STATS, setString(getString(PARSE_SHOW_WHAT_LIST_STATS), SHOW_LEAF_TASKS, set));
+    }
+
+    @Override
+    public boolean getShowRemaining() {
+        return getString(PARSE_SHOW_WHAT_LIST_STATS) != null && getString(PARSE_SHOW_WHAT_LIST_STATS).contains(SHOW_REMAINING);
+    }
+
+    @Override
+    public void setShowRemaining(boolean set) {
+        put(PARSE_SHOW_WHAT_LIST_STATS, setString(getString(PARSE_SHOW_WHAT_LIST_STATS), SHOW_REMAINING, set));
+    }
+
+    @Override
+    public boolean getShowTotal() {
+        return getString(PARSE_SHOW_WHAT_LIST_STATS) != null && getString(PARSE_SHOW_WHAT_LIST_STATS).contains(SHOW_TOTAL);
+    }
+
+    @Override
+    public void setShowTotal(boolean set) {
+        put(PARSE_SHOW_WHAT_LIST_STATS, setString(getString(PARSE_SHOW_WHAT_LIST_STATS), SHOW_TOTAL, set));
+    }
+
+    @Override
+    public boolean getShowWorkTime() {
+        return getString(PARSE_SHOW_WHAT_LIST_STATS) != null && getString(PARSE_SHOW_WHAT_LIST_STATS).contains(SHOW_WORK_TIME);
+    }
+
+    @Override
+    public void setShowWorkTime(boolean set) {
+        put(PARSE_SHOW_WHAT_LIST_STATS, setString(getString(PARSE_SHOW_WHAT_LIST_STATS), SHOW_WORK_TIME, set));
+    }
+
+    @Override
+    public void setShowWhatListStats(String set) {
+        put(PARSE_SHOW_WHAT_LIST_STATS, set);
+    }
+
+    /**
+     * Adds a listener
+     *
+     * @param l implementation of the action listener interface
+     */
+    @Override
+    public void addActionListener(ActionListener l) {
+        if (listeners == null) {
+            listeners = new EventDispatcher();
+        }
+        listeners.addListener(l);
+    }
+
+    /**
+     * Removes the given action listener
+     *
+     * @param l implementation of the action listener interface
+     */
+    @Override
+    public void removeActionListener(ActionListener l) {
+        if (listeners != null) {
+            listeners.removeListener(l);
+        }
+    }
+
+    void fireChangeEvent() {
+        if (listeners != null) {
+            listeners.fireActionEvent(new ActionEvent(this, ACTION_EVENT_CHANGED));
+        }
+    }
+
+    void fireDeletedEvent() {
+        if (listeners != null) {
+            listeners.fireActionEvent(new ActionEvent(this, ACTION_EVENT_REMOVED));
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

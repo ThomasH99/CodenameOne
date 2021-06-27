@@ -32,8 +32,9 @@ public class ScreenRepairData extends MyForm {
         super(SCREEN_TITLE, null, () -> {
         });
         this.parentForm = mainScreen;
-        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
-        setScrollableY(true);
+//        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+//        setScrollableY(true);
+        makeContainerBoxY();
         addCommandsToToolbar();
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
@@ -41,8 +42,10 @@ public class ScreenRepairData extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        getContentPane().removeAll();
-        buildContentPane(getContentPane());
+//        getContentPane().removeAll();
+        container.removeAll();
+//        buildContentPane(getContentPane());
+        buildContentPane(container);
         restoreKeepPos();
         super.refreshAfterEdit();
     }
@@ -189,7 +192,6 @@ public class ScreenRepairData extends MyForm {
 //            }
 //        }));
 //</editor-fold>
-
         return content;
     }
 }

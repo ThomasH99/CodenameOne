@@ -34,8 +34,8 @@ public class ScreenSettingsItemListProperties extends ScreenSettingsCommon {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
-        addSettingBoolean(content, parseIdMap2, MyPrefs.itemListAllowDuplicateListNames);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.insertNewItemsInStartOfLists);
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.itemListAllowDuplicateListNames));
+        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.insertNewItemsInStartOfLists));
 
 //        addSettingInt(content, parseIdMap2, MyPrefs.workSlotDefaultDurationInMinutes, 0, 60*24, 5); //UI: workslots limited to 24h duration
 //        addSettingInt(content, parseIdMap2, MyPrefs.workSlotDurationStepIntervalInMinutes, 0, 30, 1);

@@ -125,6 +125,7 @@ public class ItemBucket<E> extends ItemList {//implements ItemAndListCommonInter
 //            addToBucket(i);
 //        }
         this(name, null, null, null, items);
+        setShowWhatListStats(SHOW_WORK_ALL);
         //TODO handle workslots
     }
 
