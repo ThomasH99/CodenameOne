@@ -214,7 +214,8 @@ public class ScreenCategoryPicker extends MyForm {
 //</editor-fold>
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllCategories, ScreenCategoryPicker.this, () -> refreshAfterEdit()));
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd("",listOfAllCategories, ScreenCategoryPicker.this, ()->{})); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
-        toolbar.addCommandToOverflowMenu(ScreenListOfCategories.makeNewCategoryCmd("Add Category", listOfAllCategories, ScreenCategoryPicker.this, () -> {
+//        toolbar.addCommandToOverflowMenu(ScreenListOfCategories.makeNewCategoryCmd("Add Category", listOfAllCategories, ScreenCategoryPicker.this, () -> {
+        toolbar.addCommandToOverflowMenu(makeCommandNewCategory("Add Category", listOfAllCategories, ScreenCategoryPicker.this, () -> {
         })); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
 
 //        addSearchToTitle();

@@ -233,14 +233,16 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
         if (workTimeCache != null) {
             for (WorkTimeSlices slice : workTimeCache.values()) {
                 sliceStr += sep + (slice == null ? "<null>" : slice.toString());
-                if(!sep.equals("")) sep="|";
+                if (!sep.equals("")) {
+                    sep = "|";
+                }
             }
         }
         return "WorkTimeAllocator for:"
                 + (ownerItemItemListOrCategory != null ? (ownerItemItemListOrCategory.getText()) : "NONE??")
                 + " Avail:" + (workTimeSlices != null ? MyDate.formatDuration(workTimeSlices.getAvailableTime()) : "<none>")
-                + ";\nWTSlices= [\n" + (workTimeSlices != null ? workTimeSlices.toString()+"\n] " : "<none>")
-                + ";\nAllocations= [\n" + (sliceStr.length() > 0 ? sliceStr+"\n]" : "<none>"); //workTimeCache.toString(); Item.
+                + ";\nWTSlices= [\n" + (workTimeSlices != null ? workTimeSlices.toString() + "\n] " : "<none>")
+                + ";\nAllocations= [\n" + (sliceStr.length() > 0 ? sliceStr + "\n]" : "<none>"); //workTimeCache.toString(); Item.
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -653,8 +655,10 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
             workTimeCache = new HashMap(itemsSortedFiltered.size() + 1); //pre-allocate one for each item, +1 for the item itself in case it's an Item
             //allocate to subtasks
             for (Item itm : itemsSortedFiltered) {
-                long eltDuration = itm.getWorkTimeRequiredFromProvider(ownerItemItemListOrCategory);
-                if (eltDuration>0) {//&&!itm.isDone()) { getWorkTimeRequiredFromProvider above returns 0 if itm is Done
+//                long eltDuration = itm.getWorkTimeRequiredFromProvider(ownerItemItemListOrCategory);
+//                if (eltDuration>0) {//&&!itm.isDone()) { getWorkTimeRequiredFromProvider above returns 0 if itm is Done
+                if (!itm.isDone()) { //getWorkTimeRequiredFromProvider above returns 0 if itm is Done
+                    long eltDuration = itm.getWorkTimeRequiredFromProvider(ownerItemItemListOrCategory);
 //                    workTimeCache.put(itm, null); //null to indicate a Done task with no workTime, contrary to zero-duration tasks which get a slice w a starttime //NO, no point in doing this when count/size of cache no longer used
 //                } else {
                     WorkTimeSlices newWorkTS = workTimeSlices.getWorkTime(eltDuration, itm); //get workTime in order, slices keep track of up to where slices are already reserved
@@ -670,15 +674,35 @@ public class WorkTimeAllocator { //implements Externalizable { //extends ItemLis
                 boolean notAProject = !itemOwner.isProject();
 //                long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(notAProject); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
                 long remainingPrjTask = itemOwner.getRemainingForTaskItself(); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
-                if (remainingPrjTask > 0 || notAProject) {
+                if ((remainingPrjTask > 0 || notAProject) && !itemOwner.isDone()) {
                     WorkTimeSlices newWorkTS = workTimeSlices.getWorkTime(remainingPrjTask, ownerItemItemListOrCategory);
                     if (newWorkTS != null) {
                         workTimeCache.put(itemOwner, newWorkTS); //add the 
                     }
                 }
-            }
+//                }
 //            }
+            }
         }
+        //allocate to project task itself, in case it requires its own workTime
+        if (false) {
+            if (ownerItemItemListOrCategory instanceof Item) {
+                Item itemOwner = (Item) ownerItemItemListOrCategory;
+//                boolean notAProject = !itemOwner.isProject();
+//                long remainingPrjTask = itemOwner.getRemainingForProjectTaskItself(notAProject); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
+                if (itemOwner.isProject()) {
+                    long remainingPrjTask = itemOwner.getRemainingForTaskItself(); //isProject(): use default estimates for leaf-tasks, not for Project/mother tasks
+//                if (remainingPrjTask > 0 || notAProject) {
+                    if (remainingPrjTask > 0) {
+                        WorkTimeSlices newWorkTS = workTimeSlices.getWorkTime(remainingPrjTask, ownerItemItemListOrCategory);
+                        if (newWorkTS != null) {
+                            workTimeCache.put(itemOwner, newWorkTS); //add the 
+                        }
+                    }
+                }
+            }
+        }
+//        }
         return workTimeCache.get(item);
     }
 

@@ -15,13 +15,14 @@ import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.util.UITimer;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.Item.PARSE_OWNER_ITEM;
-import static com.todocatalyst.todocatalyst.TimerStack2.isValidItemForTimer;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import static com.todocatalyst.todocatalyst.TimerStack2.getValidItemForTimerCondition;
+import static com.todocatalyst.todocatalyst.TimerStack2.isValidItemForTimer;
 
 /**
  * stores each timer (the 'stack' is defined by which is created(??) the latest)
@@ -64,7 +65,7 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
 //    TimerInstance(Item item, ItemList itemList, boolean autoStartTimer, boolean autoGotoNextTask) {
     /**
      *
-     * @param itemOrProject either the item or project on which the timer is
+     * @param itemOrProjectN either the item or project on which the timer is
      * directly started (eg swipe button), or the first suitable item in the
      * itemList (selected *before* creating the timer)
      * @param itemListOrCategoryN can be null if Timer started on a single item,
@@ -72,31 +73,80 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
      * @param timeEvenInvalidItem
      */
 //    TimerInstance2(Item itemOrProject, ItemList itemListOrCategoryN, boolean timeEvenInvalidItem) {
-    TimerInstance2(Item itemOrProject, ItemAndListCommonInterface itemListOrCategoryN) {
+    TimerInstance2(Item itemOrProjectN, ItemAndListCommonInterface itemListOrCategoryN) {
         this();
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        setTimeEvenInvalidItemOrProjects(timeEvenInvalidItem);
-        setTimerSourceN(itemListOrCategoryN);
+//        TimerInstance2.this.setTimerSource(itemListOrCategoryN, false, false);
+//        ASSERT.that (itemOrProjectN != null||itemListOrCategoryN!=null,"not both item and source can be null!");
+//
+//        if (itemOrProjectN == null) { //only source is defined
+//            setTimerSource(itemListOrCategoryN, true); //even if started directly on project, use first appropriate subtask
+//        } else { //item defined
+//            if (itemListOrCategoryN == null) { //no source
+//                if (itemOrProjectN.isProject()) {
+//                    setTimerSource(itemOrProjectN, true); //even if started directly on project, use first appropriate subtask
+//                } else { //item NOT a project
+//                    setTimedItems(itemOrProjectN, false); //even if started directly on project, use first appropriate subtask
+//                }
+//            } else { //source defined
+//                if (itemOrProjectN.isProject()) {
+//                    setTimerSource(itemOrProjectN, true); //even if started directly on project, use first appropriate subtask
+//                } else { //item NOT a project
+//                    setTimerSource(itemListOrCategoryN, false); //even if started directly on project, use first appropriate subtask
+//                    setTimedItems(itemOrProjectN, true); //even if started directly on project, use first appropriate subtask
+//                }
+//            }
+//        }
+//</editor-fold>
+        setup(itemOrProjectN, itemListOrCategoryN);
         setAutoGotoNextTask(MyPrefs.timerAutomaticallyGotoNextTask.getBoolean()); //use setting as default value
         setAutoStartTimer(MyPrefs.timerAutomaticallyStartTimer.getBoolean());
-        ASSERT.that(itemOrProject != null, "Timer started on null item, itemListOrCategoryN.guid=" + (itemListOrCategoryN != null ? itemListOrCategoryN.getGuid() : "<null>")); //A timer must not be created if there is no item to time
-
-        if (itemOrProject != null) { //        setTimedItem(itemOrProject);
-            List<Item> projectLeafTasks = itemOrProject.getLeafTasksAsListN((item) -> isValidItemForTimer(item)); //will return item itself or first subtask if a project
-//            setTimedItem(itemOrProject);
-            setTimedItem(projectLeafTasks.get(0));
-        } else { //itemOrProject == null
-//            List<Item> projectLeafTasks = itemListOrCategoryN.getLeafTasksAsList(false, (item) -> isValidItemForTimer(item));
-            List<Item> projectLeafTasks = itemListOrCategoryN.getLeafTasksAsListN((item) -> isValidItemForTimer(item));
-            if (projectLeafTasks != null && projectLeafTasks.size() >= 1) { //        setTimedItem(itemOrProject);
-                setTimedItem(projectLeafTasks.get(0));
-            } else {
-                ASSERT.that("Timer started on null item and no suitable item in itemListOrCategoryN=" + (itemListOrCategoryN != null ? itemListOrCategoryN.toString() : "<null>")); //A timer must not be created if there is no item to time
-            }
-        }
+        ASSERT.that(itemOrProjectN != null, "Timer started on null item, itemListOrCategoryN.guid=" + (itemListOrCategoryN != null ? itemListOrCategoryN.getGuid() : "<null>")); //A timer must not be created if there is no item to time
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            if (itemOrProject != null) { //        setTimedItem(itemOrProject);
+//                List<Item> projectLeafTasks = itemOrProject.getLeafTasksAsListN((item) -> isValidItemForTimer(item)); //will return item itself or first subtask if a project
+////            setTimedItem(itemOrProject);
+//                setTimedItem(projectLeafTasks.get(0));
+//            } else { //itemOrProject == null
+////            List<Item> projectLeafTasks = itemListOrCategoryN.getLeafTasksAsList(false, (item) -> isValidItemForTimer(item));
+//                List<Item> projectLeafTasks = itemListOrCategoryN.getLeafTasksAsListN((item) -> isValidItemForTimer(item));
+//                if (projectLeafTasks != null && projectLeafTasks.size() >= 1) { //        setTimedItem(itemOrProject);
+//                    setTimedItem(projectLeafTasks.get(0));
+//                } else {
+//                    ASSERT.that("Timer started on null item and no suitable item in itemListOrCategoryN=" + (itemListOrCategoryN != null ? itemListOrCategoryN.toString() : "<null>")); //A timer must not be created if there is no item to time
+//                }
+//            }
+//        }
+//        setTimedItem(findTimedItemNXXX(itemOrProject, itemListOrCategoryN));
+//        if (itemOrProject != null) {
+////            List<Item> projectLeafTasks = itemOrProject.getLeafTasksAsListN((item) -> isValidItemForTimer(item)); //will return item itself or first subtask if a project
+//            List<Item> projectLeafTasks = itemOrProject.getLeafTasksForTimerN(); //will return item itself or first subtask if a project
+//            setTimedItem(projectLeafTasks.get(0), true); //true: updates nextComing
+//        } else { //initialize timedItem (and nextItem) from source if not defined
+//            goToNextTimerItemNEW(false);
+//        }
+//        updateNEW2(false, false, false, false);
+//</editor-fold>
+        updateNEW2(false); //will also start Timer if autoStart is true
     }
 
     private UITimer reloadTimersFromParseServer; //used to determine how often to check if the timer state on the Parse Server has changed (e.g. 
     private EventDispatcher listeners;
+    private boolean ignoreItemSourceEvents;
+
+    /**
+     * will ignore callbacks until the timerInstance has finished updating and
+     * sends its own change event, used to avoid unnecessary updates due to
+     * changes done by TimerInstance itself to the timerInstance elements
+     * (timedItem, nextItem, source)
+     *
+     * @param ignore
+     */
+    private void setIgnoreItemSourceEvents(boolean ignore) {
+        ignoreItemSourceEvents = ignore;
+    }
 
     /**
      * only one timer can listen at a time
@@ -118,7 +168,11 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
                 listeners.removeListener(l);
             }
         }
-        listeners.addListener(obj);
+        listeners.addListener((ActionListener) (e) -> {
+            if (!ignoreItemSourceEvents) {
+                obj.actionPerformed(e);
+            }
+        });
     }
 
     public void removeActionListener(ActionListener obj) {
@@ -128,16 +182,24 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
     }
 
     private void fireChangedEvent() {
+        if (ignoreItemSourceEvents) {
+            return;
+        }
         if (listeners != null) {
             listeners.fireActionEvent(new ActionEvent(this, ACTION_EVENT_CHANGED));
+            ignoreItemSourceEvents = false;
+
         } else {
-            ASSERT.that("TimerStack2.fireChangedEvent, but NO listeners!!");
+            if (false) {
+                ASSERT.that("TimerStack2.fireChangedEvent, but NO listeners!!");
+            }
         }
     }
 
     private void fireDeletedEvent() {
         if (listeners != null) {
             listeners.fireActionEvent(new ActionEvent(this, ACTION_EVENT_REMOVED));
+            ignoreItemSourceEvents = false;
         } else {
             ASSERT.that("TimerStack2.fireDeletedEvent, but NO listeners!!");
         }
@@ -155,12 +217,13 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
 ////                +(isAutostart());
         return ((getTimerSourceN() != null ? (ItemAndListCommonInterface.getTypeString(getTimerSourceN()) + ": " + getTimerSourceN().getText()) : "")
                 //                + (getTimedProject() != null ? "; Proj:" + getTimedProject().getText() : "")
-                + (getTimedItemN() != null ? "; Timed task:" + getTimedItemN().getText() : "")
+                + ("; Task:" + (getTimedItemN() != null ? getTimedItemN().getText() : "<null>"))
+                + ("; Next:" + (getNextTimedItemN() != null ? getNextTimedItemN().getText() : "<null>"))
+                + (isRunning() ? "; Run" : "; Stop")
                 + (getStartTimeD().getTime() != 0 ? "; Start:" + getStartTimeD() : "")
-                + (getElapsedTime() != 0 ? "; Duration:" + MyDate.formatDurationShort(getElapsedTime()) : "")
-                + (isRunning() ? "; Running" : "; Stopped")
-                + (isFullScreen() ? "; BIG" : "; SMALL")
-                + " [" + getObjectIdP() + "]");
+                + (getElapsedTime() != 0 ? "; Dur:" + MyDate.formatDurationShort(getElapsedTime()) : "")
+                //                + (isFullScreen() ? "; BIG" : "; SMALL")
+                + " [" + getObjectIdP() != null ? getObjectIdP() : "null" + "]");
 //                +(isAutostart());
     }
 
@@ -179,9 +242,67 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
      *
      * @param timedItem
      */
-    public void setTimedItem(Item timedItem) {
-
+    public void setTimedItemInParse(Item timedItem) {
+//        setTimedItem(timedItem, false);
         Item previousItem = getTimedItemN();
+        if (timedItem != null && !Objects.equals(timedItem, previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
+            put(PARSE_TIMED_ITEM, timedItem);
+        } else {
+            remove(PARSE_TIMED_ITEM);
+        }
+    }
+
+//    public void setTimedItem(Item timedItem, boolean updateNextComingItem) {
+//        setTimedItem(timedItem, updateNextComingItem, true);
+//    }
+//
+//    public void setTimedItem(Item timedItem, boolean updateNextComingItem, boolean fireChangeEvent) {
+//
+//    }
+//    public void setTimedItemXX(Item timedItem, boolean updateNextComingItem, boolean fireChangeEvent, boolean wrapAround) {
+//        Item previousItem = getTimedItemN();
+//        ASSERT.that(previousItem == null || (!isRunning() && !previousItem.isDirty()), () -> "setting a new timedItem, but timer still running for previous timed item (not saved)" + previousItem);
+////        if ((timedItem != null && !timedItem.equals(previousItem))                ||) {
+////        if (!Objects.equals(timedItem, previousItem)) {
+//        //definition from Objects.equals() => return (a == b) || (a != null && a.equals(b))
+////        if (!((timedItem == previousItem) || timedItem != null && timedItem.equals(previousItem))) { //do not update if timedItem is the same as before (including if was null before and after) changed
+////        if (!(timedItem == previousItem || timedItem != null && timedItem == previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
+//        if (!Objects.equals(timedItem, previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
+//            //reset both when changing timedItem
+//            if (false) { //will stop the timer if previously started
+//                setStartTime(0);
+//                setElapsedTime(0);
+//            }
+//            if (timedItem != null) {
+//                if (previousItem != null && !Objects.equals(previousItem, getNextTimedItemN())) {
+//                    previousItem.removeActionListener(this);
+//                }
+//                timedItem.addActionListener(this);
+//                put(PARSE_TIMED_ITEM, timedItem);
+//                setItemStatus(timedItem.getStatus());
+//            } else {
+//                if (previousItem != null && !Objects.equals(previousItem, getNextTimedItemN())) {
+//                    previousItem.removeActionListener(this);
+//                }
+//                setItemStatus(null);
+//                remove(PARSE_TIMED_ITEM);
+//            }
+//
+//            if (updateNextComingItem) {
+//                setNextTimedItem(findNextTimerItem(timedItem, getTimerSourceN(), wrapAround));
+//            }
+//
+//            if (fireChangeEvent) {
+//                fireChangedEvent();
+//            }
+//        }
+//    }
+//    public void setTimedItems(Item timedItem, Item nextComingItem, boolean fireChangeEvent) {
+    public void setTimedItems(Item timedItem, Item nextTimedItem) {
+        Item previousItem = getTimedItemN();
+//        ASSERT.that(previousItem == null || (!isRunning() && !previousItem.isDirty()), () -> "setting a new timedItem ("+nextTimedItem+"), but timer still running for previous timed item (not saved)" + previousItem);
+        ASSERT.that(previousItem == null || (!isRunning()), () -> "setting a new timedItem (" + nextTimedItem + "), but timer still running for previous timed item=" + previousItem);
+        ASSERT.that(nextTimedItem == null || timedItem != null, "cannot have nextTimedItem!=null (" + nextTimedItem + ") if timedItem==null");
 //        if ((timedItem != null && !timedItem.equals(previousItem))                ||) {
 //        if (!Objects.equals(timedItem, previousItem)) {
         //definition from Objects.equals() => return (a == b) || (a != null && a.equals(b))
@@ -189,23 +310,58 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
 //        if (!(timedItem == previousItem || timedItem != null && timedItem == previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
         if (!Objects.equals(timedItem, previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
             //reset both when changing timedItem
-            setStartTime(0);
-            setElapsedTime(0);
+            if (false) { //NO/false since will stop the timer if previously started
+                setStartTime(0);
+                setElapsedTime(0);
+            }
             if (timedItem != null) {
+//                if (previousItem != null && !Objects.equals(previousItem, getNextTimedItemN())) {
+//                    previousItem.removeActionListener(this);
+//                }
                 timedItem.addActionListener(this);
                 put(PARSE_TIMED_ITEM, timedItem);
-                if (previousItem != null) {
-                    previousItem.removeActionListener(this);
-                }
                 setItemStatus(timedItem.getStatus());
             } else {
-                remove(PARSE_TIMED_ITEM);
-                if (previousItem != null) {
-                    previousItem.removeActionListener(this);
-                }
+//                if (previousItem != null && !Objects.equals(previousItem, getNextTimedItemN())) {
+//                    previousItem.removeActionListener(this);
+//                }
                 setItemStatus(null);
+                remove(PARSE_TIMED_ITEM);
+            }
+            if (previousItem != null) {
+                previousItem.removeActionListener(this);
             }
         }
+
+//            setNextTimedItem(nextTimedItem);
+        Item previousNextItem = getNextTimedItemN();
+
+        if (!Objects.equals(nextTimedItem, previousNextItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
+            if (nextTimedItem != null) {
+                put(PARSE_NEXT_TIMED_ITEM, nextTimedItem);
+//                    if (previousNextItem != null && !Objects.equals(previousNextItem, timedItem)) { //previousItem may be the same as the (just set) timedItem, in which case we do NOT want to remove this TimerInstance as a listener
+//                        previousNextItem.removeActionListener(this);
+//                    }
+                nextTimedItem.addActionListener(this);
+            } else {
+                remove(PARSE_NEXT_TIMED_ITEM);
+            }
+            if (previousNextItem != null && !Objects.equals(previousNextItem, timedItem)) { //NB! Don't remove listener if previous item is new timedItem!
+                previousNextItem.removeActionListener(this);
+            }
+        }
+    }
+
+    public void setTimedItems(Item timedItem, boolean setNextTimedItemFromSource) {
+        Item nextItem = null;
+        if (setNextTimedItemFromSource) {
+            ItemAndListCommonInterface source = getTimerSourceN();
+            if (source != null) {
+                List leafs = source.getLeafTasksForTimerN();
+                nextItem = findNextTimerItem(timedItem, leafs, isWrapAround());
+            }
+        }
+        setTimedItems(timedItem, nextItem);
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void setTimedItemXXX(Item timedItem) {
@@ -249,13 +405,17 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
      * @return
      */
     Item getTimedItemN() {
+        return getTimedItemN(false);
+    }
+
+    Item getTimedItemN(boolean doNotTestForMissingListener) {
         Item timedItem = (Item) getParseObject(PARSE_TIMED_ITEM);
         if (timedItem != null) {
             timedItem = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(timedItem);
         }
 //        timedItem.addActionListener(this); //add when timedItem is fetched from Parse/DAO
-        if (Config.TEST) {
-            ASSERT.that(timedItem == null || (timedItem.listeners != null && timedItem.listeners.hasListeners()), "timedItem=" + (timedItem != null ? timedItem : "<null>") + " should have listener assigned");
+        if (!doNotTestForMissingListener && Config.TEST) {
+            ASSERT.that(timedItem == null || (timedItem.listeners != null && timedItem.listeners.hasListeners()), "Nolistener assigned f timedItem=" + (timedItem != null ? timedItem : "<null>"));
         }
         return timedItem;
     }
@@ -268,23 +428,31 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
      *
      * @param nextTimedItem
      */
-    void setNextTimedItem(Item nextTimedItem) {
+//    private void setNextTimedItemOLD(Item nextTimedItem) {
+//        Item previousItem = getNextTimedItemN();
+//        if (!Objects.equals(nextTimedItem, previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
+//            if (nextTimedItem != null) {
+//                put(PARSE_NEXT_TIMED_ITEM, nextTimedItem);
+//                if (previousItem != null && !Objects.equals(previousItem, getTimedItemN())) { //previousItem may be the same as the (just set) timedItem, in which case we do NOT want to remove this TimerInstance as a listener
+//                    previousItem.removeActionListener(this);
+//                }
+//                nextTimedItem.addActionListener(this);
+////                setItemStatus(nextTimedItem.getStatus());
+//            } else {
+//                remove(PARSE_NEXT_TIMED_ITEM);
+//                if (previousItem != null && !Objects.equals(previousItem, getTimedItemN())) {
+//                    previousItem.removeActionListener(this);
+//                }
+////                setItemStatus(null);
+//            }
+//        }
+//    }
+    public void setNextTimedItemInParse(Item nextTimedItem) {
         Item previousItem = getNextTimedItemN();
-        if (!Objects.equals(nextTimedItem, previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
-            if (nextTimedItem != null) {
-                put(PARSE_NEXT_TIMED_ITEM, nextTimedItem);
-                nextTimedItem.addActionListener(this);
-                if (previousItem != null) {
-                    previousItem.removeActionListener(this);
-                }
-                setItemStatus(nextTimedItem.getStatus());
-            } else {
-                remove(PARSE_NEXT_TIMED_ITEM);
-                if (previousItem != null) {
-                    previousItem.removeActionListener(this);
-                }
-                setItemStatus(null);
-            }
+        if (nextTimedItem != null && !Objects.equals(nextTimedItem, previousItem)) { //do not update if timedItem is the same as before (including if was null before and after) changed
+            put(PARSE_NEXT_TIMED_ITEM, nextTimedItem);
+        } else {
+            remove(PARSE_NEXT_TIMED_ITEM);
         }
     }
 
@@ -320,13 +488,56 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
      *
      * @param timerSourceN
      */
-    public void setTimerSourceN(ItemAndListCommonInterface timerSourceN) {
+//    public void setTimerSourceNXXX(ItemAndListCommonInterface timerSourceN) {
+//        setTimerSource(timerSourceN, false, true, false);
+//    }
+    /**
+     * set timersource, find and set first element in source, and fire a
+     * changedEvent
+     *
+     * @param timerSourceN
+     * @param fireChangedEvent
+     */
+//    public boolean setTimerSource(ItemAndListCommonInterface timerSourceN, boolean fireChangedEvent) {
+//        return setTimerSource(timerSourceN, false, fireChangedEvent);
+//    }
+//    public boolean setTimerSource(ItemAndListCommonInterface timerSourceN, boolean setTimedItem, boolean fireChangedEvent) {
+//        return setTimerSource(timerSourceN, setTimedItem, fireChangedEvent, false);
+//    }
+    public void setTimerSourceInParse(ItemAndListCommonInterface timerSourceN) {
+        ItemAndListCommonInterface previousSource = getTimerSourceN();
+        if (timerSourceN != null && !Objects.equals(timerSourceN, previousSource)) { //do not update if timedItem is the same as before (including if was null before and after) changed
+            if (timerSourceN instanceof Item) {
+                put(PARSE_PROJECT, timerSourceN);
+                remove(PARSE_CATEGORY);
+                remove(PARSE_LIST);
+            } else if (timerSourceN instanceof Category) {
+                put(PARSE_CATEGORY, timerSourceN);
+                remove(PARSE_PROJECT);
+                remove(PARSE_LIST);
+            } else if (timerSourceN instanceof ItemList) {
+                put(PARSE_LIST, timerSourceN);
+                remove(PARSE_PROJECT);
+                remove(PARSE_CATEGORY);
+            }
+        } else { //if null
+            ASSERT.that(timerSourceN == null);
+            remove(PARSE_PROJECT);
+            remove(PARSE_LIST);
+            remove(PARSE_CATEGORY);
+        }
+    }
+
+//    public boolean setTimerSource(ItemAndListCommonInterface timerSourceN, boolean setTimedItem, boolean fireChangedEvent, boolean saveTimerInstance) {
+    public boolean setTimerSource(ItemAndListCommonInterface timerSourceN, boolean setTimedItem) {
         ItemAndListCommonInterface previousSource = getTimerSourceN();
         if (!Objects.equals(timerSourceN, previousSource)) { //do not update if timedItem is the same as before (including if was null before and after) changed
 //            if (isRunning()) { //stop previous timer
 //                stopTimer(false,true);
 //            }
-            stopTimerOnTimedItemAndUpdateActualsAndSave(false, true); //save currently timed item (if any) but not timerInstance
+            if (false) {
+                stopTimerOnTimedItemAndUpdateActualsAndSave(false, true); //save currently timed item (if any) but not timerInstance
+            }
             if (timerSourceN instanceof Item) {
                 put(PARSE_PROJECT, timerSourceN);
                 remove(PARSE_CATEGORY);
@@ -345,15 +556,34 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
                 remove(PARSE_LIST);
                 remove(PARSE_CATEGORY);
             }
-            if (timerSourceN != null) {
-                timerSourceN.addActionListener(this);
-            }
+
             if (previousSource != null) {
                 previousSource.removeActionListener(this);
             }
+            if (timerSourceN != null) {
+                timerSourceN.addActionListener(this);
+            }
+
+            if (setTimedItem) {
+//                setTimedItem(findTimedItemN(null, timerSourceN));
+//                goToNextTimerItemNEW(false);
+//                updateNEW2(false, false, false, false);
+                updateNEW2(false);
+            }
+
+//            if (false && fireChangedEvent) {
+//                fireChangedEvent();
+//            }
+            return true;
         }
+        return false;
     }
 
+    /**
+     * source can be list, category, project(!)
+     *
+     * @return
+     */
     public ItemAndListCommonInterface getTimerSourceN() {
         ItemAndListCommonInterface timerSourceN = (ItemAndListCommonInterface) getParseObject(PARSE_PROJECT);
         if (timerSourceN == null) {
@@ -521,7 +751,7 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
     public boolean isAutoStartTimer() {
         Boolean autoStart = getBoolean(PARSE_TIMER_AUTO_START);
         if (autoStart == null) {
-            return MyPrefs.timerAutomaticallyStartTimer.getBoolean(); //w?
+            return false;//MyPrefs.timerAutomaticallyStartTimer.getBoolean(); //w?
         } else {
             return autoStart;
         }
@@ -545,27 +775,32 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
     }
 
     /**
-     * start the timer, does nothing if already running
+     * start the timer (if paused, otherwise no effect) and add a timestamp to
+     * the task
      *
      * @param save
      */
-    public synchronized void startTimer(boolean saveTimerInstance, boolean saveTimedItem) {
+    public synchronized void startTimer(boolean saveTimerInstanceXXX, boolean saveTimedItemXXX) {
         synchronized (TimerStack2.TIMER_LOCK) { //TODO! is it (still/really) necessary to lock?
             Item timedItemN = getTimedItemN();
             if (!isRunning() && timedItemN != null) { //do nothing if already running
-                setStartTime(MyDate.currentTimeMillis() - getElapsedTime()); //set a 'virtual' start time elapsed seconds before 'now'
-                setElapsedTime(0); //reset elapsed to 0 while timer is running
+//                long now = MyDate.currentTimeMillis();
+                MyDate now = new MyDate();
+                setStartTime(now.getTime() - getElapsedTime()); //set a 'virtual' start time elapsed seconds before 'now'
+                setElapsedTime(0); //reset elapsed to 0 while timer is running NB! Do *after* setStartTime since elapsed time is used there
                 ASSERT.that(timedItemN != null);
-                timedItemN.addTimerStartTimestamp();
-                DAO.getInstance().saveToParseNow(saveTimerInstance, this, saveTimedItem, timedItemN);
+                timedItemN.addTimerStartTimestamp(now); //use same now to ensure exact same time results
+//                DAO.getInstance().saveToParseNow(saveTimerInstance, this, saveTimedItem, timedItemN);
+                DAO.getInstance().saveToParseLater(this, timedItemN);
             }
         }
     }
 
     /**
-     * stop the timer. If it is already stopped, this has no effect
+     * stop the timer (if running, otherwise no effect) and add a timestamp to
+     * the task.
      */
-    public void stopTimer(boolean saveTimerInstance, boolean saveTimedItem) {
+    public void pauseTimer(boolean saveTimerInstanceXXX, boolean saveTimedItemXXX) {
         synchronized (TimerStack2.TIMER_LOCK) {
             Item timedItemN = getTimedItemN();
             if (Config.TEST) {
@@ -576,25 +811,25 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
                 setElapsedTime(now.getTime() - getStartTime());
                 setStartTime(0);
                 timedItemN.addTimerStopTimestamp(now);
-                ASSERT.that(timedItemN != null);
-                DAO.getInstance().saveToParseNow(saveTimerInstance, this, saveTimedItem, timedItemN);
+//                ASSERT.that(timedItemN != null);
+//                DAO.getInstance().saveToParseNow(saveTimerInstance, this, saveTimedItem, timedItemN);
+                DAO.getInstance().saveToParseLater(this, timedItemN);
             }
         }
     }
 
-    public void stopTimer() {
-//        synchronized (TimerStack.TIMER_LOCK) {
-//            if (isRunning()) {
-//                setElapsedTime(MyDate.currentTimeMillis() - getStartTime());
-//                setStartTime(0);
-//                Item timedItem = getTimedItemN();
-//                ASSERT.that(timedItem != null);
-//                timedItem.addTimerStopTimestamp();
-//            }
-//        }
-        stopTimer(true, true);
-    }
-
+//    public void stopTimerXXX() {
+////        synchronized (TimerStack.TIMER_LOCK) {
+////            if (isRunning()) {
+////                setElapsedTime(MyDate.currentTimeMillis() - getStartTime());
+////                setStartTime(0);
+////                Item timedItem = getTimedItemN();
+////                ASSERT.that(timedItem != null);
+////                timedItem.addTimerStopTimestamp();
+////            }
+////        }
+//        stopTimerXXX(true, true);
+//    }
     static boolean showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(Item item, ItemAndListCommonInterface projectOrItemList) {
         String typeStr = ItemAndListCommonInterface.getTypeString(projectOrItemList).toLowerCase();
         return Dialog.show("Timer", "The timed task \"" + item.getText()
@@ -612,6 +847,40 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
 //                    //                    + "\". \n\n Start over from the start of the project or stop Timer?", "Start over", "Stop Timer");
 //                    + "\". \n\n Please restart the Timer", null, "OK");
 //        }
+    }
+
+    /**
+     * find the appropriate item to time, either the itemOrProjectN itself if a
+     * leaf task, or the first leaf task if a project, or the first leaf task in
+     * itemListOrCategoryN
+     *
+     * @param itemOrProjectN
+     * @param itemListOrCategoryN
+     * @return the item to time or null if none found
+     */
+    private static Item findTimedItemNXXX(Item itemOrProjectN, ItemAndListCommonInterface itemListOrCategoryN) {
+        Item newTimedItem;
+        if (itemOrProjectN != null) { //        setTimedItem(itemOrProject);
+//            List<Item> projectLeafTasks = itemOrProjectN.getLeafTasksAsListN((item) -> isValidItemForTimer(item)); //will return item itself or first subtask if a project
+            List<Item> projectLeafTasks = itemOrProjectN.getLeafTasksForTimerN(); //will return item itself or first subtask if a project
+//            setTimedItem(itemOrProject);
+//            setTimedItem(projectLeafTasks.get(0));
+            newTimedItem = projectLeafTasks.get(0);
+        } else if (itemListOrCategoryN != null) { //itemOrProject == null
+//            List<Item> projectLeafTasks = itemListOrCategoryN.getLeafTasksAsList(false, (item) -> isValidItemForTimer(item));
+//            List<Item> projectLeafTasksN = itemListOrCategoryN.getLeafTasksAsListN((item) -> isValidItemForTimer(item));
+            List<Item> projectLeafTasksN = itemListOrCategoryN.getLeafTasksForTimerN();
+            if (projectLeafTasksN != null && projectLeafTasksN.size() >= 1) { //        setTimedItem(itemOrProject);
+//                setTimedItem(projectLeafTasks.get(0));
+                newTimedItem = projectLeafTasksN.get(0);
+            } else {
+                ASSERT.that("Timer started on null item and no suitable item in itemListOrCategoryN=" + (itemListOrCategoryN != null ? itemListOrCategoryN.toString() : "<null>")); //A timer must not be created if there is no item to time
+                newTimedItem = null;
+            }
+        } else {
+            newTimedItem = null;
+        }
+        return newTimedItem;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -753,91 +1022,444 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
         return -1;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    void goToNextTimerItemNEWOLD(boolean saveTimerInstance) {
+//        ItemAndListCommonInterface source = getTimerSourceN();
+//        Item currentlyTimedItemN = getTimedItemN();
+//        Item currNextTimedItemN = getNextTimedItemN();
+//        Item newTimedItemN;
+//        Item newNextTimedItemN;
+//        boolean wrapAround = false;
+//        if (currentlyTimedItemN != null) {
+//            stopTimerOnTimedItemAndUpdateActualsAndSave(false, true); //save the timed item, not the timerInstance (done below)
+//        }
+//
+//        if (source == null) {
+//            newTimedItemN = null;
+//            newNextTimedItemN = null;
+//        } else {
+////            List<Item> sourceLeafTasks = source.getLeafTasksAsListN();
+//            List<Item> sourceLeafTasks = source.getLeafTasksForTimerN();
+//            if (sourceLeafTasks.isEmpty()) {
+//                newTimedItemN = null;
+//                newNextTimedItemN = null;
+//            } else {
+//                int currentItemIndex;
+//                if (currentlyTimedItemN != null) {
+//                    currentItemIndex = sourceLeafTasks.indexOf(currentlyTimedItemN);
+////                } else if (!sourceLeafTasks.isEmpty() && MyPrefs.enableTimerToRestartOnLists.getBoolean()
+//                } else if (sourceLeafTasks.size() > 1 && MyPrefs.enableTimerToRestartOnLists.getBoolean() //>1: only wrap around if more items than current in the list (otherwise it would 'wrap' around to the same item)
+//                        && (MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean()
+//                        || (MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean() && showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(currentlyTimedItemN, source)))) {
+//                    currentItemIndex = 0;
+//                    wrapAround = true;
+//                } else {
+//                    currentItemIndex = -1;
+//                }
+//                if (currentItemIndex != -1) { // current task still in list, get (possibly updated) next
+////                    int nextIndex = getNextIndex(sourceLeafTasks, currentItemIndex, MyPrefs.enableTimerToRestartOnLists.getBoolean() && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean());
+//                    int nextIndex = getNextIndex(sourceLeafTasks, currentItemIndex, wrapAround);
+//                    if (nextIndex != -1) {
+//                        newTimedItemN = sourceLeafTasks.get(nextIndex);
+//                    } else {
+//                        newTimedItemN = null;
+//                    }
+//                    int nextAgainIndex = getNextIndex(sourceLeafTasks, nextIndex, MyPrefs.enableTimerToRestartOnLists.getBoolean() && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean());
+//                    if (nextAgainIndex != -1) {
+//                        newNextTimedItemN = sourceLeafTasks.get(nextAgainIndex);
+//                    } else {
+//                        newNextTimedItemN = null;
+//                    }
+//                } else { // index == -1 <=> current task no longer in list
+//                    int nextIndex;
+//                    if (currNextTimedItemN != null && (nextIndex = sourceLeafTasks.indexOf(currNextTimedItemN)) != -1) {
+//                        //if nextItem is defined and (still) in the list, use that
+//                        newTimedItemN = currNextTimedItemN;
+//                        int nextAgainIndex = getNextIndex(sourceLeafTasks, nextIndex, MyPrefs.enableTimerToRestartOnLists.getBoolean() && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean());
+//                        newNextTimedItemN = (nextAgainIndex == -1) ? null : sourceLeafTasks.get(nextAgainIndex);
+//                    } else { //index==-1 <=> if not, propose to start-over etc
+//                        if (!sourceLeafTasks.isEmpty() && MyPrefs.enableTimerToRestartOnLists.getBoolean()
+//                                && (MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean()
+//                                || (MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean() && showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(currentlyTimedItemN, source)))) {
+//                            newTimedItemN = sourceLeafTasks.get(0);
+//                            nextIndex = getNextIndex(sourceLeafTasks, 0, true);
+//                            newNextTimedItemN = (nextIndex == -1) ? null : sourceLeafTasks.get(nextIndex);
+//                        } else { //index==-1 <=> if not, propose to start-over etc
+//                            newTimedItemN = null;
+//                            newNextTimedItemN = null;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//        setTimedItem(newTimedItemN, true);
+////        setNextTimedItem(newNextTimedItemN);
+//        if (saveTimerInstance) {
+//            DAO.getInstance().saveToParseNow(this);
+//        }
+//    }
+//</editor-fold>
+//    void goToNextTimerItemNEW(boolean saveTimerInstance) {
+//        goToNextTimerItemNEW(saveTimerInstance, MyPrefs.enableTimerToRestartOnLists.getBoolean()
+//                && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean(),
+//                MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean());
+//    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    void goToNextTimerItemNEW(boolean saveTimerInstance, boolean wrapAroundToStartOfSource, boolean askIfWrapAround) {
+//        ItemAndListCommonInterface source = getTimerSourceN();
+//        Item currentlyTimedItemN = getTimedItemN();
+//        Item currNextTimedItemN = getNextTimedItemN();
+//        Item newTimedItemN;
+//        Item newNextTimedItemN;
+////        boolean wrappedAround = false;
+//        if (currentlyTimedItemN != null) {
+//            stopTimerOnTimedItemAndUpdateActualsAndSave(false, true); //save the timed item, not the timerInstance (done below)
+//        }
+//
+//        if (source == null) {
+//            newTimedItemN = null;
+//            newNextTimedItemN = null;
+//        } else {
+////            List<Item> sourceLeafTasks = source.getLeafTasksAsListN();
+//            List<Item> sourceLeafTasks = source.getLeafTasksForTimerN();
+//            if (sourceLeafTasks.isEmpty()) {
+//                newTimedItemN = null;
+//                newNextTimedItemN = null;
+//            } else { //not empty
+//                int currentItemIndex;
+//                if (currentlyTimedItemN == null) {
+//                    currentItemIndex = 0;
+//                } else {
+//                    currentItemIndex = sourceLeafTasks.indexOf(currentlyTimedItemN);
+////                } else if (!sourceLeafTasks.isEmpty() && MyPrefs.enableTimerToRestartOnLists.getBoolean()
+////                } else if (sourceLeafTasks.size() > 1 && MyPrefs.enableTimerToRestartOnLists.getBoolean() //>1: only wrap around if more items than current in the list (otherwise it would 'wrap' around to the same item)
+////                        && (MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean()
+////                        || (MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean() && showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(currentlyTimedItemN, source)))) {
+//                }
+//
+//                //if currentItem is no longer found, wrap around to start of list if set
+//                if (false && currentItemIndex == -1
+//                        &&//sourceLeafTasks.size() > 1 && //&& MyPrefs.enableTimerToRestartOnLists.getBoolean() //>1: only wrap around if more items than current in the list (otherwise it would 'wrap' around to the same item)
+//                        (wrapAroundToStartOfSource
+//                        && (!askIfWrapAround || showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(currentlyTimedItemN, source)))) {
+//                    currentItemIndex = 0;
+////                    wrappedAround = true;
+//                }
+//
+//                if (currentItemIndex != -1) { // current task still in list, get (possibly updated) next
+////                    int nextIndex = getNextIndex(sourceLeafTasks, currentItemIndex, MyPrefs.enableTimerToRestartOnLists.getBoolean() && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean());
+////                    int nextIndex = getNextIndex(sourceLeafTasks, currentItemIndex, wrappedAround);
+//                    int nextIndex = getNextIndex(sourceLeafTasks, currentItemIndex, wrapAroundToStartOfSource);
+//                    if (nextIndex != -1) {
+//                        newTimedItemN = sourceLeafTasks.get(nextIndex);
+//                    } else {
+//                        newTimedItemN = null;
+//                    }
+////                    int nextAgainIndex = getNextIndex(sourceLeafTasks, nextIndex, MyPrefs.enableTimerToRestartOnLists.getBoolean() && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean());
+//                    int nextAgainIndex = getNextIndex(sourceLeafTasks, nextIndex, wrapAroundToStartOfSource);
+//                    if (nextAgainIndex != -1) {
+//                        newNextTimedItemN = sourceLeafTasks.get(nextAgainIndex);
+//                    } else {
+//                        newNextTimedItemN = null;
+//                    }
+//                } else { // index == -1 <=> current task no longer in list
+//                    int nextIndex;
+//                    //if nextItem is defined and (still) in the list, use that and if possible, find next item after that again
+//                    if (currNextTimedItemN != null && (nextIndex = sourceLeafTasks.indexOf(currNextTimedItemN)) != -1) {
+//                        newTimedItemN = currNextTimedItemN;
+////                        int nextAgainIndex = getNextIndex(sourceLeafTasks, nextIndex, MyPrefs.enableTimerToRestartOnLists.getBoolean() && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean());
+//                        int nextAgainIndex = getNextIndex(sourceLeafTasks, nextIndex, wrapAroundToStartOfSource);
+//                        newNextTimedItemN = (nextAgainIndex == -1) ? null : sourceLeafTasks.get(nextAgainIndex);
+//                    } else { //nextItem either not defined or no longer in list => if wrapAround start from start of list, otherwise no elements could be found
+////                        if (!sourceLeafTasks.isEmpty() && MyPrefs.enableTimerToRestartOnLists.getBoolean()
+////                                && (MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean()
+////                                || (MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean() && showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(currentlyTimedItemN, source)))) {
+//                        if (wrapAroundToStartOfSource
+//                                && (!askIfWrapAround || showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(currentlyTimedItemN, source))) {
+//                            newTimedItemN = sourceLeafTasks.get(0);
+//                            nextIndex = getNextIndex(sourceLeafTasks, 0, true);
+//                            newNextTimedItemN = (nextIndex == -1) ? null : sourceLeafTasks.get(nextIndex);
+//                        } else { //index==-1 <=> if not, propose to start-over etc
+//                            newTimedItemN = null;
+//                            newNextTimedItemN = null;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        setTimedItem(newTimedItemN, true);
+////        setNextTimedItem(newNextTimedItemN);
+//
+//        if (saveTimerInstance) {
+//            DAO.getInstance().saveToParseNow(this);
+//        }
+//    }
+//</editor-fold>
     /**
-     * will update timedItem and nextTimedItem, wrapping around the list if
-     * settings set, set null values if no next values. NB! if the timedItem is
-     * no longer in the list it will automatically use the nextTimedItem already
-     * set previously, iff it is still in the list. If neither are the the list
-     * will set both to null to indicate no appropriate values were found.
+     * initialize the timer when started/created with a source and/or a task or
+     * project. If started with a source and a project, will pick the first
+     * appropriate subtask from the project, ensuring that a later update will
+     * continue the whatever task comes after this subtask
      *
-     * @param updateAndSave
+     * @param itemOrProjectN
+     * @param itemListOrCategoryN
+     */
+    private void setup(Item itemOrProjectN, ItemAndListCommonInterface itemListOrCategoryN) {
+        ASSERT.that(itemOrProjectN != null || itemListOrCategoryN != null, "not both item and source can be null!");
+
+        if (itemOrProjectN == null) { //only source is defined
+            setTimerSource(itemListOrCategoryN, true); //even if started directly on project, use first appropriate subtask
+        } else { //item defined
+            if (itemListOrCategoryN == null) { //no source
+                if (itemOrProjectN.isProject()) {
+                    setTimerSource(itemOrProjectN, true); //even if started directly on project, use first appropriate subtask
+                } else { //item NOT a project
+                    setTimedItems(itemOrProjectN, false); //false since no nextItem exists
+                }
+            } else { //source also defined
+                if (itemOrProjectN.isProject()) {
+                    List<Item> sourceLeafTasks = itemOrProjectN.getLeafTasksForTimerN();
+                    if (itemOrProjectN.size() > 0) {
+//                        setTimedItems(sourceLeafTasks.get(0), true); //even if started directly on project, use first appropriate subtask
+                        setTimerSource(itemListOrCategoryN, true); // if n appropriate tasks in project, use first appropriate task in source (if any)
+                    } else {
+                        setTimerSource(itemListOrCategoryN, true); // if n appropriate tasks in project, use first appropriate task in source (if any)
+                    }
+                } else { //item NOT a project
+                    setTimerSource(itemListOrCategoryN, false); //even if started directly on project, use first appropriate subtask
+                    setTimedItems(itemOrProjectN, true); //even if started directly on project, use first appropriate subtask
+                }
+            }
+        }
+    }
+
+    /**
+     *
+     * @param moveToNext
+     * @param saveTimerInstanceXXX
+     * @param wrapAroundToStartOfSource
+     * @param askIfWrapAround
      * @return
      */
-    void goToNextTimerItemNEW(boolean saveTimerInstance) {
+    /**
+     * will update timedItem and nextTimedItem, wrapping around the list if
+     * settings set, set null values if no next values. If no timedItem is
+     * already set (eg on first call), will find the first suitable in Source.
+     * NB! if the timedItem is no longer in the list it will automatically use
+     * the nextTimedItem already set previously, iff it is still in the list. If
+     * neither are the the list will set both to null to indicate no appropriate
+     * values were found.
+     *
+     * @param saveTimerInstance
+     * @param wrapAroundToStartOfSource
+     * @param askIfWrapAround
+     * @return false if no change was made (may be true even if no change was
+     * made)
+     */
+    boolean updateNEW2(boolean forceMoveToNextEvenIfStillValid, boolean saveTimerInstanceXXX, boolean wrapAroundToStartOfSource, boolean askIfWrapAround) {
+        boolean changeWasMade = true;
         ItemAndListCommonInterface source = getTimerSourceN();
         Item currentlyTimedItemN = getTimedItemN();
         Item currNextTimedItemN = getNextTimedItemN();
         Item newTimedItemN;
         Item newNextTimedItemN;
-        boolean wrapAround = false;
-        if (currentlyTimedItemN != null) {
-            stopTimerOnTimedItemAndUpdateActualsAndSave(false, true); //save the timed item, not the timerInstance (done below)
+//        boolean wrappedAround = false;
+        if (false && currentlyTimedItemN != null) {
+            stopTimerOnTimedItemAndUpdateActualsAndSave(false, true); //save the timed item, not the timerInstance (done below) //NO, do below only if moving to a new item
         }
 
+        int nextIndex;
         if (source == null) {
-            newTimedItemN = null;
+//            nextIndex = -1;
+            newTimedItemN = currentlyTimedItemN; //eg when creating a task inside Timer
             newNextTimedItemN = null;
-        } else {
-            List<Item> sourceLeafTasks = source.getLeafTasksAsListN();
+        } else { //source has elements
+            List<Item> sourceLeafTasks = source.getLeafTasksForTimerN();
+
             if (sourceLeafTasks.isEmpty()) {
+                nextIndex = -1;
                 newTimedItemN = null;
-                newNextTimedItemN = null;
-            } else {
+//                stopTimerOnTimedItemAndUpdateActualsAndSave(false, saveTimerInstanceXXX);
+//                newNextTimedItemN = null;
+            } else { //source not empty
                 int currentItemIndex;
-                if (currentlyTimedItemN != null) {
-                    currentItemIndex = sourceLeafTasks.indexOf(currentlyTimedItemN);
-                } else if (!sourceLeafTasks.isEmpty() && MyPrefs.enableTimerToRestartOnLists.getBoolean()
-                        && (MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean()
-                        || (MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean() && showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(currentlyTimedItemN, source)))) {
-                    currentItemIndex = 0;
-                    wrapAround = true;
+                if (currentlyTimedItemN == null) {
+                    nextIndex = 0; //start with first item on first call
+                    newTimedItemN = sourceLeafTasks.get(nextIndex);
                 } else {
-                    currentItemIndex = -1;
-                }
-                if (currentItemIndex != -1) { // current task still in list, get (possibly updated) next
-//                    int nextIndex = getNextIndex(sourceLeafTasks, currentItemIndex, MyPrefs.enableTimerToRestartOnLists.getBoolean() && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean());
-                    int nextIndex = getNextIndex(sourceLeafTasks, currentItemIndex, wrapAround);
-                    if (nextIndex != -1) {
+                    currentItemIndex = sourceLeafTasks.indexOf(currentlyTimedItemN);
+
+                    if (currentItemIndex == -1 && currentlyTimedItemN.isValidItemForTimer() && currentlyTimedItemN.isProject()
+                            && forceMoveToNextEvenIfStillValid) { //special case: new subtask added to timed item directly in Timer, so continue with first subtask
+                        nextIndex = 0;
                         newTimedItemN = sourceLeafTasks.get(nextIndex);
-                    } else {
-                        newTimedItemN = null;
-                    }
-                    int nextAgainIndex = getNextIndex(sourceLeafTasks, nextIndex, MyPrefs.enableTimerToRestartOnLists.getBoolean() && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean());
-                    if (nextAgainIndex != -1) {
-                        newNextTimedItemN = sourceLeafTasks.get(nextAgainIndex);
-                    } else {
-                        newNextTimedItemN = null;
-                    }
-                } else { // index == -1 <=> current task no longer in list
-                    int nextIndex;
-                    if (currNextTimedItemN != null && (nextIndex = sourceLeafTasks.indexOf(currNextTimedItemN)) != -1) {
-                        //if nextItem is defined and (still) in the list, use that
-                        newTimedItemN = currNextTimedItemN;
-                        int nextAgainIndex = getNextIndex(sourceLeafTasks, nextIndex, MyPrefs.enableTimerToRestartOnLists.getBoolean() && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean());
-                        newNextTimedItemN = (nextAgainIndex == -1) ? null : sourceLeafTasks.get(nextAgainIndex);
-                    } else { //index==-1 <=> if not, propose to start-over etc
-                        if (!sourceLeafTasks.isEmpty() && MyPrefs.enableTimerToRestartOnLists.getBoolean()
-                                && (MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean()
-                                || (MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean() && showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(currentlyTimedItemN, source)))) {
-                            newTimedItemN = sourceLeafTasks.get(0);
-                            nextIndex = getNextIndex(sourceLeafTasks, 0, true);
-                            newNextTimedItemN = (nextIndex == -1) ? null : sourceLeafTasks.get(nextIndex);
-                        } else { //index==-1 <=> if not, propose to start-over etc
-                            newTimedItemN = null;
-                            newNextTimedItemN = null;
+                    } else if (currentItemIndex == -1 || !currentlyTimedItemN.isValidItemForTimer() || forceMoveToNextEvenIfStillValid) { // current task still in list, get (possibly updated) next
+                        //MOVE TO NEXT: if no longer in list OR  no longer valid (e.g. Done) OR user chose to force-move to next task:
+//                        stopTimerOnTimedItemAndUpdateActualsAndSave(false, saveTimerInstanceXXX);
+                        if (currentItemIndex == -1) { //currently timed item no longer in list, so use next if it is still in the list
+                            if (currNextTimedItemN != null && (nextIndex = sourceLeafTasks.indexOf(currNextTimedItemN)) != -1) {
+                                newTimedItemN = currNextTimedItemN;
+                            } else { //currNextTimedItemN == null || sourceLeafTasks.indexOf(currNextTimedItemN) == -1
+                                //wrap around if defined
+                                if (wrapAroundToStartOfSource && sourceLeafTasks.size() > 1 //>1: only wrap around if list contains more than the current item
+                                        && (!askIfWrapAround || showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(currentlyTimedItemN, source))) {
+                                    nextIndex = 0;
+                                    newTimedItemN = sourceLeafTasks.get(nextIndex);
+                                } else {
+                                    nextIndex = -1;
+                                    newTimedItemN = null;
+                                }
+                            }
+                        } else { //currently timed item is STILL in list
+                            nextIndex = getNextIndex(sourceLeafTasks, currentItemIndex, wrapAroundToStartOfSource);
+                            if (nextIndex != -1) {
+                                newTimedItemN = sourceLeafTasks.get(nextIndex);
+                            } else if (wrapAroundToStartOfSource && sourceLeafTasks.size() > 1 //>1: only wrap around if list contains more than the current item
+                                    && (!askIfWrapAround || showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(currentlyTimedItemN, source))) {
+                                nextIndex = 0;
+                                newTimedItemN = sourceLeafTasks.get(nextIndex);
+                            } else {
+                                newTimedItemN = null;
+                            }
                         }
+//                        newNextTimedItemN = findNextTimerItem(newTimedItemN, nextIndex, sourceLeafTasks, wrapAroundToStartOfSource);
+//                        newNextTimedItemN = findNextTimerItem(nextIndex, sourceLeafTasks, wrapAroundToStartOfSource);
+                    } else { //(currentItemIndex != -1 && currNextTimedItemN.isValidItemForTimer() &&! forceMoveToNextEvenIfStillValid)
+                        //item still in list and still valid for timer (and not forcing move to next) <=> refresh nextItem
+                        newTimedItemN = currentlyTimedItemN;
+                        nextIndex = currentItemIndex;
+//                        newNextTimedItemN = findNextTimerItem(nextIndex, sourceLeafTasks, wrapAroundToStartOfSource);
                     }
                 }
             }
+            newNextTimedItemN = findNextTimerItem(nextIndex, sourceLeafTasks, wrapAroundToStartOfSource);
         }
-        setTimedItem(newTimedItemN);
-        setNextTimedItem(newNextTimedItemN);
-        if (saveTimerInstance) {
-            DAO.getInstance().saveToParseNow(this);
+
+        //if we were timing an item before and it has changed, then stop and save timer for that item before changing just below in setTimesItems
+        if (currentlyTimedItemN != null & !Objects.equals(currentlyTimedItemN, newTimedItemN)) {
+            stopTimerOnTimedItemAndUpdateActualsAndSave(false, saveTimerInstanceXXX);
         }
+
+        changeWasMade = newTimedItemN != currentlyTimedItemN || newNextTimedItemN != currNextTimedItemN; //change made if either has cahnged
+        if (changeWasMade) {
+            setTimedItems(newTimedItemN, newNextTimedItemN); //NB: set new timed items *before* calling start below (otherwise restarts old timed item)
+
+            if (isAutoStartTimer()) {
+                startTimer(false, false);
+            }
+//        fireChangedEvent();
+
+//        if (true || saveTimerInstanceXXX) {
+            if (true || saveTimerInstanceXXX) {
+//            DAO.getInstance().saveToParseNow(this);
+                DAO.getInstance().saveToParseLater(this);
+            }
+        }
+        return changeWasMade;
     }
 
-    static Item findNextTimerItem(Item currentlyTimedItemN, ItemAndListCommonInterface source, boolean wrapAround) {
+    boolean updateNEW2(boolean forceMoveToNextEvenIfStillValid) {
+        return updateNEW2(forceMoveToNextEvenIfStillValid, true, isWrapAround(), MyPrefs.timerAskBeforeRestartingOnList.getBoolean());
+    }
+//    boolean updateNEW2(boolean forceMoveToNextEvenIfStillValid, boolean saveTimerInstanceXXX) {
+//        return updateNEW2(forceMoveToNextEvenIfStillValid, saveTimerInstanceXXX, isWrapAround(), MyPrefs.timerAskBeforeRestartingOnList.getBoolean());
+//    }
+
+    boolean isWrapAround() {
+        //TODO: make this an option the user can change for each individual timerInstance(??)
+        return MyPrefs.timerEnableRestartOnLists.getBoolean()
+                && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean();
+    }
+
+//    void updateNextTimerItemNEW(boolean saveTimerInstance) {
+//        updateNextTimerItemNEW(saveTimerInstance, MyPrefs.enableTimerToRestartOnLists.getBoolean()
+//                && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean(),
+//                MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean());
+//    }
+    /**
+     * called whenever a change event from source is received, updates current
+     * and next items (if current no longer in list, tries if next is still
+     * there and starts from there, otherwise starts over if wrap-around setting
+     * is active)
+     */
+//    private void updateOnSourceChange() {
+//        updateNextTimerItemNEW(true);
+////        fireChangedEvent();
+//    }
+    /**
+     * update/refresh timedItem and nextItem when source changes: if timedItem
+     * still in list keep that and update nextItem if changed, if timedItem no
+     * longer in list, then use nextItem if still in list, otherwise wrap around
+     * if activated. Special case: if list was empty before? no shouldn't
+     * happen.
+     *
+     * @param saveTimerInstance
+     * @param wrapAroundToStartOfSource
+     * @param askIfWrapAround
+     */
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    void updateNextTimerItemNEW(boolean saveTimerInstance, boolean wrapAroundToStartOfSource, boolean askIfWrapAround) {
+//        ItemAndListCommonInterface source = getTimerSourceN();
+//        Item currentlyTimedItemN = getTimedItemN();
+//        Item currNextTimedItemN = getNextTimedItemN();
+//
+//        ASSERT.that(source != null && source.size() > 0, "source should never be null or empty when refreshing");
+//        ASSERT.that(currentlyTimedItemN != null, "currentItem should never be null");
+//
+//        List<Item> sourceLeafTasks = source.getLeafTasksForTimerN();
+//        if (sourceLeafTasks.isEmpty()) {
+//            currentlyTimedItemN = null;
+//            currNextTimedItemN = null;
+//        } else { //not empty
+//            int currentItemIndex = sourceLeafTasks.indexOf(currentlyTimedItemN);
+//
+//            if (currentItemIndex != -1) { // current task still in list, get (possibly updated) next
+////                    int nextIndex = getNextIndex(sourceLeafTasks, currentItemIndex, MyPrefs.enableTimerToRestartOnLists.getBoolean() && MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean());
+//                int nextIndex = getNextIndex(sourceLeafTasks, currentItemIndex, wrapAroundToStartOfSource);
+//                if (nextIndex != -1) {
+//                    currNextTimedItemN = sourceLeafTasks.get(nextIndex);
+//                } else {
+//                    currNextTimedItemN = null;
+//                }
+//
+//            } else { // index == -1 <=> current task no longer in list
+//
+//                stopTimerOnTimedItemAndUpdateActualsAndSave(false, true); //save the timed item, not the timerInstance (done below)
+//
+//                int nextIndex;
+//                //if nextItem is defined and (still) in the list, use that and if possible, find next item after that again
+//                if (currNextTimedItemN != null && (nextIndex = sourceLeafTasks.indexOf(currNextTimedItemN)) != -1) {
+//                    currentlyTimedItemN = currNextTimedItemN;
+//                    int nextAgainIndex = getNextIndex(sourceLeafTasks, nextIndex, wrapAroundToStartOfSource);
+//                    currNextTimedItemN = (nextAgainIndex == -1) ? null : sourceLeafTasks.get(nextAgainIndex);
+//                } else { //neither current, nor next, in in list => if wrapAround start from start of list, otherwise no elements could be found
+//                    if (wrapAroundToStartOfSource
+//                            && (!askIfWrapAround || showDialogPreviouslyTimedItemNoLongerInProjectOrListStartOver(currentlyTimedItemN, source))) {
+//                        currentlyTimedItemN = sourceLeafTasks.get(0);
+//                        nextIndex = getNextIndex(sourceLeafTasks, 0, false);
+//                        currNextTimedItemN = (nextIndex == -1) ? null : sourceLeafTasks.get(nextIndex);
+//                    } else { //index==-1 <=> if not, propose to start-over etc
+//                        currentlyTimedItemN = null;
+//                        currNextTimedItemN = null;
+//                    }
+//                }
+//            }
+//        }
+//
+//        setTimedItem(currentlyTimedItemN, true);
+////        setNextTimedItem(currNextTimedItemN);
+//
+//        if (saveTimerInstance) {
+//            DAO.getInstance().saveToParseNow(this);
+//        }
+//    }
+//</editor-fold>
+    static Item findNextTimerItem(Item currentlyTimedItemN, ItemAndListCommonInterface source) {
+        return findNextTimerItem(currentlyTimedItemN, source, MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean());
+    }
+
+    static Item findNextTimerItemXXX(Item currentlyTimedItemN, ItemAndListCommonInterface source, boolean wrapAround) {
 //        ASSERT.that(currentlyTimedItemN == getTimedItemN());
 
 //        ItemAndListCommonInterface source = getTimerSourceN();
@@ -848,7 +1470,8 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
         if (source == null || currentlyTimedItemN == null) {
             nextTimedItemN = null;
         } else {
-            List<Item> sourceLeafTasks = source.getLeafTasksAsListN();
+//            List<Item> sourceLeafTasks = source.getLeafTasksAsListN();
+            List<Item> sourceLeafTasks = source.getLeafTasksForTimerN();
             if (sourceLeafTasks.isEmpty()) {
                 nextTimedItemN = null;
             } else {
@@ -869,25 +1492,58 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
         return nextTimedItemN;
     }
 
+    static Item findNextTimerItem(Item currentlyTimedItemN, ItemAndListCommonInterface source, boolean wrapAround) {
+        return findNextTimerItem(currentlyTimedItemN, source.getLeafTasksForTimerN(), wrapAround);
+    }
+
+    static Item findNextTimerItem(Item currentlyTimedItemN, List<Item> sourceLeafTasks, boolean wrapAround) {
+        return findNextTimerItem(sourceLeafTasks.indexOf(currentlyTimedItemN), sourceLeafTasks, wrapAround);
+    }
+
+    static Item findNextTimerItem(int currentItemIndex, List<Item> sourceLeafTasks, boolean wrapAround) {
+        Item nextTimedItemN;
+
+        if (sourceLeafTasks == null || sourceLeafTasks.size() <= 1) {
+            nextTimedItemN = null;
+        } else {
+//                int currentItemIndex = sourceLeafTasks.indexOf(currentlyTimedItemN);
+            if (currentItemIndex != -1) { // current task still in list, get (possibly updated) next
+                int nextIndex = getNextIndex(sourceLeafTasks, currentItemIndex, wrapAround);
+                if (nextIndex != -1) {
+                    nextTimedItemN = sourceLeafTasks.get(nextIndex);
+                } else {
+                    nextTimedItemN = null;
+                }
+            } else { // index == -1 <=> no next index found (eg reached end of list or current task no longer in list)
+                nextTimedItemN = null;
+//                assert false;
+            }
+        }
+        return nextTimedItemN;
+    }
+
     /**
      * stop timing the current timed item (if any, otherwise do nothing) and
      * update and save the item
      *
-     * @param saveTimerInstance
-     * @param saveTimedItem
+     * @param saveTimerInstanceXXX
+     * @param saveTimedItemXXX
      */
-    public void stopTimerOnTimedItemAndUpdateActualsAndSave(boolean saveTimerInstance, boolean saveTimedItem) {//TimerInstance timerInstance) {
-        stopTimer(false, false);
+    public void stopTimerOnTimedItemAndUpdateActualsAndSave(boolean saveTimerInstanceXXX, boolean saveTimedItemXXX) {//TimerInstance timerInstance) {
+        pauseTimer(false, false);
         Item timedItemN = getTimedItemN(); //get the item that is/was timed
         if (timedItemN != null && getElapsedTime() > 0) {
             timedItemN.setActualForTaskItself(timedItemN.getActualForTaskItself() + getElapsedTime(), false); //false: don't auto-update startedOn time (done when status is set?!)
-            ASSERT.that(timedItemN.getActualForTaskItself() + getElapsedTime() == timedItemN.getTotalTimerDurationOfTimedIntervals());
-            DAO.getInstance().saveToParseNow(saveTimerInstance, this, saveTimedItem, timedItemN);
             setElapsedTime(0); //reset elapsed time since it's now been added to Item's actual & saved
+            if (false) {
+                ASSERT.that(timedItemN.getActualForTaskItself() + getElapsedTime() == timedItemN.getTotalTimerDurationOfTimedIntervals());
+            }
+//            DAO.getInstance().saveToParseNow(saveTimerInstance, this, saveTimedItem, timedItemN);
+            DAO.getInstance().saveToParseLater(this, timedItemN);
         }
-        if (saveTimerInstance) {
-            DAO.getInstance().saveToParseNow(this);
-        }
+//        if (false && saveTimerInstance) {
+//            DAO.getInstance().saveToParseNow(this);
+//        }
     }
 
     /**
@@ -895,26 +1551,25 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
      *
      * @param currentItem
      */
-    private void goToNextAndStartIfAutoStart(boolean saveTimerInstance, boolean saveNewTimedItem) {
-//        boolean wasRunning = isRunning();
-        goToNextTimerItemNEW(false);
-        Item currentItem = getTimedItemN();
-        if (currentItem != null) {
-            if (isAutoStartTimer()) { //whether the current active timer or one paused in the stack, move timerInstance to next task and remove it if there are no more tasks
-                startTimer(saveTimerInstance, saveNewTimedItem);
-                fireChangedEvent();
-            } else {
-                fireChangedEvent();
-                if (saveTimerInstance) {
-                    DAO.getInstance().saveToParseNow(this); //save items and timer that may have changed
-                }
-            }
-        } else { //no more items to time
-            fireDeletedEvent();
-            DAO.getInstance().deleteLater(this, true); //delete the timer
-        }
-    }
-
+//    private void goToNextAndStartIfAutoStartXXX(boolean saveTimerInstance, boolean saveNewTimedItem) {
+////        boolean wasRunning = isRunning();
+//        goToNextTimerItemNEW(false);
+//        Item currentItem = getTimedItemN();
+//        if (currentItem != null) {
+//            if (isAutoStartTimer()) { //whether the current active timer or one paused in the stack, move timerInstance to next task and remove it if there are no more tasks
+//                startTimer(saveTimerInstance, saveNewTimedItem);
+//                fireChangedEvent();
+//            } else {
+//                fireChangedEvent();
+//                if (saveTimerInstance) {
+//                    DAO.getInstance().saveToParseNow(this); //save items and timer that may have changed
+//                }
+//            }
+//        } else { //no more items to time
+//            fireDeletedEvent();
+//            DAO.getInstance().deleteLater(this, true); //delete the timer
+//        }
+//    }
 //    private void stopTimingAndGoToNext() {
 //        stopTimingAndGoToNext(false,false);
 //    }
@@ -922,11 +1577,10 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
 //        stopTimerOnTimedItemAndUpdateActualsAndSave(false, true); //save currently timed item
 //        goToNextAndStartIfAutoStart(true, true); //save timerInstance and new timed item
 //    }
-    private void stopTimingAndGoToNext(boolean saveTimerInstance, boolean saveTimedItem, boolean saveNewTimedItem) {
-        stopTimerOnTimedItemAndUpdateActualsAndSave(false, saveTimedItem); //save currently timed item
-        goToNextAndStartIfAutoStart(saveTimerInstance, saveNewTimedItem); //save timerInstance and new timed item
-    }
-
+//    private void stopTimingAndGoToNextXXX(boolean saveTimerInstance, boolean saveTimedItem, boolean saveNewTimedItem) {
+//        stopTimerOnTimedItemAndUpdateActualsAndSave(false, saveTimedItem); //save currently timed item
+//        goToNextAndStartIfAutoStartXXX(saveTimerInstance, saveNewTimedItem); //save timerInstance and new timed item
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * update Timer when time list changes, e.g. elements reordered (D&D),
@@ -962,21 +1616,34 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
      * distinguished from an earlier subtask that was skipped over
      */
 //</editor-fold>
-    public void setWasRunningWhenInterrupted(boolean interrupted, boolean save) {
+    public void setWasRunningWhenInterrupted(boolean interrupted, boolean saveTimerInstance) {
         boolean wasInterrupted = isWasInterruptedWhileRunning();
         setInterruptedWhileRunning(interrupted);
-        if (save && wasInterrupted != interrupted) {
+        if (saveTimerInstance && wasInterrupted != interrupted) {
 //            saveMe();
-            DAO.getInstance().saveToParseNow(this); //save items and timer that may have changed
+//            DAO.getInstance().saveToParseNow(this); //save items and timer that may have changed
+            DAO.getInstance().saveToParseLater(this); //save items and timer that may have changed
 
         }
     }
 
+    public void removeFromListeners() {
+//        setTimedItem(null);
+//        setNextTimedItem(null);
+        setTimedItems(null, null);
+//        setTimerSource(null, false, false, false); //no chg event
+        setTimerSource(null, false); //no chg event
+    }
+
     /**
-     * delete this timer when it's done
+     * delete this timer ('later') when it's done
      */
-    public void deleteInstance() {
-        DAO.getInstance().delete(this, true, true);
+    public void deleteMe() {
+        //remove listeners
+        removeFromListeners();
+//        fireDeletedEvent();
+//        DAO.getInstance().delete(this, true, true);
+        DAO.getInstance().deleteLater(this, true);
     }
 
     /**
@@ -986,7 +1653,7 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
      * @param newStatus
      */
     private void setItemStatus(ItemStatus newStatus) {
-        if (false&&Config.TEST) {
+        if (false && Config.TEST) {
             ASSERT.that(newStatus != null, "status should never be reset to CREATED by storing a null status");
         }
         ItemStatus oldVal = getItemStatusN();
@@ -1045,12 +1712,14 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
 //                        timerInstance2.setElapsedTime(editedElapsedTime);
                 timerInstance.updateElapsedTime(editedElapsedTime);
             }
-            DAO.getInstance().saveToParseNow(timedItem);
+//            DAO.getInstance().saveToParseNow(timedItem);
+            DAO.getInstance().saveToParseLater(timedItem);
         }
     }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
+        boolean changeWasMade;
         Object actionSource = evt.getSource();
 //        ActionEvent.Type eventType = evt.getEventType();
         int keyEvent = evt.getKeyEvent(); //use the keyEvent to carry the actual event
@@ -1062,7 +1731,8 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
                 ASSERT.that(keyEvent == Item.ACTION_EVENT_CHANGED || keyEvent == Item.ACTION_EVENT_REMOVED);
                 Item item = (Item) actionSource;
                 //if item is deleted, or status has changed to a state where timer shouldn't run (CANCEL/DONE/WAITING), then stop it
-                if ((keyEvent == Item.ACTION_EVENT_CHANGED && (item.getStatus() != getItemStatusN() && !isValidItemForTimer(item)))
+                if ((keyEvent == Item.ACTION_EVENT_CHANGED
+                        && (item.getStatus() != getItemStatusN() && (!isValidItemForTimer(item) || item.getStatus() == ItemStatus.WAITING))) //WAITING=>so that clicking Set Waiting in timer will advance to next task even if Waiting is valid for Timer)
                         || keyEvent == Item.ACTION_EVENT_REMOVED) { //UI: this means that changing from one invalid state (if timer started eg on Done) will stop the timer, which is most likely what is wanted
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    && !timerInstanceN.isTimeEvenInvalidItemOrProjects()) {
@@ -1093,7 +1763,13 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
 //</editor-fold>
 //                    stopTimingAndGoToNext(item);
 //                    stopTimingAndGoToNext();
-                    stopTimingAndGoToNext(true, false, true); //save timer and new item, but not old because actionPerformed is called because current item is updated/saved
+//                    stopTimingAndGoToNextXXX(true, false, true); //save timer and new item, but not old because actionPerformed is called when current item is updated/saved
+//                    if (updateNEW2(false, true)) {
+//                    if (updateNEW2(false)) {
+                    updateNEW2(false);
+                    fireChangedEvent();
+                    DAO.getInstance().saveToParseLater(this);
+                    DAO.getInstance().triggerParseUpdate();
                 }
             } else if (actionSource == getNextTimedItemN()) {
                 ASSERT.that(keyEvent == Item.ACTION_EVENT_CHANGED || keyEvent == Item.ACTION_EVENT_REMOVED);
@@ -1101,8 +1777,18 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
                 //if next item is deleted, or status has changed to a state where timer shouldn't run (CANCEL/DONE/WAITING), then stop it
                 if ((keyEvent == Item.ACTION_EVENT_CHANGED && (item.getStatus() != getItemStatusN() && !isValidItemForTimer(item)))
                         || keyEvent == Item.ACTION_EVENT_REMOVED) { //UI: this means that changing from one invalid state (if timer started eg on Done) will stop the timer, which is most likely what is wanted
-                    setNextTimedItem(findNextTimerItem(getTimedItemN(), item, MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean())); //UI: true: if nextTimedItem is changed, always wrap around list without asking (too complex UI to ask)
-                    fireChangedEvent(); //updated Timer with new nextTimedItem
+                    if (false) {
+//                        setNextTimedItem(findNextTimerItem(getTimedItemN(), item, MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject.getBoolean())); //UI: true: if nextTimedItem is changed, always wrap around list without asking (too complex UI to ask)
+//                        fireChangedEvent(); //updated Timer with new nextTimedItem
+                    } else {
+//                        updateOnSourceChange();
+//                        if (updateNEW2(false, true)) {
+//                        if (updateNEW2(false)) {
+                        updateNEW2(false);
+                        fireChangedEvent();//, true, false);
+                        DAO.getInstance().saveToParseLater(this);
+                        DAO.getInstance().triggerParseUpdate();
+                    }
                 }
             }
             //from ITEMLIST/CATEGORY
@@ -1110,25 +1796,41 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
             ASSERT.that(keyEvent == ItemList.ACTION_EVENT_CHANGED || keyEvent == ItemList.ACTION_EVENT_REMOVED);
             if (actionSource == getTimerSourceN()) {
                 ItemList itemListOrCategory = (ItemList) actionSource;
-                if (keyEvent == ItemList.ACTION_EVENT_CHANGED) {
+                if (keyEvent == ItemList.ACTION_EVENT_CHANGED) { //this can also happen for an interrupted timerInstance
                     //if the currently timed task is removed from the list:
-                    if (!itemListOrCategory.contains(getTimedItemN())) { ////if no longer in list, update and save
-//                        stopTimerOnTimedItemAndUpdateActualsAndSave(); 
-//                        stopTimingAndGoToNext();
-                        stopTimingAndGoToNext(true, true, true);
-                        fireChangedEvent();
+//                    if (false) {
+//                        if (!itemListOrCategory.contains(getTimedItemN())) { ////if no longer in list, update and save
+////                        stopTimerOnTimedItemAndUpdateActualsAndSave(); 
+////                        stopTimingAndGoToNext();
+//                            stopTimingAndGoToNext(true, true, true);
+//                            fireChangedEvent();
+//                        } else { //update NextComingItem if necessary
+//                            Item next = findNextTimerItem(getTimedItemN(), itemListOrCategory, true);
+//                            setNextTimedItem(next); //No effect if the same item as before
+//                        }
+//                    }
+//                    updateOnSourceChange();
+                    if (updateNEW2(false)) { //only trigger event below if actually changed (otherwise the onSave will trigger infinite loop
+                        fireChangedEvent();//, true, false);
+                        DAO.getInstance().saveToParseLater(this);
+                        DAO.getInstance().triggerParseUpdate();
                     }
-//                    listeners.fireActionEvent(new ActionEvent(this, TimerInstance2.ACTION_EVENT_CHANGED));//inform the stack
-                } else if (keyEvent == ItemList.ACTION_EVENT_REMOVED) {
-                    //if the list is deleted, simply stop timer and save the timer
-                    stopTimerOnTimedItemAndUpdateActualsAndSave(false, true); //don't save timerInstance since source is removed
+                }//                    listeners.fireActionEvent(new ActionEvent(this, TimerInstance2.ACTION_EVENT_CHANGED));//inform the stack
+            } else if (keyEvent == ItemList.ACTION_EVENT_REMOVED) {
+                //if the list is deleted, simply stop timer and save the timer
+                stopTimerOnTimedItemAndUpdateActualsAndSave(false, true); //don't save timerInstance since source is removed
 //                    listeners.fireActionEvent(new ActionEvent(this, TimerInstance2.ACTION_EVENT_REMOVED));//inform the stack
-                    fireDeletedEvent();
-                    DAO.getInstance().deleteLater(this, true); //delete the timer
-                } else {
-                    ASSERT.that("Unexpected keyEvent=" + keyEvent + " received");
-                }
+                fireDeletedEvent();
+                deleteMe();
+//                    DAO.getInstance().delete(this, true, true); //delete the timer
+//                    DAO.getInstance().deleteNow(this, true); //delete the timer
+//                    DAO.getInstance().deleteLater(this, true); //delete the timer
+            } else {
+                ASSERT.that("Unexpected keyEvent=" + keyEvent + " received");
             }
+        } else {
+//            ASSERT.that("Unexpected ItemList actionSource=" + actionSource + " keyEvent=" + keyEvent + " received");
+            ASSERT.that("Unexpected type of actionSource=" + actionSource + " keyEvent=" + keyEvent + " received");
         }
     }
 

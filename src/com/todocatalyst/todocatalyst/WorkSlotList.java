@@ -20,6 +20,7 @@ import java.util.List;
  *
  * @author Thomas
  */
+//public class WorkSlotList  implements ItemAndListCommonInterface<ItemAndListCommonInterface>, MyTreeModel {//extends ArrayList<WorkSlot> {
 public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> {
 
     private long now;//=-1; //ensure a single value of now is used for the work slots
@@ -161,11 +162,14 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        }
 //        //if no earlier slot found above, then insert at start of (possibly empty) list
 //        sortedOnStartTimeWorkslotList.add(0, workSlot);
-        sortedOnStartTimeWorkslotList.add(workSlot);
-        WorkSlot.sortWorkSlotList(sortedOnStartTimeWorkslotList); //ONLY sure way to always keep sorted on startTime, then duration (if multiple with same startTime)
-        owner.setWorkSlotsInParse(sortedOnStartTimeWorkslotList); //save updated list
-        if (setOwner) {
-            workSlot.setOwner(owner);
+        ASSERT.that(false&&!sortedOnStartTimeWorkslotList.contains(workSlot), () -> "WorkSlot added twice to list, workslot=" + workSlot + "; owner=" + owner + "; list=" + sortedOnStartTimeWorkslotList); //NO longer necessary to test since checked in addWorkSlot()
+        if (!sortedOnStartTimeWorkslotList.contains(workSlot)) { //don't add twice (but shouldn't happen!)
+            sortedOnStartTimeWorkslotList.add(workSlot);
+            WorkSlot.sortWorkSlotList(sortedOnStartTimeWorkslotList); //ONLY sure way to always keep sorted on startTime, then duration (if multiple with same startTime)
+            owner.setWorkSlotsInParse(sortedOnStartTimeWorkslotList); //save updated list
+            if (setOwner) {
+                workSlot.setOwner(owner);
+            }
         }
         //simple solution: new workSlots are likely be the most recent, so simply search from end of list to find where to insert
     }

@@ -101,7 +101,8 @@ class MyDurationPicker extends Picker implements SwipeClear {//implements SwipeC
                 }
                 if (true) {
                     long seconds = (valInMillis % MyDate.MINUTE_IN_MILLISECONDS) / MyDate.SECOND_IN_MILLISECONDS;
-                    if (seconds != 0 && MyPrefs.durationPickerShowSecondsIfLessThan1Minute.getBoolean()) {
+//                    if (seconds != 0 && MyPrefs.durationPickerShowSecondsIfLessThan1Minute.getBoolean()) {
+                    if (valInMillis < MyDate.MINUTE_IN_MILLISECONDS && MyPrefs.durationPickerShowSecondsIfLessThan1Minute.getBoolean()) {
                         return MyDate.formatDurationStd((Long) durationInMillis, true); //if any seconds in time, show them
                     } else {
                         return MyDate.formatDurationStd((Long) durationInMillis);

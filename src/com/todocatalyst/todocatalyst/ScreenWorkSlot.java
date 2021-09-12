@@ -71,10 +71,13 @@ public class ScreenWorkSlot extends MyForm {
         String prevValId = this.workSlot.getObjectIdP() != null ? this.workSlot.getObjectIdP() : ("From-" + previousForm.getUniqueFormId());
         addDoneUpdateAction(() -> {
             if (this.workSlot.hasSaveableData()) {
-                if (workSlot.hasUserModifiedData()) {
-                    workSlot.setEditedDateToNow();
+                if (this.workSlot.hasUserModifiedData()) {
+                    this.workSlot.setEditedDateToNow();
                 }
-                this.owner.addWorkSlot(this.workSlot);
+//                if (this.owner.getWorkSlotListN() == null || !this.owner.getWorkSlotListN().contains(this.workSlot)) { //NOW addWorkSLots only adds if not already in the list
+                if (true||this.owner.getWorkSlotListN() == null) {
+                    this.owner.addWorkSlot(this.workSlot);
+                }
                 DAO.getInstance().saveToParseNow(this.workSlot);
             }
         });
@@ -371,9 +374,9 @@ public class ScreenWorkSlot extends MyForm {
                                     }
                                     editOwnerButton.setText(workSlot.getOwner().getText());
                                 }, null, 1, 1, true, true, false); //MUST select exactly ONE owner (no element has no owner)
-                ownerPicker2.show();
+                        ownerPicker2.show();
                     }
-                     ScreenObjectPicker2.makePickPrjLstCat("Select " + WorkSlot.OWNER, true, locallyEditedOwner, ScreenWorkSlot.this, () -> {
+                    ScreenObjectPicker2.makePickPrjLstCat("Select " + WorkSlot.OWNER, true, locallyEditedOwner, ScreenWorkSlot.this, () -> {
                         if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
                             ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
                             workSlot.setOwner(selectedOwner);
@@ -944,7 +947,7 @@ public class ScreenWorkSlot extends MyForm {
 
         //CREATED
         Label createdDate = new Label(workSlot.getCreatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getCreatedAt().getTime())); //NOT use itemLS since CreatedDate is not saved locally
-        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDate));
+        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDateCust,Icons.myIconFont));
 
         //MODIFIED
         Label lastModifiedDate = new Label(workSlot.getUpdatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getUpdatedAt()));

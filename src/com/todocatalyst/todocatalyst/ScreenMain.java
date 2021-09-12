@@ -93,7 +93,8 @@ public class ScreenMain extends MyForm {
         if (true) {
 //            setLayout(new BorderLayout());
 //        getContentPane().setScrollableY(true);
-            menuContainer = new Container(BoxLayout.y());
+//            menuContainer = new Container(BoxLayout.y());
+            menuContainer = new ContainerScrollY(BoxLayout.y());
             menuContainer.setScrollableY(true);
             menuContainer.setAlwaysTensile(false);
             add(BorderLayout.CENTER, menuContainer);
@@ -132,8 +133,9 @@ public class ScreenMain extends MyForm {
         if (false) {
             restoreKeepPos();
         }
+        setKeepPos();
 //        addCommandsToToolbar(getToolbar(), menuContainer);//, theme);
-        buildContentPane(menuContainer);
+        buildContentPane(this,menuContainer);
 
         super.refreshAfterEdit();
     }
@@ -266,10 +268,9 @@ public class ScreenMain extends MyForm {
                     Display.getInstance().execute("https://todocatalyst.com");
                 }
         ));
-
     }
-
-    public void buildContentPane(Container cont) { //, Resources theme) {
+    
+    static public void buildContentPane(MyForm myForm, Container cont) { //, Resources theme) {
 
 //        TableLayout.Constraint span2 = new TableLayout.Constraint().horizontalSpan(2).ha(Component.CENTER);
 //        TableLayout.Constraint w40 = new TableLayout.Constraint().widthPercentage(40);
@@ -282,12 +283,15 @@ public class ScreenMain extends MyForm {
 //                new ScreenListOfAlarms().show();
 //                   if (false) 
 //                    ScreenListOfAlarms.getInstance().show(ScreenMain.this);
-                    new ScreenListOfAlarms(ScreenMain.this).show();
+                    new ScreenListOfAlarms(myForm).show();
                 }
         ), ALARMS.getHelpText());
         int nbAlarms = AlarmHandler.getInstance().getExpiredAlarms().size();
         Component listOfAlarms = new MainItemListButton(ALARMS.getTitle(), ALARMS.getIcon(), ALARMS.getFont(),
-                "", nbAlarms > 0 ? "" + nbAlarms : "", (e) -> new ScreenListOfAlarms(ScreenMain.this).show(), "Alarms");
+                "", nbAlarms > 0 ? "" + nbAlarms : "0", (e) -> {
+//                    setKeepPos();
+                    new ScreenListOfAlarms(myForm).show();
+                }, "Alarms");
 //        listOfAlarms.setUIID("Tree");
         listOfAlarms.setUIID("MainMenuButton");
 
@@ -319,9 +323,10 @@ public class ScreenMain extends MyForm {
 //                    new ScreenListOfItems(OVERDUE, "No overdue tasks the last " + MyPrefs.overdueLogInterval.getInt() + " days",
             new ScreenListOfItems(OVERDUE,
                     //                            () -> DAO.getInstance().getNamedItemList(DAO.OVERDUE, SCREEN_OVERDUE_TITLE, filterSort),
-                    () -> DAO.getInstance().getNamedItemList(DAO.SYSTEM_LIST_OVERDUE, OVERDUE.getTitle(),
-                            DAO.getInstance().getSystemFilterSortFromParse(OVERDUE.name(), ItemList.getSystemDefaultFilter(OVERDUE))),
-                    ScreenMain.this, null,
+                    //                    () -> DAO.getInstance().getNamedItemList(DAO.SYSTEM_LIST_OVERDUE, OVERDUE.getTitle(),
+                    //                            DAO.getInstance().getSystemFilterSortFromParse(OVERDUE.name(), ItemList.getSystemDefaultFilter(OVERDUE))),
+                    () -> DAO.getInstance().getNamedItemList(OVERDUE),
+                    myForm, null,
                     OVERDUE.getOptions()
             ).show();
             //                        | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
@@ -334,18 +339,18 @@ public class ScreenMain extends MyForm {
             //TODO!!!!! FilterSort currently works on Items, but today view also show workslots                    
 //                    FilterSortDef filterSort = null; //new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_TODAY_TITLE, "Looks like you have no tasks to deal with today. Enjoy!",
-            MyForm myForm = new ScreenListOfItems(TODAY,
+            MyForm myForm2 = new ScreenListOfItems(TODAY,
                     //                            () -> new ItemList(SCREEN_TODAY_TITLE, DAO.getInstance().getTodayDueAndOrWaitingOrWorkSlotsItems(true, true), filterSort, true),
                     //                            () -> new ItemList(SCREEN_TODAY_TITLE, DAO.getInstance().getToday(), filterSort, true),
                     //                            () -> new ItemList(SCREEN_TODAY_TITLE, DAO.getInstance().getNamedItemList(DAO.TODAY, SCREEN_TODAY_TITLE), filterSort, true),
                     () -> DAO.getInstance().getNamedItemList(DAO.SYSTEM_LIST_TODAY, TODAY.getTitle(), null),
-                    ScreenMain.this, null,
+                    myForm, null,
                     //                new ScreenListOfItems(SCREEN_TODAY_TITLE, new ItemList(DAO.getInstance().getTodayDueAndOrWaitingOrWorkSlotsItems(false, false), true), ScreenMain.this, (i) -> {
                     //                        ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP
                     //                        new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS, false), //FilterSortDef.FILTER_SHOW_DONE_TASKS
                     TODAY.getOptions(), (i) -> null /*prevent stickyHeader*/);
 //                    myForm.setTextToShowIfEmptyList("Looks like you have no tasks today. Enjoy!");
-            myForm.show();
+            myForm2.show();
         }
         ), TODAY.getHelpText());
 //        makeAndAddButtons(today, toolbar, cont, SCREEN_TODAY_HELP);
@@ -357,14 +362,15 @@ public class ScreenMain extends MyForm {
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_NEXT_TITLE, () -> new ItemList(SCREEN_NEXT_TITLE, DAO.getInstance().getCalendar(), filterSort, true), ScreenMain.this, (i) -> {
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_NEXT_TITLE, () -> new ItemList(SCREEN_NEXT_TITLE, DAO.getInstance().getNamedItemList(DAO.NEXT, SCREEN_NEXT_TITLE), filterSort, true), 
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_NEXT_TITLE, "No tasks due the next " + MyPrefs.nextInterval.getInt() + " days",
-            MyForm myForm = new ScreenListOfItems(NEXT,
+            MyForm myForm2 = new ScreenListOfItems(NEXT,
                     //                            () -> DAO.getInstance().getNamedItemList(DAO.NEXT, SCREEN_NEXT_TITLE, filterSort),
-                    () -> DAO.getInstance().getNamedItemList(DAO.SYSTEM_LIST_NEXT, NEXT.getTitle(),
-                            DAO.getInstance().getSystemFilterSortFromParse(NEXT.name(), ItemList.getSystemDefaultFilter(NEXT))),
-                    ScreenMain.this, null, NEXT.getOptions()
+                    //                    () -> DAO.getInstance().getNamedItemList(DAO.SYSTEM_LIST_NEXT, NEXT.getTitle(),
+                    //                            DAO.getInstance().getSystemFilterSortFromParse(NEXT.name(), ItemList.getSystemDefaultFilter(NEXT))),
+                    () -> DAO.getInstance().getNamedItemList(NEXT),
+                    myForm, null, NEXT.getOptions()
             );
 //                    myForm.setShowIfEmptyList("No tasks the next month");
-            myForm.show();
+            myForm2.show();
         }
         ), NEXT.getHelpText());
 //        makeAndAddButtons(next, toolbar, cont, SCREEN_NEXT_HELP);
@@ -377,10 +383,10 @@ public class ScreenMain extends MyForm {
         Button inbox = makeAndAddButtons(MyReplayCommand.create("Inbox", INBOX.getTitle()/*FontImage.create(" \ue838 ", iconStyle)*/,
                 INBOX.getIcon(), INBOX.getFont(), (e) -> {
 //                    new ScreenListOfItems(SCREEN_INBOX_TITLE, () -> new ItemList(SCREEN_INBOX_TITLE, Inbox.getInstance(), true), ScreenMain.this, (i) -> {
-            MyForm myForm = new ScreenListOfItems(INBOX, () -> Inbox.getInstance(), ScreenMain.this, null,
+            MyForm myForm2 = new ScreenListOfItems(INBOX, () -> Inbox.getInstance(), myForm, null,
                     INBOX.getOptions());
 //                    myForm.setShowIfEmptyList("Your Inbox is empty. Add tasks using (+)"); //NO, show inline cont in Inbox
-            myForm.show();
+            myForm2.show();
         }
         ), INBOX.getHelpText());
 //        makeAndAddButtons(inbox, toolbar, cont, SCREEN_INBOX_HELP);
@@ -390,8 +396,8 @@ public class ScreenMain extends MyForm {
 //                new ScreenListOfItemLists("Lists", new ItemList(DAO.getInstance().getAllItemLists()), ScreenMain.this, (i)->{}).show();                     //null: do nothing, lists are saved if edited
 //                new ScreenListOfItemLists(SCREEN_LISTS_TITLE, DAO.getInstance().getAllItemLists(), ScreenMain.this, (i) -> {
 //                    new ScreenListOfItemLists(SCREEN_LISTS_TITLE, DAO.getInstance().getItemListList(), ScreenMain.this, (i) -> {
-//                    new ScreenListOfItemLists(ScreenType.LISTS.getTitle(), ItemListList.getInstance(), ScreenMain.this, null, ScreenType.LISTS.getHelpText()).show();                     //null: do nothing, lists are saved if edited
-            new ScreenListOfItemLists(ItemListList.getInstance(), ScreenMain.this, null).show();                     //null: do nothing, lists are saved if edited
+//                    new ScreenListOfItemLists(ScreenType.LISTS.getTitle(), ItemListList.getInstance(), myForm, null, ScreenType.LISTS.getHelpText()).show();                     //null: do nothing, lists are saved if edited
+            new ScreenListOfItemLists(ItemListList.getInstance(), myForm, null).show();                     //null: do nothing, lists are saved if edited
         }
         ), LISTS.getHelpText());
 //        makeAndAddButtons(lists, toolbar, cont, SCREEN_LISTS_HELP);
@@ -400,7 +406,7 @@ public class ScreenMain extends MyForm {
                 CATEGORIES.getIcon(), CATEGORIES.getFont(), (e) -> {
 //                new ScreenListOfCategories("Categories", new ItemList(DAO.getInstance().getAllCategories()), ScreenMain.this, (i)->{}).show();
 //                new ScreenListOfCategories(DAO.getInstance().getAllCategories(), ScreenMain.this, (i)->{}).show();
-            new ScreenListOfCategories(CategoryList.getInstance(), ScreenMain.this, null).show();
+            new ScreenListOfCategories(CategoryList.getInstance(), myForm, null).show();
         }
         ), CATEGORIES.getHelpText());
 //        makeAndAddButtons(categories, toolbar, cont, ScreenListOfCategories.SCREEN_HELP);
@@ -410,8 +416,9 @@ public class ScreenMain extends MyForm {
                 ALL_TASKS.getIcon(), ALL_TASKS.getFont(), (e) -> {
             FilterSortDef allTasksSystemFilter = DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString(), FilterSortDef.getDefaultFilter());
             new ScreenListOfItems(ALL_TASKS,
-                    () -> new ItemList(ALL_TASKS.getTitle(), DAO.getInstance().getAllItems(false, false, true, false, false), allTasksSystemFilter, true),
-                    ScreenMain.this, null, ALL_TASKS.getOptions()).show();
+                    //                    () -> new ItemList(ALL_TASKS.getTitle(), DAO.getInstance().getAllItems(false, false, true, false, false), allTasksSystemFilter, true),
+                    () -> DAO.getInstance().getNamedItemList(ALL_TASKS),
+                    myForm, null, ALL_TASKS.getOptions()).show();
         }
         ), ALL_TASKS.getHelpText());
 //            makeAndAddButtons(allTasks, toolbar, cont, SCREEN_ALL_TASKS_HELP);
@@ -419,12 +426,12 @@ public class ScreenMain extends MyForm {
 
         Button projects = makeAndAddButtons(MyReplayCommand.create("AllProjects", ALL_PROJECTS.getTitle(),
                 ALL_PROJECTS.getIcon(), ALL_PROJECTS.getFont(), (e) -> {
-            MyForm myForm = new ScreenListOfItems(ALL_PROJECTS, "No projects", () -> new ItemList(DAO.getInstance().getAllProjects()),
-                    ScreenMain.this, null,
+            MyForm myForm2 = new ScreenListOfItems(ALL_PROJECTS, "No projects", () -> new ItemList(DAO.getInstance().getAllProjects()),
+                    myForm, null,
                     ALL_PROJECTS.getOptions()
             );
 //            myForm.setShowIfEmptyList("You don't have any projects");
-            myForm.show();
+            myForm2.show();
         }
         ), ALL_PROJECTS.getHelpText());
 //        makeAndAddButtons(projects, toolbar, cont, SCREEN_PROJECTS_HELP);
@@ -449,7 +456,7 @@ public class ScreenMain extends MyForm {
 //            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())).getWorkSlots(), true).show();
 //            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null, (obj) -> DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), true).show();
 //            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null,
-            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null,
+            new ScreenListOfWorkSlots(tempWorkSlotOwnerList, myForm,
                     () -> {/*no need to removeFromCache workslotlist from DAO since it will be updated within the screen in a consistent way with the parse server list */
                     }, true, false).show();
         }
@@ -459,8 +466,8 @@ public class ScreenMain extends MyForm {
         Component workSlots = new MainItemListButton(WORKSLOTS.getTitle(), WORKSLOTS.getIcon(), WORKSLOTS.getFont(),
                 "", "", (e) -> {
                     ItemList tempWorkSlotOwnerList = new ItemList("", true);
-                    tempWorkSlotOwnerList.setWorkSlotsInParse(DAO.getInstance().getWorkSlots(new MyDate(MyDate.currentTimeMillis())));
-                    new ScreenListOfWorkSlots(tempWorkSlotOwnerList, ScreenMain.this, null,
+                    tempWorkSlotOwnerList.setWorkSlotsInParse(DAO.getInstance().getWorkSlots(new MyDate(MyDate.currentTimeMillis()), true));
+                    new ScreenListOfWorkSlots(tempWorkSlotOwnerList, myForm,
                             () -> {
                             }, true, false).show();
                 }, "WorkSlots");
@@ -470,7 +477,7 @@ public class ScreenMain extends MyForm {
                 TEMPLATES.getIcon(), TEMPLATES.getFont(), (e) -> {
 //                new ScreenListOfItems("Templates", new ItemList(DAO.getInstance().getAllTemplates()), ScreenMain.this, (i) -> {}, null, false, true).show();
 //                    new ScreenListOfItems(SCREEN_TEMPLATES_TITLE, DAO.getInstance().getTemplateList(), ScreenMain.this, (i) -> {
-            new ScreenListOfItems(TEMPLATES, "No templates defined", () -> TemplateList.getInstance(), ScreenMain.this, null,
+            new ScreenListOfItems(TEMPLATES, "No templates defined", () -> TemplateList.getInstance(), myForm, null,
                     TEMPLATES.getOptions() // | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
             ).show();
 //                new ScreenListOfItems("Templates", new ItemList(DAO.getInstance().getAllTemplates()), ScreenMain.this, (i) -> {
@@ -484,16 +491,16 @@ public class ScreenMain extends MyForm {
         Button statisticsOLD = makeAndAddButtons(MyReplayCommand.create("Statistics", STATISTICS.getTitle()/*FontImage.create(" \ue838 ", iconStyle)*/,
                 STATISTICS.getIcon(), STATISTICS.getFont(), (e) -> {
 //                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, false);
-            MyForm myForm = new ScreenStatistics2(ScreenMain.this, () -> {
+            MyForm myForm2 = new ScreenStatistics2(myForm, () -> {
             });
 //                    myForm.setTextToShowIfEmptyList("No completed tasks to show statistics for yet");
-            myForm.show();
+            myForm2.show();
         }
         ), STATISTICS.getHelpText());
-        
+
         Component statistics = new MainItemListButton(STATISTICS.getTitle(), STATISTICS.getIcon(), STATISTICS.getFont(),
-                "", "" , (e) -> new ScreenStatistics2(ScreenMain.this, () -> {
-        }).show(), "Statistics");
+                "", "", (e) -> new ScreenStatistics2(myForm, () -> {
+                }).show(), "Statistics");
 
         statisticsOLD.setUIID("MainMenuButton");
 //        makeAndAddButtons(statistics, toolbar, cont, SCREEN_STATISTICS);
@@ -522,14 +529,14 @@ public class ScreenMain extends MyForm {
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_COMPLETION_LOG_TITLE, () -> new ItemList(SCREEN_COMPLETION_LOG_TITLE, DAO.getInstance().getCompletionLog(), filterSort, true), ScreenMain.this, (i) -> {
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_COMPLETION_LOG_TITLE, () -> new ItemList(SCREEN_COMPLETION_LOG_TITLE, DAO.getInstance().getNamedItemList(DAO.LOG, SCREEN_COMPLETION_LOG_TITLE), filterSort, true), 
 //            MyForm myForm = new ScreenListOfItems(SCREEN_COMPLETION_LOG_TITLE, "No tasks completed the last " + MyPrefs.completionLogInterval.getInt() + " days",
-            MyForm myForm = new ScreenListOfItems(COMPLETION_LOG,
+            MyForm myForm2 = new ScreenListOfItems(COMPLETION_LOG,
                     //                    () -> DAO.getInstance().getNamedItemList(DAO.LOG, SCREEN_COMPLETION_LOG_TITLE, filterSort),
                     () -> DAO.getInstance().getNamedItemList(DAO.SYSTEM_LIST_LOG, COMPLETION_LOG.getTitle(), ItemList.getSystemDefaultFilter(COMPLETION_LOG)),
-                    ScreenMain.this, null,
+                    myForm, null,
                     COMPLETION_LOG.getOptions()
             );
 //            myForm.setTextToShowIfEmptyList("No completed tasks the last month");
-            myForm.show();
+            myForm2.show();
         }
         ), COMPLETION_LOG.getHelpText());
 //        makeAndAddButtons(completionLog, toolbar, cont, SCREEN_COMPLETION_LOG_HELP);
@@ -540,14 +547,14 @@ public class ScreenMain extends MyForm {
 //            FilterSortDef filterSort = new FilterSortDef(Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_CREATION_LOG_TITLE, () -> new ItemList(SCREEN_CREATION_LOG_TITLE, DAO.getInstance().getCreationLog(), filterSort, true), ScreenMain.this, (i) -> {
 //            MyForm myForm = new ScreenListOfItems(SCREEN_CREATION_LOG_TITLE, "No tasks created the last " + MyPrefs.creationLogInterval.getInt() + " days",
-            MyForm myForm = new ScreenListOfItems(CREATION_LOG,
+            MyForm myForm2 = new ScreenListOfItems(CREATION_LOG,
                     //                    () -> DAO.getInstance().getNamedItemList(DAO.DIARY, SCREEN_CREATION_LOG_TITLE, filterSort),
                     () -> DAO.getInstance().getNamedItemList(DAO.SYSTEM_LIST_DIARY, SCREEN_CREATION_LOG_TITLE, ItemList.getSystemDefaultFilter(CREATION_LOG)),
-                    ScreenMain.this, null,
+                    myForm, null,
                     CREATION_LOG.getOptions()
             );
 //            myForm.setTextToShowIfEmptyList("No tasks created the last month");
-            myForm.show();
+            myForm2.show();
         }
         ), ScreenType.COMPLETION_LOG.getHelpText());
 //        makeAndAddButtons(creationLog, toolbar, cont, SCREEN_CREATION_LOG_HELP);
@@ -557,15 +564,15 @@ public class ScreenMain extends MyForm {
 //                    FilterSortDef filterSort = new FilterSortDef(Item.PARSE_UPDATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false); //true => show most recent first
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_TOUCHED, () -> new ItemList(SCREEN_TOUCHED, DAO.getInstance().getTouchedLog(), filterSort, true), ScreenMain.this, (i) -> {
 //                    MyForm myForm = new ScreenListOfItems(SCREEN_TOUCHED, "No tasks changed the last " + MyPrefs.touchedLogInterval.getInt() + " days",
-            MyForm myForm = new ScreenListOfItems(TOUCHED,
+            MyForm myForm2 = new ScreenListOfItems(TOUCHED,
                     //                            () -> new ItemList(SCREEN_TOUCHED, DAO.getInstance().getNamedItemList(DAO.TOUCHED, SCREEN_TOUCHED), filterSort, true), 
                     //                            () -> DAO.getInstance().getNamedItemList(DAO.TOUCHED, SCREEN_TOUCHED, filterSort),
                     () -> DAO.getInstance().getNamedItemList(DAO.SYSTEM_LIST_TOUCHED, SCREEN_TOUCHED_TITLE, ItemList.getSystemDefaultFilter(TOUCHED)),
-                    ScreenMain.this, null,
+                    myForm, null,
                     TOUCHED.getOptions()
             );
 //                    myForm.setTextToShowIfEmptyList("No tasks have been changed the last month");
-            myForm.show();
+            myForm2.show();
         }
         ), TOUCHED.getHelpText());
 //        touched.getAllStyles().setBgColor(TOUCHED.getColor());
@@ -579,7 +586,7 @@ public class ScreenMain extends MyForm {
             Button touched24h = makeAndAddButtons(MyReplayCommand.create("Touched24h", SCREEN_TOUCHED_24H/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainTouched, (e) -> {
                         FilterSortDef filterSort = new FilterSortDef(Item.PARSE_UPDATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false); //true => show most recent first
                         new ScreenListOfItems(SCREEN_TOUCHED_24H, "No tasks changed the last 24 hours", () -> new ItemList(SCREEN_TOUCHED_24H,
-                        DAO.getInstance().getTouched24hLog(), filterSort, true), ScreenMain.this, null,
+                        DAO.getInstance().getTouched24hLog(), filterSort, true), myForm, null,
                                 ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                                 | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
                                 | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE | ScreenListOfItems.OPTION_NON_EDITABLE_LIST
@@ -593,14 +600,14 @@ public class ScreenMain extends MyForm {
             Button allTasksWithoutOwner = makeAndAddButtons(MyReplayCommand.create("Tasks without owner**"/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                         new ScreenListOfItems("Tasks without owner**",
                                 () -> new ItemList("Tasks without owner", DAO.getInstance().getAllItems(false, false, true, false), true),
-                                ScreenMain.this, null, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
+                                myForm, null, ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
                     }
             ), "");
 //            makeAndAddButtons(allTasksWithoutOwner, toolbar, cont, "**");
         }
         if (false) {
             Button tutorial = makeAndAddButtons(MyReplayCommand.create("Tutorial", SCREEN_TUTORIAL/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainTutorial, (e) -> {
-                        new ScreenListOfItems(SCREEN_TUTORIAL, () -> new ItemList(SCREEN_TUTORIAL, DAO.getInstance().getAllItems(), true), ScreenMain.this, null,
+                        new ScreenListOfItems(SCREEN_TUTORIAL, () -> new ItemList(SCREEN_TUTORIAL, DAO.getInstance().getAllItems(), true), myForm, null,
                                 ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP).show();
                     }
             ), SCREEN_TUTORIAL_HELP);
@@ -631,7 +638,7 @@ public class ScreenMain extends MyForm {
 //</editor-fold>
         if (false) {
             Button inspirationLists = makeAndAddButtons(MyReplayCommand.create("Inspiration", ScreenInspirationalLists.SCREEN_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainInspirationLists, (e) -> {
-                        new ScreenInspirationalLists(ScreenMain.this).show();
+                        new ScreenInspirationalLists(myForm).show();
                     }
             ), "");
         }
@@ -737,16 +744,17 @@ public class ScreenMain extends MyForm {
 //            cont.addAll(new StickyHeader("Plan","MainStickyHeader",true),inbox, lists, categories, workSlots, templates);
             cont.addAll(new StickyHeader("Plan", "MainStickyHeader", true),
                     //                    ScreenListOfItemLists.buildItemListContainer(ItemListList.getInstance(), null,false,expandedObjects),
-//                    new MyTree2(this, Inbox.getInstance(), true, false),
-                    new MyTree2(this, Inbox.getInstance()),
-//                    new MyTree2(this, ItemListList.getInstance(), true, false),
-                    new MyTree2(this, ItemListList.getInstance()),
-//                    new MyTree2(this, CategoryList.getInstance(), true, false),
-                    new MyTree2(this, CategoryList.getInstance()),
+                    //                    new MyTree2(this, Inbox.getInstance(), true, false),
+                    new MyTree2(myForm, Inbox.getInstance(), true),
+                    //                    new MyTree2(this, ItemListList.getInstance(), true, false),
+                    new MyTree2(myForm, ItemListList.getInstance()),
+                    //                    new MyTree2(this, CategoryList.getInstance(), true, false),
+                    new MyTree2(myForm, CategoryList.getInstance()),
                     //                    new MyTree2(this, DAO.getInstance().getWorkSlots(new MyDate(MyDate.currentTimeMillis())), true, false),
-                    workSlots,
-//                    new MyTree2(this, TemplateList.getInstance(), true, false) //,                    inbox, lists, categories, workSlots, templates);
-                    new MyTree2(this, TemplateList.getInstance()) //,                    inbox, lists, categories, workSlots, templates);
+                    //                    workSlots,
+                    new MyTree2(myForm, DAO.getInstance().getWorkSlots(new MyDate(), true)),
+                    //                    new MyTree2(this, TemplateList.getInstance(), true, false) //,                    inbox, lists, categories, workSlots, templates);
+                    new MyTree2(myForm, TemplateList.getInstance()) //,                    inbox, lists, categories, workSlots, templates);
             );
 
             cont.addAll(new StickyHeader("Do", "MainStickyHeader", true),
@@ -757,15 +765,19 @@ public class ScreenMain extends MyForm {
                     //                            AlarmHandler.getInstance().getExpiredAlarmsItemList(),
                     //                            true, false),
                     //                    next,
-//                    new MyTree2(this, DAO.getInstance().getNamedItemList(OVERDUE), true, false),
-                    new MyTree2(this, DAO.getInstance().getNamedItemList(OVERDUE)),
-//                    new MyTree2(this, DAO.getInstance().getNamedItemList(TODAY), true, false),
-                    new MyTree2(this, DAO.getInstance().getNamedItemList(TODAY)),
+                    //                    new MyTree2(this, DAO.getInstance().getNamedItemList(OVERDUE), true, false),
+                    new MyTree2(myForm, DAO.getInstance().getNamedItemList(OVERDUE), true),
+                    //                    new MyTree2(myForm, DAO.getInstance().getNamedItemList(TODAY), true, false),
+                    new MyTree2(myForm, DAO.getInstance().getNamedItemList(TODAY), true),
                     //                    new Button("Timer",Icons.iconLaunchTimer ,"MainMenuButton"),
-                    new MainItemListButton("Timer", Icons.iconLaunchTimer, null,
-                            "", "", (e) -> new ScreenTimer6(ScreenMain.this).show(), "MainMenuLaunchTimer"),
-//                    new MyTree2(this, DAO.getInstance().getNamedItemList(NEXT), true, false)
-                    new MyTree2(this, DAO.getInstance().getNamedItemList(NEXT))
+                    new MainItemListButton("Timer", Icons.iconTimerLaunch, null,
+                            "", TimerStack2.getActiveTimers() != null ? "" + TimerStack2.getActiveTimers().size() : "",
+                            (e)
+                            -> new ScreenTimer7(myForm)
+                                    .show(),
+                            "MainMenuLaunchTimer"),
+                    //                    new MyTree2(this, DAO.getInstance().getNamedItemList(NEXT), true, false)
+                    new MyTree2(myForm, DAO.getInstance().getNamedItemList(NEXT))
             );
 //            cont.addAll(new StickyHeader("Do", "MainStickyHeader", true), 
 //                    new MyTree2(this, AlaInbox.getInstance(),  true, false),
@@ -777,18 +789,20 @@ public class ScreenMain extends MyForm {
                     statistics,
                     //                    completionLog, creationLog, touched, 
                     //                    allTasks, projects,
-//                    new MyTree2(this, DAO.getInstance().getNamedItemList(COMPLETION_LOG), true, false),
-//                    new MyTree2(this, DAO.getInstance().getNamedItemList(CREATION_LOG), true, false),
-//                    new MyTree2(this, DAO.getInstance().getNamedItemList(TOUCHED), true, false),
-                    new MyTree2(this, DAO.getInstance().getNamedItemList(COMPLETION_LOG)),
-                    new MyTree2(this, DAO.getInstance().getNamedItemList(CREATION_LOG)),
-                    new MyTree2(this, DAO.getInstance().getNamedItemList(TOUCHED)),
+                    //                    new MyTree2(this, DAO.getInstance().getNamedItemList(COMPLETION_LOG), true, false),
+                    //                    new MyTree2(this, DAO.getInstance().getNamedItemList(CREATION_LOG), true, false),
+                    //                    new MyTree2(this, DAO.getInstance().getNamedItemList(TOUCHED), true, false),
+                    new MyTree2(myForm, DAO.getInstance().getNamedItemList(COMPLETION_LOG), true),
+                    new MyTree2(myForm, DAO.getInstance().getNamedItemList(CREATION_LOG), true),
+                    new MyTree2(myForm, DAO.getInstance().getNamedItemList(TOUCHED), true),
                     //                    new MyTree2(this, DAO.getInstance().getNamedItemList(ALL_TASKS),  true, false),
-//                    new MyTree2(this, new ItemList(ALL_TASKS.getTitle(), DAO.getInstance().getAllItems(false, false, true, false, false), DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString(), FilterSortDef.getDefaultFilter()), true), true, false),
-                    new MyTree2(this, new ItemList(ALL_TASKS.getTitle(), DAO.getInstance().getAllItems(false, false, true, false, false), DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString(), FilterSortDef.getDefaultFilter()), true)),
+                    //                    new MyTree2(this, new ItemList(ALL_TASKS.getTitle(), DAO.getInstance().getAllItems(false, false, true, false, false), DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString(), FilterSortDef.getDefaultFilter()), true), true, false),
+                    //                    new MyTree2(this, new ItemList(ALL_TASKS.getTitle(), DAO.getInstance().getAllItems(false, false, true, false, false), DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString(), FilterSortDef.getDefaultFilter()), true)),
+                    new MyTree2(myForm, DAO.getInstance().getNamedItemList(ALL_TASKS), true),
                     //                    new MyTree2(this, DAO.getInstance().getNamedItemList(ALL_PROJECTS),  true, false)
-//                    new MyTree2(this, new ItemList(ALL_PROJECTS.getTitle(), DAO.getInstance().getAllProjects(), true), true, false)
-                    new MyTree2(this, new ItemList(ALL_PROJECTS.getTitle(), DAO.getInstance().getAllProjects(), true))
+                    //                    new MyTree2(this, new ItemList(ALL_PROJECTS.getTitle(), DAO.getInstance().getAllProjects(), true), true, false)
+                    //                    new MyTree2(this, new ItemList(ALL_PROJECTS.getTitle(), DAO.getInstance().getAllProjects(), true))
+                    new MyTree2(myForm, DAO.getInstance().getNamedItemList(ALL_PROJECTS), true)
             );
         } else {
 //            ItemList plan = new ItemList(Arrays.asList(Inbox.getInstance(), ItemListList.getInstance(), CategoryList.getInstance()), false);
@@ -796,29 +810,29 @@ public class ScreenMain extends MyForm {
                     (e) -> {
 //                new ScreenListOfAlarms().show();
 //                   if (false) 
-//                        ScreenListOfAlarms.getInstance().show(ScreenMain.this);
-                        new ScreenListOfAlarms(ScreenMain.this).show();
+//                        ScreenListOfAlarms.getInstance().show(myForm);
+                        new ScreenListOfAlarms(myForm).show();
                     }
             ), ALARMS.getHelpText());
             cont.addAll(new ExpandableContainer("Plan",
                     BoxLayout.encloseY(
                             //                            ScreenListOfItemLists.buildItemListContainer(Inbox.getInstance(), null),
                             inbox,
-                            ScreenListOfItemLists.buildItemListContainer(this, ItemListList.getInstance()),
-                            ScreenListOfItemLists.buildItemListContainer(this, CategoryList.getInstance()),
-                            ScreenListOfItemLists.buildItemListContainer(this, TemplateList.getInstance())
+                            ScreenListOfItemLists.buildItemListContainer(myForm, ItemListList.getInstance()),
+                            ScreenListOfItemLists.buildItemListContainer(myForm, CategoryList.getInstance()),
+                            ScreenListOfItemLists.buildItemListContainer(myForm, TemplateList.getInstance())
                     )),
                     new ExpandableContainer("Do",
                             BoxLayout.encloseY(
-                                    ScreenListOfItemLists.buildItemListContainer(this, Inbox.getInstance()),
-                                    ScreenListOfItemLists.buildItemListContainer(this, ItemListList.getInstance()),
-                                    ScreenListOfItemLists.buildItemListContainer(this, CategoryList.getInstance())
+                                    ScreenListOfItemLists.buildItemListContainer(myForm, Inbox.getInstance()),
+                                    ScreenListOfItemLists.buildItemListContainer(myForm, ItemListList.getInstance()),
+                                    ScreenListOfItemLists.buildItemListContainer(myForm, CategoryList.getInstance())
                             )),
                     new ExpandableContainer("Check",
                             BoxLayout.encloseY(
-                                    ScreenListOfItemLists.buildItemListContainer(this, Inbox.getInstance()),
-                                    ScreenListOfItemLists.buildItemListContainer(this, ItemListList.getInstance()),
-                                    ScreenListOfItemLists.buildItemListContainer(this, CategoryList.getInstance())
+                                    ScreenListOfItemLists.buildItemListContainer(myForm, Inbox.getInstance()),
+                                    ScreenListOfItemLists.buildItemListContainer(myForm, ItemListList.getInstance()),
+                                    ScreenListOfItemLists.buildItemListContainer(myForm, CategoryList.getInstance())
                             )));
         }
 //        makeAndAddButtons(homePage, toolbar, cont, "**");

@@ -38,23 +38,26 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
     protected void buildContentPane(Container content) {
 //        cont.setScrollableY(true);
 //        addSettingInt(content, parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 60, 1);
-        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes)); //TODO!!!! below setting to depend on this one
-        content.add(makeEditIntSetting( parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 120, 1));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes)); //TODO!!!! below setting to depend on this one
+        content.add(makeEditIntSetting(parseIdMap2, MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes, 0, 120, 1));
 
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.itemEditEnableSwipeBetweenTabs));
-        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.commentsAddTimedEntriesWithDateANDTime));
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.commentsAddToBeginningOfComment));
-        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.hideIconsInEditTaskScreen));
-        content.add(makeEditIntSetting( parseIdMap2, MyPrefs.itemDueDateDefaultDaysAheadInTime, 0, 31, 1));
-        content.add(makeEditTimeInMinutesSetting( parseIdMap2, MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.hideIconsInEditTaskScreen));
+        content.add(makeEditIntSetting(parseIdMap2, MyPrefs.itemDueDateDefaultDaysAheadInTime, 0, 31, 1));
+        content.add(makeEditTimeInMinutesSetting(parseIdMap2, MyPrefs.itemDefaultAlarmTimeBeforeDueDateInMinutes));
+
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.waitingSetWaitingAlarmWhenSettingWaitingUntilDate));
+        content.add(makeEditIntSetting(parseIdMap2, MyPrefs.waitingSetWaitingAlarmMinutesBeforeWaitingUntilDate, 0, 1440, 5));
 
         content.add(makeSpacer());
-        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer));
-        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.askToEnterActualIfMarkingTaskWaitingOutsideTimer));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.askToEnterActualIfMarkingTaskDoneOutsideTimer));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.askToEnterActualIfMarkingTaskWaitingOutsideTimer));
         content.add(makeSpacer());
-        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.showTemplateListAfterCreatingNewTemplateFromExistingProject));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.showTemplateListAfterCreatingNewTemplateFromExistingProject));
 
-        content.add(makeEditIntSetting( parseIdMap2, MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation, 0, 10, 1));
+        content.add(makeEditIntSetting(parseIdMap2, MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation, 0, 10, 1));
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress));
 
         content.add(makeSpacer());
@@ -70,8 +73,8 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
         Component inheritDoneSubtasksInherit = makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues);
 
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.itemInheritOwnerProjectProperties, true,
-                inheritStarred, inheritPriority, inheritImportance, inheritUrgency, inheritChallenge, inheritDreadFun, 
-                inheritDueDate, inheritStartBy, inheritWaitingTill, inheritDoneSubtasksInherit        ));
+                inheritStarred, inheritPriority, inheritImportance, inheritUrgency, inheritChallenge, inheritDreadFun,
+                inheritDueDate, inheritStartBy, inheritWaitingTill, inheritDoneSubtasksInherit));
         content.addAll(
                 inheritStarred,
                 inheritPriority,
@@ -99,7 +102,7 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
 //        }
 
         content.add(makeSpacer());
-        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.testPickersOnDevice));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.testPickersOnDevice));
 
     }
 }

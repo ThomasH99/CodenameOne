@@ -208,7 +208,7 @@ public class ScreenWelcome extends MyForm {
                 //                "Use the FocalTimer to effortlessly track exactly where your time goes. ",
                 "Use the FocalTimer to achieve laser-sharp focus and effortlessly track exactly where your time goes. ",
                 //                        + "UEstimateSet tasks waiting until you want to come back to them.",
-                Icons.iconLaunchTimer, null, colorDarkGreen);
+                Icons.iconTimerLaunch, null, colorDarkGreen);
         makeTab(tabs,
                 "Templates",
                 "Quickly build projects by reusing your best practices", //Never need to create the same project twice

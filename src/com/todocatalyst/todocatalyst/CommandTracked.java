@@ -49,7 +49,7 @@ public class CommandTracked extends Command {
         setMaterialIconSize(MyPrefs.defaultIconSizeInMM.getFloat());
 //        actionId=analyticsActionId;
     }
-    
+
     CommandTracked(String command, char icon, Font iconFont) {
 //        super(command, icon);
         super(command);
@@ -74,7 +74,7 @@ public class CommandTracked extends Command {
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        if (MyAnalyticsService.isEnabled()) {
+        if (true || MyAnalyticsService.isEnabled()) {
             if (getActionId() != null) {
                 MyAnalyticsService.event(getActionId());
             } else if (this instanceof MyReplayCommand) {
@@ -114,6 +114,7 @@ public class CommandTracked extends Command {
         cmd.setAnalyticsActionId(analyticsActionId);
         return cmd;
     }
+
     public static CommandTracked create(String name, char icon, Font iconFont, final ActionListener ev, String analyticsActionId) {
 //        com.codename1.ui.CommandTracked cmd = new com.codename1.ui.CommandTracked(name) {
         CommandTracked cmd = new CommandTracked(name, icon, iconFont) {

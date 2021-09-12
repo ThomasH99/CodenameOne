@@ -65,9 +65,11 @@ public class MyButtonLongPress extends Button {
 
     public MyButtonLongPress(Command shortPressCmd, Command longPressCmd, Image icon) {
         super(shortPressCmd);
+        setIcon(icon);
 //        this.shortPressCmd = shortPressCmd;
-        this.longPressCmd = longPressCmd;
-        setCommand(shortPressCmd);
+//        this.longPressCmd = longPressCmd;
+        setLongPressCommand(longPressCmd);
+//        setCommand(shortPressCmd);
         setUIID("Label");
     }
 
@@ -82,7 +84,27 @@ public class MyButtonLongPress extends Button {
     }
 
     public void setLongPressCommand(Command longPressCmd) {
+        if (longPressCmd != null) {
+            addLongPressListener(longPressCmd);
+        } else {
+            removeLongPressListener(this.longPressCmd);
+        }
         this.longPressCmd = longPressCmd;
+    }
+
+    public Command getLongPressCommand() {
+        return longPressCmd;
+    }
+
+    @Override
+    public void longPointerPress(int x, int y) {
+        longPointerPress = true;
+        Log.p("MyButtonLongPress.longPointerPress(" + x + ", " + y + ")");
+//        if (false) 
+        super.longPointerPress(x, y); //don't call, since it creates
+        if (longPressCmd != null) {
+            longPressCmd.actionPerformed(new ActionEvent(this, x, y));
+        }
     }
 
     /*

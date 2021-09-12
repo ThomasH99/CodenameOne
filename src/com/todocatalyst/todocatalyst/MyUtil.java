@@ -227,7 +227,8 @@ public class MyUtil {
         int pos = s.indexOf(subStr);
         if (pos != -1) {
             StringBuilder res = new StringBuilder();
-            res.append(s.substring(0, pos)).append(newStr).append(s.substring(pos + 2));
+//            res.append(s.substring(0, pos)).append(newStr).append(s.substring(pos + 2));
+            res.append(s.substring(0, pos)).append(newStr).append(s.substring(pos + subStr.length()));
             return res.toString();
         }
         return s;

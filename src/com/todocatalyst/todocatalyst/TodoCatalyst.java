@@ -652,7 +652,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                     }
                     s.append("\nLOG:\n").append(rs); //TODO!!!: shorten stack trace to only show the methods called. For now, the first, most significant, part of trace will be included
 
-                    if (MyAnalyticsService.isEnabled()) {
+                    if (true || MyAnalyticsService.isEnabled()) {
                         MyAnalyticsService.sendCrashReport((Throwable) evt.getSource(), s.toString(), false);
                     }
 
@@ -704,10 +704,10 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         Log.p("LOCALE = " + locale);
 
 //        if (Config.PARSE_OFFLINE && !getPlatformName().equals("ios") && !getPlatformName().equals("and")) { //never run in local mode on a device !!seems to return "ios" with ios skin on simulator??
-        if (!Config.ANALYTICS_DISABLED) {
-            MyAnalyticsService.init("UA-133276111-1", "www.todocatalyst.com");
-            MyAnalyticsService.setAppsMode(true);
-        }
+//        if (!Config.ANALYTICS_DISABLED) {
+        MyAnalyticsService.init("UA-133276111-1", "www.todocatalyst.com", !MyPrefs.googleAnalyticsDisable.getBoolean(), MyPrefs.googleAnalyticsLocalLog.getBoolean());
+        MyAnalyticsService.setAppsMode(true);
+//        }
         if (Config.PARSE_DB_OFFLINE && Display.getInstance().isSimulator()) { //never run in local mode on a device
             Parse.initialize(
                     "http://localhost:1337/parse",
@@ -777,7 +777,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 
 //<editor-fold defaultstate="collapsed" desc="** com.codename1.io.Util.register externalizable classes **">
 //        MyUtil.register(PreviouslyRunningTimerEntry.CLASS_NAME_PREVIOUSLY_RUNNING_TIMERS, PreviouslyRunningTimerEntry.class); //register Externalizable class
-        com.codename1.io.Util.register(TimerStackEntry.CLASS_NAME_TIMER_STACK_ENTRY, TimerStackEntry.class); //register Externalizable class
+//        com.codename1.io.Util.register(TimerStackEntry.CLASS_NAME_TIMER_STACK_ENTRY, TimerStackEntry.class); //register Externalizable class
 //        MyUtil.register(AlarmData.CLASS_NAME_ALARM_DATA, AlarmData.class); //register Externalizable class
         com.codename1.io.Util.register(ParseConstants.CLASS_NAME_USER, ParseUser.class); //register Externalizable class
         com.codename1.io.Util.register(NotificationShadow.CLASS_NAME_NOTIFICATION_SHADOW, NotificationShadow.class); //register Externalizable class
@@ -795,6 +795,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         com.codename1.io.Util.register(RepeatRuleParseObject.CLASS_NAME, RepeatRuleParseObject.class); //register Externalizable class
         com.codename1.io.Util.register(FilterSortDef.CLASS_NAME, FilterSortDef.class); //register Externalizable class
         com.codename1.io.Util.register(WorkSlot.CLASS_NAME, WorkSlot.class); //register Externalizable class
+        com.codename1.io.Util.register(TimerInstance2.CLASS_NAME, TimerInstance2.class); //register Externalizable class
 
 //        com.codename1.io.Util.register("ParseObject", ParseObject.class); //not possible for ParseObject: must be initialized with a classname
         com.codename1.io.Util.register("SetFieldOperation", SetFieldOperation.class); //register Externalizable class
@@ -1258,6 +1259,11 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         long now = System.currentTimeMillis();
         Log.p("entering stop()"); //do before updating badgeCount which calls network and may be too slow and get killed
         current = Display.getInstance().getCurrent(); //do first in case of issues
+        if (current instanceof Form) {
+            if (current.getFocused() instanceof TextArea && ((TextArea) current.getFocused()).isEditing()) {
+                ((TextArea) current.getFocused()).fireDoneEvent();
+            }
+        }
         //set the app icon badge count
         refreshBadgeCount();
         Log.p("exiting stop(), duration =" + (System.currentTimeMillis() - now) + "ms"); //do before updating badgeCount which calls network and may be too slow and get killed

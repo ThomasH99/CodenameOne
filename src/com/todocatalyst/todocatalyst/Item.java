@@ -82,7 +82,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      */
 //    private EventDispatcher dispatcher = new EventDispatcher();
-     EventDispatcher listeners;
+    EventDispatcher listeners;
 
 //    private List<WorkSlot> workSlotListBuffer;
 //    private WorkSlotList workSlotListBuffer;
@@ -92,8 +92,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private boolean neverCacheWorkTimeAllocator = false;// = new ItemList(); //lazy
 
 //    private WorkTimeDefinition workTimeDefinitionBuffer;
-    public Item() {
+    public Item() { //NB used by object factory to create new
         super(CLASS_NAME);
+//        setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
 //        setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue());
 //        setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue()); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
     }
@@ -101,6 +102,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public Item(boolean setDefaultRemainingIfActivated) {
         this();
 //        setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue());
+//        if (!setDefaultRemainingIfActivated && getRemainingForTaskItself() != 0) { //set in
+////            setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
+//            setRemainingForTaskItself(0);
+//        }
         if (setDefaultRemainingIfActivated) {
             setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
         }
@@ -121,12 +126,30 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public Item(String text) {
         this();
         setText(text);
+//        setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
+    }
+
+    public Item(boolean setDefaultRemainingIfActivated, String text) {
+        this(setDefaultRemainingIfActivated);
+        setText(text);
+//        setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
+    }
+
+    public Item(boolean setDefaultRemainingIfActivated, String text, ItemAndListCommonInterface ownerN, ItemAndListCommonInterface defaultOwner) {
+        this(setDefaultRemainingIfActivated, text);
+        if (ownerN == null) {
+            ownerN = defaultOwner;
+        }
+        if (ownerN != null) {
+            ownerN.addToList(this);
+        }
     }
 
     public Item(String text, boolean interpretTextValues) {
         this();
         if (interpretTextValues) {
-            setText(parseTaskTextForProperties(this, text));
+//            setText(parseTaskTextForProperties(this, text));
+            parseTaskTextAndSetAllProperties(text);
         } else {
             setText(text);
         }
@@ -967,7 +990,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String TEMPLATE_LIST = "Templates";
     final static String SUBTASKS = "Subtasks";
     final static String SUBTASKS_HELP = "**";
-    final static String WORTIME = "work time";
+    final static String WORKTIME = "blocked time";
     final static String WORKTIME_HELP = "**";
     final static String SYSTEM_NAME = "System name"; //system name for list (e.g. Today etc
     final static String SNOOZED_TILL = "Snoozed till";
@@ -977,11 +1000,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String SHOW_NUMBER_DONE_TASKS_HELP = "**";
     final static String SHOW_LEAF_TASKS_TEXT = "Show number of leaf tasks"; //"Show number of leaf tasks instead of number of projects"
     final static String SHOW_LEAF_TASKS_HELP = "**";
-    final static String SHOW_TOTAL_TEXT = Format.f("Show sum of {0 estimate} for remaining tasks", Item.EFFORT_ESTIMATE);
-    final static String SHOW_TOTAL_HELP = Format.f("**", Item.EFFORT_ESTIMATE);
-    final static String SHOW_REMAINING_TEXT = "Show sum of Remaining estimates for remaining tasks";
+    final static String SHOW_REMAINING_TEXT = Format.f("Show sum of {0 estimate}", Item.EFFORT_REMAINING); //"Show sum of Remaining estimates for remaining tasks";
     final static String SHOW_REMAINING_HELP = "**";
-    final static String SHOW_WORK_TIME_TEXT = "Show sum of defined work time for the list";
+    final static String SHOW_TOTAL_TEXT = Format.f("Show total sum of {0 estimate} for all tasks", Item.EFFORT_TOTAL);
+    final static String SHOW_TOTAL_HELP = "**";
+    final static String SHOW_WORK_TIME_TEXT = Format.f("Show sum of {0 estimate}", Item.WORKTIME);//"Show sum of defined work time for the list";
     final static String SHOW_WORK_TIME_HELP = "**";
 
     final static int ITEM_CHANGED_ALARM_DATE = 0;
@@ -1008,8 +1031,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_EFFORT_ESTIMATE = "effortEstimate";
     final static String PARSE_EFFORT_ESTIMATE_PROJECT_TASK_ITSELF = "effortEstimateProjectTask";
     final static String PARSE_EFFORT_ESTIMATE_SUBTASKS_VIRT = "effortSubtasks";
-    final static String PARSE_REMAINING_EFFORT_TOTAL = "remainingEffort";
-    final static String PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF = "remainingEffortProjectTask";
+    final static String PARSE_REMAINING_EFFORT_TOTAL = "remainingEffort"; //total remaining for task or project (sum of project task's remaining + subtasks' remaining)
+    final static String PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF = "remainingEffortProjectTask"; //remaining for a project task (added to remaining of subtasks' remaining). For a normal or leaf task, EFFORT_TOTAL==EFFORT_FOR_TASK_ITSELF!!
     final static String PARSE_REMAINING_EFFORT_FOR_SUBTASKS_VIRT = "remainingSubtasks"; //virtual, not used!
     final static String PARSE_ACTUAL_EFFORT = "actualEffort";
     final static String PARSE_ACTUAL_EFFORT_TASK_ITSELF = "actualEffortProjectTask";
@@ -1656,38 +1679,39 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public void setText(String text, boolean interpretInlineValues) {
         if (interpretInlineValues) {
-            text = parseTaskTextForProperties(this, text);
-        }
+//            text = parseTaskTextForProperties(this, text);
+            parseTaskTextAndSetAllProperties(text);
+        } else { //will be called by parseTaskTextAndSetAllProperties with interpretInlineValues==false
 
-        if (false && Config.TEST) { //use for testing to ensure all generated Items are unique with a date/time stamp
-            text = MyUtil.replaceSubstring(text, "##", MyDate.formatDateTimeNew(new MyDate()));
-        }
+            if (false && Config.TEST) { //use for testing to ensure all generated Items are unique with a date/time stamp
+                text = MyUtil.replaceSubstring(text, "##", MyDate.formatDateTimeNew(new MyDate()));
+            }
 
 //        setText(text);
 //        if ((has(PARSE_TEXT) || !text.equals(""))) { //don't test for val != null to avoid silent failure on this error condition
 //            AlarmHandler.getInstance().updateNotificationText(this);
 //            put(PARSE_TEXT, text);
 //        }
-        if (false) {
-            if (MyPrefs.itemRemoveTrailingPrecedingSpacesAndNewlines.getBoolean()) {
-                text = removeTrailingPrecedingSpacesNewLinesEtc(text);
+            if (false) {
+                if (MyPrefs.itemRemoveTrailingPrecedingSpacesAndNewlines.getBoolean()) {
+                    text = removeTrailingPrecedingSpacesNewLinesEtc(text);
+                }
             }
-        }
-        if (false && Config.TEST && text.startsWith("xx")) {
-            if (text != null && MyPrefs.encryptTaskTextAndComments.getBoolean()) {
-                text = Util.xorDecode(text);
+            if (false && Config.TEST && text.startsWith("xx")) {
+                if (text != null && MyPrefs.encryptTaskTextAndComments.getBoolean()) {
+                    text = Util.xorDecode(text);
+                }
             }
-        }
 
-        String oldVal = getString(PARSE_TEXT);
+            String oldVal = getString(PARSE_TEXT);
 //        boolean textChanged = !getText().equals(text);
-        if (text != null && !text.equals("")) { //don't test for val != null to avoid silent failure on this error condition
-            if (!Objects.equals(oldVal, text)) {
-                put(PARSE_TEXT, text);
+            if (text != null && !text.equals("")) { //don't test for val != null to avoid silent failure on this error condition
+                if (!Objects.equals(oldVal, text)) {
+                    put(PARSE_TEXT, text);
+                }
+            } else {
+                remove(PARSE_TEXT);
             }
-        } else {
-            remove(PARSE_TEXT);
-        }
 //        if (text != null && !text.equals(description)) {
 //            this.description = text;
 //        }
@@ -1695,6 +1719,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////            afterSaveActions.put(AFTER_SAVE_TEXT_UPDATE, () -> AlarmHandler.getInstance().updateNotificationText(this));
 //            mustUpdateAlarmsXXXNotUsed = true;
 //        }
+        }
     }
 
     @Override
@@ -2729,6 +2754,93 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    @Override
     private List cachedList;
 
+    /**
+     * sets this Item's list of subitems to be the same as itemList. This is
+     * done by comparing the two lists and adding new items in itemList to the
+     * subitem list, or by removing the items not in itemList from the subitem
+     * list. It is done in this way to avoid creating unnecessary change events
+     * from adding/removing items which are already in/not in the subitem list.
+     *
+     * @param listOfSubtasks
+     */
+//    public void setItemList(ItemList itemList) {
+//    @Override
+//    public void setList(List itemList) {
+//        setItemList(itemList);
+//    }
+//    public void setItemList(List itemList) {
+    @Override
+    public void setList(List listOfSubtasks) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (has(PARSE_SUBTASKS) && itemList != null && itemList.isEmpty()) // this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
+//        {
+//            remove(PARSE_SUBTASKS);
+//        } else {
+//        if (has(PARSE_SUBTASKS) || ((itemList != null && !itemList.isEmpty()))) {// this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
+//            if (itemList != null && itemList.isEmpty()) // this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
+//            {
+//                remove(PARSE_SUBTASKS); //if set to empty, remove instead
+//            } else {
+//                put(PARSE_SUBTASKS, itemList);
+//            }
+//        }
+//        if (listOfSubtasks != null || ((listOfSubtasks != null && !listOfSubtasks.isEmpty()))) {// this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
+//            put(PARSE_SUBTASKS, listOfSubtasks);
+//        } else {
+//            remove(PARSE_SUBTASKS); //if set to empty, remove instead
+//        }
+//</editor-fold>
+        List<ItemAndListCommonInterface> oldSubtaskList = getListFull();
+
+        boolean firstTimeAddOfSubtasks = false;
+        if (listOfSubtasks == null || listOfSubtasks.isEmpty()) {// this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
+//            if (!getList().isEmpty()) { //if no more subtasks, then switch actual back again
+//                setActualEffortInParse(getActualEffortProjectTaskItself()); //store project task's own Actual separately
+//                setActualEffortProjectTaskItselfInParse(0); //delete old value
+//            }
+            remove(PARSE_SUBTASKS); //if set to empty, remove instead
+            cachedList = null;
+        } else {
+//            if (getList().isEmpty()) { //first subtask added
+//                setActualEffortProjectTaskItselfInParse(getActualEffortFromParse()); //store project task's own Actual separately
+//            }
+//            
+//            for (Item subtask : (List<Item>) listOfSubtasks) {
+//                subtask.setOwnerItem(this, true, true);
+//            }
+//            firstTimeAddOfSubtasks = get(PARSE_SUBTASKS) == null;
+            put(PARSE_SUBTASKS, listOfSubtasks);
+            cachedList = listOfSubtasks;
+            for (Item subtask : (List<Item>) listOfSubtasks) {
+//                RepeatRuleObjectInterface repeatRule = getRepeatRuleN();
+//                if (repeatRule!=null &&repeatRule.isUpdatePending())
+                subtask.updateRepeatRule(); //
+            }
+        }
+
+        if (MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()) { //TODO, 
+            if (oldSubtaskList.size() == 0 && listOfSubtasks.size() > 0) {
+                setRemainingForTaskItself(0);
+                addToCommentDefaultPosition(Format.f("Task was changed to Project, so {0} was updated from {1} to total {0} of subtasks", Item.EFFORT_REMAINING, MyDate.formatDuration(getRemainingForTaskItself())));
+            }
+//            else if (oldSubtaskList.size() > 0 && listOfSubtasks.size() == 0) {
+//            }
+        }
+//        updateAllValuesDerivedFromSubtasksWhenSubtaskListChange(firstTimeAddOfSubtasks); //update eg if added first subtasks, meaning ActualEffort must be updated
+        if (false) {
+            updateAllValuesDerivedFromSubtasks(); //NOW done in onSave() //update eg if added first subtasks, meaning ActualEffort must be updated
+        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (getItemListSize() == 0 && itemList.isEmpty()) // this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
+//        {
+//            return; //do  nothing if both lists are empty
+//        }
+//        //TODO!! risk that this call will create unnecessary empoty sublists - replace an empty list with a locally (in this method) created empty list instead
+////        ListCompared.updateListWithDifferences(getItemList(), itemList);
+//        getItemList().updateListWithDifferences(itemList);
+//</editor-fold>
+    }
+
     @Override
 //    public List<Item> getList() {
     public List getListFull() {
@@ -3024,79 +3136,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return getList().indexOf(subitem);
     }
 
-    /**
-     * sets this Item's list of subitems to be the same as itemList. This is
-     * done by comparing the two lists and adding new items in itemList to the
-     * subitem list, or by removing the items not in itemList from the subitem
-     * list. It is done in this way to avoid creating unnecessary change events
-     * from adding/removing items which are already in/not in the subitem list.
-     *
-     * @param listOfSubtasks
-     */
-//    public void setItemList(ItemList itemList) {
-//    @Override
-//    public void setList(List itemList) {
-//        setItemList(itemList);
-//    }
-//    public void setItemList(List itemList) {
-    @Override
-    public void setList(List listOfSubtasks) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (has(PARSE_SUBTASKS) && itemList != null && itemList.isEmpty()) // this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
-//        {
-//            remove(PARSE_SUBTASKS);
-//        } else {
-//        if (has(PARSE_SUBTASKS) || ((itemList != null && !itemList.isEmpty()))) {// this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
-//            if (itemList != null && itemList.isEmpty()) // this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
-//            {
-//                remove(PARSE_SUBTASKS); //if set to empty, remove instead
-//            } else {
-//                put(PARSE_SUBTASKS, itemList);
-//            }
-//        }
-//        if (listOfSubtasks != null || ((listOfSubtasks != null && !listOfSubtasks.isEmpty()))) {// this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
-//            put(PARSE_SUBTASKS, listOfSubtasks);
-//        } else {
-//            remove(PARSE_SUBTASKS); //if set to empty, remove instead
-//        }
-//</editor-fold>
-        boolean firstTimeAddOfSubtasks = false;
-        if (listOfSubtasks == null || listOfSubtasks.isEmpty()) {// this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
-//            if (!getList().isEmpty()) { //if no more subtasks, then switch actual back again
-//                setActualEffortInParse(getActualEffortProjectTaskItself()); //store project task's own Actual separately
-//                setActualEffortProjectTaskItselfInParse(0); //delete old value
-//            }
-            remove(PARSE_SUBTASKS); //if set to empty, remove instead
-        } else {
-//            if (getList().isEmpty()) { //first subtask added
-//                setActualEffortProjectTaskItselfInParse(getActualEffortFromParse()); //store project task's own Actual separately
-//            }
-//            
-//            for (Item subtask : (List<Item>) listOfSubtasks) {
-//                subtask.setOwnerItem(this, true, true);
-//            }
-//            firstTimeAddOfSubtasks = get(PARSE_SUBTASKS) == null;
-            put(PARSE_SUBTASKS, listOfSubtasks);
-            for (Item subtask : (List<Item>) listOfSubtasks) {
-//                RepeatRuleObjectInterface repeatRule = getRepeatRuleN();
-//                if (repeatRule!=null &&repeatRule.isUpdatePending())
-                subtask.updateRepeatRule(); //
-            }
-        }
-        cachedList = listOfSubtasks;
-//        updateAllValuesDerivedFromSubtasksWhenSubtaskListChange(firstTimeAddOfSubtasks); //update eg if added first subtasks, meaning ActualEffort must be updated
-        updateAllValuesDerivedFromSubtasks(); //update eg if added first subtasks, meaning ActualEffort must be updated
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        if (getItemListSize() == 0 && itemList.isEmpty()) // this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
-//        {
-//            return; //do  nothing if both lists are empty
-//        }
-//        //TODO!! risk that this call will create unnecessary empoty sublists - replace an empty list with a locally (in this method) created empty list instead
-////        ListCompared.updateListWithDifferences(getItemList(), itemList);
-//        getItemList().updateListWithDifferences(itemList);
-//</editor-fold>
-    }
-
 //    public void timerStartXXX(Date startTime) {
 //        Date timerStarted = getDate(PARSE_TIMER_STARTED_XXX);
 //        if (timerStarted != null) {
@@ -3140,11 +3179,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         if (isTimerRunning()) { //            timerStartStopsDate.add(startTime);
             ASSERT.that("Timer for this item should not have a startTime already set, adding stopStamp, list=" + (getTimerTimeStampListN() != null ? getTimerTimeStampListN() + "" : "<null>"));
-            if (Config.TEST) {
+            if (true || Config.TEST) {
                 timerStartStopsDate.add(startTime); //add the missing stop time
             }
         }
-        timerStartStopsDate.add(startTime); //add the missing stop time
+        timerStartStopsDate.add(startTime);
 //            super.put(PARSE_TIMER_TIMESTAMPS, timerStartStopsDate);
         setTimerTimeStampListN(timerStartStopsDate);
 //            put(PARSE_TIMER_STARTED_XXX, true); //set timer 
@@ -3152,7 +3191,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     void addTimerStopTimestamp(Date stopTime) {
-        ASSERT.that(isTimerRunning());
+        if (false) {
+            ASSERT.that(isTimerRunning());
+        }
         if (isTimerRunning()) {
 //            List<Date> timerStartStopsDate = getList(PARSE_TIMER_INTERVALS);
             List<Date> timerStartStopsDate = getTimerTimeStampListN();
@@ -3176,16 +3217,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    public void addTimerStartTimestamp() {
+    public void addTimerStartTimestampXXX() { //DON'T use since local use of 'now' could lead to differences with timer 
         addTimerStartTimestamp(new MyDate());
     }
 
-    public void addTimerStopTimestamp() {
+    public void addTimerStopTimestampXXX() {
         addTimerStopTimestamp(new MyDate());
     }
 
     public long getTotalTimerDurationOfTimedIntervals(boolean includeRunningTimerUpToNow) {
-        ASSERT.that(isTimerRunning());
+        if (false) {
+            ASSERT.that(isTimerRunning());
+        }
 //        List<Date> timerStartStopsDate = getList(PARSE_TIMER_INTERVALS);
         List<Date> timerStartStopsDate = getTimerTimeStampListN();
         long duration = 0;
@@ -5137,7 +5180,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
 //    public Item getNextLeafItem(Item previousItem, boolean excludeWaiting) {
-    public Item getNextLeafItem(Item previousItem) {
+    public Item getNextLeafItemNXXX(Item previousItem) {
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
         List<Item> leafTaskList = getLeafTasksAsListN(null);
 
@@ -5161,10 +5204,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param condition
      * @return
      */
-    public Item getNextLeafItem(Item previousItem, Condition condition) {
+    public Item getNextLeafItemXXX(Item previousItem, Condition condition) {
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
 //        return getNextLeafItemMeetingConditionImpl(previousItem, condition, new boolean[]{previousItem == null});
-        return getNextLeafItemMeetingConditionImpl(previousItem, condition, new Boolean(previousItem == null));
+        return getNextLeafItemMeetingConditionImplXXX(previousItem, condition, new Boolean(previousItem == null));
 
     }
 
@@ -5183,7 +5226,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
 //    private Item getNextLeafItemMeetingConditionImpl(Item previousItem, boolean excludeWaiting, boolean previousItemAlreadyFound) {
 //    Item getNextLeafItemMeetingConditionImpl(Item previousItem, Condition condition, boolean[] previousItemAlreadyFound) {
-    Item getNextLeafItemMeetingConditionImpl(Item previousItem, Condition condition, Boolean previousItemAlreadyFound) {
+    Item getNextLeafItemMeetingConditionImplXXX(Item previousItem, Condition condition, Boolean previousItemAlreadyFound) {
         List<Item> leafSubtaskList = getLeafTasksAsListN(condition);
         int index = leafSubtaskList.indexOf(previousItem);
         if (previousItem == null && leafSubtaskList.size() > 0) { //if called w null, return first item (if any)
@@ -5204,7 +5247,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @param previousItemAlreadyFound
      * @return
      */
-    Item getNextLeafItemMeetingConditionImplOLDButOptimized(Item previousItem, Condition condition, Boolean previousItemAlreadyFound) {
+    Item getNextLeafItemMeetingConditionImplOLDButOptimizedXXX(Item previousItem, Condition condition, Boolean previousItemAlreadyFound) {
 //        previousItemAlreadyFound[0] = previousItem==null;
 //        assert previousItem != null || previousItemAlreadyFound[0] : "getNextLeafItemMeetingConditionImpl called with previousItem==null and previousItemAlreadyFound not set true";
         assert previousItem != null || previousItemAlreadyFound : "getNextUndoneLeafItemImpl called with previousItem==null and previousItemAlreadyFound not set true";
@@ -5232,7 +5275,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (subTask.isProject()) {
                     //try to find an appropriate subtask to this project
 //                    subTask = subTask.getNextLeafItemMeetingConditionImpl(previousItem, condition, previousItemFoundHere || previousItemAlreadyFound[0]);
-                    subTask = subTask.getNextLeafItemMeetingConditionImplOLDButOptimized(previousItem, condition, previousItemAlreadyFound);
+                    subTask = subTask.getNextLeafItemMeetingConditionImplOLDButOptimizedXXX(previousItem, condition, previousItemAlreadyFound);
 //                    if (item != null && previousItemFoundHere) {
                     //if a subtask meeting the conditions is found, return it
                     if (subTask != null) {
@@ -5801,22 +5844,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        updateStatusOnSubtaskStatusChangeXXX(new MyDate(MyDate.currentTimeMillis()));
     }
 
-    /**
-     * sets the status of the item and any subtasks. Makes other necessary
-     * updates, such as stopping timers, cancelling alarms, setting completed
-     * date.
-     *
-     * @param newStatus
-     */
-    @Override
-    public void setStatus(ItemStatus newStatus) {
-        setStatus(newStatus, true, true, true, new MyDate(), true);
-    }
-
-    public void setStatus(ItemStatus newStatus, boolean updateDependentFields) {
-        setStatus(newStatus, true, true, updateDependentFields, new MyDate(), false);
-    }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
      *
@@ -5935,37 +5962,54 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        else return getStatus();
     }
 
-    public void setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now) {
-        setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, now, false);
+    /**
+     * sets the status of the item and any subtasks. Makes other necessary
+     * updates, such as stopping timers, cancelling alarms, setting completed
+     * date.
+     *
+     * @param newStatus
+     */
+    @Override
+    public boolean setStatus(ItemStatus newStatus) {
+        return setStatus(newStatus, true, true, true, new MyDate(), true, true, false);
     }
 
-    public void setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now,
+    public boolean setStatus(ItemStatus newStatus, boolean updateDependentFields) {
+        return setStatus(newStatus, true, true, updateDependentFields, new MyDate(), false);
+    }
+
+    public boolean setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now) {
+        return setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, now, false);
+    }
+
+    public boolean setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now,
             boolean executeRepeat) {
-        setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, now, executeRepeat, true);
+        return setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, now, executeRepeat, true, false);
     }
 
-    public void setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, boolean executeRepeat) {
-        setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, new MyDate(), executeRepeat, true);
+    public boolean setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, boolean executeRepeat) {
+        return setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, new MyDate(), executeRepeat, true, false);
     }
 
-    public void setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now,
+    public boolean setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now,
             boolean executeRepeat, boolean askToUpdateWaitingDateAndAlarm) {
+        return setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, now, executeRepeat, askToUpdateWaitingDateAndAlarm, false);
+    }
+
+    public boolean setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now,
+            boolean executeRepeat, boolean askToUpdateWaitingDateAndAlarm, boolean forceUpdateOfSubtasks) {
         ItemStatus oldStatus = getStatusFromParse();
 
         ItemStatus newStatus = (status == ItemStatus.CREATED && getActualTotal() > 0) ? ItemStatus.ONGOING : status; //convert CREATED to ONGOING if actual effort is recorded
         if (newStatus == oldStatus) {
-            return;
+            return false;
         }
         if (false && isProject() && !confirmUpdateOfSubtasks(oldStatus, newStatus)) { //false: too late to make decision here, move to statusChangeHandlers
-            return;
+            return false;
         }
 
         if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
             mustUpdateAlarmsXXXNotUsed = true; //update alarms
-        }
-
-        if (newStatus == ItemStatus.WAITING && askToUpdateWaitingDateAndAlarm && MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting.getBoolean()) {
-            MyForm.showDialogSetWaitingDateAndAlarmIfAppropriate(this); //only call if we're changing TO Waiting status
         }
 
 //        if (false && oldStatus != ItemStatus.WAITING && newStatus == ItemStatus.WAITING) { //NB!! behaviour too specific to UI/screen in which a task is set waiting, so don't do here
@@ -5975,25 +6019,34 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        if (!isProject()) {
 //            setStatusInParse(newStatus); //must set *before* updating supertasks
 //        } else {
-        if (isProject() && updateSubtasks && confirmUpdateOfSubtasks(oldStatus, newStatus)) {
-            //when changing the status of a project, only the status of the subtasks are changed(??)
+        if (isProject() && updateSubtasks) {
+            if (forceUpdateOfSubtasks || confirmUpdateOfSubtasks(oldStatus, newStatus)) {
+                //when changing the status of a project, only the status of the subtasks are changed(??)
 //            boolean doneProject = (oldStatus == ItemStatus.DONE);
 //            int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
 //            if (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
 //                    || Dialog.show("INFO", "Change " + nbChgStatus + " subtasks to " + newStatus.getDescription() + "?", "OK", "Cancel")) {
 //                opsUpdateInheritedValues.put(Item.STATUS, (subtask) -> {
-            opsUpdateInheritedValues(Item.STATUS, (subtask) -> {
-                ItemStatus oldSubtaskStatus = subtask.getStatus();
-                if (shouldTaskStatusChange(newStatus, oldSubtaskStatus, oldStatus == ItemStatus.DONE) && subtask.updateInheritedValuesFor(PARSE_STATUS)) { //only change status when transition is allowed
+                opsUpdateInheritedValues(Item.STATUS, (subtask) -> {
+                    ItemStatus oldSubtaskStatus = subtask.getStatus();
+                    if (shouldTaskStatusChange(newStatus, oldSubtaskStatus, oldStatus == ItemStatus.DONE) && subtask.updateInheritedValuesFor(PARSE_STATUS)) { //only change status when transition is allowed
 //                    subtask.setStatus(newStatus, true, false, true, now); //always update dependent fields for subtasks
-                    subtask.setStatus(newStatus, true, true, true, now, true); //always update dependent fields for subtasks. MUST also update supertask so that e.g. the completedDate of project is updated with latest subtask date, must update subtask repeatRules!
-                    return true;
-                } else {
-                    return false; //UI: do nothing it user does not want to change all subtasks!
-                }
-            });
-            ASSERT.that(getStatusFromSubtasksN() == newStatus, "Updating subtasks to new status = " + newStatus + " give a project status calculated from subtasks = " + getStatusFromSubtasksN());
+                        subtask.setStatus(newStatus, true, true, true, now, true); //always update dependent fields for subtasks. MUST also update supertask so that e.g. the completedDate of project is updated with latest subtask date, must update subtask repeatRules!
+                        return true;
+                    } else {
+                        return false; //UI: do nothing it user does not want to change all subtasks!
+                    }
+                });
+                ASSERT.that(getStatusFromSubtasksN() == newStatus, "Updating subtasks to new status = " + newStatus + " give a project status calculated from subtasks = " + getStatusFromSubtasksN());
+            } else {
+                return false;
+            }
         }
+
+        if (newStatus == ItemStatus.WAITING && askToUpdateWaitingDateAndAlarm && MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting.getBoolean()) {
+            MyForm.showDialogSetWaitingDateAndAlarmIfAppropriate(this); //only call if we're changing TO Waiting status
+        }
+
 //        else {
 //                setStatusInParse(newStatus); //if not updating subtasks, then set projet status itself
 //            }
@@ -6040,6 +6093,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
 //}
 //</editor-fold>
+        return true;
     }
 
     /**
@@ -7239,7 +7293,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (MyPrefs.waitingSetStatusEtcWhenSettingWaitingUntilDate.getBoolean() && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING)) { //only update if created or ongoing (not cancelled, Done)
                     setStatus(ItemStatus.WAITING);
 
-                    if (getWaitingAlarmDate().getTime() == 0 && MyPrefs.waitingSetStatusEtcWhenSettingWaitingUntilDate.getBoolean()) {
+//                    if (getWaitingAlarmDate().getTime() == 0 && MyPrefs.waitingSetStatusEtcWhenSettingWaitingUntilDate.getBoolean()) {
+                    if (getWaitingAlarmDate().getTime() == 0
+                            && MyPrefs.waitingSetWaitingAlarmWhenSettingWaitingUntilDate.getBoolean()
+                            && MyPrefs.waitingSetWaitingAlarmMinutesBeforeWaitingUntilDate.getInt() != 0) {
                         setWaitingAlarmDate(new MyDate(waitUntilDate.getTime() - MyPrefs.waitingSetWaitingAlarmMinutesBeforeWaitingUntilDate.getInt() * MyDate.MINUTE_IN_MILLISECONDS));
                     }
 
@@ -7639,6 +7696,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public int getEffortEstimateInMinutes() {
 //        return (int) getEffortEstimate() / MyDate.MINUTE_IN_MILLISECONDS;
 //    }
+//    private void updateRemainingForTaskItself(long oldRemainingEffortForTaskItselfMillis, long remainingEffortForTaskItselfMillis) {
+//        if (isProject()) {
+//
+//        } else {
+//            setRemainingForTaskItself(remainingEffortForTaskItselfMillis, updateOwnerItem, updateSubtaskOngoing)
+//    
+//        }
+//    }
     /**
      * sets the *total* remaining effort for a task/project, that is, it's own
      * remaining plus those of all subtasks
@@ -7648,20 +7713,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private void setRemainingTotalInParse(long remainingEffortTotalMillis) {
         long oldVal = getRemainingTotalFromParse();
         if (remainingEffortTotalMillis != oldVal) {
+
             if (remainingEffortTotalMillis > 0) {
-                if (remainingEffortTotalMillis != oldVal) {
-                    put(PARSE_REMAINING_EFFORT_TOTAL, remainingEffortTotalMillis); //update first 
-                }
+                put(PARSE_REMAINING_EFFORT_TOTAL, remainingEffortTotalMillis); //update first 
             } else {
                 remove(PARSE_REMAINING_EFFORT_TOTAL);
             }
 
+//            updateRemainingForTaskItself(oldVal, remainingEffortTotalMillis);
             updateEarnedValuePerHour();
 
             Item ownerItem = getOwnerItem();
             if (ownerItem != null) {
 //            ownerItem.setRemainingTotalInParse(ownerItem.getRemainingTotal() + remainingEffortTotalMillis - oldVal);
-                ownerItem.updateRemainingOnSubtaskChange();
+                ownerItem.updateRemainingOnSubtaskChange(); //NB! remaining for task itself MUST be updated before this call!
             }
         }
 
@@ -7675,13 +7740,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * is a project with subtasks
      */
     private void setRemainingForTaskInParse(long remainingEffortProjectTaskItselfMillis) {
-        if (remainingEffortProjectTaskItselfMillis != 0) {
-            //only set (make dirty) if actually different (bit of a hack solution, should find reason why it is set even though no change
-            if (remainingEffortProjectTaskItselfMillis != getRemainingForTaskItselfFromParse()) {
+        long oldVal = getRemainingForTaskItselfFromParse();
+        if (remainingEffortProjectTaskItselfMillis != oldVal) {
+            if (remainingEffortProjectTaskItselfMillis != 0) {
+                //only set (make dirty) if actually different (bit of a hack solution, should find reason why it is set even though no change
                 put(PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF, remainingEffortProjectTaskItselfMillis); //update first 
+            } else {
+                remove(PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF);
             }
-        } else {
-            remove(PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF);
         }
 //        updateEarnedValuePerHour(); //NO, only update earnedVlauePerHour when the total effort is changed (done automatically when remainingForProjectTask is updated)
 //        update();
@@ -7800,13 +7866,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     /**
+     * set the remaining effort for a leaf task (this also updates the total),
+     * or for a project task (which adds the value to the sum of the subtasks)
      *
-     * @param remainingEffortProjectTaskItselfMillis
+     * @param remainingEffortForTaskOrProjectTaskItselfMillis
      * @param autoUpdateEffortEstimate
      * @param firstTimeAddOfSubtasksXXX true the first time subtasks are added
      * to a task (making it a project) - used to update projectRemaining to 0
      */
-    public void setRemainingForTaskItself(long remainingEffortProjectTaskItselfMillis, boolean autoUpdateEffortEstimate, boolean firstTimeAddOfSubtasksXXX) {
+    public void setRemainingForTaskItself(long remainingEffortForTaskOrProjectTaskItselfMillis, boolean autoUpdateEffortEstimate, boolean firstTimeAddOfSubtasksXXX) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long oldEffortTotal = getRemainingEffort();
 ////        long prevRemaining = getRemainingEffortFromParse();
@@ -7814,18 +7882,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        long newEffortTotal = effortSubtasks + remainingEffortMillis;
 //        long prevRemainingProjectTask = getRemainingEffortProjectTaskItself();
 //</editor-fold>
-        if (autoUpdateEffortEstimate && getRemainingForTaskItselfFromParse() == getRemainingDefaultValue() //if first time we set Remaining
+        long oldVal = getRemainingForTaskItself();
+//        ASSERT.that(isProject(), () -> "Item.setRemainingForTaskItself called for non-project item=" + this);
+        if (autoUpdateEffortEstimate
+                && (getRemainingForTaskItselfFromParse() == 00 || getRemainingForTaskItselfFromParse() == getRemainingDefaultValue()) //if first time we set Remaining
                 && MyPrefs.automaticallyUseFirstRemainingPlusActualAsInitialEstimateWhenEffortEstimateIsZero.getBoolean()
                 && getEstimateTotal() == 0) {//and no effort estimate already set
             //UI: as long as work hasn't started (Actual==0), use Remaining as historical estimate
             //since we test for 0, no problem if setting Estimate both here and direct
-            setEstimateForTask(remainingEffortProjectTaskItselfMillis + getActualForTaskItself(), false); //false to avoid circular updates between setEstimate() and setRemaining()
+            setEstimateForTask(remainingEffortForTaskOrProjectTaskItselfMillis + getActualForTaskItself(), false); //false to avoid circular updates between setEstimate() and setRemaining()
         }
 
 //        setRemainingEffortInParse(newEffortTotal);// + actualEffortMillis);
 //        setRemainingImpl(remainingEffortProjectTaskItselfMillis);// + actualEffortMillis);
-        long oldRemainingPrjTaskItself = getRemainingForTaskItself();
-        long oldRemainingTotal = getRemainingTotal();
+//        long oldRemainingPrjTaskItself = getRemainingForTaskItself();
+//        long oldRemainingTotal = getRemainingTotal();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (firstTimeAddOfSubtasks) {
 //            setRemainingForProjectTaskItselfInParse(0);
@@ -7836,11 +7907,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            setRemainingForProjectTaskItselfInParse(remainingEffortProjectTaskItselfMillis);
 //        }
 //</editor-fold>
-        long totalRemainingEffort;
-
-        if (isProject()) {
-            long subtasksRemaining = getRemainingForSubtasks();
-            //depending on subtasks' remaining, update project's default remaining
+        if (false) {
+            long totalRemainingEffort;
+            if (!isProject()) {
+                //for single task:
+//            totalRemainingEffort = remainingEffortForTaskOrProjectTaskItselfMillis;
+//            setRemainingTotalInParse(totalRemainingEffort);
+//            setRemainingForTaskInParse(totalRemainingEffort);
+                setRemainingForTaskInParse(remainingEffortForTaskOrProjectTaskItselfMillis);
+                setRemainingTotalInParse(remainingEffortForTaskOrProjectTaskItselfMillis);
+//            setRemainingTotalInParse(totalRemainingEffort);
+            } else {
+                long subtasksRemaining = getRemainingForSubtasks();
+                //depending on subtasks' remaining, update project's default remaining
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (subtasksRemaining > 0) {
 //                if (getRemainingForProjectTaskItselfFromParse() == getRemainingDefaultValue()) {
@@ -7850,27 +7929,30 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue()); //set default value (again)
 //            }
 //</editor-fold>
-            if (firstTimeAddOfSubtasksXXX) {
-                setRemainingForTaskInParse(0); //delete any default value
-                if (oldRemainingPrjTaskItself > 0 && MyPrefs.addCommentWhenRemaningIsSetToZeroWhenTaskBecomesProject.getBoolean()) {
-                    addToCommentDefaultPosition(Format.f("{0 remaining} was {1 old remaining} when task was changed to a project", Item.EFFORT_REMAINING, MyDate.formatDuration(oldRemainingPrjTaskItself)));
+                if (firstTimeAddOfSubtasksXXX) {
+                    long oldRemainingPrjTaskItself = getRemainingForTaskItself();
+                    setRemainingForTaskInParse(0); //delete any default value
+                    if (oldRemainingPrjTaskItself > 0 && MyPrefs.addCommentWhenRemaningIsSetToZeroWhenTaskBecomesProject.getBoolean()) {
+                        addToCommentDefaultPosition(Format.f("{0 remaining} was {1 old remaining} when task was changed to a project", Item.EFFORT_REMAINING, MyDate.formatDuration(oldRemainingPrjTaskItself)));
+                    }
                 }
-            }
 
 //            if (subtasksRemaining > 0 && MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()) {
-            if (MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()) {
-                totalRemainingEffort = subtasksRemaining; //getRemainingEffortFromSubtasks();
-            } else { //subtasksRemaining == 0 || MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()
+                if (MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()) {
+                    totalRemainingEffort = subtasksRemaining; //getRemainingEffortFromSubtasks();
+                } else { //subtasksRemaining == 0 || MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()
 //                totalRemainingEffort = remainingEffortProjectTaskItselfMillis + subtasksRemaining; //getRemainingEffortFromSubtasks();
-                totalRemainingEffort = subtasksRemaining + remainingEffortProjectTaskItselfMillis; //getRemainingEffortFromSubtasks();
+                    totalRemainingEffort = subtasksRemaining + remainingEffortForTaskOrProjectTaskItselfMillis; //getRemainingEffortFromSubtasks();
+                }
+                setRemainingForTaskInParse(remainingEffortForTaskOrProjectTaskItselfMillis);
+                setRemainingTotalInParse(totalRemainingEffort);
+//            setRemainingTotalInParse(totalRemainingEffort);
             }
-//            setRemainingTotalInParse(totalRemainingEffort);
-        } else { //for single task:
-            totalRemainingEffort = remainingEffortProjectTaskItselfMillis;
-            setRemainingForTaskInParse(totalRemainingEffort);
-//            setRemainingTotalInParse(totalRemainingEffort);
         }
-        setRemainingTotalInParse(totalRemainingEffort);
+
+        //simple and consistent rule for updating the two values (setting old RemainingForTaskItself to 0 when subtasks are added is moved to Item.setList()!)
+        setRemainingForTaskInParse(remainingEffortForTaskOrProjectTaskItselfMillis);
+        setRemainingTotalInParse(remainingEffortForTaskOrProjectTaskItselfMillis + getRemainingForSubtasks());
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (totalRemainingEffort != 0) {
@@ -8024,7 +8106,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 
 //        setRemainingTotalInParse(getRemainingForTaskItself() + remainingSubtasks);
-        setRemainingTotalInParse(getRemainingForTaskItself() + remainingSubtasks);
+        setRemainingTotalInParse(remainingTaskItself + remainingSubtasks);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -8052,7 +8134,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
 //    private long getRemainingEffortProjectTaskFromParse() {
-    public long getRemainingForTaskItselfFromParse() {
+    private long getRemainingForTaskItselfFromParse() {
         Long remainingProjectTaskItselfEffort = getLong(PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF);
         return (remainingProjectTaskItselfEffort == null) ? 0L : remainingProjectTaskItselfEffort;
     }
@@ -8166,7 +8248,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public static long getRemainingForSubtasks(List<Item> subtasks) {
         long effort = 0;
         for (Item item : subtasks) {
-            effort += item.getRemainingTotal(); //remainingEffort  returns complete actual effort for subtasks (including their own effort and that of any of their subtasks
+            if (!item.isDone()) {
+                effort += item.getRemainingTotal(); //remainingEffort  returns complete actual effort for subtasks (including their own effort and that of any of their subtasks
+            }
         }
         return effort;
     }
@@ -8177,7 +8261,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            effort += item.getRemaining(); //remainingEffort  returns complete actual effort for subtasks (including their own effort and that of any of their subtasks
 //        }
 //        return effort;
-        return getRemainingForSubtasks(getListFull());
+        return getRemainingForSubtasks(getListFull()); //UI: listFull => subtasks are NOT filtered when calculating time
     }
 
     public static boolean isRemainingDefaultValue(long remaining) {
@@ -8227,7 +8311,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
             updateEarnedValuePerHour();
             Item ownerItem = getOwnerItem();
-            if (ownerItem != null) {
+            if (false && ownerItem != null) { //now done in owner.updateAllValuesDerivedFromSubtasks, onSave if dirty
 //            ownerItem.setActualTotal(ownerItem.getActualTotal() + actualEffortTotalMillis - oldActualTotal, false);
                 ownerItem.updateActualOnSubtaskChange();
             }
@@ -9222,9 +9306,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * returns the first startedOn date for all subtasks, or 0 if no subtask has
      * a startedOn date, or null if no subtasks
      *
-     * @return
+     * @return the latest date of any completed subtasks (even if not all are completed)
      */
-    private Date getCompletedOnDateFromSubtasksN() {
+    private Date getLastCompletedOnDateFromSubtasksN() {
 //            Date startedOn = new Date(MyDate.MIN_DATE);
         List<Item> subtasks = (List<Item>) getListFull();
         if (subtasks.isEmpty()) {
@@ -9234,8 +9318,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            for (Item subtask : (List<Item>) getListFull()) { //Full list since startedOn for Completed tasks should also be counted (except for Cancelled tasks!)
             for (Item subtask : subtasks) { //Full list since startedOn for Completed tasks should also be counted (except for Cancelled tasks!)
                 if (subtask.getStatus() != ItemStatus.CANCELLED) {
-                    Date completedOnDate = subtask.getCompletedOnDateFromSubtasksN();
-                    if (completedOn == null || completedOnDate.getTime() < completedOn.getTime()) {
+                    Date completedOnDate = subtask.getLastCompletedOnDateFromSubtasksN();
+                    if (completedOn == null || completedOnDate.getTime() > completedOn.getTime()) {
                         completedOn = completedOnDate;
                     }
                 }
@@ -9245,7 +9329,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     private void refreshCompletedDateFromSubtasks() {
-        Date subtaskCompletedOn = getCompletedOnDateFromSubtasksN();
+        Date subtaskCompletedOn = getLastCompletedOnDateFromSubtasksN();
         setCompletedDateInParse(subtaskCompletedOn);
     }
 
@@ -9254,7 +9338,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         Date lastCompletedDate = completedDate;//new Date(0);
         if (isProject() && !forceToThisInsteadOfLastSubtaskCompletedDate) {
 //            lastCompletedDate = getLatestSubtaskCompleteDate();
-            lastCompletedDate = getCompletedOnDateFromSubtasksN();
+            lastCompletedDate = getLastCompletedOnDateFromSubtasksN();
         }
 
         setCompletedDateInParse(lastCompletedDate); //set the date *before* updating status to ensure status update doesn't set its own date
@@ -9906,7 +9990,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 + (getCompletedDate().getTime() != 0 ? " Done" + MyDate.formatDateSmart(getCompletedDate()) : "")
                 + (getDueDate().getTime() != 0 ? " Due" + MyDate.formatDateSmart(getDueDate()) : "")
                 + (isDone() ? " [DONE]" : (getRemainingTotal() > 0 ? " " + MyDate.formatDurationShort(getRemainingTotal()) : ""))
-                + (showSubtasks ? (getListFull().size() == 0 ? "" : " subtasks(" + getListFull().size() + ")=*{" + getListAsCommaSeparatedString(getListFull(), true) + "}*") : "");
+                + (showSubtasks ? (getListFull().size() == 0 ? "" : (" subtasks(" + getListFull().size() + ")=*{" + getListAsCommaSeparatedString(getListFull(), true) + "}*")) : "");
     }
 
     /**
@@ -10221,9 +10305,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
 //TimerStack.getInstance().stopTimerIfActiveOnThisItemAndGotoNext(this);
 //        TimerStack.getInstance().updateTimerOnItemStatusChange(this, true, false); //true: move to next, false: don't save 
-        if (isDirty()) {
-            fireChangeEvent(); //only fire if changed
-        }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (isDone()) {
 //            AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //remove any future alarms for a Done/Cancelled task
@@ -10239,16 +10320,28 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
 //        AlarmHandler.getInstance().updateOnItemChange(this);
-
         if (getOwner() == null && !isTemplate()) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
             Inbox.getInstance().addToList(this);
 //            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
             DAO.getInstance().saveNew((ParseObject) Inbox.getInstance()); //no trigger, will be saved together with new item
         }
+
+        if (isDirty()) { //if anything has changed
+//            Item ownerItem = getOwnerItem();
+//            if (ownerItem != null) {
+//                ownerItem.updateAllValuesDerivedFromSubtasks();
+//            }
+            fireChangeEvent(); //only fire if changed
+        }
 //        if (listeners != null) {
 //            listeners.fireActionEvent(new ActionEvent(this, ACTION_EVENT_CHANGED));//inform the stack
 //        }
 //        fireChangeEvent();
+    }
+
+    @Override
+    public void onDelete() {
+        fireDeleteEvent(); //only fire if changed
     }
 
     @Override
@@ -10739,12 +10832,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return getEffortEstimateFromTaskText(t, false);
     }
 
+    final static RE minutes_hours_RE = new RE("\\b([0-9]+)(?:h|\\:)([0-5][0-9]|[0-9])(?:m(in)?)?\\b"); //HHhMM. OK: 0h17, 10h00 2h17m, 199h. NOK: 1h65, Not allowed to start with '0' 
+    final static RE minutes_RE = new RE("\\s*\\b(([1-9][0-9]+)|([0-9]))m(?:in)?\\b"); //MINUTES can be 0 or start with 0 //NO: not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
+    final static RE hours_RE = new RE("\\b(([1-9][0-9]+)|([1-9]))h(our(s)?)?\\b"); //not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
+
     static EstimateResult getEffortEstimateFromTaskText(String t, boolean keepOrgTextUnchanged) {
         int minutes = 0;
         int hours = 0;
         String txt = t;
 //        if (MyPrefs.itemExtractRemainingEstimateFromStringInTaskText.getBoolean()) {
-        RE minutes_hours_RE = new RE("\\b([0-9]+)(?:h|\\:)([0-5][0-9]|[0-9])(?:m(in)?)?\\b"); //HHhMM. OK: 0h17, 10h00 2h17m, 199h. NOK: 1h65, Not allowed to start with '0' 
+//        RE minutes_hours_RE = new RE("\\b([0-9]+)(?:h|\\:)([0-5][0-9]|[0-9])(?:m(in)?)?\\b"); //HHhMM. OK: 0h17, 10h00 2h17m, 199h. NOK: 1h65, Not allowed to start with '0' 
         if (minutes_hours_RE.match(txt)) {
             hours = MyUtil.getIntFromTextString(txt, minutes_hours_RE.getParenStart(1), minutes_hours_RE.getParenLength(1));
             minutes = MyUtil.getIntFromTextString(txt, minutes_hours_RE.getParenStart(2), minutes_hours_RE.getParenLength(2)) + 60 * hours;
@@ -10753,14 +10850,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
 //                System.out.println("ValStr=\"" + valStr + "\" val=" + val + "\tcleaned=\"" + txt + "\"\n");
         } else {
-            RE minutes_RE = new RE("\\s*\\b(([1-9][0-9]+)|([1-9]))m(?:in)?\\b"); //MINUTES not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
+//            RE minutes_RE = new RE("\\s*\\b(([1-9][0-9]+)|([1-9]))m(?:in)?\\b"); //MINUTES not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
             if (minutes_RE.match(txt)) {
                 minutes = MyUtil.getIntFromTextString(txt, minutes_RE.getParenStart(1), minutes_RE.getParenLength(1));
                 if (!keepOrgTextUnchanged && !MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
                     txt = MyUtil.deleteSubstring(txt, minutes_RE.getParenStart(0), minutes_RE.getParenLength(0));
                 }
             } else {
-                RE hours_RE = new RE("\\b(([1-9][0-9]+)|([1-9]))h(our(s)?)?\\b"); //not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
+//                RE hours_RE = new RE("\\b(([1-9][0-9]+)|([1-9]))h(our(s)?)?\\b"); //not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
                 if (hours_RE.match(txt)) {
                     minutes = MyUtil.getIntFromTextString(txt, hours_RE.getParenStart(1), hours_RE.getParenLength(1)) * 60;
                     if (!keepOrgTextUnchanged && !MyPrefs.itemKeepRemainingEstimateStringInTaskText.getBoolean()) {
@@ -10793,7 +10890,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     //CATEGORIES
     private static RE categoryXXX = new RE("//text"); //eg "/cat1"
 
-    public static String parseTaskTextForProperties(Item item, String txt) {
+//    public static String parseTaskTextForProperties(Item item, String txt) {
+    public void parseTaskTextAndSetAllProperties(String txt) {
+        Item item = this;
         //TODO!!! remove whitespace before (include preceding whitespace in RE)
         //TODO!!! also remove whitespace after if end of text (eg "xxx 10m  ") - but not if other text afterwards (eg "xxx 10m yyy")
         //TODO!!! add regexps for understanding Siri words like "estimate five/5 minutes"
@@ -10857,12 +10956,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             //TODO!!! if EffortEstimate is also set in text, then DON'T autoupdate it based on Remaining
             boolean effortEstimateNotDefinedInTextInput = true;
 //            item.setEstimate(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, true); //update remaining, set for project-level
-            if (res.minutes != 0) { //don't set if nothing is entered (this may overwrite the default value with 0!)
+            if (res.minutes != 0 || !cleanedTxt.equals(txt)) { //don't set if nothing is entered (this may overwrite the default value with 0!), but if 0m was entered to override the default value, then text is changed and 0 should be used!
                 item.setRemainingForTaskItself(((long) res.minutes) * MyDate.MINUTE_IN_MILLISECONDS, effortEstimateNotDefinedInTextInput); //update remaining, set for project-level
+            } else {
+                item.setRemainingDefaultValueIfNone(); //if nothing defined, set default (do it here to cover the case of "0m"
             }
-            return cleanedTxt;
+            item.setText(cleanedTxt, false); //false:don't interpret a 2nd time!
+//            return cleanedTxt;
+
         }
-        return txt;
+//        return txt;
     }
 
     /**
@@ -10919,14 +11022,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return CLASS_NAME;
     }
 
-    private String csvFormatStringFull = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-    private String csvFormatStringDateOnly = "yyyy-MM-dd";
-    private String csvFormatStringDateHhMmSsOnly = "yyyy-MM-dd'T'HH:mm:ss";
-    private String csvFormatStringDateHhMmOnly = "yyyy-MM-dd'T'HH:mm";
-    private SimpleDateFormat csvDateFullFormatter = new SimpleDateFormat(csvFormatStringFull);
-    private SimpleDateFormat csvDateDateOnlyFormatter = new SimpleDateFormat(csvFormatStringDateOnly);
-    private SimpleDateFormat csvDateTimeHhMmOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmOnly);
-    private SimpleDateFormat csvDateTimeHhMmSsOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmSsOnly);
+    private final static String csvFormatStringFull = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+    private final static String csvFormatStringDateOnly = "yyyy-MM-dd";
+    private final static String csvFormatStringDateHhMmSsOnly = "yyyy-MM-dd'T'HH:mm:ss";
+    private final static String csvFormatStringDateHhMmOnly = "yyyy-MM-dd'T'HH:mm";
+    private final static SimpleDateFormat csvDateFullFormatter = new SimpleDateFormat(csvFormatStringFull);
+    private final static SimpleDateFormat csvDateDateOnlyFormatter = new SimpleDateFormat(csvFormatStringDateOnly);
+    private final static SimpleDateFormat csvDateTimeHhMmOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmOnly);
+    private final static SimpleDateFormat csvDateTimeHhMmSsOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmSsOnly);
 
     private Date csvStringToDate(String dateStr) { // throws com.codename1.l10n.ParseException {
 //        YYYY-MM-DDThh:mm:ss.sssZ
@@ -10996,10 +11099,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return s;
     }
 
-    private String csvFormatStringDuratioHhMmSs = "HH:mm:ss";
-    private String csvFormatStringDuratioHhMm = "HH:mm";
-    private SimpleDateFormat csvDurationHhMmS = new SimpleDateFormat(csvFormatStringDuratioHhMmSs);
-    private SimpleDateFormat csvDurationHhM = new SimpleDateFormat(csvFormatStringDuratioHhMm);
+    private final static String csvFormatStringDuratioHhMmSs = "HH:mm:ss";
+    private final static String csvFormatStringDuratioHhMm = "HH:mm";
+    private final static SimpleDateFormat csvDurationHhMmS = new SimpleDateFormat(csvFormatStringDuratioHhMmSs);
+    private final static SimpleDateFormat csvDurationHhM = new SimpleDateFormat(csvFormatStringDuratioHhMm);
 
     private long csvStringToDuration(String durationStr) {
         long duration = 0;
@@ -11514,34 +11617,34 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
 //</editor-fold>
     public List<ItemAndListCommonInterface> getOtherPotentialWorkTimeProvidersInPrioOrderN() {
-        List<ItemAndListCommonInterface> potentialProviders = null;// = new ArrayList();
+        List<ItemAndListCommonInterface> potentialProvidersN = null;// = new ArrayList();
 
         ItemAndListCommonInterface owner = getOwner();
         if (owner != null && !MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
-            if (potentialProviders == null) {
-                potentialProviders = new ArrayList(); //only allocate if/when actually needed (likely to be relatively rare)
+            if (potentialProvidersN == null) {
+                potentialProvidersN = new ArrayList(); //only allocate if/when actually needed (likely to be relatively rare)
             }
-            potentialProviders.add(owner);
+            potentialProvidersN.add(owner);
         }
 
         List<Category> categories = getCategories();
         for (Category cat : categories) {
             if (cat.mayProvideWorkTime()) {
-                if (potentialProviders == null) {
-                    potentialProviders = new ArrayList(); //only allocate if/when actually needed (likely to be relatively rare)
+                if (potentialProvidersN == null) {
+                    potentialProvidersN = new ArrayList(); //only allocate if/when actually needed (likely to be relatively rare)
                 }
-                potentialProviders.add(cat);
+                potentialProvidersN.add(cat);
             }
         }
 
         if (owner != null && MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
-            if (potentialProviders == null) {
-                potentialProviders = new ArrayList(); //only allocate if/when actually needed (likely to be relatively rare)
+            if (potentialProvidersN == null) {
+                potentialProvidersN = new ArrayList(); //only allocate if/when actually needed (likely to be relatively rare)
             }
-            potentialProviders.add(owner);
+            potentialProvidersN.add(owner);
         }
 
-        return potentialProviders; //potentialProviders.size()>=0?potentialProviders:null;
+        return potentialProvidersN; //potentialProviders.size()>=0?potentialProviders:null;
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getNeededWorkTime() {
@@ -12706,7 +12809,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     //----subErr3
     //-subtask3
     //task2
-    public static boolean createProjectFromText(ItemAndListCommonInterface ownerElement, String projectText) {
+    public static boolean createProjectFromTextXXX(ItemAndListCommonInterface ownerElement, String projectText) {
         boolean success = true;
         int currentLevel = 0;
 //        int previousIndent = -1;
@@ -12802,7 +12905,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 || (isDone() && MyPrefs.timerIncludeDoneTasks.getBoolean())); //or if done, but settings allow to time done tasks
     }
 
-    
     final static int ACTION_EVENT_REMOVED = DataChangedListener.REMOVED; //meaning DELETED
     final static int ACTION_EVENT_CHANGED = DataChangedListener.CHANGED;
 //    final static int ACTION_EVENT_DELETED = DataChangedListener.CHANGED + 10;
@@ -12835,24 +12937,30 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-        /**
-     * Alert the Item listeners the item has changed
-     *
-     * @param type the event type: Added, Removed or Change etc
-     * @param index cursor location of the event
-     */
-    void fireChangeEvent() {
-        if (listeners != null) {
-            listeners.fireActionEvent(new ActionEvent(this, ACTION_EVENT_CHANGED));
-        }
+    @Override
+//    public List<ActionListener> getActionListeners() {
+    public EventDispatcher getActionListeners() {
+        return listeners;
+    }
+    
+    @Override
+    public void update(ActionEvent evt){
+        
     }
 
-
-
-    void fireDeleteEvent() {
-        if (listeners != null) {
-            listeners.fireActionEvent(new ActionEvent(this, ACTION_EVENT_REMOVED));
+    @Override
+    public void actionPerformed(ActionEvent evt) {
+        
+//        ItemAndListCommonInterface.super.fireActionEvent(evt);
+        
+        Object actionSource = evt.getSource();
+        int keyEvent = evt.getKeyEvent(); //use the keyEvent to carry the actual event
+        if (actionSource instanceof Item && getListFull().contains(actionSource) || keyEvent == DataChangedListener.REMOVED) { //keyEvent == DataChangedListener.REMOVED in case the firing subtask was deleted
+            updateAllValuesDerivedFromSubtasks(); //update is the same whether subtask was Changed or Deleted
         }
+//        ((ItemAndListCommonInterface)this).fireActionEvent(evt);
+        ItemAndListCommonInterface.super.fireEvent(evt);
+        
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

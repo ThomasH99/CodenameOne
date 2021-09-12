@@ -696,14 +696,14 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     }
 
     /**
-     * Get the container with the expanded sub-elements. This method serves to
+     * Get the ContainerScrollY with the expanded sub-elements. This method serves to
      * encapsulate the structure of the expanded subtask containers
      *
      * @param myDDCont
      * @return null if none
      */
 //     static ContainerScrollY getParentScrollYContainer(MyDragAndDropSwipeableContainer myDDCont) {
-    static ContainerScrollY getParentScrollYContainer(Component myDDCont) {
+    static ContainerScrollY getParentScrollYContainerN(Component myDDCont) {
         if (myDDCont == null) {
             return null;
         }
@@ -742,10 +742,10 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //            return false;
 //        }
 //</editor-fold>
-        return removeFromParentScrollYAndReturnParent(comp) != null;
+        return removeFromParentScrollYAndReturnParentN(comp) != null;
     }
 
-    static ContainerScrollY removeFromParentScrollYAndReturnParent(Component comp) {
+    static ContainerScrollY removeFromParentScrollYAndReturnParentN(Component comp) {
         if (comp == null) {
             return null;
         }
@@ -776,7 +776,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     private boolean isSibling(MyDragAndDropSwipeableContainer myDDCont1, MyDragAndDropSwipeableContainer myDDCont2) {
 //        return myDDCont1.getParent().getParent() == myDDCont2.getParent().getParent();
         if (myDDCont1 != myDDCont2 && myDDCont1 != null && myDDCont2 != null) {
-            return getParentScrollYContainer(myDDCont1) == getParentScrollYContainer(myDDCont2);
+            return getParentScrollYContainerN(myDDCont1) == getParentScrollYContainerN(myDDCont2);
         } else {
             return false;
         }
@@ -1062,7 +1062,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //    static int getPositionInParentContainerScrollY(MyDragAndDropSwipeableContainer eltContOrNull) {
     static int getPositionInParentContainerScrollY(Container eltContOrNull) {
         if (eltContOrNull != null) {
-            ContainerScrollY parentScrollY = getParentScrollYContainer(eltContOrNull);
+            ContainerScrollY parentScrollY = getParentScrollYContainerN(eltContOrNull);
             if (parentScrollY != null) {
                 return getPositionInContainerScrollY(parentScrollY, eltContOrNull);
             }
@@ -1122,7 +1122,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //    static MyDragAndDropSwipeableContainer findPrecedingMyDDCont(MyDragAndDropSwipeableContainer cont, MyDragAndDropSwipeableContainer dragged) {
     static MyDragAndDropSwipeableContainer findPrecedingMyDDCont(Component cont, MyDragAndDropSwipeableContainer dragged) {
         //find a preceding sibling if any
-        ContainerScrollY parentScrollYContainer = getParentScrollYContainer(cont);
+        ContainerScrollY parentScrollYContainer = getParentScrollYContainerN(cont);
         //Examples of lists with (H)idden element: H T1 T2: preceding(T1)=null (a), preceding(T2)=T1 (b); T1 H T2: preceding(T2)=T1 (c)
         //                                        idx(H)=0            idx=1
         int index = -1;
@@ -1201,7 +1201,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     static MyDragAndDropSwipeableContainer findPrecedingMyDDCont(MyDragAndDropSwipeableContainer cont) {
         MyDragAndDropSwipeableContainer dragged;
         //find a preceding sibling if any
-        ContainerScrollY parentScrollYContainer = getParentScrollYContainer(cont);
+        ContainerScrollY parentScrollYContainer = getParentScrollYContainerN(cont);
         //Examples of lists with (H)idden element: H T1 T2: preceding(T1)=null (a), preceding(T2)=T1 (b); T1 H T2: preceding(T2)=T1 (c)
         //                                        idx(H)=0            idx=1
         int index = -1;
@@ -1380,7 +1380,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //</editor-fold>
 //        MyDragAndDropSwipeableContainer parentComp = comp;
         Component parentComp = comp;
-        ContainerScrollY parentScrollYCont = getParentScrollYContainer(parentComp);
+        ContainerScrollY parentScrollYCont = getParentScrollYContainerN(parentComp);
 //            ContainerScrollY contY=getParentScrollYContainer(comp);
         while (parentScrollYCont != null) {
 //            indexOfHiddenDraggedCont = getPositionInContainerScrollY(parentScrollYCont, dragged); //this==dragged
@@ -1398,7 +1398,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 return getTaskContainer(c); //return the element
             }
             parentComp = getParentMyDDCont(parentComp);
-            parentScrollYCont = parentComp != null ? getParentScrollYContainer(parentComp) : null;
+            parentScrollYCont = parentComp != null ? getParentScrollYContainerN(parentComp) : null;
         }
         return null;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1503,7 +1503,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //</editor-fold>
 //            //if there are no appropriate expanded subtasks, then if there is a following sibling, return it
         MyDragAndDropSwipeableContainer parentComp = comp;
-        ContainerScrollY parentScrollYCont = getParentScrollYContainer(parentComp);
+        ContainerScrollY parentScrollYCont = getParentScrollYContainerN(parentComp);
 //            ContainerScrollY contY=getParentScrollYContainer(comp);
         while (parentScrollYCont != null) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1531,7 +1531,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 }
             }
             parentComp = getParentMyDDCont(parentComp);
-            parentScrollYCont = parentComp != null ? getParentScrollYContainer(parentComp) : null;
+            parentScrollYCont = parentComp != null ? getParentScrollYContainerN(parentComp) : null;
         }
         return null;
 //<editor-fold defaultstate="collapsed" desc="comment">

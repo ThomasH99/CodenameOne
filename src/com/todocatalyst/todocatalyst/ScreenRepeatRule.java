@@ -242,11 +242,11 @@ public class ScreenRepeatRule extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        super.refreshAfterEdit();
 //         getContentPane().removeAll();
 //         buildContentPane(getContentPane());
         setupLayoutAndFields();
-        restoreKeepPos();
+        super.refreshAfterEdit();
+//        restoreKeepPos();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -75,7 +75,7 @@ public class ScreenRepair extends MyForm {
         container.removeAll();
 //        buildContentPane(getContentPane());
         buildContentPane(container);
-        restoreKeepPos();
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 

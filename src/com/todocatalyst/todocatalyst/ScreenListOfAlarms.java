@@ -75,13 +75,13 @@ public class ScreenListOfAlarms extends MyForm {
 //        }
 //        return INSTANCE;
 //    }
-
 //    ScreenListOfAlarms(LocalNotificationsShadowList notificationList) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //    private ScreenListOfAlarms() { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        
 //    }
-     ScreenListOfAlarms(MyForm previousScreen) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfAlarms(MyForm previousScreen) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
         super(ScreenType.ALARMS.getTitle(), previousScreen, null, ScreenType.ALARMS.getHelpText());
+        previousScreen.setKeepPos(); //save scroll position of calling screen
 //        setTextToShowIfEmptyList("No Reminders to deal with"); //"No Reminders to deal with",
         setTextToShowIfEmptyList(ScreenType.ALARMS.getEmptyScreenText()); //"No Reminders to deal with",
         configureWithScreenType(ScreenType.ALARMS);
@@ -264,13 +264,13 @@ public class ScreenListOfAlarms extends MyForm {
             cancelAll.setUIID("ScreenAlarmsCancelAll");
 
 //            MyDurationPicker snoozeTimePicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt()*MyDate.MINUTE_IN_MILLISECONDS);
-            MyDurationPicker snoozeTimePicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
-            snoozeTimePicker.setHidden(true);
-            snoozeTimePicker.addActionListener(e -> {
+            MyDurationPicker snoozeAllPicker = new MyDurationPicker(MyPrefs.alarmDefaultSnoozeTimeInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS);
+            snoozeAllPicker.setHidden(true);
+            snoozeAllPicker.addActionListener(e -> {
                 //popup picker and snooze and exit screen immediately
 //                long customSnoozeDuration = snoozeTimePicker.getDuration();
 //                Date snooze = MyDate.getStartOfMinute(new Date(MyDate.currentTimeMillis() + snoozeTimePicker.getDuration()));
-                Date snooze = new MyDate(MyDate.currentTimeMillis() + snoozeTimePicker.getDuration());
+                Date snooze = new MyDate(MyDate.currentTimeMillis() + snoozeAllPicker.getDuration());
                 AlarmHandler.getInstance().snoozeAllExpiredAlarms(snooze);
                 showPreviousScreen(true); //false);
             });
@@ -283,14 +283,21 @@ public class ScreenListOfAlarms extends MyForm {
                         showPreviousScreen(true); //false);
                     }, "SnoozeAllAlarms"),
                     CommandTracked.create("", null, (evt) -> {
-                        snoozeTimePicker.released(); //simulate pressing the picker button(?)
+//                        snoozeAllPicker.pressed();//simulate pressing the picker button(?)
+                        snoozeAllPicker.released(); //simulate pressing the picker button(?)
                     }, "SnoozeAllAlarmsCustomDuration"));
             snoozeAll.setUIID("ScreenAlarmsSnoozeAll");
 //            cancelAllButtonsCont.add(MyBorderLayout.EAST, Container.encloseIn(BoxLayout.x(), snoozeTimePicker, snoozeAll));
 
+            snoozeAll.setName("SnoozeAll");
+            snoozeAll.setGrabsPointerEvents(true);
+            snoozeAll.setFocusable(true);
             Container cancelAllButtonsCont = BorderLayout.north(GridLayout.encloseIn(2, cancelAll, snoozeAll))
-                    .add(BorderLayout.SOUTH, snoozeTimePicker); //a picker needs to be added to form to work correctly
-            getContentPane().add(BorderLayout.SOUTH, cancelAllButtonsCont);
+                    .add(BorderLayout.SOUTH, snoozeAllPicker); //a picker needs to be added to form to work correctly
+            cancelAllButtonsCont.setName("cancelAllButtonsCont");
+//            cancelAllButtonsCont.setFocusable(true);
+//            getContentPane().add(BorderLayout.SOUTH, cancelAllButtonsCont);
+            addToSouthOfContentPane(cancelAllButtonsCont, 0);
 //            alarmCont.animateHierarchy(300); //works??
             alarmCont.animateLayout(ANIMATION_TIME_DEFAULT); //works??
 //            exitOnEmptyAlarmList = false;
@@ -403,7 +410,7 @@ public class ScreenListOfAlarms extends MyForm {
 //        Container itemCont = ScreenListOfItems.buildItemContainer(item, null, () -> false, refreshOnItemEdits, false, null, null, keepPos, null, null, false, false);
 //</editor-fold>
 //        Container itemCont = ScreenListOfItems.buildItemContainer(myForm, item, null, null, expandedObjects, e -> {
-        Container itemCont = ScreenListOfItems.buildItemContainer(myForm, item, null,e -> {
+        Container itemCont = ScreenListOfItems.buildItemContainer(myForm, item, null, e -> {
             List<AlarmRecord> allAlarmDatesForEditedItem = item.getAllAlarmRecords(new MyDate(MyDate.MIN_DATE), true);
             myForm.exitOnEmptyAlarmList = true; //MUST call before since showBack gets called on Back from ScreenEdit2 (before the lambda function below)
             //UI: updating an alarm (Reminder/Waiiting) to the future will cancel the alarm AND snoozed alarms
@@ -521,7 +528,7 @@ public class ScreenListOfAlarms extends MyForm {
                 }, "SnoozeAlarm"),
                 CommandTracked.create("", null, (evt) -> {
                     snoozePicker.released(); //simulate pressing the picker button(?)
-                }, "SnoozeAlarmCustomDuration"));
+                }, "SnoozeAlarmsCustomDuration"));
         snoozeAlarm.setUIID("ScreenAlarmsSnoozeAlarm");
 
         alarmHeaderCont.add(BorderLayout.EAST, BoxLayout.encloseX(cancelAlarm, snoozeAlarm, snoozePicker));
@@ -574,10 +581,11 @@ public class ScreenListOfAlarms extends MyForm {
         };
 
         if (expiredAlarms.size() > 0) {
-            MyTree2 myTree = new MyTree2(this,xx, expandedObjects, null, (StickyHeaderGenerator) null) {//                    lastInsertNewElementContainer != null ? 
+            MyTree2 myTree = new MyTree2(this, xx, expandedObjects, null, (StickyHeaderGenerator) null) {//                    lastInsertNewElementContainer != null ? 
                 @Override
 //                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
-                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList) {
+//                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList) {
+                protected Component createNode(Object node, int depth, Object itemOrItemList) {
                     ExpiredAlarm notif = (ExpiredAlarm) node;
                     Item item = DAO.getInstance().fetchItem(notif.guid);
                     showDetails.add(item); //hack to always show alarmTime even if normally hidden in details

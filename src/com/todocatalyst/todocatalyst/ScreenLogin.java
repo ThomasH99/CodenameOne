@@ -6,6 +6,7 @@ import com.codename1.components.SpanLabel;
 import com.codename1.io.Log;
 import com.codename1.io.Storage;
 import com.codename1.messaging.Message;
+import com.codename1.nui.NTextField;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
@@ -15,6 +16,7 @@ import com.codename1.ui.Display;
 import com.codename1.ui.Label;
 import com.codename1.ui.TextArea;
 import com.codename1.ui.TextField;
+import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.validation.Constraint;
@@ -61,9 +63,9 @@ public class ScreenLogin extends MyForm {
 //    private final static String welcome3 = "Master priorities. Master time. \nTime-saving features like templates, copy-paste, multiple selections, ...";
 //    private final static String welcome4 = "Time-saving features like templates, copy-paste, multiple selections, ...";
     private final String FORGOT_PASSWORD = "Forgot password";
-    TextField email;
+    NTextField email;
 
-    TextField password;
+    NTextField password;
     private boolean test;
 
     public ScreenLogin(MyForm previousForm, boolean forTesting) {
@@ -360,21 +362,42 @@ public class ScreenLogin extends MyForm {
         //hide titlebar: http://stackoverflow.com/questions/42871223/how-do-i-hide-get-rid-the-title-bar-on-a-form-codename-one
 //        getToolbar().setUIID("Container");
 //        getToolbar().hideToolbar();
-        email = new TextField("", "Email", 20, TextArea.EMAILADDR);
-//        NTextField email = new NTextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
+//        email = new TextField("", "Email", 20, TextArea.EMAILADDR);
+        NTextField email = new NTextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
+        email.setWidth(20);
 //        TextField email = new TextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
         if (MyPrefs.loginStoreEmail.getBoolean()) {
             email.setText(MyPrefs.loginEmail.getString());
         }
 
-        password = new TextField("", "Password", 20, TextArea.PASSWORD);
-        password.addDataChangedListener((type, index) -> {
+//        password = new TextField("", "Password", 20, TextArea.PASSWORD);
+        password = new NTextField(TextArea.PASSWORD);
+        password.setWidth(20);
+//        password.setHint("Password");
+//        password.addDataChangedListener((type, index) -> {
+        ActionListener passwdStrengthActionListener = (e) -> {
             String passWordStrength = PasswordGenerator.calculatePassword(password.getText());
-            password.setUIID("Password"+passWordStrength);
+            password.setUIID("Password" + passWordStrength);
             password.repaint();
-        });
+        };
+        
+        ActionListener emailAndPasswdDoneActionListenerXXX = (e) -> {
+            if (!email.getText().isEmpty() && !password.getText().isEmpty()) {
+
+            } else if (email.getText().isEmpty()) {
+                email.startEditingAsync(); //move to email field if empty
+            } else {
+                password.startEditingAsync(); //move to email field if empty
+            }
+        };
+//        password.addChangeListener((e) -> {
+//            String passWordStrength = PasswordGenerator.calculatePassword(password.getText());
+//            password.setUIID("Password" + passWordStrength);
+//            password.repaint();
+//        });
+        password.addChangeListener(passwdStrengthActionListener);
         password.setHidden(true); //hide by default
-//        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
+//        NTextField passwordNative = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        TextComponentPassword password = new TextComponentPassword(); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        password.constraint(TextArea.PASSWORD);
 //        NTextField password = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
@@ -510,7 +533,7 @@ public class ScreenLogin extends MyForm {
         String selectYourPasswordHelp = "To make signing up easy, you can start with an automatically generated password that is mailed to you. "
                 + "You can always change it later";
 
-        createAccount.setCommand(Command.createMaterial("Create my account", Icons.iconPersonNew, (e2) -> {
+        ActionListener createAccountActionListener = (e2) -> {
             String errorMsg;
             String cleanEmail = cleanEmail(email.getText());
             if ((errorMsg = createAccount(cleanEmail)) == null) {
@@ -522,7 +545,8 @@ public class ScreenLogin extends MyForm {
                 Dialog.show("", errorMsg, "OK", null);
             }
 //            ScreenLogin.this.getContentPane().animateLayout(300);
-        }));
+        };
+        createAccount.setCommand(Command.createMaterial("Create my account", Icons.iconPersonNew, createAccountActionListener));
 
         //"Use with non-assigned account" "Use with anonymous account" "Use with trial account"
         String trialAccountMessage = "A trial account lets you get started without providing an email. "
@@ -531,7 +555,7 @@ public class ScreenLogin extends MyForm {
                 + "be able to log in on other devices and if you log out of TodoCatalyst on this device, your data will be lost.";
 //        createAccountLater.setCommand(Command.createMaterial("Sign up laterStart with trial account", Icons.iconPersonAnonymous, (e2) -> {
 //        createAccountLater.setCommand(Command.createMaterial("Sign up later", Icons.iconPersonAnonymous, (e2) -> {
-        createAccountLater.setCommand(Command.createMaterial("Use now, sign up later", Icons.iconPersonAnonymous, (e2) -> {
+        ActionListener signUpLaterActionListener = (e2) -> {
             String errorMsg;
             String temporaryRandomLogin = PasswordGenerator.getInstance().generate("Trial-", 10, true, true, false, false); //avoid punctuation during testing
             String temporaryRandomPassword = PasswordGenerator.getInstance().generate("", 10, true, true, false, false);
@@ -545,10 +569,10 @@ public class ScreenLogin extends MyForm {
                 Dialog.show("", errorMsg, "OK", null);
             }
 //            ScreenLogin.this.getContentPane().animateLayout(300);
-        }));
+        };
+        createAccountLater.setCommand(Command.createMaterial("Use now, sign up later", Icons.iconPersonAnonymous, signUpLaterActionListener));
 
-//        connect.setCommand(Command.create("Connect", Icons.iconPerson, (ev) -> { //Start/login**
-        connect.setCommand(Command.createMaterial("Log in", Icons.iconPerson, (ev) -> { //Start/login**
+        ActionListener logInActionListener = (ev) -> { //Start/login**
             String errorMsg;
             String cleanEmail = cleanEmail(email.getText());
             if ((errorMsg = loginUser(cleanEmail, null, password.getText())) == null) {
@@ -564,9 +588,11 @@ public class ScreenLogin extends MyForm {
             }
 //            ScreenLogin.this.getContentPane().animateLayout(ANIMATION_TIME_DEFAULT);
             container.animateLayout(ANIMATION_TIME_DEFAULT);
-        }));
+        };
+//        connect.setCommand(Command.create("Connect", Icons.iconPerson, (ev) -> { //Start/login**
+        connect.setCommand(Command.createMaterial("Log in", Icons.iconPerson, logInActionListener));
 
-        forgottenPassword.setCommand(Command.create(FORGOT_PASSWORD, null, (ev) -> {
+        ActionListener forgotPasswordActionListener = (ev) -> {
             String cleanEmail = cleanEmail(email.getText());
             String errorMsg = validEmail(cleanEmail);
             if (errorMsg == null) {
@@ -582,7 +608,8 @@ public class ScreenLogin extends MyForm {
             } else {
                 Dialog.show("Enter your email", "Please enter a correct email like myname@gmail.com", "OK", null);
             }
-        }));
+        };
+        forgottenPassword.setCommand(Command.create(FORGOT_PASSWORD, null, forgotPasswordActionListener));
 
         revalidate(); //ensure correct size of all components
 //        email.startEditingAsync(); //always start editing email field

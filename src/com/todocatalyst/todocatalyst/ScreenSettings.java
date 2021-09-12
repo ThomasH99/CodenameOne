@@ -99,7 +99,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
             new ScreenSettingsAlarms(this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("Timer settings", Icons.iconLaunchTimer, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create("Timer settings", Icons.iconTimerLaunch, (e) -> {
             new ScreenSettingsTimer(this, null).show();
         })), "**"));
 

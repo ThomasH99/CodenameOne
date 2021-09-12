@@ -241,7 +241,7 @@ public class ScreenGettingStarted extends MyForm {
 //        cont.add(BorderLayout.CENTER, BoxLayout.encloseY(tabs, tabsFlow));
         cont.add(BorderLayout.CENTER, BorderLayout.centerAbsolute(BoxLayout.encloseY(tabs, tabsFlow)));
 
-        revalidate(); //ensure correct size of all components
+        revalidateLater(); //ensure correct size of all components
 
     }
 

@@ -24,7 +24,7 @@ public abstract class Config {
     
     public static final boolean FULLY_LOCAL_MODE = true && !PRODUCTION_RELEASE; //used without Internet connection so disable access to remote server (use local laptop) and Analytics
     public static final boolean PARSE_DB_OFFLINE = (false || FULLY_LOCAL_MODE) && !PRODUCTION_RELEASE; //used without Internet connection so disable access to remote server (use local laptop) and Analytics
-    public static final boolean ANALYTICS_DISABLED = (false || FULLY_LOCAL_MODE) && !PRODUCTION_RELEASE; //used without Internet connection so disable access to remote server (use local laptop) and Analytics
+//    public static final boolean ANALYTICS_DISABLED = (false || FULLY_LOCAL_MODE) && !PRODUCTION_RELEASE; //used without Internet connection so disable access to remote server (use local laptop) and Analytics
 
     public static final boolean TEST_CACHE = false && !PRODUCTION_RELEASE; //false;
     public static final boolean TEST_SCROLL_Y = true && !PRODUCTION_RELEASE; //false;

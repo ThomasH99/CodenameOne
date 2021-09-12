@@ -6,11 +6,14 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.io.Log;
+import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.util.EventDispatcher;
 import com.codename1.util.StringUtil;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.ItemList.ACTION_EVENT_CHANGED;
+import static com.todocatalyst.todocatalyst.ItemList.ACTION_EVENT_REMOVED;
 //import static com.todocatalyst.todocatalyst.Item.PARSE_FILTER_SORT_DEF;
 //import static com.todocatalyst.todocatalyst.ItemList.PARSE_WORKSLOTS;
 import static com.todocatalyst.todocatalyst.MyUtil.eql;
@@ -407,7 +410,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 ////        return BaseItemTypes.toString(getTypeId()) + (getText().length() != 0 ? "\"" + getText() + "\"" : "Gui" + getGuid());
 //        return BaseItemTypes.toString(getTypeId()) + "\"" + getText() + "\"";
 //    }
-    public void setStatus(ItemStatus itemStatus);
+    public boolean setStatus(ItemStatus itemStatus);
 
     /**
      * returns the size of the *full* unfiltered list of items owned (subtasks
@@ -1105,7 +1108,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //            return MyDate.MAX_DATE;
 //</editor-fold>
         WorkTimeSlices workTimeSlices = getAllocatedWorkTimeN();
-        if (workTimeSlices != null) {
+        if (workTimeSlices != null && workTimeSlices.getAllocatedDuration() >= getRemainingTotal()) { //only return a finishTime if the full duration has been allocated
             return workTimeSlices.getFinishTime();
         } else {
             return MyDate.MAX_DATE;
@@ -1453,6 +1456,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        assert false; //Do nothing unless specified by specialized object
     }
 
+    default public void onDelete() {
+//        assert false; //Do nothing unless specified by specialized object
+    }
+
     /**
      * update after saving, notably to set alarms which requires an ObjectId
      */
@@ -1568,6 +1575,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         try {
             Writer w;
             if (true) {
+//                w = new ca.weblite.codename1.json.StringWriter();
                 w = new StringWriter();
             } else {
 //                w = new FileWriter(filename);
@@ -1709,6 +1717,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         ASSERT.that("setShowRemaining called wrongly with set=" + set);
     }
 
+    default public boolean getShowActual() {
+        return MyPrefs.listOfItemListsShowActual.getBoolean();
+    }
+
+    default public void setShowActual(boolean set) {
+        ASSERT.that("setShowRemaining called wrongly with set=" + set);
+    }
+
     default public boolean getShowTotal() {
         return MyPrefs.listOfItemListsShowTotalTime.getBoolean();
     }
@@ -1750,7 +1766,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default void addLeafTasksToList(List<Item> leaftasks, boolean useFullListFilteredOnCondition, Condition condition) {
         List<E> subElements = useFullListFilteredOnCondition ? getListFull() : getList(); //full to ensure every subtask matching condition is returned
         if (subElements == null || subElements.isEmpty()) {
-            if (this instanceof Item && (!useFullListFilteredOnCondition || condition == null || condition.meets((Item) this))) {
+//            if (this instanceof Item && (!useFullListFilteredOnCondition || condition == null || condition.meets((Item) this))) {
+            if (this instanceof Item && (condition == null || condition.meets((Item) this))) {
                 leaftasks.add((Item) this);
             }
         } else {
@@ -1775,6 +1792,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default List<Item> getLeafTasksAsListN() {
 //        return getLeafTasksToList(false, null);
         return getLeafTasksAsListN(null);
+    }
+
+    default List<Item> getLeafTasksForTimerN() {
+//        return getLeafTasksToList(false, null);
+        return getLeafTasksAsListN(TimerStack2.getValidItemForTimerCondition());
     }
 
     /**
@@ -1893,30 +1915,55 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     public static String getHierarchyAsStringN(ItemAndListCommonInterface owner, ItemAndListCommonInterface leafElement, boolean addQuotationMarks, boolean includeLeafElement) {
-        if (leafElement == null) {
-            return null;
+        return getHierarchyAsStringN(owner, leafElement, addQuotationMarks, includeLeafElement, null);
+    }
+
+    public static String getHierarchyAsStringN(ItemAndListCommonInterface owner, ItemAndListCommonInterface leafElement, boolean addQuotationMarks, boolean includeLeafElement, String emptyTaskTextDefault) {
+        if (leafElement == null || (owner == null && !includeLeafElement)) {
+            return emptyTaskTextDefault != null ? emptyTaskTextDefault : "";
         } else if (owner == null && includeLeafElement) {
-            return ((addQuotationMarks ? "\"" : "") + leafElement.getText() + (addQuotationMarks ? "\"" : ""));
+            return ((addQuotationMarks ? "\"" : "") + (leafElement.getText().isEmpty() && emptyTaskTextDefault != null ? emptyTaskTextDefault : leafElement.getText()) + (addQuotationMarks ? "\"" : ""));
 //        } else if (leafTopLevelOwner == leafElement) {
 ////            return includeLeafElement ? ((addQuotationMarks ? "\"" : "") + leafElement.getText() + (addQuotationMarks ? "\"" : "")) : "";
 //            return includeLeafElement ? ((addQuotationMarks ? "\"" : "") + leafElement.getText() + (addQuotationMarks ? "\"" : "")) : "";
         } else {
-            for (int i = 0, size = owner.size(); i < size; i++) {
-                ItemAndListCommonInterface elt = (ItemAndListCommonInterface) owner.get(i);
-                if (elt == leafElement) {
-                    String str = ((addQuotationMarks ? "\"" : "") + owner.getText() + (addQuotationMarks ? "\"" : ""));
-                    if (includeLeafElement) {
-                        return str + ((addQuotationMarks ? "\"" : "") + leafElement.getText() + (addQuotationMarks ? "\"" : ""));
+            if (false) {
+                for (int i = 0, size = owner.size(); i < size; i++) {
+                    ItemAndListCommonInterface elt = (ItemAndListCommonInterface) owner.get(i);
+                    if (elt == leafElement) {
+                        String str = ((addQuotationMarks ? "\"" : "") + owner.getText() + (addQuotationMarks ? "\"" : "")) + " / ";
+                        if (includeLeafElement) {
+//                            return str + ((addQuotationMarks ? "\"" : "") + leafElement.getText() + (addQuotationMarks ? "\"" : ""));
+                            return str + ((addQuotationMarks ? "\"" : "") + (leafElement.getText().isEmpty() && emptyTaskTextDefault != null ? emptyTaskTextDefault : leafElement.getText()) + (addQuotationMarks ? "\"" : ""));
+                        } else {
+                            return str;
+                        }
+                    } else if (elt.size() > 0) {
+                        String subHierarcyStr = getHierarchyAsStringN(elt, leafElement, addQuotationMarks, includeLeafElement);
+                        if (subHierarcyStr != null) {
+//                        return ((addQuotationMarks ? "\"" : "") + elt.getText() + (addQuotationMarks ? "\"" : ""))
+                            return ((addQuotationMarks ? "\"" : "") + owner.getText() + (addQuotationMarks ? "\"" : ""))
+                                    + (subHierarcyStr.isEmpty() ? "" : " / " + subHierarcyStr);
+                        }
                     } else {
-                        return str;
+                        return null;
                     }
-                } else if (elt.size() > 0) {
+                }
+            }
+            if (owner.containsFull(leafElement)) {
+                String str = ((addQuotationMarks ? "\"" : "") + owner.getText() + (addQuotationMarks ? "\"" : ""));
+                if (includeLeafElement) {
+//                    str +=  ((addQuotationMarks ? "\"" : "") + (leafElement.getText().isEmpty() && emptyTaskTextDefault != null ? emptyTaskTextDefault : leafElement.getText()) + (addQuotationMarks ? "\"" : "")) + " / ";
+                    str += " / " + ((addQuotationMarks ? "\"" : "") + (leafElement.getText().isEmpty() && emptyTaskTextDefault != null ? emptyTaskTextDefault : leafElement.getText()) + (addQuotationMarks ? "\"" : ""));
+                }
+                return str;
+            } else {
+                for (int i = 0, size = owner.size(); i < size; i++) {
+                    ItemAndListCommonInterface elt = (ItemAndListCommonInterface) owner.get(i);
                     String subHierarcyStr = getHierarchyAsStringN(elt, leafElement, addQuotationMarks, includeLeafElement);
                     if (subHierarcyStr != null) {
-                        return (addQuotationMarks ? "\"" : "") + elt.getText() + (addQuotationMarks ? "\"" : "") + (subHierarcyStr.isEmpty() ? "" : " / " + subHierarcyStr);
+                        return (((addQuotationMarks ? "\"" : "") + owner.getText() + (addQuotationMarks ? "\"" : "")) + " / ") + subHierarcyStr;
                     }
-                } else {
-                    return null;
                 }
             }
             return null; //for other leafElements, return null
@@ -1932,7 +1979,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     static public String getTypeString(ItemAndListCommonInterface element) {
-        String typeStr = (element instanceof Category ? Category.CATEGORY : (element instanceof ItemList ? ItemList.ITEM_LIST : Item.ITEM)).toLowerCase();
+        String typeStr = (element instanceof Category ? Category.CATEGORY : (element instanceof ItemList
+                ? ItemList.ITEM_LIST : ((Item) element).isProject() ? Item.PROJECT : Item.ITEM)).toLowerCase();
         return typeStr;
     }
 
@@ -1941,7 +1989,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     default public Date[] getTodayDates() {
-        return null;
+        ASSERT.that(false, "ItemAndListCommonInterface.getTodayDates() should never get called");
+        return null; //new Date[0]; //may get called from e.g. workslot
     }
 
     /**
@@ -1977,4 +2026,93 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         throw new IllegalArgumentException("Not possible to add actionListener for this object=" + this);
     }
 
+//     public List<ActionListener> void getActionListeners();
+    default public EventDispatcher getActionListeners() {
+        return null; //by default no listeners unless specifically activated for the class
+    }
+
+    /**
+     * trigger a change event (used by
+     */
+    default public void fireChangeEvent() {
+        ActionEvent evt = null;
+        ItemAndListCommonInterface owner = getOwner();
+        if (owner != null) {
+            evt = new ActionEvent(this, ACTION_EVENT_CHANGED);
+            owner.actionPerformed(evt);
+        }
+
+        EventDispatcher listeners = getActionListeners();
+        if (listeners != null) {
+            if (evt == null) {
+                evt = new ActionEvent(this, ACTION_EVENT_CHANGED);
+            }
+            listeners.fireActionEvent(evt);
+        }
+    }
+
+    default public void fireDeleteEvent() {
+        ActionEvent evt = null;
+        ItemAndListCommonInterface owner = getOwner();
+        if (owner != null) {
+            evt = new ActionEvent(this, ACTION_EVENT_REMOVED);
+            owner.actionPerformed(evt);
+        }
+
+        EventDispatcher listeners = getActionListeners();
+        if (listeners != null) {
+            if (evt == null) {
+                evt = new ActionEvent(this, ACTION_EVENT_REMOVED);
+            }
+            listeners.fireActionEvent(evt);
+        }
+    }
+
+    /**
+     * re-fire the appropriate event based on received changeEvent
+     *
+     * @param evt
+     */
+    default public void fireEvent(ActionEvent evt) {
+        if (evt.getKeyEvent() == ACTION_EVENT_CHANGED) {
+            fireChangeEvent();
+        } else if (evt.getKeyEvent() == ACTION_EVENT_REMOVED) {
+            fireDeleteEvent();
+        } else {
+            ASSERT.that("Unknown eventType received, type=" + evt.getKeyEvent() + "; evt=" + evt);
+        }
+    }
+
+    /**
+     * process a sent actionEvent (for example from a subtask or from a task to
+     * its list or category
+     *
+     * @param actionEvent
+     */
+    default public void actionPerformed(ActionEvent actionEvent) {
+        update(actionEvent);
+        fireEvent(actionEvent);
+    }
+
+    /**
+     * reload the data of this object from parse
+     */
+    default public void reloadDataFromParse() {
+        ASSERT.that("should never be called directly (this implementation just to avoid having to implement it for classes where it's not used)");
+    }
+
+    /**
+     * update the list, e.g. on a change event
+     */
+    default public void update(ActionEvent evt) {
+        ASSERT.that("should never be called directly (this implementation just to avoid having to implement it for classes where it's not used)");
+    }
+
+    /**
+     * called to updated the element when pullToRefresh is activated. Will
+     * typically reload list from Parse and update FinishTime etc
+     */
+    default public void pullToRefresh() {
+        reloadDataFromParse();
+    }
 }

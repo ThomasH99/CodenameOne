@@ -83,8 +83,8 @@ public class ScreenStatistics2 extends MyForm {
         setSearchCmd(new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(itemListStats)));
         getToolbar().addCommandToRightBar(getSearchCmd());
 
-        revalidate();
-        restoreKeepPos();
+//        revalidate();
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 
@@ -125,7 +125,8 @@ public class ScreenStatistics2 extends MyForm {
         }
 
 //        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", "Settings", Icons.iconSettings, (e) -> {
-        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("Settings", "", Icons.iconSettings, (e) -> {
+//        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("Settings", "", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", "", Icons.iconSettings, (e) -> {
             int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
             new ScreenSettingsStatistics(ScreenStatistics2.this, () -> {
                 //Everything below now done in refreshAfterEdit which is automatically called on return

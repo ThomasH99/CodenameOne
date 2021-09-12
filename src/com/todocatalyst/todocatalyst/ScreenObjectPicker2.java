@@ -4,30 +4,19 @@
  */
 package com.todocatalyst.todocatalyst;
 
-import com.codename1.ui.Button;
-import com.codename1.ui.ButtonGroup;
 import com.codename1.ui.CheckBox;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Font;
-import com.codename1.ui.FontImage;
-import com.codename1.ui.Form;
-import com.codename1.ui.InfiniteContainer;
 import com.codename1.ui.Label;
-import com.codename1.ui.RadioButton;
 import com.codename1.ui.Tabs;
-import com.codename1.ui.TextArea;
-import com.codename1.ui.TextField;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
-import com.codename1.ui.layouts.GridLayout;
-import com.codename1.ui.plaf.Style;
-import com.codename1.ui.plaf.UIManager;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -491,12 +480,17 @@ public class ScreenObjectPicker2<E> extends MyForm {
 //        return button;
 //    }
 //</editor-fold>
-    public static ScreenObjectPicker2 makePickPrjLstCat(String title, boolean includeInbox, List<ItemAndListCommonInterface> selectedElements, 
+    public static ScreenObjectPicker2 makePickPrjLstCat(String title, boolean includeInbox, List<ItemAndListCommonInterface> selectedElements,
             MyForm previousForm, Runnable runOnReturn) {
+        return makePickPrjLstCat(title, includeInbox, selectedElements, previousForm, runOnReturn, true);
+    }
+
+    public static ScreenObjectPicker2 makePickPrjLstCat(String title, boolean includeInbox, List<ItemAndListCommonInterface> selectedElements,
+            MyForm previousForm, Runnable runOnReturn, boolean mustSelectOneElement) {
         List tempListOfItemListsInclInbox = new ArrayList();
         tempListOfItemListsInclInbox.addAll(ItemListList.getInstance());
         if (includeInbox) {
-            tempListOfItemListsInclInbox.add(0,Inbox.getInstance()); //add Inbox to start of list
+            tempListOfItemListsInclInbox.add(0, Inbox.getInstance()); //add Inbox to start of list
         }
         ScreenObjectPicker2 ownerPicker2 = new ScreenObjectPicker2("Select " + Item.OWNER,
                 new ScreenObjectPicker2.GetLists[]{() -> DAO.getInstance().getAllProjects(), () -> CategoryList.getInstance(), () -> tempListOfItemListsInclInbox},
@@ -507,10 +501,10 @@ public class ScreenObjectPicker2<E> extends MyForm {
                 //                ScreenWorkSlot.this,
                 previousForm,
                 //minNbOfSelected,  maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected
-                runOnReturn, null, 1, 1, true, true, false); //select exactly 1, scrollToFirstSelected, exitWhenMaxObjectsIsSelected
+                runOnReturn, null, mustSelectOneElement ? 1 : 0, 1, true, true, false); //select exactly 1, scrollToFirstSelected, exitWhenMaxObjectsIsSelected
         return ownerPicker2;
     }
-    
+
     public static ScreenObjectPicker2 makePickPrjLstCat(String title, boolean includeInbox, ItemAndListCommonInterface selectedElement, MyForm previousForm, Runnable runOnReturn) {
         return makePickPrjLstCat(title, includeInbox, new ArrayList(Arrays.asList(selectedElement)), previousForm, runOnReturn);
     }

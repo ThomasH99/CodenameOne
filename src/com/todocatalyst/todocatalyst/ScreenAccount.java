@@ -84,7 +84,8 @@ public class ScreenAccount extends MyForm {
 
     public void refreshAfterEdit() {
         buildContentPane(container);
-        revalidate();
+//        revalidate();
+        super.refreshAfterEdit();
     }
 
     public void addCommandsToToolbar() {

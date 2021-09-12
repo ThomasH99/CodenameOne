@@ -132,13 +132,35 @@ public class MyForm extends Form implements ActionListener {
     private boolean triggerSaveOnExit;
     protected List<Runnable> refresh;
 //    protected String helpText;
+    private boolean hideSmallTimer;
+
+    public boolean isHideSmallTimer() {
+        return hideSmallTimer;
+    }
+
+    /**
+     * set to true to hide smallTimer in a particular screen (notably when
+     * calling editItem from BigTimer!)
+     *
+     * @param hideSmallTimer
+     */
+    public void setHideSmallTimer(boolean hideSmallTimer) {
+        this.hideSmallTimer = hideSmallTimer;
+    }
 
     Container getSmallTimerContainer() {
         return smallTimer;
     }
 
+    void removeSmallTimerContainer() {
+        if (smallTimer != null) {
+            smallTimer.remove();
+            smallTimer = null;
+        }
+    }
+
     void setSmallTimerContainer(Container smallTimer) {
-        ASSERT.that(this.smallTimer == null || this.smallTimer.getComponentForm() == null, ()->"setting new smallTimerCont but old one still attached to Form=" + this.smallTimer.getComponentForm());
+        ASSERT.that(this.smallTimer == null || this.smallTimer.getComponentForm() == null, () -> "setting new smallTimerCont but old one still attached to Form=" + this.smallTimer.getComponentForm());
         this.smallTimer = smallTimer;
     }
 
@@ -175,6 +197,12 @@ public class MyForm extends Form implements ActionListener {
         return searchCmd;
     }
 
+    /**
+     *
+     * @param contentPane
+     * @param northCont
+     * @param pos position in NorthContainer: 0 first, Integer.max= last.
+     */
     protected static void addToNorthOfContentPane(Container contentPane, Component northCont, int pos) {
         Layout contentPaneLayout = contentPane.getLayout();
         if (contentPaneLayout instanceof BorderLayout) {
@@ -199,6 +227,40 @@ public class MyForm extends Form implements ActionListener {
                 contentPane.add(BorderLayout.NORTH, newNorthCont);
             }
         }
+    }
+
+    protected void addToNorthOfContentPane(Component northCont, int pos) {
+        addToNorthOfContentPane(getContentPane(), northCont, pos);
+    }
+
+    protected static void addToSouthOfContentPane(Container contentPane, Component southCont, int pos) {
+        Layout contentPaneLayout = contentPane.getLayout();
+        if (contentPaneLayout instanceof BorderLayout) {
+            Component prevSouthComp = ((BorderLayout) contentPaneLayout).getSouth();
+//            if (prevNorthComp instanceof Container) { //NO, don't because an existing search field may be Container
+//                ((Container) prevNorthComp).addComponent(0, searchCont); //add search at pos 0 (above eg a StickyHeader or HelpText)
+//            } else 
+            if (prevSouthComp == null) {
+                //no North comp
+                contentPane.add(BorderLayout.SOUTH, southCont);
+            } else {
+                //if only a single componentn in north, create a new container for both previous component and searchCont
+                Container newSouthCont = new Container(BoxLayout.y());
+//                        Container parent = northComp.getParent();
+                prevSouthComp.remove();
+                newSouthCont.add(prevSouthComp); //and existing content (e.g. StickyHeader) at pos 1
+//                        parent.add(northCont);
+                if (pos > newSouthCont.getComponentCount()) {
+                    pos = newSouthCont.getComponentCount();
+                }
+                newSouthCont.addComponent(pos, southCont); //add search at pos 0
+                contentPane.add(BorderLayout.SOUTH, newSouthCont);
+            }
+        }
+    }
+
+    protected void addToSouthOfContentPane(Component southCont, int pos) {
+        addToSouthOfContentPane(getContentPane(), southCont, pos);
     }
 
     protected void setSearchCmd(MySearchCommand searchCommand) {
@@ -268,17 +330,23 @@ public class MyForm extends Form implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent evt) {
+        assert false; //should never be called?!
         if (evt.getSource() == TimerStack2.getInstance()) {
             TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
             if (timerInstance != null) {
                 Item timedItem = timerInstance.getTimedItemN(); //no more items to time, remove timer (if any)
                 if (timedItem != null) { //no more items to time, remove timer (if any)
-                    Container smallTimer = getSmallTimerContN();
-                    ScreenTimer7.buildContentPane(smallTimer, this, false);
+                    Container smallTimerN = getAndMakeSmallTimerContN();
+                    if (smallTimerN != null) {
+                        ScreenTimer7.buildContentPane(smallTimerN, this, false);
+                        ((MyForm) smallTimerN.getComponentForm()).animateLayout(ANIMATION_TIME_DEFAULT);
+                    }
                 }
             } else { //timedItem == null
-                if (getSmallTimerContN() != null) {
-                    getSmallTimerContN().remove();
+                if (getAndMakeSmallTimerContN() != null) {
+                    Form f = getAndMakeSmallTimerContN().getComponentForm();
+                    getAndMakeSmallTimerContN().remove();
+                    ((MyForm) f).animateLayout(ANIMATION_TIME_DEFAULT);
                 }
             }
         }
@@ -454,6 +522,7 @@ public class MyForm extends Form implements ActionListener {
     static final String SCREEN_IMPROVE = "Improve"; //how to improve, more precise estimates, analysis per type of tasks (respect due date, estimates, split up, allow to become interrupted, ...)
     static final String SCREEN_IMPROVE_HELP = "Shows you insights on how well you do and gives feedback on how you may improve. COMING..."; //how to improve, more precise estimates, analysis per type of tasks (respect due date, estimates, split up, allow to become interrupted, ...)
     static final String SETTINGS_SCREEN_TITLE = "Settings for "; //"Statistics", "History"
+    static final String SCREEN_INTERRUPT = "Interrupt";// "Time interrupt"; 
 
     //https://www.schemecolor.com/red-orange-yellow-blue.php
     static int colorLightGreen = 0x89e19c; //??
@@ -475,7 +544,7 @@ public class MyForm extends Form implements ActionListener {
         ALARMS(SCREEN_ALARM_TITLE, SCREEN_ALARM_HELP, SCREEN_ALARM_EMPTY, Icons.iconMainAlarms, null),
         CATEGORIES(SCREEN_CATEGORIES_TITLE, SCREEN_CATEGORIES_HELP, SCREEN_CATEGORIES_EMPTY, Icons.iconMainCategories, null),
         ALL_TASKS(SCREEN_ALL_TASKS_TITLE, SCREEN_ALL_TASKS_HELP, "", Icons.iconMainAllTasksCust, Icons.myIconFont,
-                ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP | ScreenListOfItems.OPTION_NON_EDITABLE_LIST),
+                ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, DAO.SYSTEM_LIST_ALL),
         FILTER(SCREEN_FILTER_TITLE, SCREEN_FILTER_HELP, SCREEN_FILTER_EMPTY),
         LISTS(SCREEN_LISTS_TITLE, SCREEN_LISTS_HELP, "", Icons.iconMainListsCust, Icons.myIconFont),
         INBOX(SCREEN_INBOX_TITLE, SCREEN_INBOX_HELP, SCREEN_INBOX_EMPTY, Icons.iconMainInbox, null,
@@ -483,8 +552,8 @@ public class MyForm extends Form implements ActionListener {
         ALL_PROJECTS(SCREEN_PROJECTS_TITLE, SCREEN_PROJECTS_HELP, "", Icons.iconMainProjectsCust, Icons.myIconFont,
                 ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES //| ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER //ScreenListOfItems.OPTION_NO_TIMER | 
                 | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
-                | ScreenListOfItems.OPTION_NON_EDITABLE_LIST),
-        TEMPLATES(SCREEN_TEMPLATES_TITLE, SCREEN_TEMPLATES_HELP, "", Icons.iconMainTemplates, null, ScreenListOfItems.OPTION_TEMPLATE_EDIT),
+                | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, DAO.SYSTEM_LIST_PROJECTS),
+        TEMPLATES(SCREEN_TEMPLATES_TITLE, SCREEN_TEMPLATES_HELP, "", Icons.iconMainTemplates, null, ScreenListOfItems.OPTION_TEMPLATE_EDIT, DAO.SYSTEM_LIST_TEMPLATES),
         COMPLETION_LOG(SCREEN_COMPLETION_LOG_TITLE, SCREEN_COMPLETION_LOG_HELP, SCREEN_COMPLETION_LOG_EMPTY, Icons.iconMainCompletionLog, null,
                 ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                 | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
@@ -509,7 +578,7 @@ public class MyForm extends Form implements ActionListener {
                 ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                 | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
                 | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, DAO.SYSTEM_LIST_TOUCHED),
-        WORKSLOTS(SCREEN_WORKSLOTS_TITLE, SCREEN_WORKSLOTS_HELP, SCREEN_WORKSLOTS_EMPTY, Icons.iconMainWorkSlots, null),
+        WORKSLOTS(SCREEN_WORKSLOTS_TITLE, SCREEN_WORKSLOTS_HELP, SCREEN_WORKSLOTS_EMPTY, Icons.iconMainWorkSlots, null, DAO.SYSTEM_LIST_WORKSLOTS),
         STATISTICS(SCREEN_STATISTICS_TITLE, SCREEN_STATISTICS_HELP, "", Icons.iconMainStatistics, null);
         private String screenTitle;
         private String helpText;
@@ -537,12 +606,20 @@ public class MyForm extends Form implements ActionListener {
 
         }
 
+        ScreenType(String title, String helpText, String emptyScreenText, char icon, Font font, Integer color, String systemName) {
+            this(title, helpText, emptyScreenText, icon, font, color, 0, systemName);
+        }
+
         ScreenType(String title, String helpText, String emptyScreenText, char icon, Font font, Integer color) {
-            this(title, helpText, emptyScreenText, icon, font, color, 0);
+            this(title, helpText, emptyScreenText, icon, font, color, 0, null);
+        }
+
+        ScreenType(String title, String helpText, String emptyScreenText, char icon, Font font, String systemName) {
+            this(title, helpText, emptyScreenText, icon, font, null, 0, systemName);
         }
 
         ScreenType(String title, String helpText, String emptyScreenText, char icon, Font font) {
-            this(title, helpText, emptyScreenText, icon, font, null);
+            this(title, helpText, emptyScreenText, icon, font, 0, 0, null);
         }
 
         ScreenType(String title, String helpText, String emptyScreenText, char icon) {
@@ -588,6 +665,10 @@ public class MyForm extends Form implements ActionListener {
 
         int getOptions() {
             return options;
+        }
+
+        boolean isFilterEditable() {
+            return false; //always false for now, TODO: allow editing selected filterLists
         }
 
         static ScreenType getScreenType(String screenTitle) {
@@ -687,7 +768,7 @@ public class MyForm extends Form implements ActionListener {
         this(null, title, previousForm, updateActionOnDone, null, null);
     }
 
-    MyForm(ScreenType screenType, String title, MyForm previousForm, Runnable updateActionOnDone, Runnable updateActionOnCancel, String helpText) { //throws ParseException, IOException {
+    MyForm(ScreenType screenType, String title, MyForm previousForm, Runnable updateActionOnDoneN, Runnable updateActionOnCancel, String helpText) { //throws ParseException, IOException {
         //    MyForm(String title, UpdateField updateActionOnDone) { //throws ParseException, IOException {
 //        super(title);
         super(new BorderLayout());
@@ -816,7 +897,8 @@ public class MyForm extends Form implements ActionListener {
 //            setTextToShowIfEmptyList("Insert new task using + or pinch insert");
         }
 
-        this.parentForm = previousForm;
+//        this.parentForm = previousForm;
+        setParentForm(previousForm);
         if (false) {
             setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
         }
@@ -860,7 +942,7 @@ public class MyForm extends Form implements ActionListener {
 //            updateActionOnDone = () -> {
 //            };
 //        }
-        addDoneUpdateAction(updateActionOnDone);
+        addDoneUpdateAction(updateActionOnDoneN);
 
 //        if (updateActionOnCancel == null) {
 //            updateActionOnCancel = () -> {
@@ -941,19 +1023,22 @@ public class MyForm extends Form implements ActionListener {
 //        if (false) { //need to be refreshed when screen is refreshed (eg if starting timer)
 //            setBigTimerReplayCmd(makeBigTimerReplayCmd());
 //        }
-        setBigTimerReplayCmd(makeBigTimerReplayCmd());
-        if (MyPrefs.fingerTracking.getBoolean()) {
-            startPointerTracking();
+        if (false) {
+            setBigTimerReplayCmd(makeBigTimerReplayCmd()); //NB. Must be done in refreshAfterEdit to be defined once a timer is activated
         }
+        //below disabled since not added to Form
+//        if (MyPrefs.fingerTracking.getBoolean()) {
+//            startPointerTracking();
+//        }
 //        getContentPane().setSafeAreaRoot(MyPrefs.enableSafeArea.getBoolean()); //protect scrollbar at bottom of screen from swipe commands
         //        if (previousValues!=null&&previousValues.get(MySearchCommand.SEARCH_KEY) != null && getSearchCmd() != null) {
         //            getSearchCmd().actionPerformed(null); //re-activate Search, null=>reuse locally stored text
         //        }
 
 //        initPointerTracking();
-        if (false) {
-            TimerStack2.getInstance().setActionListener(this); //start listening to TimerChanges //NO, not here (WHY not??), do in MyForm.onShow()
-        }
+//        if (false) {
+//            TimerStack2.getInstance().setActionListener(this); //start listening to TimerChanges //NO, not here (WHY not??), do in MyForm.onShow()
+//        }
     }
 
     int prevScrollPos = -1; //-1 undefined
@@ -1311,7 +1396,7 @@ public class MyForm extends Form implements ActionListener {
     }
 
     protected void setKeepPos() {
-        setKeepPos(new KeepInSameScreenPosition());
+        setKeepPos(new KeepInSameScreenPosition(this));
     }
 
     protected KeepInSameScreenPosition getKeepPos() {
@@ -1357,33 +1442,53 @@ public class MyForm extends Form implements ActionListener {
      * returns the container in which to add the smallTimer, can be overridden
      * to place the smallTimer in other places than the default South container.
      *
-     * @return
+     * @return null if timer should not be visible in a given screen
      */
 //    public Container getContainerForSmallTimer() {
-    public Container getSmallTimerContN() {
-        if (getSmallTimerContainer() == null) {
+    public Container getAndMakeSmallTimerContN() {
+        if (true || getSmallTimerContainer() == null) { //true=disable caching of container
 //        Container smallTimer = null;
             Form form = this;
             if ((form instanceof ScreenCategoryPicker //|| form instanceof ScreenListOfAlarms
                     || form instanceof ScreenLogin || form instanceof ScreenObjectPicker2// || form instanceof ScreenObjectPicker
-                    || form instanceof ScreenRepair || form instanceof ScreenTimer6)) {
+                    || form instanceof ScreenRepair || form instanceof ScreenTimer7 //                    || form instanceof ScreenListOfAlarms
+                    )) {
 //                return null;
             } else {
-                Container formContentPane = form.getContentPane();
-                Layout contentPaneLayout = formContentPane.getLayout();
-                if (contentPaneLayout instanceof BorderLayout) {
+                if (false) {
+                    Container formContentPane = form.getContentPane();
+                    Layout contentPaneLayout = formContentPane.getLayout();
+                    if (contentPaneLayout instanceof BorderLayout) {
 //                timerContainer = getContentPaneSouth(form);
-                    Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
-                    if (southComponent instanceof Container) {
+                        Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
+                        if (southComponent instanceof Container) {
 //                        smallTimer = (Container) southComponent;
-                        setSmallTimerContainer((Container) southComponent);
-                    } else if (southComponent == null) {
-                        Container newCont = new Container(BoxLayout.y());
-                        formContentPane.add(BorderLayout.SOUTH, newCont);
+                            //if we have a BorderLayout container in SOUTH, wrap it in a BoxLayout container
+                            if (((Container) southComponent).getLayout() instanceof BorderLayout) {
+                                Container newCont = new Container(BoxLayout.y());
+                                southComponent.remove();
+                                newCont.add(southComponent);
+                                formContentPane.add(BorderLayout.SOUTH, newCont);
+//                            setSmallTimerContainer((Container) ((BorderLayout) ((Container) southComponent).getLayout()).getSouth());
+                                setSmallTimerContainer(newCont);
+                            } else {
+                                setSmallTimerContainer((Container) southComponent);
+                            }
+//                    } else if (!(southComponent instanceof Container)) {
+////                        smallTimer = newCont;
+//                        setSmallTimerContainer(newCont);
+                        } else if (southComponent == null) {
+                            Container newCont = new Container(BoxLayout.y());
+                            formContentPane.add(BorderLayout.SOUTH, newCont);
 //                        smallTimer = newCont;
-                        setSmallTimerContainer(newCont);
+                            setSmallTimerContainer(newCont);
+                        }
                     }
-                } //else: nothing, only BorderLayout can currently show a smallTimer in the south container
+                } else { //else: nothing, only BorderLayout can currently show a smallTimer in the south container
+                    Container newCont = new Container(BoxLayout.y());
+                    addToSouthOfContentPane(newCont, Integer.MAX_VALUE);
+                    setSmallTimerContainer(newCont);
+                }
             }
         }
 //        return containerForSmallTimer;
@@ -1608,7 +1713,7 @@ public class MyForm extends Form implements ActionListener {
 //            helpContainer = helpTxtSpanButton;
             helpContainer = helpField;
         }
-        MyForm.addToNorthOfContentPane(getContentPane(), helpContainer, 0); //add to North, *before* SearchCont 
+        addToNorthOfContentPane(helpContainer, 0); //add to North, *before* SearchCont 
 //            helpContainer.setHidden(true); //initial state is hidden (first click will change this)
 
         if (animate && helpContainer.getParent() != null) {
@@ -2491,22 +2596,22 @@ public class MyForm extends Form implements ActionListener {
 //</editor-fold>
     /**
      *
-     * @param updateActionOnDone Runnable to add to actions when exiting Screen
+     * @param updateActionOnDoneN Runnable to add to actions when exiting Screen
      * with Done (Back), if null, no effect
      */
-    void addDoneUpdateAction(Runnable updateActionOnDone) {
+    void addDoneUpdateAction(Runnable updateActionOnDoneN) {
         if (false && Config.TEST) {
-            ASSERT.that(updateActionOnDone == null || this.updateActionOnDone == null, "Setting updateActionOnDone twice, old="
-                    + this.updateActionOnDone + "; new=" + updateActionOnDone);
+            ASSERT.that(updateActionOnDoneN == null || this.updateActionOnDone == null, "Setting updateActionOnDone twice, old="
+                    + this.updateActionOnDone + "; new=" + updateActionOnDoneN);
         }
-        if (updateActionOnDone != null) {
+        if (updateActionOnDoneN != null) {
             if (this.updateActionOnDone == null) {
-                this.updateActionOnDone = updateActionOnDone;
+                this.updateActionOnDone = updateActionOnDoneN;
             } else {
                 Runnable oldUpdateAction = this.updateActionOnDone;
                 this.updateActionOnDone = () -> {
                     oldUpdateAction.run();
-                    updateActionOnDone.run();
+                    updateActionOnDoneN.run();
                 };
             }
         }
@@ -2565,6 +2670,38 @@ public class MyForm extends Form implements ActionListener {
         }
     }
 
+    protected void refreshTimerUI() {
+        TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
+        if (timerInstance != null) {
+//            if (!(this instanceof ScreenTimer7) && !isHideSmallTimer()) {
+//                Container smallTimer = getAndMakeSmallTimerContN();
+            removeSmallTimerContainer(); //just in case
+            ScreenTimer7.buildContentPane(null, this, false, true);
+//            }
+        } else { //no timer is currently running
+            removeSmallTimerContainer(); //just in case
+            //if timer not currently active set this listener to refresh the UI
+            TimerStack2.getInstance().setActionListener((e) -> {
+                TimerInstance2 timerInstance2 = TimerStack2.getTimerInstanceN();
+                if (timerInstance2 != null) { //if a timer has been started
+                    if (!(this instanceof ScreenTimer7)) {
+//                        refreshAfterEdit(); //NB! MUST call refresh *before* getting BigTimerCmd below
+                        if (!MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() && getBigTimerReplayCmd() != null) {
+                            setBigTimerReplayCmd(makeBigTimerReplayCmd()); //NB! MUST update  *before* getting BigTimerCmd below
+                            getBigTimerReplayCmd().actionPerformed(null); //start full screen timer 
+                        } else {
+//                            Container smallTimer = getAndMakeSmallTimerContN();
+//                            ScreenTimer7.buildContentPane(smallTimer, this, false); //will replace this listener by a new one to update the timer container/screen
+                            ScreenTimer7.buildContentPane(null, this, false, true); //will replace this listener by a new one to update the timer container/screen
+                        }
+                    }
+                } else {
+                    removeSmallTimerContainer();
+                }
+            });
+        }
+    }
+
     /**
      * used to refresh the screen after (major) edits. E.g. either revalidate if
      * only format has been changed or rebuild content pane if the data has been
@@ -2602,8 +2739,13 @@ public class MyForm extends Form implements ActionListener {
 //                this.addSmallTimerContXXX(smallTimer);
 //            }
 //        }
-        if (true) {
-            revalidateWithAnimationSafety();
+        if (false) {
+//            revalidateWithAnimationSafety();
+            if (true) {
+                revalidateLater();
+            } else {
+                animateLayout(ANIMATION_TIME_DEFAULT);
+            }
 //            restoreKeepPos();
 //            if (false) {
 //                if (getStartEditingAsyncTextArea() != null) {
@@ -2644,7 +2786,14 @@ public class MyForm extends Form implements ActionListener {
 //            if (true && previousValues != null) {//            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
             previousValues.setListenToYScrollComponent(scrollableContainer);
         }
-//        }
+
+        setBigTimerReplayCmd(makeBigTimerReplayCmd()); //MUST be done in refreshAfterEdit (to be set once a timer is defined)
+        if (!(this instanceof ScreenTimer7)) { //don't refresh for ScreenTimer which is already build
+            refreshTimerUI();
+        }
+//        revalidate();
+        revalidateLater();
+        restoreKeepPos();
     }
 
 //    abstract void refreshAfterEdit(KeepInSameScreenPosition keepPos);
@@ -2833,9 +2982,9 @@ public class MyForm extends Form implements ActionListener {
 //    }
 ////</editor-fold>
     void showPreviousScreen(boolean callRefreshAfterEdit) {
-        if (false) {
-            TimerStack2.getInstance().removeActionListener(this); //stop listening to the Timer //Necessary (since only one screen can be set as listener)?!
-        }
+//        if (false) {
+//            TimerStack2.getInstance().removeActionListenerXXX(this); //stop listening to the Timer //Necessary (since only one screen can be set as listener)?!
+//        }
         if (previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
             previousValues.deleteFile();
 //            previousValues.clear(); //if still accessed
@@ -3277,15 +3426,16 @@ public class MyForm extends Form implements ActionListener {
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
 //        return MyReplayCommand.create(TimerStack.TIMER_REPLAY, title, icon, (e) -> {
 //        return CommandTracked.create("", icon, (e) -> {
-        return CommandTracked.create(includeText ? "Time interrupt" : "", Icons.iconInterrupt, (e) -> {
+        return CommandTracked.create(includeText ? SCREEN_INTERRUPT : "", Icons.iconInterrupt, (e) -> {
             Item newInterruptItem = new Item(false);
 //            newInterruptItem.setRemaining(0);//remove default estimate for interrupt tasks
             newInterruptItem.setInteruptOrInstantTask(true);
 //            DAO.getInstance().saveNew(newInterruptItem, true);
 //            DAO.getInstance().saveNew(newInterruptItem); //TODO!!!!: don't save until exeting the Timer to allow for Cancel in Timer?!!
 //            DAO.getInstance().saveNewTriggerUpdate();
-            DAO.getInstance().saveToParseNow(newInterruptItem); //TODO!!!!: don't save until exeting the Timer to allow for Cancel in Timer?!!
-//                if (ScreenTimerNew.getInstance().isTimerRunning()) {
+            if (false) {
+                DAO.getInstance().saveToParseNow(newInterruptItem); //saved together with new TimerInstance, TODO!!!!: don't save until exeting the Timer to allow for Cancel in Timer?!!
+            }//                if (ScreenTimerNew.getInstance().isTimerRunning()) {
 //                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer?? Only when using Timer, otherwise just an 'instant task'
 //                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItemN());
 //                }
@@ -3305,12 +3455,12 @@ public class MyForm extends Form implements ActionListener {
 //        return CommandTracked.create(TimerStack.getInstance().isTimerActive() ? "Open Timer" : "Start Timer on list",
         return CommandTracked.create("Start Timer",
                 //                    TimerStack.getInstance().isTimerActive() ? Icons.iconLaunchTimerAlreadyRunning : Icons.iconLaunchTimer,
-                Icons.iconLaunchTimer,
+                Icons.iconTimerLaunch,
                 (e) -> {
                     if (itemListOrg instanceof ItemList) {
-                        TimerStack2.getInstance().startTimer(null, (ItemList) itemListOrg, MyForm.this, false, false); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                        TimerStack2.getInstance().startTimerAndSave(null, (ItemList) itemListOrg, MyForm.this, false, false); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
                     } else if (itemListOrg instanceof Item) {
-                        TimerStack2.getInstance().startTimer((Item) itemListOrg, null, MyForm.this, false, true); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                        TimerStack2.getInstance().startTimerAndSave((Item) itemListOrg, null, MyForm.this, false, true); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
                     }
                     if (!MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() && getBigTimerReplayCmd() != null) {
                         getBigTimerReplayCmd().actionPerformed(null);
@@ -3360,6 +3510,28 @@ public class MyForm extends Form implements ActionListener {
     }
 
     /**
+     * move up the hierarchy of comp to find a SwipeableContainer and close the
+     * first one found
+     *
+     * @param comp
+     */
+    public static void closeParentSwipe(Component comp) {
+        if (comp instanceof SwipeableContainer) {
+            ((SwipeableContainer) comp).close();
+        } else {
+            Component c = comp;
+            while (c.getParent() != null) {
+                if (c.getParent() instanceof SwipeableContainer) {
+                    ((SwipeableContainer) c.getParent()).close();
+                    return;
+                } else {
+                    c = c.getParent();
+                }
+            }
+        }
+    }
+
+    /**
      * neither swipCont must NOT be null and must be added to a form
      *
      * @param swipCont
@@ -3367,46 +3539,46 @@ public class MyForm extends Form implements ActionListener {
      * @param commandTrackId
      * @return
      */
-//    public static Button makeTimerSwipeButton(SwipeableContainer swipCont, ItemAndListCommonInterface itemOrItemList, String commandTrackId) {
-    static public Button makeTimerSwipeButton(MyForm myForm, Item item, ItemAndListCommonInterface eltList, String commandTrackId) {
+    public static Button makeTimerSwipeButton(SwipeableContainer swipCont, Item item, ItemAndListCommonInterface itemOrItemList, String commandTrackId) {
+//    static public Button makeTimerSwipeButton(MyForm myForm, Item item, ItemAndListCommonInterface eltList, String commandTrackId) {
         Button startTimer;
         if (false) {
-            SwipeableContainer swipCont = null;
-            startTimer = new Button(CommandTracked.create("Timer", Icons.iconLaunchTimer, (ev) -> {
-//            if (swipCont != null) {
-//                MyForm myForm = (MyForm) swipCont.getComponentForm();
-                if (myForm != null) {
-                    myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-                }
-//                TimerStack2.getInstance().startTimerOnItemInItemList(item,eltList, myForm,false,true);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
-                TimerStack2.getInstance().startTimer(item, eltList, myForm, false, true);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
-                if (!MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() && myForm.getBigTimerReplayCmd() != null) {
-                    myForm.getBigTimerReplayCmd().actionPerformed(null);
-                }
-
-                swipCont.close(); //close before save 
-            }, commandTrackId
-            ));
-//            startTimer.setMaterialIcon(Icons.iconLaunchTimer);
-            startTimer.setTextPosition(BOTTOM);
-            startTimer.setGap(0);
-            startTimer.setUIID("SwipeButtonTimer");
-        } else {
-            startTimer = makeSwipeButton("Timer", "SwipeButtonTimer", Icons.iconLaunchTimer, null, null,
-                    CommandTracked.create("Timer", Icons.iconLaunchTimer, (ev) -> {
-//            if (swipCont != null) {
-//                MyForm myForm = (MyForm) swipCont.getComponentForm();
+////            SwipeableContainer swipCont = null;
+//            startTimer = new Button(CommandTracked.create("Timer", Icons.iconLaunchTimer, (ev) -> {
+////            if (swipCont != null) {
+////                MyForm myForm = (MyForm) swipCont.getComponentForm();
 //                if (myForm != null) {
-//                    myForm.setKeepPos(new KeepInSameScreenPosition(itemOrItemList, swipCont));
+//                    myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
 //                }
-                        TimerStack2.getInstance().startTimer(item, eltList, myForm, false, true);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
+////                TimerStack2.getInstance().startTimerOnItemInItemList(item,eltList, myForm,false,true);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
+//                TimerStack2.getInstance().startTimer(item, eltList, myForm, false, true);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
+//                if (!MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() && myForm.getBigTimerReplayCmd() != null) {
+//                    myForm.getBigTimerReplayCmd().actionPerformed(null);
+//                }
+//
+//                swipCont.close(); //close before save 
+//            }, commandTrackId
+//            ));
+////            startTimer.setMaterialIcon(Icons.iconLaunchTimer);
+//            startTimer.setTextPosition(BOTTOM);
+//            startTimer.setGap(0);
+//            startTimer.setUIID("SwipeButtonTimer");
+        } else {
+            startTimer = makeSwipeButton("Timer", "SwipeButtonTimer", Icons.iconTimerLaunch, null, null,
+                    CommandTracked.create("Timer", Icons.iconTimerLaunch, (ev) -> {
+//            if (swipCont != null) {
+                        MyForm myForm = (MyForm) swipCont.getComponentForm();
+                        if (myForm != null) {
+                            myForm.setKeepPos(new KeepInSameScreenPosition(itemOrItemList, swipCont));
+                        }
+                        TimerStack2.getInstance().startTimerAndSave(item, (item != null && MyPrefs.timerSwipeStartOnlyTimesSelectedTask.getBoolean() ? null : itemOrItemList), myForm, false, true);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
                         if (!MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() && myForm.getBigTimerReplayCmd() != null) {
                             myForm.getBigTimerReplayCmd().actionPerformed(null);
                         }
 
-//                swipCont.close(); //close before save 
-                    }, commandTrackId
-                    ));
+//                        closeParentSwipe(startTimer); //close before save 
+                        swipCont.close();
+                    }, commandTrackId));
         }
         return startTimer;
     }
@@ -3582,6 +3754,39 @@ public class MyForm extends Form implements ActionListener {
             }, false, null, SCREEN_NEW_TASK_HELP).show(); //false=optionTemplateEditMode
         });
         return cmd;
+    }
+
+    //NEW ITEMLIST
+    public Command makeCommandNewItemList(ItemListList itemListList) {
+        return MyReplayCommand.createKeep("CreateNewList", "Add List", Icons.iconListNew, (e) -> {
+            ItemList itemList = new ItemList();
+            setKeepPos(new KeepInSameScreenPosition());
+            new ScreenItemListProperties(itemList, this, () -> {
+                if (itemList.hasSaveableData()) {
+                    itemListList.addToList(itemList, !MyPrefs.insertNewItemListsInStartOfItemListList.getBoolean()); //TODO: why always add to start of list?! Make it a setting like elsewhere?
+                    DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                }
+            }).show();
+        });
+    }
+
+    //NEW CATEGORY
+    public Command makeCommandNewCategory(String cmdName, CategoryList categoryOwnerList, MyForm previousForm, MyForm.Action refreshOnItemEdits) { //static since reused in other screens
+        //NEW CATEGORY
+        return MyReplayCommand.create("CreateNewCategory", cmdName, Icons.iconCategoryNew, (e) -> {
+            Category category = new Category();
+            previousForm.setKeepPos(new KeepInSameScreenPosition());
+            new ScreenCategoryProperties(category, previousForm, () -> {
+                if (category.hasSaveableData()) { //UI: do nothing for an empty category, allows user to add category and immediately return if regrests or just pushed wrong button
+                    category.setOwner(categoryOwnerList); //TODO should store ordered list of categories
+                    categoryOwnerList.addItemAtIndex(category, MyPrefs.addNewCategoriesToBeginningOfCategoryList.getBoolean() ? 0 : categoryOwnerList.size());
+                    DAO.getInstance().saveToParseNow((ParseObject) category); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
+                    if (refreshOnItemEdits != null) {
+                        refreshOnItemEdits.launchAction();
+                    }
+                }
+            }).show();
+        }, true);
     }
 
 //    public Command makeCommandNewItemSaveToItemList(ItemAndListCommonInterface itemListOrg, String cmdText, char icon) {
@@ -3767,19 +3972,19 @@ public class MyForm extends Form implements ActionListener {
         return false;
     }
 
-    public Component makeSpacer() {
+    public static Component makeSpacer() {
         Label l = new Label("", "Spacer");
         l.setShowEvenIfBlank(true);
         return l;
     }
 
-    public Component makeSpacerThin() {
+    public static Component makeSpacerThin() {
         Label l = new Label("", "SpacerThin");
         l.setShowEvenIfBlank(true);
         return l;
     }
 
-    public Component makeSpacerThick() {
+    public static Component makeSpacerThick() {
         Label l = new Label("", "SpacerThick");
         l.setShowEvenIfBlank(true);
         return l;
@@ -3868,7 +4073,7 @@ public class MyForm extends Form implements ActionListener {
         ActionListener al = (e) -> {
 //            if (MyPrefs.getBoolean(helpSettingId)) {
             MyPrefs.setBoolean(helpSettingId, !MyPrefs.getBoolean(helpSettingId));
-            helpTxt.setHidden(MyPrefs.getBoolean(helpSettingId));
+            helpTxt.setHidden(!MyPrefs.getBoolean(helpSettingId));
             helpCont.getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
 //            }
         };
@@ -4038,11 +4243,9 @@ public class MyForm extends Form implements ActionListener {
     private MyReplayCommand makeBigTimerReplayCmd() {
         if (TimerStack2.getInstance().getCurrentTimerInstanceN() != null) {
             MyReplayCommand showBigTimer = MyReplayCommand.createKeep(SHOW_BIG_TIMER_SCREEN_REPLAY_CMD_ID, "", Icons.iconEdit, (e) -> {
-                ASSERT.that(TimerStack2.getInstance().getCurrentTimerInstanceN() != null, "makeBigTimerReplayCmd called from screen=" + getUniqueFormId() + " but TimerInstance==null");
-                ASSERT.that(!(this instanceof ScreenListOfAlarms), "makeBigTimerReplayCmd called from from ScreenListOfAlarms, shoulnd't happen");
-                {
-                    new ScreenTimer7(this).show();
-                }
+//                ASSERT.that(TimerStack2.getInstance().getCurrentTimerInstanceN() != null, "makeBigTimerReplayCmd called from screen=" + getUniqueFormId() + " but TimerInstance==null");
+//                ASSERT.that(!(this instanceof ScreenListOfAlarms), "makeBigTimerReplayCmd called from from ScreenListOfAlarms, shoulnd't happen");
+                new ScreenTimer7(this).show();
             });
             return showBigTimer;
         } else {
@@ -5371,6 +5574,9 @@ public class MyForm extends Form implements ActionListener {
 //     }
     static void initField(String fieldIdentifier, Component field, GetVal getOrg, PutVal putOrgN, GetVal getFieldN, PutVal putFieldN, Object undefinedValue,
             GetVal getDefaultValue, GetBool isInheritedN, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2, List<Runnable> refresh) {
+        if (Config.TEST) {
+            ASSERT.that(field != null, "field shouldn't be null");
+        }
         //initialize 
         if (putFieldN != null && getOrg.getVal() != null) {
             putFieldN.setVal(getOrg.getVal());
@@ -5410,7 +5616,9 @@ public class MyForm extends Form implements ActionListener {
                             r.run();
                         }
                     }
-                    f.refreshFields();
+                    if (f != null) {
+                        f.refreshFields();
+                    }
                 }                //save updated element locally
                 if (previousValues != null) {
                     previousValues.saveElementToSaveLocally();
@@ -5422,7 +5630,8 @@ public class MyForm extends Form implements ActionListener {
 
             //add change listenerlisten to changes an update+save if edited to different value than item.orgValue
             if (field instanceof TextArea) {
-                ((TextArea) field).addActionListener((e) -> updateElement.actionPerformed(null));
+//                ((TextArea) field).addActionListener((e) -> updateElement.actionPerformed(null));
+                ((TextArea) field).addActionListener(updateElement);
 //                ((TextArea) field).addDataChangedListener((type, index) -> updateElement.actionPerformed(null));
 //                ((TextArea) field).setDoneListener((e) -> updateElement.actionPerformed(null));
             } else if (field instanceof Button) {
@@ -5536,7 +5745,7 @@ public class MyForm extends Form implements ActionListener {
 //            Form prevForm = Display.getInstance().getCurrent(); //!!doesn't get previous form because it was not actually shown
 //            MyAnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
 //            MyAnalyticsService.visit(getUniqueFormId(), prevForm != null ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
-            if (MyAnalyticsService.isEnabled()) {
+            if (true || MyAnalyticsService.isEnabled()) {
 //                MyAnalyticsService.visit(getUniqueFormId(), prevForm instanceof MyForm ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
                 MyAnalyticsService.visit(getUniqueFormId(), parentForm instanceof MyForm ? ((MyForm) parentForm).getUniqueFormId() : "noPrevForm");
             }
@@ -6592,6 +6801,19 @@ public class MyForm extends Form implements ActionListener {
     }
 
     /**
+     * reset the values that are updated while the pinch is ongoing
+     */
+    private void resetPinchOngoingValues() {
+        //reset all values
+//            pinchContainer = null; //indicates done with this container //DOESN'T work since a pinch may be followed by another pinch w/o any drag or swipe!
+        pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
+        pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
+        initSimulY = -1;
+        initSimulY = -1;
+        pinchInsertInitiated = false;
+    }
+
+    /**
      * called either when two fingers (pointer) are released (pointerReleasea9,
      * or if one finger is released (changing from pinch to drag)
      */
@@ -6601,66 +6823,70 @@ public class MyForm extends Form implements ActionListener {
         }
 //        if (true || isPinchInsertEnabled()) { //checked before calling pinchInsertFinished()
         if (pinchInsertInitiated) { //checked before calling pinchInsertFinished()
-            Container parentToAnimate = null;
+            Container parentToAnimateN = null;
             if (pinchContainer == null) { //no new pinch created
                 if (previousPinchContainer != null) { //if pinched-in previous container
                     if (Config.TEST_PINCH) {
-                        Log.p("[A] removing  pinchContainerPrevious");
+                        Log.p("[A] removing  previousPinchContainer");
                     }
 //                    if (!minimumPinchSizeReached(pinchDistance, previousPinchContainer)) {
                     if (!minimumPinchSizeReached(pinchDistance, getWrappedPinchableContainer(previousPinchContainer))) {
-                        parentToAnimate = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(previousPinchContainer); //just remove it
-                        ASSERT.that(parentToAnimate != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent());
+                        parentToAnimateN = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParentN(previousPinchContainer); //just remove it
+                        ASSERT.that(parentToAnimateN != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent());
                         previousPinchContainer = null;
                     }
                 }
                 //TODO!!! what if we do a new pinch out at the same place as before (where a pinch cont is already inserted)?? ideally do nothing, but complicated to detect
             } else { //a new pinch created, pinchContainer != null
                 //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
-                if (minimumPinchSizeReached(pinchDistance, getWrappedPinchableContainer(pinchContainer))) {
+                if (minimumPinchSizeReached(pinchDistance, getWrappedPinchableContainer(pinchContainer))) { //leave the pinchContainer
                     if (Config.TEST_PINCH) {
                         Log.p("pinchContainerPrevious left visible");
                     }
 //                    Container pinchContainerParent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(pinchContainer);
                     if (previousPinchContainer != null && !MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(previousPinchContainer)) {
                         if (Config.TEST_PINCH) {
-                            Log.p("!! pinchContainerPrevious not removed correctly");
+                            ASSERT.that("!! previousPinchContainer not removed correctly");
                         }
                     } //remove previous in one exists
                     previousPinchContainer = pinchContainer; //save just inserted container
 
+                    resetPinchOngoingValues();
                     pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
 
-                    parentToAnimate = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
+                    parentToAnimateN = MyDragAndDropSwipeableContainer.getParentScrollYContainerN(pinchContainer);
                     //once container is inserted, activate editing 
                     if (MyPrefs.pinchInsertActivateEditing.getBoolean() && getPinchInsertContainer() != null && getPinchInsertContainer().getTextArea() != null) {
                         getPinchInsertContainer().getTextArea().startEditingAsync();
                     }
-                    ASSERT.that(parentToAnimate != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent()); //possible when inserting the very first element
-                } else {
+                    ASSERT.that(parentToAnimateN != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent()); //possible when inserting the very first element
+                } else { //minimumSize not reached, remove the pinchContainer
                     if (Config.TEST_PINCH) {
                         Log.p("[B] removing  pinchContainer");
                     }
-                    parentToAnimate = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(pinchContainer); //remove new pinch container, leave old one (if exists) in pinchContainerPrevious
-                    ASSERT.that(pinchContainer.getParent() == null, "removeFromParentScrollYContainer) did not remove pinchContainer from its parent");
-                    if (true || pinchContainer.getParent() != null) {
-                        pinchContainer.remove(); //TODO just use .remove() - should be enough to remove the pinchContainer and faster/safer than removeFromParentScrollYContainer
-                    }
+                    parentToAnimateN = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParentN(pinchContainer); //remove new pinch container, leave old one (if exists) in pinchContainerPrevious
+//                    ASSERT.that(pinchContainer.getParent() == null, "removeFromParentScrollYContainer) did not remove pinchContainer from its parent");
+                    ASSERT.that(MyDragAndDropSwipeableContainer.getParentScrollYContainerN(pinchContainer) == null, "removeFromParentScrollYContainer) did not remove pinchContainer from its parent");
+                    pinchContainer = null; //remove ref to container once it's removed
+//                    if (true || pinchContainer.getParent() != null) {
+//                        pinchContainer.remove(); //TODO just use .remove() - should be enough to remove the pinchContainer and faster/safer than removeFromParentScrollYContainer
+//                    }
                 }
             }
             //reset all values
-            pinchContainer = null; //indicates done with this container //DOESN'T work since a pinch may be followed by another pinch w/o any drag or swipe!
-            pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
-            pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
-//                MyForm.this.revalidate(); //necessary after using replace()??
-            initSimulY = -1;
-            initSimulY = -1;
+            resetPinchOngoingValues();
+//            pinchContainer = null; //indicates done with this container //DOESN'T work since a pinch may be followed by another pinch w/o any drag or swipe!
+//            pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
+//            pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
+////                MyForm.this.revalidate(); //necessary after using replace()??
+//            initSimulY = -1;
+//            initSimulY = -1;
+//            pinchInsertInitiated = false;
 //                animateHierarchy(300);
-            if (parentToAnimate != null) {
+            if (parentToAnimateN != null) {
 //                parentToAnimate.animateHierarchy(300);
-                parentToAnimate.revalidateWithAnimationSafety();
+                parentToAnimateN.revalidateWithAnimationSafety();
             }
-            pinchInsertInitiated = false;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (pointerReleasedListener != null) {
 //                removePointerReleasedListener(pointerReleasedListener);
@@ -6994,7 +7220,7 @@ public class MyForm extends Form implements ActionListener {
                     if (Config.TEST_PINCH) {
                         Log.p("inserted pinchContainer");
                     }
-                    parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
+                    parent = MyDragAndDropSwipeableContainer.getParentScrollYContainerN(pinchContainer);
                 } else { //we're pinching in, if there's already previous pinch container, animate to squeeze it in (and remove)
                     parent = previousPinchContainer != null ? previousPinchContainer.getParent() : null;
                 }
@@ -7356,18 +7582,17 @@ public class MyForm extends Form implements ActionListener {
     }
 
 //    @Override
-    public void onShowCompletedXXX() {
-        if (true) {
-            TimerStack2.getInstance().setActionListener(this);
-        }
-        TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
-        if (false && timerInstance != null && !(this instanceof ScreenTimer7) && timerInstance.isFullScreen()) {
-            new ScreenTimer7(this).show();
-        }
-    }
-
+//    public void onShowCompletedXXX() {
+//        if (true) {
+//            TimerStack2.getInstance().setActionListener(this);
+//        }
+//        TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
+//        if (false && timerInstance != null && !(this instanceof ScreenTimer7) && timerInstance.isFullScreen()) {
+//            new ScreenTimer7(this).show();
+//        }
+//    }
     @Override
-    protected void onShow() {
+    protected void onShow() { //onShow is called *before* Form.revalidateWithAnimationSafety() so changes to MyForm done here will be displayed
 //        if (getStartEditingAsyncTextArea() != null) {
 //            getStartEditingAsyncTextArea().startEditingAsync();
 //            Log.p("---->>> startEditingAsync() for TextArea named=" + getStartEditingAsyncTextArea().getName());
@@ -7386,15 +7611,44 @@ public class MyForm extends Form implements ActionListener {
             getSearchCmd().actionPerformed(null); //re-activate Search, null=>reuse locally stored text
         }
 
+        //always make the shown form (and that only) listen to TimerStack changes
         if (false) {
-            TimerStack2.getInstance().setActionListener(this);
-        }
-        TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
+//            TimerStack2.getInstance().setActionListener(this);
+//        } else {
+            TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
 //        if (timerInstance != null && !(this instanceof ScreenTimer7) && !timerInstance.isFullScreen()) {
-        if (timerInstance != null && !(this instanceof ScreenTimer7)) {
-            Container smallTimer = getSmallTimerContN();
-            ScreenTimer7.buildContentPane(smallTimer, this, false);
+            if (timerInstance != null) {
+                if (!(this instanceof ScreenTimer7) && !isHideSmallTimer()) {
+                    Container smallTimer = getAndMakeSmallTimerContN();
+                    ScreenTimer7.buildContentPane(smallTimer, this, false);
+                }
+            } else { //no timer is currently running
+//                if (getSmallTimerContainer() != null) {
+//                    getSmallTimerContainer().remove(); //remove any smallTimer still visible - ever used??
+//                }
+                removeSmallTimerContainer();
+                //if timer not currently active set this listener to refresh the UI
+                TimerStack2.getInstance().setActionListener((e) -> {
+                    TimerInstance2 timerInstance2 = TimerStack2.getTimerInstanceN();
+                    if (timerInstance2 != null) { //if a timer is started
+                        if (!(this instanceof ScreenTimer7)) {
+                            refreshAfterEdit(); //NB! MUST call refresh *before* getting BigTimerCmd below
+                            if (!MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() && getBigTimerReplayCmd() != null) {
+                                getBigTimerReplayCmd().actionPerformed(null); //start full screen timer 
+                            } else {
+                                Container smallTimer = getAndMakeSmallTimerContN();
+                                ScreenTimer7.buildContentPane(smallTimer, this, false); //will replace this listener by a new one to update the timer container/screen
+                            }
+                        }
+                    } else { //                        if (getSmallTimerContainer() != null) {
+                        //                        getSmallTimerContainer().remove(); //remove any smallTimer still visible - ever used??
+                        //                    }
+                        removeSmallTimerContainer();
+                    }
+                });
+            }
         }
+        ASSERT.that(TimerStack2.getInstance().listeners == null || TimerStack2.getInstance().listeners.getListenerCollection().size() == 1, "sth went wrong adding timerstack listener");
     }
 
     /**

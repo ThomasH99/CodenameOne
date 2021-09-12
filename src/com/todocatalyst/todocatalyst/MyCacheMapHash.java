@@ -46,7 +46,7 @@ public class MyCacheMapHash {
 
     private int cacheSize = 10;
     private Hashtable memoryCache = new Hashtable();
-    private Hashtable weakCache = new Hashtable();
+//    private Hashtable weakCache = new Hashtable();
 
     private int storageCacheSize = 0;
 //    private Vector storageCacheContentVec;
@@ -151,7 +151,7 @@ public class MyCacheMapHash {
             ASSERT.that(value != null, () -> "value==null for key=" + key);
             Object oldVal = memoryCache.get(key);
 //            ASSERT.that(oldVal == null || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key
-            ASSERT.that(oldVal == null || oldVal == value, () -> "Cache key already points to a different object. Key=" + key
+            ASSERT.that(oldVal == null || oldVal == value || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key //oldVal.equals(value) since value may be a String (named object)
                     + ", OLD= \"" + ItemAndListCommonInterface.toIdString(oldVal) + "\", NEW= \"" + ItemAndListCommonInterface.toIdString(value) + "\"");
 //            ASSERT.that(oldVal == null || oldVal == value, 
 //                    () -> "Cache key already points to a different object. Key=" + key ); //NB avoid object.toString since may create infinite loop
@@ -601,5 +601,9 @@ public class MyCacheMapHash {
      */
     public void setAlwaysStore(boolean alwaysStore) {
         this.alwaysStore = alwaysStore;
+    }
+
+    public Hashtable getCacheContent() {
+        return memoryCache;
     }
 }

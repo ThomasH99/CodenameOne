@@ -6,12 +6,16 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.components.ToastBar;
+import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.events.DataChangedListener;
 import com.codename1.ui.util.EventDispatcher;
+import com.parse4cn1.ParseObject;
+import com.todocatalyst.todocatalyst.ItemAndListCommonInterface.Condition;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -103,7 +107,7 @@ class TimerStack2 implements ActionListener {
 //</editor-fold>
 //    private final static String TIMER_STACK_ID = "TodoCatalystStoredTimers";
     private List<TimerInstance2> activeTimers; //is NOT saved since it is set by reading the list of saved TimerInstances
-    Container smallContainer = null;
+//    Container smallContainer = null;
     final static int ACTION_EVENT_CHANGED = DataChangedListener.CHANGED;
     final static int ACTION_EVENT_REMOVEDXXX = DataChangedListener.REMOVED;
 
@@ -151,11 +155,15 @@ class TimerStack2 implements ActionListener {
         }
     }
 
-    static void showNoTasksToWorkOnNotificationWhenRelevant(ItemAndListCommonInterface itemOrListName) {
+    static void showNoTasksToWorkOnNotificationWhenRelevant(ItemAndListCommonInterface source) {
 //    static void showNoTasksToWorkOnNotificationWhenRelevant(String itemOrListName) {
         if (MyPrefs.timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList.getBoolean()) {
             //                Dialog.show("Timer", "No tasks to work on in \"" + itemOrListName + "\", click OK to return", "OK", null);
-            Dialog.show("´Timer", "No tasks to work on in \"" + itemOrListName.getText() + "\"", "OK", null);
+//            Dialog.show("´Timer", "No tasks to work on in \"" + itemOrListName.getText() + "\"", "OK", null);
+            String listType = source instanceof Category ? Category.CATEGORY : (source instanceof ItemList ? ItemList.ITEM_LIST : Item.PROJECT);
+//            MyForm.showToastBar(Format.f("No more tasks in {0 listtype} \"{1 listname}\"", listType, source.getText()));
+            Dialog.show(Format.f("No more tasks in {0 listtype} \"{1 listname}\"", listType, source.getText()), "OK", (Command) null);
+
         }
     }
 
@@ -231,7 +239,13 @@ class TimerStack2 implements ActionListener {
             timerText = " for \"" + timerText + "\"";
         }
         return Dialog.show("TIMER", "Pause timer" + timerText + " and start timing "
-                + (newTimedElt instanceof Item && ((Item) newTimedElt).isInteruptOrInstantTask() ? "Interrupt" : "\"" + newTimedElt.getText() + "\"?"),
+                + (newTimedElt instanceof Item && ((Item) newTimedElt).isInteruptOrInstantTask() ? "Interrupt?" : "\"" + newTimedElt.getText() + "\"?"),
+                "OK", "Cancel");
+    }
+
+    static boolean showDialogTimeAnotherTaskInSameSource(ItemAndListCommonInterface source, ItemAndListCommonInterface oldTimedElt, ItemAndListCommonInterface newTimedElt) {
+        return Dialog.show("TIMER", Format.f("Start timing \"{0 previousTask}\" instead of \"{1 newTask}\" in {2 listType} \"{3 source}\"?",
+                newTimedElt.getText(), oldTimedElt.getText(), ItemAndListCommonInterface.getTypeString(source), source.getText()),
                 "OK", "Cancel");
     }
 
@@ -246,10 +260,28 @@ class TimerStack2 implements ActionListener {
         return getInstance().getCurrentTimerInstanceN();
     }
 
-    public static Item getTimedItemN() {
+    public static Item getTimedItemNXXX() {
         TimerInstance2 timerInstance = getInstance().getCurrentTimerInstanceN();
         Item timedItem = timerInstance != null ? timerInstance.getTimedItemN() : null;
         return timedItem;
+    }
+
+    public static int getTimerStackSize() {
+        return getInstance().activeTimers != null ? getInstance().activeTimers.size() : 0;
+    }
+
+    public static String getTimerStackSizeAsStr() {
+        return getTimerStackSize() > 1 ? (" (" + getTimerStackSize() + ")") : "";
+    }
+
+    public static String getTimerStackLabelTxt() {
+//        return "Interrupted timer" + (getTimerStackSize() > 2 ? ("s (" + (getTimerStackSize()-1) + "):") : ":"); //>2: only show size if more than one interrupted, -1: don't include currentTimer in count
+        return getTimerStackSize() > 2 ? Format.f("Interrupted timers ({0 nb timers})", "" + (getTimerStackSize() - 1)) : "Interrupted timer";
+        //>2: only show size if more than one interrupted, -1: don't include currentTimer in count
+    }
+
+    public static List<TimerInstance2> getActiveTimers() {
+        return getInstance().activeTimers;
     }
 
     private TimerStack2(List<TimerInstance2> timerList) {
@@ -291,35 +323,66 @@ class TimerStack2 implements ActionListener {
     }
 
     /**
-     * only one timer can listen at a time
+     * add a new Form as listener, will also remove previous Form (and remove
+     * its smallTimer if any). only one Form can listen at a time
      *
      * @param l
      */
     public void setActionListener(ActionListener l) {
+        if (Config.TEST) {
+            ASSERT.that(l != null, "adding null actionlistener to TimerStack");
+        }
         if (listeners == null) {
             listeners = new EventDispatcher();
         }
-        if (listeners.getListenerCollection() == null
-                || listeners.getListenerCollection().isEmpty()
-                || l != Arrays.asList(listeners.getListenerCollection()).get(0)) {
-            if (listeners.getListenerCollection() != null) { //remove any previous listeners
-                listeners.getListenerCollection().clear(); //works because getListenerCollection() returns the underlying listener list direcly
-            }
-            listeners.addListener(l);
-            TimerInstance2 timerInstance = getCurrentTimerInstanceN();
-            if (false && timerInstance != null && timerInstance.isRunning()) {
-                fireChangedEvent(); //inform new listening screen about status of timer
-            }
-        } //else //do nothing if re-adding same listener
-    }
-
-    public void removeActionListener(ActionListener obj) {
-        if (listeners != null) {
-            listeners.removeListener(obj);
+        ActionListener currentListener = null;
+        if (listeners.getListenerCollection() != null
+                && !listeners.getListenerCollection().isEmpty()
+                && l != (currentListener = (ActionListener) listeners.getListenerCollection().toArray()[0])) {
+//                && l != Arrays.asList(listeners.getListenerCollection().toArray()).get(0)) {
+//            listeners.removeListener(Arrays.asList(listeners.getListenerCollection()).get(0));
+            listeners.removeListener(currentListener); //also removes smallTimer if there
         }
-    }
 
-    private void fireChangedEvent() {
+        listeners.addListener(l);
+
+        if (Config.TEST) {
+            ASSERT.that(listeners.getListenerCollection().size() >= 1, "sth went wrong removing earlier TimerStack listener, listeners=" + listeners.getListenerCollection());
+        }
+        TimerInstance2 timerInstance = getCurrentTimerInstanceN();
+//        if (false && timerInstance != null && timerInstance.isRunning()) {
+        if (false && timerInstance != null && timerInstance.isRunning()) { //this creates infinite loops, refresh form is done when adding listener to TimerStack
+            fireChangedEvent(); //inform new listening screen about status of timer
+        }
+    } //else //do nothing if re-adding same listener
+
+//    public void setActionListenerOLD(ActionListener l) {
+//        if (listeners == null) {
+//            listeners = new EventDispatcher();
+//        }
+//        if (listeners.getListenerCollection() == null
+//                || listeners.getListenerCollection().isEmpty()
+//                || l != Arrays.asList(listeners.getListenerCollection()).get(0)) {
+//            if (listeners.getListenerCollection() != null) { //remove any previous listeners
+//                listeners.getListenerCollection().clear(); //works because getListenerCollection() returns the underlying listener list direcly
+//            }
+//            listeners.addListener(l);
+//            TimerInstance2 timerInstance = getCurrentTimerInstanceN();
+//            if (false && timerInstance != null && timerInstance.isRunning()) {
+//                fireChangedEvent(); //inform new listening screen about status of timer
+//            }
+//        } //else //do nothing if re-adding same listener
+//    }
+//    public void removeActionListenerXXX(ActionListener obj) {
+//        if (listeners != null) {
+//            if (obj instanceof MyForm && ((MyForm) obj).getSmallTimerContainer() != null) { //                ((MyForm)obj).getSmallTimerContN();
+//                ((MyForm) obj).getSmallTimerContainer().remove();
+//                ((MyForm) obj).animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+//            }
+//            listeners.removeListener(obj);
+//        }
+//    }
+    void fireChangedEvent() {
         if (listeners != null) {
             listeners.fireActionEvent(new ActionEvent(this, ACTION_EVENT_CHANGED));
         } else {
@@ -377,6 +440,10 @@ class TimerStack2 implements ActionListener {
         }
     }
 
+    static public Condition getValidItemForTimerCondition() {
+        return (item) -> isValidItemForTimer(item);
+    }
+
     TimerInstance2 getCurrentTimerInstanceN() {
         int size = activeTimers.size();
         if (size > 0) {
@@ -414,15 +481,17 @@ class TimerStack2 implements ActionListener {
 //    }
 //</editor-fold>
     public Item getCurrentlyTimedItemN() {
+//        TimerInstance2 timerInstance = getCurrentTimerInstanceN();
+//        if (timerInstance != null) {
+//            Item timedItem = timerInstance.getTimedItemN();
+//            return timedItem;
+//        }
+//        if (false && Config.TEST) {
+//            ASSERT.that("timedItem should never be null");
+//        }
+//        return null;
         TimerInstance2 timerInstance = getCurrentTimerInstanceN();
-        if (timerInstance != null) {
-            Item timedItem = timerInstance.getTimedItemN();
-            return timedItem;
-        }
-        if (false && Config.TEST) {
-            ASSERT.that("timedItem should never be null");
-        }
-        return null;
+        return timerInstance != null ? timerInstance.getTimedItemN() : null;
     }
 
     public ItemAndListCommonInterface getCurrentlyTimedSourceN() {
@@ -434,6 +503,12 @@ class TimerStack2 implements ActionListener {
         return null;
     }
 
+    /**
+     * get the next item to be timed on the timer stack (may come from an
+     * earlier stopped timerInstance so only the stack knows which one)
+     *
+     * @return
+     */
     public Item getNextComingItemN() {
         Item nextTimedItem = null;
         TimerInstance2 timerInstance = getCurrentTimerInstanceN();
@@ -448,6 +523,7 @@ class TimerStack2 implements ActionListener {
         return nextTimedItem;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public Item getTimedItemNXXX() {
 //        TimerInstance2 timerInstance = getCurrentTimerInstanceN();
 //        if (timerInstance != null) {
@@ -465,6 +541,7 @@ class TimerStack2 implements ActionListener {
 //            return null;
 //        }
 //    }
+//</editor-fold>
     /**
      * true if Timer is already running and timing something (even if paused)
      *
@@ -492,31 +569,51 @@ class TimerStack2 implements ActionListener {
 //        return null;
 //    }
     /**
-     * find next suitable for timer and (re-)start the timer if it was running
-     * when interrupted returns true if timer was started on another item.
+     * advance to next suitable item for timer and (re-)start the timer if it
+     * was running when interrupted.
      */
     void goToNextTimedItem() {
         //find next item to run timer on, most likely either next in current list/project, or the one interrupted
-        Item nextTimedItem = getNextComingItemN();
+        TimerInstance2 currentTimerInstance = getCurrentTimerInstanceN();
+//        currentTimerInstance.updateNEW2(true, true);//, currentTimerInstance.isWrapAround(), MyPrefs.timerAskBeforeRestartingOnList.getBoolean()); //TRUE=>FORCE MOVE TO NEXT
+        currentTimerInstance.updateNEW2(true);//, currentTimerInstance.isWrapAround(), MyPrefs.timerAskBeforeRestartingOnList.getBoolean()); //TRUE=>FORCE MOVE TO NEXT
+        ASSERT.that(currentTimerInstance != null, "currentTimerInstance should never be null here");
+        Item nextTimedItem = currentTimerInstance.getTimedItemN();
+
+        //if currentTimer doesn't have a next, try the next timerInstances in timerstack
         while (nextTimedItem == null && !activeTimers.isEmpty()) { //if no more tasks in current timer, try earlier ones
+            //REMOVE EMPTY TIMER
             TimerInstance2 emptyTimerInstance = activeTimers.remove(activeTimers.size() - 1);
-            emptyTimerInstance.deleteInstance(); //delete empty timerInstance
+            emptyTimerInstance.deleteMe(); //delete empty timerInstance
             ItemAndListCommonInterface source = emptyTimerInstance.getTimerSourceN();
-            String listType = source instanceof Category ? Category.CATEGORY : (source instanceof ItemList ? ItemList.ITEM_LIST : Item.PROJECT);
-            MyForm.showToastBar(Format.f("No more tasks in {0 listtype} \"{1 listname}\"", listType, source.getText()));
+            if (source != null) {
+                String listType = ItemAndListCommonInterface.getTypeString(source);
+                showNoTasksToWorkOnNotificationWhenRelevant(getTimerInstanceN().getTimerSourceN());
+            }
+            //CHECK IF THERE'S STILL AN ITEM TO TIME
+            //NB: all earlier timerInstances were interrupted (so there should be - at least - one current item (if some were changed meanwhile, they should have been updated via their actionListeners
             if (!activeTimers.isEmpty() && (nextTimedItem = getCurrentlyTimedItemN()) != null) {
-                TimerInstance2 timerInstance = getCurrentTimerInstanceN();
-                if (timerInstance.isWasInterruptedWhileRunning() || MyPrefs.timerAutomaticallyStartTimer.getBoolean()) {
-                    timerInstance.setWasRunningWhenInterrupted(false, false); //remove runningWhenInterrupted flag (necessary? will always be set explicitly later?)
-                    timerInstance.startTimer(true, true); //don't save timerInstance, save updated timedItem
-                }
+                currentTimerInstance = getCurrentTimerInstanceN();
             }
         }
-        if (nextTimedItem == null && getTimerInstanceN() != null && getTimerInstanceN().getTimerSourceN() != null) {
-//            showNoTasksToWorkOnNotificationWhenRelevant(getTimerInstanceN().getTimerSourceN().getText());
-            showNoTasksToWorkOnNotificationWhenRelevant(getTimerInstanceN().getTimerSourceN());
+
+        //IF A 
+        if (currentTimerInstance != null) {
+            if (nextTimedItem != null) {
+                if (currentTimerInstance.isWasInterruptedWhileRunning()) {//|| currentTimerInstance.isAutoStartTimer()) {
+                    currentTimerInstance.setWasRunningWhenInterrupted(false, false); //remove runningWhenInterrupted flag (necessary? will always be set explicitly later?)
+                    currentTimerInstance.startTimer(false, true); //don't save timerInstance, save updated timedItem
+                } else if (currentTimerInstance.isAutoStartTimer()) {
+                    currentTimerInstance.startTimer(false, true);
+                }
+            }
+//            DAO.getInstance().saveToParseNow(currentTimerInstance);
+            DAO.getInstance().saveToParseLater(currentTimerInstance);
         }
 
+        if (false) {
+            fireChangedEvent(); //false since fired indirectly by change to TimerInstance
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -615,6 +712,7 @@ class TimerStack2 implements ActionListener {
 //        return MyPrefs.timerAutomaticallyStartTimer.getBoolean();
 //    }
 //</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * go to next task (if any), start Timer if needed, refresh UI. Called in
      * user commands
@@ -669,6 +767,7 @@ class TimerStack2 implements ActionListener {
 //            return false;
 //        }
 //    }
+//</editor-fold>
     private void updateActuelWithElapsedTime(Item item, long elapsedTime) {
 //        item.setActual(item.getActualForProjectTaskItself() + timerInstance.getElapsedTime(), false);
 //        item.addElapsedTimerTimeToActual( elapsedTime); //false
@@ -697,85 +796,130 @@ class TimerStack2 implements ActionListener {
     }
 
     /**
+     * interrupt (pause) the current timer and create a new timerInstance to
+     * time the newTimedItem
      *
      * @param newTimedItemOrProject
-     * @param interruptOrInstantTask
+     * @param interruptTask true if new task is a (real! only) interrupt task
+     * (NOT true for instantTasks), false if the current timer is being paused
+     * while timing something else (if this option is enabled)
      */
-    private void pauseCurrentTimerIfNeeded(TimerInstance2 alreadyRunningTimerInstanceN, Item newTimedItemOrProject, boolean interruptOrInstantTask) {
+    private void interruptCurrentTimer(Item newTimedItemOrProject, ItemAndListCommonInterface timedProjectItemListOrCategoryN, boolean interruptTask) {
 //        Item alreadyTimedItem = getCurrentlyTimedItemN();
-//        TimerInstance2 alreadyRunningTimerInstanceN = getCurrentTimerInstanceN();
-
-        if (alreadyRunningTimerInstanceN != null) {
-            Item alreadyTimedItem = alreadyRunningTimerInstanceN.getTimedItemN();
-            if (alreadyTimedItem != null) {
-                if (true || isInterruptAllowed(newTimedItemOrProject, interruptOrInstantTask)) {
-                    if (alreadyRunningTimerInstanceN.isRunning()) { //pause current timer if running
-                        boolean aPreviousTaskWasInterrupted = true;
-                        alreadyRunningTimerInstanceN.setWasRunningWhenInterrupted(true, true); //pause and save!
-                        if (interruptOrInstantTask) {
-                            newTimedItemOrProject.setTaskInterrupted(alreadyTimedItem); //only set if timer was actually running, otherwise does not qualify as an interrupt but only as an InstantTask
-                            DAO.getInstance().saveToParseNow(newTimedItemOrProject);
-                        }
-//                    MyForm.showToastBar("Already running Timer paused for \"" + previousTimerInstance.getTimedItemN().getText() + "\", will continue after this "
-//                    MyForm.showToastBar("Timer paused for \"" + alreadyTimedItem.getText()
-//                            //                            + "\"\, will continue after this "
-//                            + "\" while timing this "
-//                            + (interruptOrInstantTask && aPreviousTaskWasInterrupted ? "interrupt" : "instant task"));
-                        MyForm.showToastBar(Format.f("Timer paused for \"{0 taskText}\" while timing this {1 taskType}",
-                                alreadyTimedItem.getText(), (interruptOrInstantTask && aPreviousTaskWasInterrupted ? "interrupt" : "instant task")));
-                    }
-                } else { //interrupt not allowed (stop and replace current timer by new one)
-                    if (alreadyTimedItem.isInteruptOrInstantTask() && MyPrefs.timerInterruptTaskCanInterruptAlreadyRunningInterruptTask.getBoolean()) {
-                        showTimerCannotBeStarted(alreadyTimedItem.isInteruptOrInstantTask(), alreadyTimedItem);
-                        return;
-                    }
+        TimerInstance2 alreadyRunningTimerInstanceN = getCurrentTimerInstanceN();
+//        Item alreadyTimedItemN = getTimedItemN();
+        Item alreadyTimedItemN = getCurrentlyTimedItemN();
+        if (alreadyTimedItemN != null) {
+            if (alreadyTimedItemN.isInteruptOrInstantTask() && !MyPrefs.timerInterruptTaskCanInterruptAlreadyRunningInterruptTask.getBoolean()) {
+                showTimerCannotBeStarted(alreadyTimedItemN.isInteruptOrInstantTask(), alreadyTimedItemN);
+                return;
+            } else {
+                if (alreadyRunningTimerInstanceN.isRunning() || MyPrefs.timerSetInterruptedTaskEvenForPausedTimer.getBoolean()) {
+//                    alreadyRunningTimerInstanceN.setWasRunningWhenInterrupted(true, false);
+                    alreadyRunningTimerInstanceN.setWasRunningWhenInterrupted(alreadyRunningTimerInstanceN.isRunning(), false);
+                    alreadyRunningTimerInstanceN.pauseTimer(false, false); //interrupted timerInstance and reference item saved below
                 }
+                newTimedItemOrProject.setTaskInterrupted(alreadyTimedItemN);
+                MyForm.showToastBar(Format.f("Timer paused for \"{0 taskText}\" while timing this {1 taskType}",
+                        alreadyTimedItemN.getText(), (interruptTask ? "interrupt" : "instant task")));
+//                        alreadyTimedItemN.getText(), (newTimedItemOrProject.isInteruptOrInstantTask() ? "interrupt" : "instant task")));
             }
+//            DAO.getInstance().saveToParseNow(alreadyRunningTimerInstanceN);
+            DAO.getInstance().saveToParseLater(alreadyRunningTimerInstanceN);
         }
-    }
 
-    private void pauseCurrentTimerIfNeededOLD(Item newTimedItemOrProject, boolean interruptOrInstantTask) {
-        Item alreadyTimedItem = getCurrentlyTimedItemN();
-        TimerInstance2 alreadyRunningTimerInstance = getCurrentTimerInstanceN();
-
-        if (alreadyRunningTimerInstance != null) {
-            if (isInterruptAllowed(newTimedItemOrProject, interruptOrInstantTask)) {
-                if (alreadyRunningTimerInstance.isRunning()) { //pause current timer if running
-                    boolean aPreviousTaskWasInterrupted = true;
-                    alreadyRunningTimerInstance.setWasRunningWhenInterrupted(true, true); //pause and save!
-                    if (interruptOrInstantTask) {
-                        newTimedItemOrProject.setTaskInterrupted(alreadyTimedItem); //only set if timer was actually running, otherwise does not qualify as an interrupt but only as an InstantTask
-                        DAO.getInstance().saveToParseNow(newTimedItemOrProject);
-                    }
-//                    MyForm.showToastBar("Already running Timer paused for \"" + previousTimerInstance.getTimedItemN().getText() + "\", will continue after this "
-//                    MyForm.showToastBar("Timer paused for \"" + alreadyTimedItem.getText()
-//                            //                            + "\"\, will continue after this "
-//                            + "\" while timing this "
-//                            + (interruptOrInstantTask && aPreviousTaskWasInterrupted ? "interrupt" : "instant task"));
-                    MyForm.showToastBar(Format.f("Timer paused for \"{0 taskText}\" while timing this {1 taskType}", alreadyTimedItem.getText(), (interruptOrInstantTask && aPreviousTaskWasInterrupted ? "interrupt" : "instant task")));
-                }
-            } else { //interrupt not allowed (stop and replace current timer by new one)
-                if (alreadyTimedItem.isInteruptOrInstantTask() && MyPrefs.timerInterruptTaskCanInterruptAlreadyRunningInterruptTask.getBoolean()) {
-                    showTimerCannotBeStarted(alreadyTimedItem.isInteruptOrInstantTask(), alreadyTimedItem);
-                    return;
-                }
-            }
+        TimerInstance2 timerInstance = new TimerInstance2(newTimedItemOrProject, timedProjectItemListOrCategoryN);
+        if (MyPrefs.timerAutomaticallyStartTimer.getBoolean()) {
+            timerInstance.startTimer(true, true); //saved below in addNewTimerInstance
         }
+        addNewTimerInstance(timerInstance, true); //also saves newTimerInstance //NO, no need to save since startTimer will save
     }
 
     /**
+     *
+     * @param alreadyRunningTimerInstanceN
+     * @param newTimedItemOrProject
+     * @param interruptOrInstantTask
+     */
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private void pauseCurrentTimerIfNeededXXX(TimerInstance2 alreadyRunningTimerInstanceN, Item newTimedItemOrProject, boolean interruptOrInstantTask) {
+////        Item alreadyTimedItem = getCurrentlyTimedItemN();
+////        TimerInstance2 alreadyRunningTimerInstanceN = getCurrentTimerInstanceN();
+//
+//        if (alreadyRunningTimerInstanceN != null) {
+//            Item alreadyTimedItem = alreadyRunningTimerInstanceN.getTimedItemN();
+//            if (alreadyTimedItem != null) {
+//                if (true || isInterruptAllowed(newTimedItemOrProject, interruptOrInstantTask)) {
+//                    if (alreadyRunningTimerInstanceN.isRunning()) { //pause current timer if running
+//                        boolean aPreviousTaskWasInterrupted = true;
+//                        alreadyRunningTimerInstanceN.setWasRunningWhenInterrupted(true, true); //pause and save!
+//                        if (interruptOrInstantTask) {
+//                            newTimedItemOrProject.setTaskInterrupted(alreadyTimedItem); //only set if timer was actually running, otherwise does not qualify as an interrupt but only as an InstantTask
+//                            DAO.getInstance().saveToParseNow(newTimedItemOrProject);
+//                        }
+////                    MyForm.showToastBar("Already running Timer paused for \"" + previousTimerInstance.getTimedItemN().getText() + "\", will continue after this "
+////                    MyForm.showToastBar("Timer paused for \"" + alreadyTimedItem.getText()
+////                            //                            + "\"\, will continue after this "
+////                            + "\" while timing this "
+////                            + (interruptOrInstantTask && aPreviousTaskWasInterrupted ? "interrupt" : "instant task"));
+//                        MyForm.showToastBar(Format.f("Timer paused for \"{0 taskText}\" while timing this {1 taskType}",
+//                                alreadyTimedItem.getText(), (interruptOrInstantTask && aPreviousTaskWasInterrupted ? "interrupt" : "instant task")));
+//                    }
+//                } else { //interrupt not allowed (stop and replace current timer by new one)
+//                    if (alreadyTimedItem.isInteruptOrInstantTask() && MyPrefs.timerInterruptTaskCanInterruptAlreadyRunningInterruptTask.getBoolean()) {
+//                        showTimerCannotBeStarted(alreadyTimedItem.isInteruptOrInstantTask(), alreadyTimedItem);
+//                        return;
+//                    }
+//                }
+//            }
+//        }
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private void pauseCurrentTimerIfNeededOLD(Item newTimedItemOrProject, boolean interruptOrInstantTask) {
+//        Item alreadyTimedItem = getCurrentlyTimedItemN();
+//        TimerInstance2 alreadyRunningTimerInstance = getCurrentTimerInstanceN();
+//
+//        if (alreadyRunningTimerInstance != null) {
+//            if (isInterruptAllowed(newTimedItemOrProject, interruptOrInstantTask)) {
+//                if (alreadyRunningTimerInstance.isRunning()) { //pause current timer if running
+//                    boolean aPreviousTaskWasInterrupted = true;
+//                    alreadyRunningTimerInstance.setWasRunningWhenInterrupted(true, true); //pause and save!
+//                    if (interruptOrInstantTask) {
+//                        newTimedItemOrProject.setTaskInterrupted(alreadyTimedItem); //only set if timer was actually running, otherwise does not qualify as an interrupt but only as an InstantTask
+//                        DAO.getInstance().saveToParseNow(newTimedItemOrProject);
+//                    }
+////                    MyForm.showToastBar("Already running Timer paused for \"" + previousTimerInstance.getTimedItemN().getText() + "\", will continue after this "
+////                    MyForm.showToastBar("Timer paused for \"" + alreadyTimedItem.getText()
+////                            //                            + "\"\, will continue after this "
+////                            + "\" while timing this "
+////                            + (interruptOrInstantTask && aPreviousTaskWasInterrupted ? "interrupt" : "instant task"));
+//                    MyForm.showToastBar(Format.f("Timer paused for \"{0 taskText}\" while timing this {1 taskType}", alreadyTimedItem.getText(), (interruptOrInstantTask && aPreviousTaskWasInterrupted ? "interrupt" : "instant task")));
+//                }
+//            } else { //interrupt not allowed (stop and replace current timer by new one)
+//                if (alreadyTimedItem.isInteruptOrInstantTask() && MyPrefs.timerInterruptTaskCanInterruptAlreadyRunningInterruptTask.getBoolean()) {
+//                    showTimerCannotBeStarted(alreadyTimedItem.isInteruptOrInstantTask(), alreadyTimedItem);
+//                    return;
+//                }
+//            }
+//        }
+//    }
+//</editor-fold>
+    /**
      * flit state of current timer between running and paused
      */
-    void flipRunningTimerState() {
+    public void flipRunningTimerState() {
         TimerInstance2 timerInstance = getCurrentTimerInstanceN();
-        if (!timerInstance.isRunning()) {                    //start Timer
-            //UI: It is OK to start timer on a completed task, it will simply add more time to actual
-            timerInstance.startTimer(true, true);
-        } else { //timer running:
-            timerInstance.stopTimer();
+        if (timerInstance != null) {
+            if (!timerInstance.isRunning()) {                    //start Timer
+                //UI: It is OK to start timer on a completed task, it will simply add more time to actual
+                timerInstance.startTimer(true, true);
+            } else { //timer running:
+                timerInstance.pauseTimer(true, true);
+            }
         }
 //        listeners.fireDataChangeEvent(-1, DataChangedListener.CHANGED);
-        fireChangedEvent();
+//        fireChangedEvent();
     }
 
     /**
@@ -823,9 +967,15 @@ class TimerStack2 implements ActionListener {
 //        DAO.getInstance().saveInBackground(newTimerInstance);
         if (saveTimerInstance) {
 //            DAO.getInstance().saveTimerInstanceInBackground(newTimerInstance);
-            DAO.getInstance().saveToParseNow(newTimerInstance);
+//            DAO.getInstance().saveToParseNow(newTimerInstance);
+            DAO.getInstance().saveToParseLater(newTimerInstance);
         }
 //        DAO.getInstance().save(newTimerInstance,false);
+    }
+
+    public void startTimerAndSave(Item timedItemOrProject, ItemAndListCommonInterface timedProjectItemListOrCategoryN, MyForm previousForm,
+            boolean interruptOrInstantTask, boolean startedOnIndividualItemOrProject) {
+        TimerStack2.this.startTimerAndSave(timedItemOrProject, timedProjectItemListOrCategoryN, previousForm, interruptOrInstantTask, startedOnIndividualItemOrProject, false);
     }
 
     /**
@@ -835,11 +985,16 @@ class TimerStack2 implements ActionListener {
      * @param timedProjectItemListOrCategoryN can be null if timer just started
      * on timedItemOrProject
      * @param previousForm
-     * @param interruptOrInstantTask
+     * @param interruptTask true if real interrupt task (created via Time
+     * Interrupt)
      * @param startedOnIndividualItemOrProject
+     * @param doNotStartTimer prevent auto-start of timer, for the case when
+     * timer is started empty and a new item is created when editing
      */
-    public void startTimer(Item timedItemOrProject, ItemAndListCommonInterface timedProjectItemListOrCategoryN, MyForm previousForm,
-            boolean interruptOrInstantTask, boolean startedOnIndividualItemOrProject) {
+    public void startTimerAndSave(Item timedItemOrProject, ItemAndListCommonInterface timedProjectItemListOrCategoryN, MyForm previousForm,
+            boolean interruptTask, boolean startedOnIndividualItemOrProject, boolean doNotStartTimer) {
+
+        boolean userAlreadyConfirmed = false; //used to avoid asking for multiple confirmations from user (see cases below)
 
         //if no source and no item is given, just ignore
         if (timedItemOrProject == null && timedProjectItemListOrCategoryN == null) {
@@ -847,10 +1002,8 @@ class TimerStack2 implements ActionListener {
             return;
         }
 
-        //if starting timer on the same item (and the same source, possibly null if started directly on a single item), do nothing (UI: 
-        if (timedItemOrProject == getCurrentlyTimedItemN()
-                && timedProjectItemListOrCategoryN == getCurrentlyTimedSourceN()) {
-            return;
+        if (!MyPrefs.timerSwipeStartOnlyTimesSelectedTask.getBoolean() && timedProjectItemListOrCategoryN == null) { //NO, clashes with option to start/use owner as default list if nothing else is given
+            timedProjectItemListOrCategoryN = timedItemOrProject.getOwner();
         }
 
         //Check that source is not already being timed (avoid starting timer multiple times on the same source)
@@ -862,7 +1015,8 @@ class TimerStack2 implements ActionListener {
 
         //if timer started on a project, then replace timed project by its first subtask
         if (timedItemOrProject != null && timedItemOrProject.isProject()) {
-            List<Item> subtasks = timedItemOrProject.getLeafTasksAsListN();
+//            List<Item> subtasks = timedItemOrProject.getLeafTasksAsListN();
+            List<Item> subtasks = timedItemOrProject.getLeafTasksForTimerN();
             if (!subtasks.isEmpty()) {
                 if (timedProjectItemListOrCategoryN == null) { //if timer was started just on a project (no source list), then use project as source list for later subtasks
                     timedProjectItemListOrCategoryN = timedItemOrProject;
@@ -873,7 +1027,8 @@ class TimerStack2 implements ActionListener {
 
         //if timedItemOrProject is not given, get first element from source (if one exists)
         if (timedItemOrProject == null && timedProjectItemListOrCategoryN != null) {
-            List<Item> leafTasks = timedProjectItemListOrCategoryN.getLeafTasksAsListN();
+//            List<Item> leafTasks = timedProjectItemListOrCategoryN.getLeafTasksAsListN();
+            List<Item> leafTasks = timedProjectItemListOrCategoryN.getLeafTasksForTimerN();
             if (!leafTasks.isEmpty()) {
                 timedItemOrProject = leafTasks.get(0);
             }
@@ -886,6 +1041,14 @@ class TimerStack2 implements ActionListener {
             return;
         }
 
+        //if starting timer on the same item (and the same source, possibly null if started directly on a single item), do nothing (UI: 
+        if (timedItemOrProject == getCurrentlyTimedItemN()
+                && timedProjectItemListOrCategoryN == getCurrentlyTimedSourceN()) {
+//            MyForm.showToastBar(Format.f("Task \"{0 timedTask}\" is already currently being timed", timedItemOrProject.getText()));
+            MyForm.showToastBar(Format.f("Timer is already running for \"{0 timedTask}\"", timedItemOrProject.getText()));
+            return; //TODO show big timer or toastbar msg
+        }
+
         //if nothing to time, show error message
         if (timedItemOrProject == null) {
 //            ScreenTimer7.showNoTasksToWorkOnNotificationWhenRelevant(timedItemListOrCategoryN.getText());
@@ -894,6 +1057,8 @@ class TimerStack2 implements ActionListener {
             return; //if no timeable item, simply return
         }
 
+        assert timedItemOrProject != null : "timedItem cannot be null at this point";
+
         //if starting timer on the same item and the same source , do nothing
 //        if (timedItemOrProject == getCurrentTimerInstanceN().getTimedItemN()) {
 //            if ((timedItemListOrCategoryN == null
@@ -901,30 +1066,43 @@ class TimerStack2 implements ActionListener {
 //                    && timedItemOrProject == getCurrentTimerInstanceN().getTimedItemN()) {
 //                return;
 //            }
-        //timer already running and interrupting it is not allowed, then show message that timer is already running and return
-        if (isTimerActive() && !MyPrefs.timerMayPauseAlreadyRunningTimer.getBoolean()) {//and setting to allow interrupt
-            String timedElt = timedProjectItemListOrCategoryN != null ? timedProjectItemListOrCategoryN.getText() : timedItemOrProject.getText();
-            MyForm.showToastBar("Timer already running on \"" + timedElt + "\"");
+        //if timedItem is not valid for timer return unless it was started directly on the invalid item and setting is true
+        if (!isValidItemForTimer(timedItemOrProject) && !startedOnIndividualItemOrProject && !MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem.getBoolean()) {
+            //TODO: error message
+            MyForm.showToastBar(Format.f("Task \"{0 invalidTask}\" cannot be timed", timedItemOrProject.getText()));
             return;
         }
 
+        //timer already running and interrupting it is not allowed, then show message that timer is already running and return
+        if (isTimerActive() && !MyPrefs.timerMayPauseAlreadyRunningTimer.getBoolean()) {//and setting to allow interrupt
+            String timedElt = timedProjectItemListOrCategoryN != null ? timedProjectItemListOrCategoryN.getText() : timedItemOrProject.getText();
+            MyForm.showToastBar(Format.f("Timer already running on \"{0 currentlyTimedTask}\"", timedElt));
+            return;
+        }
+
+        //if timer is already running for the same source but another task
+        if (timedProjectItemListOrCategoryN != null
+                && timedProjectItemListOrCategoryN == getCurrentlyTimedSourceN()
+                && timedItemOrProject != null && getCurrentlyTimedItemN() != null && timedItemOrProject != getCurrentlyTimedItemN()) {
+            if (!showDialogTimeAnotherTaskInSameSource(timedProjectItemListOrCategoryN, getCurrentlyTimedItemN(), timedItemOrProject)) {
+                return;
+            } else {
+                userAlreadyConfirmed = true;
+            }
+        }
+
         //timer already running and user does not select to interrupt, then return
-        if (isTimerActive() && MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean()) {
+        if (!userAlreadyConfirmed && isTimerActive() && MyPrefs.timerAskBeforeStartingOnNewElement.getBoolean()) {
 //            if (!ScreenTimer7.showDialogPauseActiveTimer(getCurrentTimerInstanceN(), timedItemListOrCategoryN != null ? timedItemListOrCategoryN : timedItemOrProject)) {
             if (!showDialogPauseActiveTimer(getCurrentTimerInstanceN(), timedProjectItemListOrCategoryN != null ? timedProjectItemListOrCategoryN : timedItemOrProject)) {
                 return;
             }
         }
 
-        //if timedItem is not valid for timer return unless it was started directly on the invalid item and setting is true
-        if (!isValidItemForTimer(timedItemOrProject) && !startedOnIndividualItemOrProject && !MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem.getBoolean()) {
-            return;
-        }
-
         //stop and push previously timed item+context
         //TODO!!! should timerAutomaticallyGotoNextTask and timerAutomaticallyStartTimer be properties at TimerStack level instead if TimerInstance?? Depends also on whether one list/project may interrupt another
 //        this.timeEvenInvalidItem = timeEvenInvalidItem;
-        ASSERT.that(!interruptOrInstantTask || timedProjectItemListOrCategoryN == null, "cannot have an interrupt task with a list");
+        ASSERT.that(!interruptTask || timedProjectItemListOrCategoryN == null, "cannot have an interrupt task with a list");
         ASSERT.that(timedProjectItemListOrCategoryN != null || timedItemOrProject != null, "cannot launch timer if both list and item are null");
 
         //Start Timer on *new* list/item (or interrupt running timer if conditions are given)
@@ -937,32 +1115,45 @@ class TimerStack2 implements ActionListener {
 //                    && (timedItemOrProject != null && !isValidItemForTimer(timedItemOrProject))
 //                    && MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem.getBoolean();
         TimerInstance2 timerInstance = getCurrentTimerInstanceN();
-        if (timerInstance == null) {
+        if (timerInstance == null) { //eg when starting Timer from main, then create an item inside the timer
             timerInstance = new TimerInstance2(timedItemOrProject, timedProjectItemListOrCategoryN);
-            if (MyPrefs.timerAutomaticallyStartTimer.getBoolean()) {
-                timerInstance.startTimer(false, true); //saved below in addNewTimerInstance
+//            if (MyPrefs.timerAutomaticallyStartTimer.getBoolean() && !doNotStartTimer) {
+            if (timerInstance.isAutoStartTimer() && !doNotStartTimer) {
+                timerInstance.startTimer(false, false); //timerInstance and timedItem saved below in addNewTimerInstance
             }
-            addNewTimerInstance(timerInstance, true); //also saves newTimerInstance //NO, no need to save since startTimer will save
-        } else {
-            if (timedProjectItemListOrCategoryN == timerInstance.getTimerSourceN()) {
-                //if starting timer on the same source but for another element, replace with new
+            addNewTimerInstance(timerInstance, true); //also saves newTimerInstance AND timedItem (if dirty and referenced from timerInstance) //NO, no need to save since startTimer will save
+//        } else if (timerInstance.getTimedItemN() == null) { //a timerInstance already exists, but without a timed item (e.g. Timer started directly from main)
+//            timerInstance.setTimedItems(timedItemOrProject, true); //set new timedItem (and update nextComing), but keep source
+//            if (MyPrefs.timerAutomaticallyStartTimer.getBoolean()) {
+//                timerInstance.startTimer(true, true);
+//            }
+        } else { //a timerInstance already exists, could be same source, either running or paused
+            //if starting timer on the same source but for another element, stop timer for old item and save it, and replace with new
+            if (timedProjectItemListOrCategoryN != null && timedProjectItemListOrCategoryN == timerInstance.getTimerSourceN()) {
 //                newTimerInstance = getCurrentTimerInstanceN();
+                Item alreadyTimedItemN = getCurrentlyTimedItemN();
                 timerInstance.stopTimerOnTimedItemAndUpdateActualsAndSave(false, true);
-                pauseCurrentTimerIfNeeded(timerInstance, timedItemOrProject, interruptOrInstantTask);
+//                pauseCurrentTimerIfNeeded(timerInstance, timedItemOrProject, interruptOrInstantTask);
+                timerInstance.setTimedItems(timedItemOrProject, true); //set new timedItem (and update nextComing), but keep source
                 if (MyPrefs.timerAutomaticallyStartTimer.getBoolean()) {
-                    timerInstance.startTimer(true, true); //saved below in addNewTimerInstance
+                    timerInstance.startTimer(true, true);
+                    MyForm.showToastBar(Format.f("Timer stopped for \"{0 oldTaskText}\" and started for \"{1 newTaskText}\"", alreadyTimedItemN.getText(), timedItemOrProject.getText()));
+                } else {
+                    MyForm.showToastBar(Format.f("Timer stopped for \"{0 oldTaskText}\" and switched to \"{1 newTaskText}\"", alreadyTimedItemN.getText(), timedItemOrProject.getText()));
                 }
-                timerInstance.setTimedItem(timedItemOrProject);
 //                if(MyPrefs.timerAutomaticallyStartTimer.getBoolean())
 //                newTimerInstance.startTimer(true, true);
-            } else {
-                timerInstance.stopTimerOnTimedItemAndUpdateActualsAndSave(true, true);
-                pauseCurrentTimerIfNeeded(timerInstance, timedItemOrProject, interruptOrInstantTask);
-                timerInstance = new TimerInstance2(timedItemOrProject, timedProjectItemListOrCategoryN);
-                if (MyPrefs.timerAutomaticallyStartTimer.getBoolean()) {
-                    timerInstance.startTimer(true, true); //saved below in addNewTimerInstance
+            } else { //'normal' interrupt (pause and save current timer, start timing new item)
+//                timerInstance.stopTimerOnTimedItemAndUpdateActualsAndSave(true, true);
+//                pauseCurrentTimerIfNeeded(timerInstance, timedItemOrProject, interruptOrInstantTask);
+//                timerInstance = new TimerInstance2(timedItemOrProject, timedProjectItemListOrCategoryN);
+//                if (MyPrefs.timerAutomaticallyStartTimer.getBoolean()) {
+//                    timerInstance.startTimer(true, true); //saved below in addNewTimerInstance
+//                }
+//                addNewTimerInstance(timerInstance, true); //also saves newTimerInstance //NO, no need to save since startTimer will save
+                if (true || isInterruptAllowed(timedItemOrProject, interruptTask)) {
+                    interruptCurrentTimer(timedItemOrProject, timedProjectItemListOrCategoryN, interruptTask);
                 }
-                addNewTimerInstance(timerInstance, true); //also saves newTimerInstance //NO, no need to save since startTimer will save
             }
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -978,6 +1169,8 @@ class TimerStack2 implements ActionListener {
 //</editor-fold>
         fireChangedEvent();
 //            DAO.getInstance().saveToParseNow(timerInstance);
+        DAO.getInstance().saveToParseLater(timerInstance);
+        DAO.getInstance().triggerParseUpdate();
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
     //            //show big timer
@@ -1049,10 +1242,9 @@ class TimerStack2 implements ActionListener {
      * @param previousForm
      * @param doneAction
      */
-    private void startTimerXXX(Item timedItemOrProject, ItemList itemList, MyForm previousForm, boolean interruptOrInstantTask) {
-        startTimer(timedItemOrProject, itemList, previousForm, interruptOrInstantTask, false);
-    }
-
+//    private void startTimerXXX(Item timedItemOrProject, ItemList itemList, MyForm previousForm, boolean interruptOrInstantTask) {
+//        startTimerAndSave(timedItemOrProject, itemList, previousForm, interruptOrInstantTask, false);
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void startTimerXXX(Item timedItemOrProject, ItemList itemList, MyForm previousForm, boolean interruptOrInstantTask, boolean timeEvenInvalidItem) {
 //
@@ -1168,31 +1360,27 @@ class TimerStack2 implements ActionListener {
     //    }
     //</editor-fold>
 //    public void startTimerOnItem(Item timedItem, MyForm previousForm, boolean startedOnIndividualItemOrProject) {
-    public void startTimerOnItemXXX(Item timedItem, MyForm previousForm) {
-        startTimer(timedItem, null, previousForm, false, true);
-    }
-
-    public void startTimerOnItemListXXX(ItemList itemList, MyForm previousForm) {
-        startTimer(null, itemList, previousForm, false, false);
-        //TODO set autostart!
-    }
-
-    public void startTimerOnItemInItemListXXX(Item item, ItemList itemList, MyForm previousForm) {
-        startTimer(item, itemList, previousForm, false, true);
-        //TODO set autostart!
-    }
-
-    public void startTimerOnItemOrItemListXXX(ItemAndListCommonInterface itemOrItemList, MyForm previousForm) {
-        if (itemOrItemList instanceof Item) {
-            startTimerOnItemXXX((Item) itemOrItemList, previousForm);
-        } else if (itemOrItemList instanceof ItemList) {
-            startTimerOnItemListXXX((ItemList) itemOrItemList, previousForm);
-        }
-    }
-
+//    public void startTimerOnItemXXX(Item timedItem, MyForm previousForm) {
+//        startTimerAndSave(timedItem, null, previousForm, false, true);
+//    }
+//    public void startTimerOnItemListXXX(ItemList itemList, MyForm previousForm) {
+//        startTimerAndSave(null, itemList, previousForm, false, false);
+//        //TODO set autostart!
+//    }
+//    public void startTimerOnItemInItemListXXX(Item item, ItemList itemList, MyForm previousForm) {
+//        startTimerAndSave(item, itemList, previousForm, false, true);
+//        //TODO set autostart!
+//    }
+//    public void startTimerOnItemOrItemListXXX(ItemAndListCommonInterface itemOrItemList, MyForm previousForm) {
+//        if (itemOrItemList instanceof Item) {
+//            startTimerOnItemXXX((Item) itemOrItemList, previousForm);
+//        } else if (itemOrItemList instanceof ItemList) {
+//            startTimerOnItemListXXX((ItemList) itemOrItemList, previousForm);
+//        }
+//    }
     public void startInterruptOrInstantTask(Item interruptOrInstantTask, MyForm previousForm) {
         ASSERT.that(interruptOrInstantTask.isInteruptOrInstantTask());
-        startTimer(interruptOrInstantTask, null, previousForm, true, false);
+        startTimerAndSave(interruptOrInstantTask, null, previousForm, true, false);
         //TODO set autostart!
     }
 
@@ -1565,14 +1753,34 @@ class TimerStack2 implements ActionListener {
     void stopAllTimers() {
         //exit timer altogether: save each timed item, pop/delete all timers
 //        while (TimerStack.getInstance().activeTimers.size() > 0) {
-        if (activeTimers.size() > 0) {
-            while (activeTimers.size() > 0) {
-                TimerInstance2 timerInstance = activeTimers.remove(activeTimers.size() - 1); //pop last timerInstance since it has no more tasks
-                timerInstance.stopTimerOnTimedItemAndUpdateActualsAndSave(false, true);//dont't save timerInstance since deleted below
-                timerInstance.deleteInstance();
-            }
-            fireChangedEvent();
+//        if (activeTimers.size() > 0) {
+        while (activeTimers.size() > 0) {
+            TimerInstance2 timerInstance = activeTimers.remove(activeTimers.size() - 1); //pop last timerInstance since it has no more tasks
+            timerInstance.stopTimerOnTimedItemAndUpdateActualsAndSave(false, true);//dont't save timerInstance since deleted below
+            timerInstance.deleteMe();
         }
+//            fireChangedEvent();
+//        }
+    }
+
+    void stopCurrentTimerAndGotoNextOLD() {
+        TimerInstance2 timerInstance = null;//getCurrentTimerInstanceN();
+        if (activeTimers.size() > 0) {
+            timerInstance = activeTimers.remove(activeTimers.size() - 1); //pop last timerInstance since it has no more tasks
+        }
+        timerInstance.stopTimerOnTimedItemAndUpdateActualsAndSave(false, true);//dont't save timerInstance since deleted below
+        timerInstance.deleteMe();
+//        fireChangedEvent();
+    }
+
+    void stopCurrentTimerAndGotoNext() {
+        TimerInstance2 timerInstance = getCurrentTimerInstanceN();//getCurrentTimerInstanceN();
+        if (timerInstance != null) {
+            timerInstance.stopTimerOnTimedItemAndUpdateActualsAndSave(false, true);//dont't save timerInstance since deleted below
+            activeTimers.remove(timerInstance); //pop last timerInstance
+            timerInstance.deleteMe();
+        }
+//        fireChangedEvent();
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 
@@ -2009,12 +2217,12 @@ class TimerStack2 implements ActionListener {
             int keyEvent = evt.getKeyEvent(); //use the keyEvent to carry the actual event
 
             if (keyEvent == TimerInstance2.ACTION_EVENT_REMOVED) {
-                TimerInstance2 currentTimerInstance = getCurrentTimerInstanceN();
                 activeTimers.remove(actionSource); //no need to save anything since timerInstance is deleted in Parse server and won't get reloaded if app is restarted
-                if (currentTimerInstance != null) {
-                    if (actionSource == currentTimerInstance) {
+                TimerInstance2 nextTimerInstance = getCurrentTimerInstanceN();
+                if (nextTimerInstance != null) {
+                    if (actionSource == nextTimerInstance) {
                         TimerInstance2 newTimerInstance = getCurrentTimerInstanceN();
-                        if (newTimerInstance!=null&&newTimerInstance.isWasInterruptedWhileRunning()) {
+                        if (newTimerInstance != null && newTimerInstance.isWasInterruptedWhileRunning()) {
                             newTimerInstance.startTimer(true, true); //restart previously interrupted timer and save timerInstance and timedItem (with timeStamp)
                         }
                     } else {
@@ -2049,6 +2257,17 @@ class TimerStack2 implements ActionListener {
             }
         }
         return 0;
+    }
+
+    public void saveAll() {
+        List<ParseObject> dirtyTimers = new ArrayList();
+        for (TimerInstance2 timerInstance : activeTimers) {
+            if (timerInstance.isDirty()) {
+                dirtyTimers.add(timerInstance);
+            }
+        }
+//        DAO.getInstance().saveToParseNow(dirtyTimers);
+        DAO.getInstance().saveToParseLater(dirtyTimers);
     }
 
 }

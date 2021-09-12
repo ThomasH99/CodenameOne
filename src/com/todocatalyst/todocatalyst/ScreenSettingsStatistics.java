@@ -92,21 +92,21 @@ public class ScreenSettingsStatistics extends ScreenSettingsCommon {
 //                    ScreenStatistics2.GroupOn2.getNames(), ScreenStatistics2.GroupOn2.getDisplayNames(), false, true, setupsecondGroupByAL);
             firstGroupBy = makeSettingEnumAsCompGroup(parseIdMap2, MyPrefs.statisticsFirstGroupBy,
                     ScreenStatistics2.GroupOn2.getNames(), ScreenStatistics2.GroupOn2.getDisplayNames(), false, true, setupsecondGroupByAL);
-            content.add(layoutN(null, MyPrefs.statisticsFirstGroupBy.getFieldScription(), firstGroupBy, MyPrefs.statisticsFirstGroupBy.getHelpText(), true));
+            content.add(layoutN(null, MyPrefs.statisticsFirstGroupBy.getFieldDescription(), firstGroupBy, MyPrefs.statisticsFirstGroupBy.getHelpText(), true));
 
             boolean noneSelected = firstGroupBy.getSelectedIndex() == 0; //'none' selected
             if (noneSelected) { //even if none selected we create a second group setting to know where to insert a later secondGroup setting
                 secondGroupBy = makeSettingEnumAsCompGroup(parseIdMap2, MyPrefs.statisticsSecondGroupBy,
                         ScreenStatistics2.GroupOn2.getSecondLevelGroupingNames(0),
                         ScreenStatistics2.GroupOn2.getSecondLevelGroupingDisplayNames(0), false, true, null);
-                content.add(layoutN(null, MyPrefs.statisticsSecondGroupBy.getFieldScription(), secondGroupBy, MyPrefs.statisticsSecondGroupBy.getHelpText(), true));
+                content.add(layoutN(null, MyPrefs.statisticsSecondGroupBy.getFieldDescription(), secondGroupBy, MyPrefs.statisticsSecondGroupBy.getHelpText(), true));
                 secondGroupByParent = secondGroupBy.getParent();
                 secondGroupByParent.getParent().setHidden(noneSelected); //hide/show container with second field
             } else {
                 secondGroupBy = makeSettingEnumAsCompGroup(parseIdMap2, MyPrefs.statisticsSecondGroupBy,
                         ScreenStatistics2.GroupOn2.getSecondLevelGroupingNames(firstGroupBy.getSelectedIndex()),
                         ScreenStatistics2.GroupOn2.getSecondLevelGroupingDisplayNames(firstGroupBy.getSelectedIndex()), false, true, null);
-                content.add(layoutN(null, MyPrefs.statisticsSecondGroupBy.getFieldScription(), secondGroupBy, MyPrefs.statisticsSecondGroupBy.getHelpText(), true));
+                content.add(layoutN(null, MyPrefs.statisticsSecondGroupBy.getFieldDescription(), secondGroupBy, MyPrefs.statisticsSecondGroupBy.getHelpText(), true));
                 secondGroupByParent = secondGroupBy.getParent();
             }
 

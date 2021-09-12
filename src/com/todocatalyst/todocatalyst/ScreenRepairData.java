@@ -46,7 +46,7 @@ public class ScreenRepairData extends MyForm {
         container.removeAll();
 //        buildContentPane(getContentPane());
         buildContentPane(container);
-        restoreKeepPos();
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 
@@ -104,6 +104,13 @@ public class ScreenRepairData extends MyForm {
         })));
 
         content.add(new Button(Command.create("Clean up all data inconsistencies", null, (e) -> {
+            if (Dialog.show("WARNING", "This will log AND repair all data inconsistencies", "OK", "Cancel")) {
+                DAO.getInstance().cleanUpAllBadObjectReferences(true);
+//                Log.sendLog();
+                DAO.emailLog(null);
+            }
+        })));
+        content.add(new Button(Command.create("Align estimates", null, (e) -> {
             if (Dialog.show("WARNING", "This will log AND repair all data inconsistencies", "OK", "Cancel")) {
                 DAO.getInstance().cleanUpAllBadObjectReferences(true);
 //                Log.sendLog();

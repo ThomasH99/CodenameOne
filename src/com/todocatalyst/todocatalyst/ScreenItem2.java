@@ -195,13 +195,13 @@ public class ScreenItem2 extends MyForm {
         return (isTemplate ? "TEMPLATE: " : "") + title;
     }
 
-    ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues, String helpText) { //throws ParseException, IOException {
+    ScreenItem2(Item item, MyForm previousForm, Runnable doneActionN, boolean templateEditMode, SaveEditedValuesLocally previousValues, String helpText) { //throws ParseException, IOException {
 //        this(item, previousForm, doneAction, null, templateEditMode, previousValues, false);
-        this(item, previousForm, doneAction, null, templateEditMode, previousValues, !previousForm.isTriggerSaveOnExit(), helpText);
+        this(item, previousForm, doneActionN, null, templateEditMode, previousValues, !previousForm.isTriggerSaveOnExit(), helpText);
     }
 
-    ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues) { //throws ParseException, IOException {
-        this(item, previousForm, doneAction, doneAction, templateEditMode, previousValues, templateEditMode, null);
+    ScreenItem2(Item item, MyForm previousForm, Runnable doneActionN, boolean templateEditMode, SaveEditedValuesLocally previousValues) { //throws ParseException, IOException {
+        this(item, previousForm, doneActionN, doneActionN, templateEditMode, previousValues, templateEditMode, null);
     }
 
 //    ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, boolean templateEditMode, SaveEditedValuesLocally previousValues, boolean triggerSaveOnExit) { //throws ParseException, IOException {
@@ -215,14 +215,14 @@ public class ScreenItem2 extends MyForm {
         this(item, previousForm, doneAction, cancelAction, templateEditMode, previousValuesN, !previousForm.isTriggerSaveOnExit(), null);
     }
 
-    private ScreenItem2(Item item, MyForm previousForm, Runnable doneAction, Runnable cancelAction, boolean templateEditMode,
+    private ScreenItem2(Item item, MyForm previousForm, Runnable doneActionN, Runnable cancelAction, boolean templateEditMode,
             SaveEditedValuesLocally previousValuesN, boolean triggerSaveOnExit, String helpText) { //throws ParseException, IOException {
 //        super("Task", previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction);
 //        super(getScreenTitle(item.isTemplate(), item.getText()), previousForm, doneAction);
 //        super((item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, cancelAction);
 //        super(null, (item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, cancelAction, helpText, null); //cancelAction handled below
-        super(null, (item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneAction, cancelAction, helpText); //cancelAction handled below
+        super(null, (item.isTemplate() ? "TEMPLATE: " : "") + item.getText(), previousForm, doneActionN, cancelAction, helpText); //cancelAction handled below
         setUniqueFormId("ScreenEditItem");
         increaseCallDepth();
 //        FILE_LOCAL_EDITED_ITEM= getTitle()+"- EDITED ITEM";
@@ -377,6 +377,8 @@ public class ScreenItem2 extends MyForm {
 //            DAO.getInstance().triggerParseUpdate();
 //        }
 //        itemOrg.updateRepeatRule(); //only update RR on exit, after all fields are updated, templates added, ...
+//if(dueDate!=null&&dueDate.isEditing())
+//    dueDate.stopEditing(onFinish);
         if (itemOrg.hasUserModifiedData()) { //update Edited date before anything else
 //        if (userModifiedData) {
             itemOrg.setEditedDateToNow();
@@ -1961,7 +1963,10 @@ public class ScreenItem2 extends MyForm {
 //                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l), null);
         initField(Item.PARSE_REMAINING_EFFORT_TOTAL, remainingEffort,
                 //                () -> item.getRemaining(false), 
-                () -> itemCopy.getRemainingForTaskItselfFromParse(),
+//                () -> itemCopy.getRemainingForTaskItselfFromParse(),
+//                (l) -> itemOrg.setRemainingForTaskItself((long) l, true),
+//                () -> itemCopy.getRemainingForTaskItselfFromParse(),
+                () -> itemCopy.getRemainingForTaskItself(),
                 (l) -> itemOrg.setRemainingForTaskItself((long) l, true),
                 () -> remainingEffort.getDuration(),
                 (l) -> remainingEffort.setDuration((long) l));
@@ -3099,34 +3104,37 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         boolean isDone = itemOrg.isDone();
 
         //REMAINING************
-        if (isProject) {
+        if (!isTemplate) {
+            if (isProject) {
 //            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
-            timeCont.addComponent(layoutN(Item.PARSE_REMAINING_EFFORT_FOR_SUBTASKS_VIRT, Item.EFFORT_REMAINING_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getRemainingForSubtasks()), "ScreenItemValueUneditable"),
-                    Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconRemainingSubCust, Icons.myIconFont)); //hack to insert after alarmDate field
-        }
+                timeCont.addComponent(layoutN(Item.PARSE_REMAINING_EFFORT_FOR_SUBTASKS_VIRT, Item.EFFORT_REMAINING_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getRemainingForSubtasks()), "ScreenItemValueUneditable"),
+                        Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconRemainingSubCust, Icons.myIconFont)); //hack to insert after alarmDate field
+            }
 //TODO: makes no sense to show remaining for project itself, just confusing??
-        String remainingTxt = isProject ? Item.EFFORT_REMAINING_PROJECT : Item.EFFORT_REMAINING;
-        String remainingHelpTxt = isProject ? Item.EFFORT_REMAINING_PROJECT_HELP : Item.EFFORT_REMAINING_HELP;
-        String remainingParseId = isProject ? Item.PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF : Item.PARSE_REMAINING_EFFORT_TOTAL;
-        timeCont.add(layoutN(remainingParseId, remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hideIcons ? null : (isProject ? Icons.iconRemainingPrjCust : Icons.iconRemainingCust), Icons.myIconFont));
+            String remainingTxt = isProject ? Item.EFFORT_REMAINING_PROJECT : Item.EFFORT_REMAINING;
+            String remainingHelpTxt = isProject ? Item.EFFORT_REMAINING_PROJECT_HELP : Item.EFFORT_REMAINING_HELP;
+            String remainingParseId = isProject ? Item.PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF : Item.PARSE_REMAINING_EFFORT_TOTAL;
+            timeCont.add(layoutN(remainingParseId, remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hideIcons ? null : (isProject ? Icons.iconRemainingPrjCust : Icons.iconRemainingCust), Icons.myIconFont));
 //        timeCont.add(layoutN(remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hideIcons ? null : (isProject ? Icons.iconRemainingPrjCust : Icons.iconRemainingCust)));
-        if (MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean()) { //only show format as inherited if default value is turned on
-            updateUIIDForInherited(remainingEffort, Item.isRemainingDefaultValue(remainingEffort.getDuration()));
+            if (MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean()) { //only show format as inherited if default value is turned on
+                updateUIIDForInherited(remainingEffort, Item.isRemainingDefaultValue(remainingEffort.getDuration()));
+            }
         }
 //                MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean());
 //                && remainingEffort.getDuration() == MyPrefs.estimateDefaultValueForZeroEstimatesInMinutes.getInt() * MyDate.MINUTE_IN_MILLISECONDS); //NB! MUST do *after* layoutN() which sets the UIID
 
         //ACTUAL************
-        //if project, show actual for subtasks
-        if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
-            timeCont.add(layoutN(Item.PARSE_ACTUAL_EFFORT_SUBTASKS_VIRT, Item.EFFORT_ACTUAL_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getActualForSubtasks()), "ScreenItemValueUneditable"),
-                    Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconActualCurrentSubCust, Icons.myIconFont));
-        }
+        if (!isTemplate) { //don't even show non-editable actual in template, confusing
+            //if project, show actual for subtasks
+            if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
+                timeCont.add(layoutN(Item.PARSE_ACTUAL_EFFORT_SUBTASKS_VIRT, Item.EFFORT_ACTUAL_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getActualForSubtasks()), "ScreenItemValueUneditable"),
+                        Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconActualCurrentSubCust, Icons.myIconFont));
+            }
 
-        //if single task, show picker with text for single task, if project show picker w text for ProjectTaskItself
-        String actualTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF : Item.EFFORT_ACTUAL;
-        String actualHelpTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF_HELP : Item.EFFORT_ACTUAL_HELP;
-        String actualParseId = isProject ? Item.PARSE_ACTUAL_EFFORT_TASK_ITSELF : Item.PARSE_ACTUAL_EFFORT;
+            //if single task, show picker with text for single task, if project show picker w text for ProjectTaskItself
+            String actualTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF : Item.EFFORT_ACTUAL;
+            String actualHelpTxt = isProject ? Item.EFFORT_ACTUAL_PROJECT_TASK_ITSELF_HELP : Item.EFFORT_ACTUAL_HELP;
+            String actualParseId = isProject ? Item.PARSE_ACTUAL_EFFORT_TASK_ITSELF : Item.PARSE_ACTUAL_EFFORT;
 
 //        MyDurationPicker actualEffort;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3140,53 +3148,53 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //                () -> actualEffort.getDuration(), (ms) -> actualEffort.setDuration((long) ms));
 //</editor-fold>
 //        actualEffort = new MyDurationPicker( itemLS.getActualEffortProjectTaskItself() );
-        actualEffortTask = new MyDurationPicker();
+            actualEffortTask = new MyDurationPicker();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        initField(Item.PARSE_ACTUAL_EFFORT, actualEffort,
 //                () -> item.getActualEffortProjectTaskItself() / MyDate.MINUTE_IN_MILLISECONDS,
 //                (min) -> item.setActualEffort(((long) min) * MyDate.MINUTE_IN_MILLISECONDS),
 //                () -> actualEffort.getDuration(), (ms) -> actualEffort.setDuration((long) ms));
 //</editor-fold>
-        if (false) {
-            actualEffortTask.addActionListener((evt) -> {
+            if (false) {
+                actualEffortTask.addActionListener((evt) -> {
 //            status.setStatus(Item.updateStatusOnActualChange(item.getActual(), actualEffort.getDuration(), item.getStatus(), status.getStatus(), item.areAnySubtasksOngoingOrDone()));
-                if (actualEffortTask.getDuration() > 0) { //if user has changed actual
-                    if (status.getStatus() == ItemStatus.CREATED) { //only if Created, otherwiwe e.g. DONE may get set back to Ongoing!
-                        status.setStatus(ItemStatus.ONGOING, false);
-                    }
-                    if (startedOnDate.getDate().getTime() == 0) {
-                        startedOnDate.setDate(new MyDate());
-                    }
-                } else { // actual effort set to 0
-                    if (itemOrg.isProject() && !itemOrg.areAnySubtasksOngoingOrDone()) { //UI: OK that a project is set ongoing when time is recorded directly on it,even if subtasks are not //if some subtasks are ongoing or done
-                        if (status.getStatus() == ItemStatus.ONGOING) {
-                            status.setStatus(ItemStatus.CREATED, false);
+                    if (actualEffortTask.getDuration() > 0) { //if user has changed actual
+                        if (status.getStatus() == ItemStatus.CREATED) { //only if Created, otherwiwe e.g. DONE may get set back to Ongoing!
+                            status.setStatus(ItemStatus.ONGOING, false);
                         }
+                        if (startedOnDate.getDate().getTime() == 0) {
+                            startedOnDate.setDate(new MyDate());
+                        }
+                    } else { // actual effort set to 0
+                        if (itemOrg.isProject() && !itemOrg.areAnySubtasksOngoingOrDone()) { //UI: OK that a project is set ongoing when time is recorded directly on it,even if subtasks are not //if some subtasks are ongoing or done
+                            if (status.getStatus() == ItemStatus.ONGOING) {
+                                status.setStatus(ItemStatus.CREATED, false);
+                            }
 //                    if (startedOnDate.getDate().getTime() == 0) 
-                        startedOnDate.setDate(new MyDate(0)); //TODO: always set back to zero? What is set manually for some other reason?
-                    } else {
-                        if (status.getStatus() == ItemStatus.ONGOING) {
-                            status.setStatus(ItemStatus.CREATED, false); //if setting actual to 0, set status back to Created
+                            startedOnDate.setDate(new MyDate(0)); //TODO: always set back to zero? What is set manually for some other reason?
+                        } else {
+                            if (status.getStatus() == ItemStatus.ONGOING) {
+                                status.setStatus(ItemStatus.CREATED, false); //if setting actual to 0, set status back to Created
+                            }
+                            startedOnDate.setDate(new MyDate(0));
                         }
-                        startedOnDate.setDate(new MyDate(0));
                     }
-                }
-                status.repaint();
-            });
+                    status.repaint();
+                });
+            }
+
+            initField(Item.PARSE_ACTUAL_EFFORT_TASK_ITSELF, actualEffortTask,
+                    () -> itemCopy.getActualForTaskItself(),
+                    (l3) -> itemOrg.setActualForTaskItself((long) l3, false),
+                    () -> actualEffortTask.getDuration(),
+                    (ms) -> actualEffortTask.setDuration((long) ms));
+
+            timeCont.add(layoutN(actualParseId, actualTxt, isTemplate ? null : actualEffortTask, actualHelpTxt,
+                    //                hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconActualEffort),Icons.myIconFont));
+                    hideIcons ? null : (isDone
+                                    ? (isProject ? Icons.iconActualFinalPrjCust : Icons.iconActualFinalCust)
+                                    : (isProject ? Icons.iconActualCurrentPrjCust : Icons.iconActualCurrentCust)), Icons.myIconFont));
         }
-
-        initField(Item.PARSE_ACTUAL_EFFORT_TASK_ITSELF, actualEffortTask,
-                () -> itemCopy.getActualForTaskItself(),
-                (l3) -> itemOrg.setActualForTaskItself((long) l3, false),
-                () -> actualEffortTask.getDuration(),
-                (ms) -> actualEffortTask.setDuration((long) ms));
-
-        timeCont.add(layoutN(actualParseId, actualTxt, isTemplate ? null : actualEffortTask, actualHelpTxt,
-                //                hideIcons ? null : (isProject ? Icons.iconEffortProject : Icons.iconActualEffort),Icons.myIconFont));
-                hideIcons ? null : (isDone
-                                ? (isProject ? Icons.iconActualFinalPrjCust : Icons.iconActualFinalCust)
-                                : (isProject ? Icons.iconActualCurrentPrjCust : Icons.iconActualCurrentCust)), Icons.myIconFont));
-
         //ESTIMATE************
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
 //            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
@@ -3351,7 +3359,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        timeCont.add(new Label(Item.HIDE_UNTIL)).add(addDatePickerWithClearButton(hideUntil));
 //        timeCont.add(new Label(Item.HIDE_UNTIL)).add(hideUntil.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.HIDE_UNTIL, hideUntil.makeContainerWithClearButton(), "**"));
-        timeCont.add(layoutN(Item.PARSE_HIDE_UNTIL_DATE, Item.HIDE_UNTIL, hideUntil, Item.HIDE_UNTIL_HELP, hideIcons ? null : Icons.iconHideUntilDate));
+        timeCont.add(layoutN(Item.PARSE_HIDE_UNTIL_DATE, Item.HIDE_UNTIL, hideUntil, Item.HIDE_UNTIL_HELP, hideIcons ? null : Icons.iconHideUntilDateCust,Icons.myIconFont));
 
         if (false) { //De-activated for now
 //            MyDatePicker expireByDate = new MyDatePicker(parseIdMap2, () -> itemLS.getExpiresOnDateD(), (d) -> item.setExpiresOnDateD(d)); // "<auto-cancel on date>", 
@@ -3863,12 +3871,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (true || !isTemplate) {
             if (itemOrg.isProject()) {
                 Label startedOnDateLabel = new Label(itemOrg.getStartedOnDateD().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getStartedOnDateD()));
-                statusCont.add(layoutN(Item.PARSE_STARTED_ON_DATE_SUBTASKS_VIRT, Item.STARTED_ON_DATE_SUBTASKS, startedOnDateLabel, Item.STARTED_ON_DATE_HELP, true, hideIcons ? null : Icons.iconStartedOnDate));
+                statusCont.add(layoutN(Item.PARSE_STARTED_ON_DATE_SUBTASKS_VIRT, Item.STARTED_ON_DATE_SUBTASKS, startedOnDateLabel, Item.STARTED_ON_DATE_HELP, true, hideIcons ? null : Icons.iconStartedOnDateCust,Icons.myIconFont));
             } else {
                 initField(Item.PARSE_STARTED_ON_DATE, startedOnDate, () -> itemOrg.getStartedOnDateD(), (s) -> itemOrg.setStartedOnDate((Date) s, true),
                         () -> startedOnDate.getDate(), (s) -> startedOnDate.setDate((Date) s));
 //            statusCont.add(layoutN(Item.STARTED_ON_DATE, isTemplate?new Label(""):startedOnDate, Item.STARTED_ON_DATE_HELP, hide ? null : Icons.iconStartedOnDate)); //"click to set date when started"
-                statusCont.add(layoutN(Item.PARSE_STARTED_ON_DATE, Item.STARTED_ON_DATE, isTemplate ? null : startedOnDate, Item.STARTED_ON_DATE_HELP, hideIcons ? null : Icons.iconStartedOnDate)); //"click to set date when started"
+                statusCont.add(layoutN(Item.PARSE_STARTED_ON_DATE, Item.STARTED_ON_DATE, isTemplate ? null : startedOnDate, Item.STARTED_ON_DATE_HELP, hideIcons ? null : Icons.iconStartedOnDateCust,Icons.myIconFont)); //"click to set date when started"
             }
         }
 //        statusCont.add(new Label(Item.STARTED_ON_DATE)).add(startedOnDate.)).add(new SpanLabel("Set automatically when using the timer"));
@@ -4219,7 +4227,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         Label createdDate = new Label(itemOrg.getCreatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getCreatedAt().getTime())); //NOT use itemLS since CreatedDate is not saved locally
 //        statusCont.add(new Label(Item.CREATED_DATE)).add(createdDate);
 //        statusCont.add(layout(Item.CREATED_DATE, createdDate, "**", true, true, true));
-        statusCont.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDate));
+        statusCont.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDateCust,Icons.myIconFont));
 
         if (itemOrg.isProject()) {
             long lastEditedSubtasks = itemOrg.getEditedDateProjectOrSubtasks().getTime();

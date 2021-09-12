@@ -60,11 +60,11 @@ public class Icons {
 //        return makeT(FontImage.MATERIAL_EXPAND_MORE);
 //    }
 //    final static char iconShowMoreLabelStyleXXX = FontImage.MATERIAL_EXPAND_MORE; //MORE=v
-    final static char iconShowMore = FontImage.MATERIAL_CHEVRON_RIGHT; //FontImage.MATERIAL_EXPAND_MORE;, LESS=^MATERIAL_EXPAND_MORE
+    final static char iconShowMore = FontImage.MATERIAL_EXPAND_MORE; //MATERIAL_CHEVRON_RIGHT; //FontImage.MATERIAL_EXPAND_MORE;, LESS=^MATERIAL_EXPAND_MORE
     public final static char iconExpandListStickyHeader = FontImage.MATERIAL_CHEVRON_RIGHT; //FontImage.MATERIAL_EXPAND_MORE;, LESS=^MATERIAL_EXPAND_MORE
 //    final static Image iconShowMoreLabelStyleXXX = FontImage.createMaterial(iconShowMore, labelStyle);
 
-    final static char iconShowLess = FontImage.MATERIAL_EXPAND_MORE; //LESS; //MORE=v, MATERIAL_EXPAND_LESS
+    final static char iconShowLess = FontImage.MATERIAL_EXPAND_LESS; //MATERIAL_EXPAND_MORE; //LESS; //MORE=v, MATERIAL_EXPAND_LESS
     
     final static char iconShowDownChevron = FontImage.MATERIAL_EXPAND_MORE; //FontImage.MATERIAL_EXPAND_MORE;, LESS=^MATERIAL_EXPAND_MORE
     final static char iconShowUpChevron = FontImage.MATERIAL_EXPAND_LESS; //LESS; //MORE=v, MATERIAL_EXPAND_LESS
@@ -86,8 +86,8 @@ public class Icons {
 //    static Image iconTimerSymbolToolbarStyle() {
 //        return makeT(FontImage.MATERIAL_TIMER);
 //    }
-    static char iconLaunchTimer = FontImage.MATERIAL_TIMER;
-    static char iconLaunchTimerAlreadyRunning = FontImage.MATERIAL_SHUTTER_SPEED;
+    static char iconTimerLaunch = FontImage.MATERIAL_TIMER;
+    static char iconTimerLaunchAlreadyRunning = FontImage.MATERIAL_SHUTTER_SPEED;
 //    final static Image iconTimerSymbolToolbarStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand"));
 //    final static Image iconTimerSymbolLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_TIMER, labelStyle);
 
@@ -113,7 +113,8 @@ public class Icons {
 //    final static Image iconTimerBuzzerOnOffLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_FAST_FORWARD, labelStyle); //Fast Forward = Play next, 
 //    final static Image iconTimerScreenAlwaysOnLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_LIGHTBULB_OUTLINE, labelStyle); //Fast Forward = Play next, 
 //    final static Image iconTimerInterruptedTaskLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_FLASH_OFF, labelStyle); //Warning: triangle with '!', or use Flash Off to show it was interrupted
-    final static char iconTimerStopExitTimer = FontImage.MATERIAL_STOP; //Warning: triangle with '!', or use Flash Off to show it was interrupted
+    final static char iconTimerQuitTimer = FontImage.MATERIAL_TIMER_OFF; //MATERIAL_TIMER_STOP; //Warning: triangle with '!', or use Flash Off to show it was interrupted
+    final static char iconTimerStopTimer = FontImage.MATERIAL_STOP; //Warning: triangle with '!', or use Flash Off to show it was interrupted
 //    final static Image iconTimerStopExitTimerLabelStyle = FontImage.createMaterial(iconTimerStopExitTimer, labelStyle); //Warning: triangle with '!', or use Flash Off to show it was interrupted
     final static char iconTimerNextTask = FontImage.MATERIAL_SKIP_NEXT; //like skip to next song
 //    final static Image iconTimerNextTaskLabelStyle = FontImage.createMaterial(iconTimerNextTask, labelStyle); //like skip to next song
@@ -130,13 +131,13 @@ public class Icons {
 //    final static Image iconAlarmSetLabelStyle = FontImage.createMaterial(FontImage.MATERIAL_NOTIFICATIONS, labelStyle);
     final static char iconAlarmDate = FontImage.MATERIAL_NOTIFICATIONS_NONE;
     final static char iconAlarmTriggered = FontImage.MATERIAL_NOTIFICATIONS_NONE; //TODO: MATERIAL_NOTIFICATIONS_ACTIVE; custom icon
-    final static char iconHideUntilDate = FontImage.MATERIAL_VISIBILITY_OFF; //TODO: custom icon
+//    final static char iconHideUntilDate = FontImage.MATERIAL_VISIBILITY_OFF; //TODO: custom icon
     final static char iconHideUntilDateCust = 'p'; //TODO: custom icon
-    final static char iconStartedOnDate = FontImage.MATERIAL_TIMELAPSE; //TODO: custom icon
+//    final static char iconStartedOnDate = FontImage.MATERIAL_TIMELAPSE; //TODO: custom icon
     final static char iconStartedOnDateCust = 'z'; 
-    final static char iconCreatedDate = FontImage.MATERIAL_TRIP_ORIGIN; //TODO: custom icon
+//    final static char iconCreatedDate = FontImage.MATERIAL_TRIP_ORIGIN; //TODO: custom icon
     final static char iconCreatedDateCust = 'n'; //TODO: custom icon
-    final static char iconModifiedDate = FontImage.MATERIAL_HISTORY_TOGGLE_OFF; //voption (but not in CN1): CHANGE_CIRCLE; //MATERIAL_BORDER_COLOR; //TODO: custom icon
+//    final static char iconModifiedDate = FontImage.MATERIAL_HISTORY_TOGGLE_OFF; //voption (but not in CN1): CHANGE_CIRCLE; //MATERIAL_BORDER_COLOR; //TODO: custom icon
     final static char iconModifiedDateCust = 'd'; //TODO: custom icon
     final static char iconEditedDate = FontImage.MATERIAL_EDIT; //TODO: custom icon
     final static char iconEditedDateCustXXX = 'h'; //TODO: custom icon

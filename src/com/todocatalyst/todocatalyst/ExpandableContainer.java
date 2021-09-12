@@ -38,6 +38,7 @@ public class ExpandableContainer extends Container {
     ExpandableContainer(String title, Component hideableContent, GetBool hideInitiallyFct, SetBool persistExpandedState, boolean longPressShowsAndHidesOthers) {
 
         setLayout(new BorderLayout());
+        setUIID("ExpandableContainerCont");
         setLongPressShowsAndHidesOthers(longPressShowsAndHidesOthers);
 
 //        MySpanButton itemHierarchyTitle = new MySpanButton(title);
@@ -54,7 +55,7 @@ public class ExpandableContainer extends Container {
 
         hideListener = (e) -> {
 //            boolean nowHidden = !hideableContent.isHidden();
-            Log.p(" listerner "+title);
+//            Log.p(" listerner " + title);
             if (e != null && e.getSource() instanceof Boolean) {
                 hidden = (Boolean) e.getSource();
             } else {
@@ -68,10 +69,14 @@ public class ExpandableContainer extends Container {
                 }
 //                cont.getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
 //                cont.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
-                getParent().animateHierarchy(MyForm.ANIMATION_TIME_DEFAULT);
+                if (getParent() != null) {
+                    getParent().animateHierarchy(MyForm.ANIMATION_TIME_DEFAULT);
+                }
             } else {
                 hideableContent.setHidden(hidden);
-                hideableContent.getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+                if (hideableContent.getParent() != null) {
+                    hideableContent.getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
+                }
             }
             if (persistExpandedState != null) {
                 persistExpandedState.setVal(hidden);
@@ -80,7 +85,7 @@ public class ExpandableContainer extends Container {
 
         //on longPress show the current and hide the others
         ActionListener hideAllListener = (e) -> {
-            Log.p("longpress listerner "+title);
+            if(Config.TEST) Log.p("longpress listerner " + title);
             boolean hideOthers;
             if (longPressShowsThisAndHidesOthers) { //show this and hide the others
                 hidden = false;

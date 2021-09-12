@@ -319,7 +319,8 @@ makeContainerBoxY();
                 () -> category.getShowNumberLeafTasks(), (b) -> category.setShowNumberLeafTasks(b)));
 
         content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_REMAINING_TEXT, Item.SHOW_REMAINING_HELP,
-                () -> category.getShowRemaining(), (b) -> category.setShowRemaining(b)));
+                () -> category.getShowRemaining(), 
+                (b) -> category.setShowRemaining(b)));
 
         content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_TOTAL_TEXT, Item.SHOW_TOTAL_HELP,
                 () -> category.getShowTotal(), (b) -> category.setShowTotal(b)));
@@ -333,12 +334,12 @@ makeContainerBoxY();
         //CREATED
         Label createdDate = new Label(category.getCreatedAt() == null || category.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getCreatedAt()));
 //        content.add(new Label(Item.CREATED_DATE)).add(createdDate);
-        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hide ? null : Icons.iconCreatedDate));
+        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hide ? null : Icons.iconCreatedDateCust,Icons.myIconFont));
 
         //MODIFIED
         Label lastModifiedDate = new Label(category.getUpdatedAt() == null || category.getUpdatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getUpdatedAt()));
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        content.add(layoutN(Item.PARSE_UPDATED_AT,Item.UPDATED_DATE, lastModifiedDate, "**", true, hide ? null : Icons.iconModifiedDate));
+        content.add(layoutN(Item.PARSE_UPDATED_AT,Item.UPDATED_DATE, lastModifiedDate, "**", true, hide ? null : Icons.iconModifiedDateCust,Icons.myIconFont));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
