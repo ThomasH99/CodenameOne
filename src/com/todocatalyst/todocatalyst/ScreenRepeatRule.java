@@ -1422,6 +1422,7 @@ public class ScreenRepeatRule extends MyForm {
             } else if (repeatFrom_NoneCompletedDue_Field.getSelectedAsInt() == RepeatRuleParseObject.REPEAT_TYPE_FROM_COMPLETED_DATE) {
                 Log.p("setReferenceItemForDueDateAndFutureCopies(null)");
                 myRepeatRule.setDatedCompletion(onCompletionDatedRepeatsSwitch.isOn()); //store value
+                myRepeatRule.setNumberSimultaneousRepeats(0);//reset a previously set value
                 if (false && onCompletionDatedRepeatsSwitch.isOff()) { //false: no longer stores startDate in rule, always uses dates from (end-user visible) tasks
 //                myRepeatRule.setReferenceItemForDueDateAndFutureCopies(null);
                     myRepeatRule.setSpecifiedStartDateXXXZZZ(new MyDate(0)); //reset startDate

@@ -244,9 +244,9 @@ public class RepeatRuleParseObject
     }
 
     public RepeatRuleParseObject(RepeatRuleParseObject repeatRule) {
-        this(repeatRule,false);
+        this(repeatRule, false);
     }
-    
+
     public RepeatRuleParseObject(RepeatRuleParseObject repeatRule, boolean copyListsOfRepeatInstances) {
         this();
         if (repeatRule != null) {
@@ -3473,6 +3473,9 @@ public class RepeatRuleParseObject
             Date startRepeatFromDate = getStartRepeatUpdateFrom(undoneInstances, doneInstances, editedItem);
             if (!isDatePatternChanged()) { //if only number of repeats changed (less or more) don't recalculate dates, just extend/reduce existing list
                 startRepeatFromDate = getStartDateWhenOnlyNumberOccurencesChanged(undoneInstances, doneInstances, startRepeatFromDate);
+            }
+            if (startRepeatFromDate.getTime() == 0) {
+                startRepeatFromDate = MyDate.getStartOfToday(); //UI: start repetition from Now if no other date exists to use
             }
             setDatePatternChanged(false); //always reset!
 //            setListOfUndoneInstances(null); //must add originator back again here to ensure future dates are calculated correctly

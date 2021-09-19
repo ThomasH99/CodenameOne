@@ -1495,7 +1495,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
 
             //set WAITING button
             Button setWaitingButton = null;
-            if (timedItemN != null && !timedItemN.isDone() && !timedItemN.isWaiting()) {
+            if (timedItemN != null && !timedItemN.isDone() && !timedItemN.isWaitingAndSetWaitUntilDateNotReached()) {
 //                setWaitingButton = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"), 
                 setWaitingButton = new Button(CommandTracked.create(MSG_SET_WAITING, Icons.iconItemStatusWaiting, (e) -> { //"Wait" / "->Waiting"
 //                    timedItem.setStatus(ItemStatus.WAITING, true, true, true, true);

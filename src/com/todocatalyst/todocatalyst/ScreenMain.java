@@ -133,7 +133,7 @@ public class ScreenMain extends MyForm {
         if (false) {
             restoreKeepPos();
         }
-        setKeepPos();
+        setKeepPos(); //store previous scroll (to re
 //        addCommandsToToolbar(getToolbar(), menuContainer);//, theme);
         buildContentPane(this,menuContainer);
 

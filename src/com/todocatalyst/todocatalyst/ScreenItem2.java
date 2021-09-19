@@ -1963,9 +1963,9 @@ public class ScreenItem2 extends MyForm {
 //                () -> remainingEffort.getDuration(), (l) -> remainingEffort.setDuration((long) l), null);
         initField(Item.PARSE_REMAINING_EFFORT_TOTAL, remainingEffort,
                 //                () -> item.getRemaining(false), 
-//                () -> itemCopy.getRemainingForTaskItselfFromParse(),
-//                (l) -> itemOrg.setRemainingForTaskItself((long) l, true),
-//                () -> itemCopy.getRemainingForTaskItselfFromParse(),
+                //                () -> itemCopy.getRemainingForTaskItselfFromParse(),
+                //                (l) -> itemOrg.setRemainingForTaskItself((long) l, true),
+                //                () -> itemCopy.getRemainingForTaskItselfFromParse(),
                 () -> itemCopy.getRemainingForTaskItself(),
                 (l) -> itemOrg.setRemainingForTaskItself((long) l, true),
                 () -> remainingEffort.getDuration(),
@@ -2966,7 +2966,7 @@ public class ScreenItem2 extends MyForm {
 //                }
 //</editor-fold>
                 if (editedRepeatRule.getRepeatType() != REPEAT_TYPE_NO_REPEAT) {
-                    if (itemOrg.getDueDate().getTime() == 0) {
+                    if (itemOrg.getDueDate().getTime() == 0 && itemOrg.getRepeatRuleN() != null) {
                         //TODO!!!!: add toastbar message to explain what's done!!
                         itemOrg.setDueDate(itemOrg.getRepeatRuleN().getFirstRepeatDateAfterTodayForWhenEditingRuleWithoutPredefinedDueDateN()); //replace/set locally edited value for Due so when ScreenItem2 is refreshed this value is used to set the picker
                     }
@@ -3359,7 +3359,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        timeCont.add(new Label(Item.HIDE_UNTIL)).add(addDatePickerWithClearButton(hideUntil));
 //        timeCont.add(new Label(Item.HIDE_UNTIL)).add(hideUntil.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.HIDE_UNTIL, hideUntil.makeContainerWithClearButton(), "**"));
-        timeCont.add(layoutN(Item.PARSE_HIDE_UNTIL_DATE, Item.HIDE_UNTIL, hideUntil, Item.HIDE_UNTIL_HELP, hideIcons ? null : Icons.iconHideUntilDateCust,Icons.myIconFont));
+        timeCont.add(layoutN(Item.PARSE_HIDE_UNTIL_DATE, Item.HIDE_UNTIL, hideUntil, Item.HIDE_UNTIL_HELP, hideIcons ? null : Icons.iconHideUntilDateCust, Icons.myIconFont));
 
         if (false) { //De-activated for now
 //            MyDatePicker expireByDate = new MyDatePicker(parseIdMap2, () -> itemLS.getExpiresOnDateD(), (d) -> item.setExpiresOnDateD(d)); // "<auto-cancel on date>", 
@@ -3871,12 +3871,12 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (true || !isTemplate) {
             if (itemOrg.isProject()) {
                 Label startedOnDateLabel = new Label(itemOrg.getStartedOnDateD().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getStartedOnDateD()));
-                statusCont.add(layoutN(Item.PARSE_STARTED_ON_DATE_SUBTASKS_VIRT, Item.STARTED_ON_DATE_SUBTASKS, startedOnDateLabel, Item.STARTED_ON_DATE_HELP, true, hideIcons ? null : Icons.iconStartedOnDateCust,Icons.myIconFont));
+                statusCont.add(layoutN(Item.PARSE_STARTED_ON_DATE_SUBTASKS_VIRT, Item.STARTED_ON_DATE_SUBTASKS, startedOnDateLabel, Item.STARTED_ON_DATE_HELP, true, hideIcons ? null : Icons.iconStartedOnDateCust, Icons.myIconFont));
             } else {
                 initField(Item.PARSE_STARTED_ON_DATE, startedOnDate, () -> itemOrg.getStartedOnDateD(), (s) -> itemOrg.setStartedOnDate((Date) s, true),
                         () -> startedOnDate.getDate(), (s) -> startedOnDate.setDate((Date) s));
 //            statusCont.add(layoutN(Item.STARTED_ON_DATE, isTemplate?new Label(""):startedOnDate, Item.STARTED_ON_DATE_HELP, hide ? null : Icons.iconStartedOnDate)); //"click to set date when started"
-                statusCont.add(layoutN(Item.PARSE_STARTED_ON_DATE, Item.STARTED_ON_DATE, isTemplate ? null : startedOnDate, Item.STARTED_ON_DATE_HELP, hideIcons ? null : Icons.iconStartedOnDateCust,Icons.myIconFont)); //"click to set date when started"
+                statusCont.add(layoutN(Item.PARSE_STARTED_ON_DATE, Item.STARTED_ON_DATE, isTemplate ? null : startedOnDate, Item.STARTED_ON_DATE_HELP, hideIcons ? null : Icons.iconStartedOnDateCust, Icons.myIconFont)); //"click to set date when started"
             }
         }
 //        statusCont.add(new Label(Item.STARTED_ON_DATE)).add(startedOnDate.)).add(new SpanLabel("Set automatically when using the timer"));
@@ -4227,7 +4227,7 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         Label createdDate = new Label(itemOrg.getCreatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getCreatedAt().getTime())); //NOT use itemLS since CreatedDate is not saved locally
 //        statusCont.add(new Label(Item.CREATED_DATE)).add(createdDate);
 //        statusCont.add(layout(Item.CREATED_DATE, createdDate, "**", true, true, true));
-        statusCont.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDateCust,Icons.myIconFont));
+        statusCont.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDateCust, Icons.myIconFont));
 
         if (itemOrg.isProject()) {
             long lastEditedSubtasks = itemOrg.getEditedDateProjectOrSubtasks().getTime();

@@ -486,8 +486,8 @@ public class ScreenListOfItems extends MyForm {
         getItemListFct = itemListFct;
         itemListOrItemOrg = getItemListFct.getUpdatedItemList(); //TODO!!!! Optimization: double call - also called in refreshAfterEdit first time screen is shown!!! But needed before below call to SaveEditedValuesLocally!
 
-        itemListOrItemOrg.addActionListener((e) -> 
-                refreshAfterEdit()); //always simply update the 
+        itemListOrItemOrg.addActionListener((e)
+                -> refreshAfterEdit()); //always simply update the 
 
 //        initLocalSaveOfEditedValues(getUniqueFormId() + itemListOrg.getObjectIdP());
 //        previousValues = new SaveEditedValuesLocally(getUniqueFormId() + itemListOrg.getObjectIdP());
@@ -3449,7 +3449,7 @@ public class ScreenListOfItems extends MyForm {
 //            hideUntilLabel = new Label("H:" + MyDate.formatDateNew(item.getHideUntilDateD()), "ItemDetailsLabel");
             hideUntilLabel = new Label(MyDate.formatDateSmart(item.getHideUntilDateD(), false), "ItemDetailsLabel");
 //            hideUntilLabel.setMaterialIcon(Icons.iconHideUntilDate);
-            hideUntilLabel.setFontIcon(Icons.myIconFont,Icons.iconHideUntilDateCust);
+            hideUntilLabel.setFontIcon(Icons.myIconFont, Icons.iconHideUntilDateCust);
             hideUntilLabel.setGap(GAP_LABEL_ICON);
             if (Config.TEST) {
                 hideUntilLabel.setName("HideUntil");
@@ -3626,6 +3626,10 @@ public class ScreenListOfItems extends MyForm {
         if (remainingEffortLabel != null) {
             westCont.add(remainingEffortLabel);
         }
+
+        if (isDone && completedDateLabel != null) { //show completing date before estimates
+            westCont.add(completedDateLabel);
+        }
 //        if ((isDone||item.isTemplate()) && effortEstimateLabel != null) {
         if (effortEstimateLabel != null) {
 //            if (!isDone && showInDetails) {
@@ -3643,9 +3647,9 @@ public class ScreenListOfItems extends MyForm {
         if (actualEffortLabel != null) {
             westCont.add(actualEffortLabel);
         }
-        if (isDone && completedDateLabel != null) {
-            westCont.add(completedDateLabel);
-        }
+//        if (isDone && completedDateLabel != null) {
+//            westCont.add(completedDateLabel);
+//        }
         if (alarmLabel != null) {
             southDetailsContainer.addComponent(alarmLabel);
             if (myForm.getScreenType() == ScreenType.ALARMS) {
@@ -4007,7 +4011,8 @@ refreshAfterEdit();
 //            startTimer.setGap(0);
 //</editor-fold>
             buttonSwipeLeftContainer.add(startTimer);
-        } else { // item.isTemplate() => //add instantiate&edit Template swipe-button
+        }
+        if (item.isTemplate()) { // item.isTemplate() => //add instantiate&edit Template swipe-button
 //            Button newFromTemplate = new Button(MyReplayCommand.create("NewItemFromTemplate", null, Icons.iconNewItemFromTemplate, (e) -> {
             Button newFromTemplate = makeSwipeButton("+Task", "SwipeButtonNewFromTemplate", Icons.iconNewItemFromTemplate, null, null,
                     MyReplayCommand.create("NewItemFromTemplate", null, null, (e) -> {
@@ -4080,7 +4085,9 @@ refreshAfterEdit();
             });
         }
 
-        if (myForm.isPinchInsertEnabled()) {//|| !((ScreenListOfItems) myForm).projectEditMode) {
+        //UI: disable swipeInsertButtons for systemLists (auto-generated)
+//        if (myForm.isPinchInsertEnabled() && !(ownerItemOrItemListOrCategory instanceof ItemList && !((ItemList) ownerItemOrItemListOrCategory).isSystemList())) {//|| !((ScreenListOfItems) myForm).projectEditMode) {
+        if (myForm.isPinchInsertEnabled() ) {//|| !((ScreenListOfItems) myForm).projectEditMode) {
 //            Button insertInlineContBelow = new Button(MyReplayCommand.create("NewItemSwipeInsertBelow", null, Icons.iconInsertTaskBelow, (e) -> {
 //            Button insertInlineContBelow = new Button(MyReplayCommand.create("SwipeInsertBelow-" + item.getObjectIdP(), null, Icons.iconInsertTaskBelow, (e) -> {
 //            Button insertInlineContAbove = new Button(MyReplayCommand.create("NewItemSwipeInsertAbove", null, Icons.iconInsertTaskAbove, (e) -> {
@@ -5273,7 +5280,7 @@ refreshAfterEdit();
                     } else if (node instanceof WorkSlot) {
 //                        cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, () -> {}, keepPos);
 //                        cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, ScreenListOfItems.this, keepPos, false, true);
-                        cmp = ScreenListOfWorkSlots.buildWorkSlotContainer(ScreenListOfItems.this, (WorkSlot) node, false, (itemOrItemList instanceof ItemAndListCommonInterface &&((ItemAndListCommonInterface)itemOrItemList).isNoSave())); //false=> don't show owner when showing list of workslots in a list
+                        cmp = ScreenListOfWorkSlots.buildWorkSlotContainer(ScreenListOfItems.this, (WorkSlot) node, false, (itemOrItemList instanceof ItemAndListCommonInterface && ((ItemAndListCommonInterface) itemOrItemList).isNoSave())); //false=> don't show owner when showing list of workslots in a list
                     } else if (node instanceof ItemList) {
 //                        cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, () -> {}, keepPos);
 //                        cmp = ScreenListOfItemLists.buildItemListContainer((ItemList)node, keepPos, false, expandedObjects);

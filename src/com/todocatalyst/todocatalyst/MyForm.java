@@ -933,7 +933,8 @@ public class MyForm extends Form implements ActionListener {
 
         if (true) {
             initMyStatusBar(); //initialize statusbar to jump to top/bottom/switch position on doubletap
-        }//        if (false) {
+        }
+//        if (false) {
 //            setAutoSizeMode(true); //ensure title is centered even when icons are added
 //        }
 //        this.previousForm = previousForm;
@@ -2793,7 +2794,11 @@ public class MyForm extends Form implements ActionListener {
         }
 //        revalidate();
         revalidateLater();
+//revalidateWithAnimationSafety();
         restoreKeepPos();
+        if (Config.TEST) {
+            Log.p("refreshAfterEdit() finished for screen " + getUniqueFormId());
+        }
     }
 
 //    abstract void refreshAfterEdit(KeepInSameScreenPosition keepPos);
@@ -7417,28 +7422,38 @@ public class MyForm extends Form implements ActionListener {
         return null;
     }
 
+    /**
+     * returns the element to scroll to, to show the last element in the form
+     * @param cont
+     * @return 
+     */
     public static Component findLastElementInScrollableContY(Container cont) {
 //        if (c instanceof ContainerScrollY) {
 //            return findLastElementInScrollableContY( c);
 //        }
 //        int count = cont.getComponentCount();
-        Component lastElt = null;
-        for (int iter = 0, count = cont.getComponentCount(); iter < count; iter++) {
-            Component comp = cont.getComponentAt(iter);
+        if (true) {
+            return cont.getComponentAt(cont.getComponentCount() - 1); //will this work w expanded subtasks?! YES
+        } else {
+            Component lastElt = null;
+            for (int iter = 0, count = cont.getComponentCount(); iter < count; iter++) {
+                Component comp = cont.getComponentAt(iter);
 //            if (lastElt == null) {
 //                lastElt = comp; //initialize
 //            }
-            if (comp instanceof Container) {
-                Component l = findLastElementInScrollableContY((Container) comp);
-                if (l != null) {
-                    comp = l;
+                if (comp instanceof Container) {
+                    Component l = findLastElementInScrollableContY((Container) comp);
+                    if (l != null) {
+                        comp = l;
+                    }
+                }
+                //problem: will return the SmallTimer if visible!
+                if (lastElt == null || comp.getY() > lastElt.getY()) {
+                    lastElt = comp;
                 }
             }
-            if (lastElt == null || comp.getY() > lastElt.getY()) {
-                lastElt = comp;
-            }
+            return lastElt;
         }
-        return lastElt;
     }
 
     public ContainerScrollY findScrollableContYChild() {

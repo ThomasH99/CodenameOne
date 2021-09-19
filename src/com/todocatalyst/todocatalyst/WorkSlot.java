@@ -56,8 +56,13 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     final static String DURATION_HELP = "Define the duration of the " + WORKSLOT;
     final static String START_TIME = "Start by"; //"Start time";
     final static String START_TIME_HELP = "Define when the " + WORKSLOT + " starts"; //"Start time";
-    final static String BELONGS_TO = "Owner"; //"Start time";
-    final static String BELONGS_TO_HELP = "Owner (List, Category, project) this workslot belongs to"; //"Start time";
+//    final static String BELONGS_TO = "Owner"; //"Start time";
+//    final static String BELONGS_TO_HELP = "Owner (List, Category, project) this workslot belongs to"; //"Start time";
+    final static String BELONGS_TO = "For List/Project"; //"Owner List/Project" "Belongs to";
+      final static String BELONGS_TO_PROJECT = "For Project"; //"Owner List/Project" "Belongs to";
+    final static String BELONGS_TO_LIST = "For List"; //"Owner List/Project" "Belongs to";
+    final static String BELONGS_TO_CATEGORY = "For Category"; //"Owner List/Project" "Belongs to";
+    final static String BELONGS_TO_HELP = Format.f("Indicates the List or Project this {0 workslot} belongs to. Change to move the {0} to another List or Project",WorkSlot.WORKSLOT);
 
     final static String END_TIME = "End by"; //"Start time";
     final static String END_TIME_HELP = "Define when the " + WORKSLOT + " ends"; //"Start time";
@@ -67,6 +72,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     final static String SOURCE = Item.SOURCE; //Template or Task that this one is a copy of, "Task copy of"
     final static String SOURCE_HELP = "Shows the " + WORKSLOT + " was copied from. E.g. for repeating or copy/paste.?"; //Template or Task that this one is a copy of, "Task copy of"
+    
+  
 
     final static int FIELD_DESCRIPTION = 0;
     final static int FIELD_DURATION = 1;

@@ -431,9 +431,9 @@ class TimerStack2 implements ActionListener {
         if (false) {
             return (item != null
                     //                && (TimerStack.getInstance().timeEvenInvalidItem
-                    && ((!item.isDone() && !item.isWaiting()) //valid if not done and not waiting (so this expr is true for all other status values!)
+                    && ((!item.isDone() && !item.isWaitingAndSetWaitUntilDateNotReached()) //valid if not done and not waiting (so this expr is true for all other status values!)
                     //TODO!!!! in Timer: check waiting date when skipping, or not, waiting tasks
-                    || (item.isWaiting() && MyPrefs.timerIncludeWaitingTasks.getBoolean()) ////or if waiting, but settings allow to time waiting tasks
+                    || (item.isWaitingAndSetWaitUntilDateNotReached() && MyPrefs.timerIncludeWaitingTasks.getBoolean()) ////or if waiting, but settings allow to time waiting tasks
                     || (item.isDone() && MyPrefs.timerIncludeDoneTasks.getBoolean()))); //or if done, but settings allow to time done tasks
         } else {
             return item.isValidItemForTimer();

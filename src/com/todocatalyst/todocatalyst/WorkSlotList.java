@@ -162,7 +162,7 @@ public class WorkSlotList implements MyTreeModel {//extends ArrayList<WorkSlot> 
 //        }
 //        //if no earlier slot found above, then insert at start of (possibly empty) list
 //        sortedOnStartTimeWorkslotList.add(0, workSlot);
-        ASSERT.that(false&&!sortedOnStartTimeWorkslotList.contains(workSlot), () -> "WorkSlot added twice to list, workslot=" + workSlot + "; owner=" + owner + "; list=" + sortedOnStartTimeWorkslotList); //NO longer necessary to test since checked in addWorkSlot()
+//        ASSERT.that(false&&!sortedOnStartTimeWorkslotList.contains(workSlot), () -> "WorkSlot added twice to list, workslot=" + workSlot + "; owner=" + owner + "; list=" + sortedOnStartTimeWorkslotList); //NO longer necessary to test since checked in addWorkSlot()
         if (!sortedOnStartTimeWorkslotList.contains(workSlot)) { //don't add twice (but shouldn't happen!)
             sortedOnStartTimeWorkslotList.add(workSlot);
             WorkSlot.sortWorkSlotList(sortedOnStartTimeWorkslotList); //ONLY sure way to always keep sorted on startTime, then duration (if multiple with same startTime)

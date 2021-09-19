@@ -39,6 +39,7 @@ public class CategoryList extends ItemList {
 //        if (Config.TEST) setText("CategoryList");
 //        if (Config.TEST) 
         setText("Categories");
+        setSystemName("Categories");
     }
 
     static synchronized public CategoryList getInstance() {

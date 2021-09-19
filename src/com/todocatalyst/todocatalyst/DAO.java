@@ -3950,7 +3950,7 @@ public class DAO {
     private void checkAndRefreshCompletionLog(Item element, boolean delete) {
         if (cachedCompletionLog != null) {
             if (delete) {
-                cachedCompletedLog.remove(element);
+                cachedCompletionLog.remove(element);
             } else {
                 Date firstDate = getCompletionLogStartDate();
                 if (!cachedCompletionLog.contains(element)) {
@@ -5511,13 +5511,22 @@ public class DAO {
         return listContainsNotCreated(parseObjects, false);
     }
 
+    /**
+     * onlyTestLastInList won't work with WorkSlot lists which may have
+     * repeating workslots AND a later workslot, meaning the new/unsaved one is
+     * not the last
+     *
+     * @param parseObjects
+     * @param onlyTestLastInList - disable for now
+     * @return
+     */
     private boolean listContainsNotCreated(List<ParseObject> parseObjects, boolean onlyTestLastInList) {
 //        for (ParseObject p : parseObjects) {
         for (int i = parseObjects.size() - 1; i >= 0; i--) { //optimization: start from last element, the most likely to not be saved
             ParseObject p = (ParseObject) parseObjects.get(i);
             if (p.isNotCreated()) {
                 return true;
-            } else if (onlyTestLastInList) {
+            } else if (false && onlyTestLastInList) {
                 return false;
             }
             //DON'T iterate down the hierarchy!
@@ -6882,7 +6891,11 @@ public class DAO {
             }
             if (!list.isEmpty()) {
                 WorkSlot.sortWorkSlotList(list); //optimization: sort list *before* filtering and eliminate all outdated/after endDate by removing the sequence
-                return new ItemList(WORKSLOTS.getTitle(), list, true);
+//                return new ItemList(WORKSLOTS.getTitle(), list, true);
+                ItemList workslotItemList = new ItemList(WORKSLOTS.getTitle(), list, true);
+                workslotItemList.setItemListIcon(ScreenType.WORKSLOTS.getIcon());
+                workslotItemList.setSystemName(WorkSlot.CLASS_NAME);
+                return workslotItemList;
             }
         }
 
@@ -6907,10 +6920,14 @@ public class DAO {
             Log.e(ex);
         }
         list = fetchListElementsIfNeededReturnCachedIfAvail(list);
-        ItemList workSlotList = new ItemList(list);
-        workSlotList.setItemListIcon(ScreenType.WORKSLOTS.getIcon());
+//        ItemList workSlotList = new ItemList(list);
+//        workSlotList.setItemListIcon(ScreenType.WORKSLOTS.getIcon());
 //        return new ItemList(list);
-        return new ItemList(WORKSLOTS.getTitle(), list, true);
+//        return new ItemList(WORKSLOTS.getTitle(), list, true);
+        ItemList workslotItemList = new ItemList(WORKSLOTS.getTitle(), list, true);
+        workslotItemList.setItemListIcon(ScreenType.WORKSLOTS.getIcon());
+        workslotItemList.setSystemName(WorkSlot.CLASS_NAME);
+        return workslotItemList;
 //        return results;
 //        return new ArrayList();
     }
