@@ -35,8 +35,8 @@ public class ScreenSettingsTemplates extends ScreenSettingsCommon {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
 //        cont.setScrollableY(true);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.addTemplateTaskTextToEndOfExistingTaskText);
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.askBeforeInsertingTemplateIntoAndUnderAnAlreadyCreatedItem));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.addTemplateTaskTextToEndOfExistingTaskText));
 
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropLeftDropZoneWidth, 0, 30, 1);
 //        addSettingInt(content, parseIdMap2, MyPrefs.dragDropRightDropZoneWidth, 0, 30, 1);

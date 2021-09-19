@@ -1616,7 +1616,7 @@ public class CleanUpDataInconsistencies {
             ItemListList.getInstance().addToList(danglingItems);
 //            dao.saveNew(ItemListList.getInstance(), danglingItems);
             dao.saveToParseLater(ItemListList.getInstance());
-            dao.saveToParseNow( danglingItems);
+            dao.saveToParseNow(danglingItems);
         }
         setLogPrefix("");
         allItemFromParseCleaned = true;
@@ -1651,6 +1651,68 @@ public class CleanUpDataInconsistencies {
 //    void cleanUpItem(Item item, boolean executeCleanup) {
 //        cleanUpItem(item, false, executeCleanup);
 //    }
+    void cleanUpItemEstimates(Item item, boolean update) {
+        if (!item.isProject()) {
+            //if not a project the fields should be the same, this can be achieved by simply setting value for TaskItself (assuming it will correctly copy the value into the Total field)
+            if (item.getRemainingForTaskItself() != item.getRemainingTotal()) {
+                log("A task's RemainingForTaskItself and RemainingTotal are different, task=" + item + "; taskItself="
+                        + MyDate.formatDuration(item.getRemainingForTaskItself()) + "; Total=" + MyDate.formatDuration(item.getRemainingTotal()));
+                if (update) {
+                    logAction("Set RemainingTotal to RemainingTaskItself");
+                    item.setRemainingForTaskItself(item.getRemainingForTaskItself());
+                }
+                if (item.getEstimateForTask() != item.getEstimateTotal()) {
+                    log("A task's EstimateForTask and EstimateTotal are different, task=" + item + "; taskItself="
+                            + MyDate.formatDuration(item.getEstimateForTask()) + "; Total=" + MyDate.formatDuration(item.getEstimateTotal()));
+                    if (update) {
+                        logAction("Set EstimateTotal to EstimateTaskItself");
+                        item.setEstimateForTask(item.getEstimateForTask());
+                    }
+                }
+                if (item.getActualForTaskItself() != item.getActualTotal()) {
+                    log("A task's ActualForTask and ActualTotal are different, task=" + item + "; taskItself="
+                            + MyDate.formatDuration(item.getActualForTaskItself()) + "; Total=" + MyDate.formatDuration(item.getActualTotal()));
+                    if (update) {
+                        logAction("Set ActualTotal to ActualTaskItself");
+                        item.setActualForTaskItself(item.getActualForTaskItself(), false);
+                    }
+                }
+            }
+        } else { //a PROJECT:
+            //here we assume that RemainingForTaskItself is correct and set it again to update the total with the sum of subtasks as well
+            if (item.getRemainingForTaskItself() + item.getRemainingForSubtasks() != item.getRemainingTotal()) {
+                log("A project's RemainingForTaskItself+RemainingForSubtasks and RemainingTotal are different, task=" + item
+                        + "; taskItself=" + MyDate.formatDuration(item.getRemainingForTaskItself())
+                        + "; ForSubtasks=" + MyDate.formatDuration(item.getRemainingForSubtasks())
+                        + "; Total=" + MyDate.formatDuration(item.getRemainingTotal()));
+                if (update) {
+                    logAction("Set RemainingTotal to RemainingTaskItself");
+                    item.setRemainingForTaskItself(item.getRemainingForTaskItself());
+                }
+            }
+            if (item.getEstimateForSubtasks() != item.getEstimateTotal()) {
+                log("A project's EstimateForSubtask and EstimateTotal are different, task=" + item
+                        + "; taskItself=" + MyDate.formatDuration(item.getEstimateForTask())
+                        + "; ForSubtasks=" + MyDate.formatDuration(item.getEstimateForSubtasks())
+                        + "; Total=" + MyDate.formatDuration(item.getEstimateTotal()));
+                if (update) {
+                    logAction("Set EstimateTotal to EstimateTaskItself");
+                    item.setEstimateForTask(item.getEstimateForTask());
+                }
+            }
+            if (item.getActualForTaskItself() + item.getActualForSubtasks() != item.getActualTotal()) {
+                log("A project's ActualForTask and ActualTotal are different, task=" + item
+                        + "; taskItself=" + MyDate.formatDuration(item.getActualForTaskItself())
+                        + "; ForSubtasks=" + MyDate.formatDuration(item.getActualForSubtasks())
+                        + "; Total=" + MyDate.formatDuration(item.getActualTotal()));
+                if (update) {
+                    logAction("Set ActualTotal to ActualTaskItself");
+                    item.setActualForTaskItself(item.getActualForTaskItself(), false);
+                }
+            }
+        }
+    }
+
     void cleanUpItem(Item item, ItemAndListCommonInterface correctOwner, boolean makeTemplate, boolean executeCleanup) {
 //        boolean checkOwner = true;
         //Check that if an owner is defined, it exists, and that it contains the item in its list. NB! ItemLists must then only check that their items point the themselves and not another list
@@ -1864,6 +1926,9 @@ public class CleanUpDataInconsistencies {
 
         //WORKSLOTS : WorkSlots point to their owner, NOT the other way around, so nothing to clean up here 
         cleanUpWorkSlotList(item, executeCleanup);
+        
+        //ESTIMATES
+        cleanUpItemEstimates(item,executeCleanup);
 
 //finally save
         if (executeCleanup) {

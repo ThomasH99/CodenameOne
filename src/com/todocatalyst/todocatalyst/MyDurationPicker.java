@@ -8,6 +8,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.l10n.SimpleDateFormat;
 import com.codename1.ui.Button;
 import com.codename1.ui.Display;
+import com.codename1.ui.Font;
 import com.codename1.ui.spinner.Picker;
 import java.util.Map;
 
@@ -64,7 +65,6 @@ class MyDurationPicker extends Picker implements SwipeClear {//implements SwipeC
 //    MyDurationPicker(Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetLong getDurationInMillis, MyForm.PutLong setDurationInMillis) {
 //        this(null, parseIdMap, getDurationInMillis, setDurationInMillis);
 //    }
-
 //    MyDurationPicker(String zeroValuePatternVal, Map<Object, MyForm.UpdateField> parseIdMap, MyForm.GetInt getDurationInMinutes, MyForm.PutInt setDurationInMinutes) {
 //        this(zeroValuePatternVal, 0, parseIdMap, getDurationInMinutes, setDurationInMinutes);
 //    }
@@ -86,9 +86,10 @@ class MyDurationPicker extends Picker implements SwipeClear {//implements SwipeC
     MyDurationPicker(long durationInMillis, String zeroValuePatternVal) {
         super();
         this.setType(Display.PICKER_TYPE_DURATION);
-        if (zeroValuePatternVal != null) {
-            this.zeroValuePattern = zeroValuePatternVal;
-        }
+//        if (zeroValuePatternVal != null) {
+//            this.zeroValuePattern = zeroValuePatternVal;
+//        }
+        this.zeroValuePattern = zeroValuePatternVal != null ? zeroValuePatternVal : DEFAULT_ZERO_VALUE_PATTERN;
         setDuration(durationInMillis);
         setUIID("ScreenItemEditableValue");
 //        this.zeroValuePattern = ""; // "<set>";
@@ -100,13 +101,15 @@ class MyDurationPicker extends Picker implements SwipeClear {//implements SwipeC
                 }
                 if (true) {
                     long seconds = (valInMillis % MyDate.MINUTE_IN_MILLISECONDS) / MyDate.SECOND_IN_MILLISECONDS;
-                    if (seconds != 0 && MyPrefs.durationPickerShowSecondsIfLessThan1Minute.getBoolean()) {
+//                    if (seconds != 0 && MyPrefs.durationPickerShowSecondsIfLessThan1Minute.getBoolean()) {
+                    if (valInMillis < MyDate.MINUTE_IN_MILLISECONDS && MyPrefs.durationPickerShowSecondsIfLessThan1Minute.getBoolean()) {
                         return MyDate.formatDurationStd((Long) durationInMillis, true); //if any seconds in time, show them
                     } else {
                         return MyDate.formatDurationStd((Long) durationInMillis);
                     }
-                } else
+                } else {
                     return MyDate.formatDurationStd((Long) durationInMillis);
+                }
             }
         });
         setMinuteStep(MyPrefs.durationPickerMinuteStep.getInt()); //TODO!! setting to select interval of 1/5 minutes
@@ -122,6 +125,21 @@ class MyDurationPicker extends Picker implements SwipeClear {//implements SwipeC
 
     MyDurationPicker() {
         this(0, DEFAULT_ZERO_VALUE_PATTERN);
+    }
+
+    MyDurationPicker(String uiid, String iconUiid, Font iconFont, char icon, int gap) {
+//        this(0, DEFAULT_ZERO_VALUE_PATTERN);
+        this(uiid, iconUiid, iconFont, icon, gap, false);
+    }
+
+    MyDurationPicker(String uiid, String iconUiid, Font iconFont, char icon, int gap, boolean showZeroValuePattern) {
+//        this(0, showZeroValuePattern ? "0:00" : DEFAULT_ZERO_VALUE_PATTERN);
+        this(0, showZeroValuePattern ? "0:00" : null);
+        setUIID(uiid);
+        setIconUIID(iconUiid);
+        setFontIcon(iconFont, icon);
+        setGap(gap);
+//        setShowZeroValueAsZeroDuration(showZeroValuePattern);
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    MyDurationPicker(String zeroValuePatternVal, int defaultValueInMinutes, Map<Object, MyForm.UpdateField> parseIdMap,
@@ -162,8 +180,9 @@ class MyDurationPicker extends Picker implements SwipeClear {//implements SwipeC
 //    }
 //</editor-fold>
     /**
-    set the duration
-    @param timeInMillis 
+     * set the duration
+     *
+     * @param timeInMillis
      */
     @Override
     public void setDuration(long timeInMillis) {
@@ -177,16 +196,19 @@ class MyDurationPicker extends Picker implements SwipeClear {//implements SwipeC
 //            preserveSeconds = millis; //always save milliseconds
 //        }
 //</editor-fold>
-        if (preserveSecondsWhenEditing)
-            preserveSecondsAndMillis = timeInMillis % MyDate.MINUTE_IN_MILLISECONDS;; //always save seconds
+        if (preserveSecondsWhenEditing) {
+            preserveSecondsAndMillis = timeInMillis % MyDate.MINUTE_IN_MILLISECONDS;
+        }; //always save seconds
 //        super.setDuration(((long) minutes) * MyDate.MINUTE_IN_MILLISECONDS);
         super.setDuration(timeInMillis);
 //        notifyMyActionListeners();
     }
 
     /**
-    set duration and notify listeners like if the picker had been used manually
-    @param timeInMillis 
+     * set duration and notify listeners like if the picker had been used
+     * manually
+     *
+     * @param timeInMillis
      */
     public void setDurationAndNotify(long timeInMillis) {
         setDuration(timeInMillis);
@@ -235,8 +257,11 @@ class MyDurationPicker extends Picker implements SwipeClear {//implements SwipeC
 //        return (int) getDuration() / MyDate.MINUTE_IN_MILLISECONDS;
 //    }
     /**
-    pattern show when zero value, in most screens where there is an edit button, "" is the best pattern, but for example in Timer, "0:00" (or similar localized version) shows that there is an editable/clickable
-    @param zeroValuePattern 
+     * pattern show when zero value, in most screens where there is an edit
+     * button, "" is the best pattern, but for example in Timer, "0:00" (or
+     * similar localized version) shows that there is an editable/clickable
+     *
+     * @param zeroValuePattern
      */
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void setZeroValuePattern(String zeroValuePattern) {
@@ -244,12 +269,13 @@ class MyDurationPicker extends Picker implements SwipeClear {//implements SwipeC
 //    }
 //</editor-fold>
     public void setShowZeroValueAsZeroDuration(boolean showZeroValuePattern) {
-        MyDate d;
-        if (showZeroValuePattern) {
-            this.zeroValuePattern = "0:00"; //MyDate.formatTimeDuration(0, 0); //TODO!!!! localize zero duration
-        } else {
-            this.zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN;
-        }
+//        MyDate d;
+//        if (showZeroValuePattern) {
+//            this.zeroValuePattern = "0:00"; //MyDate.formatTimeDuration(0, 0); //TODO!!!! localize zero duration
+//        } else {
+//            this.zeroValuePattern = DEFAULT_ZERO_VALUE_PATTERN;
+//        }
+        this.zeroValuePattern = showZeroValuePattern ? "0:00" : DEFAULT_ZERO_VALUE_PATTERN;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -376,13 +402,11 @@ class MyDurationPicker extends Picker implements SwipeClear {//implements SwipeC
 //    public void clearFieldValue() {
 //        swipeClear();
 //    }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void fireClicked() { //needed to give access to 'click' the button programmatically
 //        super.fireClicked();
 //    }
 //</editor-fold>
-
     @Override
     public void clearFieldValue() {
         swipeClear();

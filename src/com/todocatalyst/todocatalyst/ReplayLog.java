@@ -371,7 +371,7 @@ public class ReplayLog {
         if (false) { //now normal to recreate the same commands, always only within the same screen so new ones simply overwrite olds ones, and replay cmds anyway only used the first time during replay and not after!
             ASSERT.that(screenCommands.get(replayCommand.getCmdUniqueID()) == null, "MyReplayCommand created twice:" + replayCommand.getCmdUniqueID() + " cmd=" + replayCommand);
         }
-        screenCommands.put(replayCommand.getCmdUniqueID(), replayCommand);
+        screenCommands.put(replayCommand.getCmdUniqueID(), replayCommand);  
 //        } else {
 ////            if (replayCommand.getCmdUniqueID().equals(getCurrentReplayCmdID())) {
 //            if (replayCommand.getCmdUniqueID().equals(replayStack.get(currentIndex))) {

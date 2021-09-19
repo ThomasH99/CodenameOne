@@ -36,7 +36,8 @@ public class ScreenSettingsStatistics extends ScreenSettingsCommon {
      *
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
-    protected void buildContentPane(Container cont) {
+    @Override
+    protected void buildContentPane(Container content) {
 //        cont.setScrollableY(true);
 
 //        addSettingStringValues(cont, parseIdMap2, MyPrefs.statisticsGroupByDateInterval, ScreenStatistics.ShowGroupedBy.values(),
@@ -57,13 +58,13 @@ public class ScreenSettingsStatistics extends ScreenSettingsCommon {
 //                        MyComponentGroup newSecondGroupBy = addSettingEnumAsCompGroup(null, parseIdMap2, MyPrefs.statisticsSecondGroupBy,
 //                                ScreenStatistics2.GroupOn2.getSecondLevelGroupingNames(firstGroupBy.getSelectedIndex()),
 //                                ScreenStatistics2.GroupOn2.getSecondLevelGroupingDisplayNames(firstGroupBy.getSelectedIndex()), false, true);
-                    } else{
-                        
-                        MyPrefs.setString(MyPrefs.statisticsSecondGroupBy, (String)secondGroupBy.getSelectedValue()); //keep previously selected value if possible (if not in new option list, None is selected
+                    } else {
+
+                        MyPrefs.setString(MyPrefs.statisticsSecondGroupBy, (String) secondGroupBy.getSelectedValue()); //keep previously selected value if possible (if not in new option list, None is selected
                         //create/update second grouping setting based on firstGroup setting, cont=null to not add setting automatically
-                        MyComponentGroup newSecondGroupBy = addSettingEnumAsCompGroup(null, parseIdMap2, MyPrefs.statisticsSecondGroupBy,
+                        MyComponentGroup newSecondGroupBy = makeSettingEnumAsCompGroup(parseIdMap2, MyPrefs.statisticsSecondGroupBy,
                                 ScreenStatistics2.GroupOn2.getSecondLevelGroupingNames(firstGroupBy.getSelectedIndex()),
-                                ScreenStatistics2.GroupOn2.getSecondLevelGroupingDisplayNames(firstGroupBy.getSelectedIndex()), false, true);
+                                ScreenStatistics2.GroupOn2.getSecondLevelGroupingDisplayNames(firstGroupBy.getSelectedIndex()), false, true,null);
 //                        newSecondGroupBy.selectValue(secondGroupBy.getSelectedValue()); //reselect the same field as before
                         if (newSecondGroupBy.getSelectedIndex() == -1) { //if previously selected field no longer available
                             newSecondGroupBy.selectIndex(0); //then simply select first value
@@ -73,7 +74,9 @@ public class ScreenSettingsStatistics extends ScreenSettingsCommon {
                     }
 //                    secondGroupByParent.revalidate();
                     secondGroupByParent.getParent().getParent().animateLayout(300);
-                } else ASSERT.that("secondGroupByParent should never be null");
+                } else {
+                    ASSERT.that("secondGroupByParent should never be null");
+                }
 //                else { //if secondGroup wasn't shown on init (since firstGroup was None
 //                    secondGroupBy = addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsSecondGroupBy,
 //                            ScreenStatistics2.GroupOn2.getSecondLevelGroupingNames(firstGroupBy.getSelectedIndex()),
@@ -85,20 +88,25 @@ public class ScreenSettingsStatistics extends ScreenSettingsCommon {
 //                }
             };
 
-            firstGroupBy = addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsFirstGroupBy,
+//            firstGroupBy = addSettingEnumAsCompGroup(content, parseIdMap2, MyPrefs.statisticsFirstGroupBy,
+//                    ScreenStatistics2.GroupOn2.getNames(), ScreenStatistics2.GroupOn2.getDisplayNames(), false, true, setupsecondGroupByAL);
+            firstGroupBy = makeSettingEnumAsCompGroup(parseIdMap2, MyPrefs.statisticsFirstGroupBy,
                     ScreenStatistics2.GroupOn2.getNames(), ScreenStatistics2.GroupOn2.getDisplayNames(), false, true, setupsecondGroupByAL);
+            content.add(layoutN(null, MyPrefs.statisticsFirstGroupBy.getFieldDescription(), firstGroupBy, MyPrefs.statisticsFirstGroupBy.getHelpText(), true));
 
             boolean noneSelected = firstGroupBy.getSelectedIndex() == 0; //'none' selected
             if (noneSelected) { //even if none selected we create a second group setting to know where to insert a later secondGroup setting
-                secondGroupBy = addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsSecondGroupBy,
-                        ScreenStatistics2.GroupOn2.getSecondLevelGroupingNames( 0 ),
-                        ScreenStatistics2.GroupOn2.getSecondLevelGroupingDisplayNames( 0), false, true);
+                secondGroupBy = makeSettingEnumAsCompGroup(parseIdMap2, MyPrefs.statisticsSecondGroupBy,
+                        ScreenStatistics2.GroupOn2.getSecondLevelGroupingNames(0),
+                        ScreenStatistics2.GroupOn2.getSecondLevelGroupingDisplayNames(0), false, true, null);
+                content.add(layoutN(null, MyPrefs.statisticsSecondGroupBy.getFieldDescription(), secondGroupBy, MyPrefs.statisticsSecondGroupBy.getHelpText(), true));
                 secondGroupByParent = secondGroupBy.getParent();
                 secondGroupByParent.getParent().setHidden(noneSelected); //hide/show container with second field
             } else {
-                secondGroupBy = addSettingEnumAsCompGroup(cont, parseIdMap2, MyPrefs.statisticsSecondGroupBy,
+                secondGroupBy = makeSettingEnumAsCompGroup(parseIdMap2, MyPrefs.statisticsSecondGroupBy,
                         ScreenStatistics2.GroupOn2.getSecondLevelGroupingNames(firstGroupBy.getSelectedIndex()),
-                        ScreenStatistics2.GroupOn2.getSecondLevelGroupingDisplayNames(firstGroupBy.getSelectedIndex()), false, true);
+                        ScreenStatistics2.GroupOn2.getSecondLevelGroupingDisplayNames(firstGroupBy.getSelectedIndex()), false, true, null);
+                content.add(layoutN(null, MyPrefs.statisticsSecondGroupBy.getFieldDescription(), secondGroupBy, MyPrefs.statisticsSecondGroupBy.getHelpText(), true));
                 secondGroupByParent = secondGroupBy.getParent();
             }
 
@@ -112,13 +120,13 @@ public class ScreenSettingsStatistics extends ScreenSettingsCommon {
 //                    //                ScreenStatistics.ShowGroupedBy.values(),ScreenStatistics.ShowGroupedBy.getDisplayNames(), false, true);
 //                    ScreenStatistics2.ShowGroupedByXXX.getNames(), ScreenStatistics2.ShowGroupedByXXX.getDisplayNames(), false, true);
         }
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsGroupTasksUnderTheirProject);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsShowDetailsForAllLists);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsShowDetailsForAllTasks);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsShowMostRecentFirst);
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.statisticsGroupTasksUnderTheirProject));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.statisticsShowDetailsForAllLists));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.statisticsShowDetailsForAllTasks));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.statisticsShowMostRecentFirst));
 
 //        addSettingBoolean(cont, parseIdMap2, MyPrefs.statisticsGroupByCategoryInsteadOfList);
-        addSettingInt(cont, parseIdMap2, MyPrefs.statisticsScreenNumberPastDaysToShow, 1, 365, 1);
+        content.add(makeEditIntSetting(parseIdMap2, MyPrefs.statisticsScreenNumberPastDaysToShow, 1, 365, 1));
 
     }
 }

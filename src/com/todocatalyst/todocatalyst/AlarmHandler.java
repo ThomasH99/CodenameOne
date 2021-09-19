@@ -715,6 +715,10 @@ public class AlarmHandler {
     public List<ExpiredAlarm> getExpiredAlarms() {
         return expiredAlarms;
     }
+    public ItemList getExpiredAlarmsItemList() {
+        return new ItemList(getExpiredAlarms()); //need a copy of the list to avoid java.util.ConcurrentModificationException in CancellAll/SnoozeAll loops below
+
+    }
 
     public LocalNotificationsShadowList getLocalNotificationsTEST() {
         return notificationList;

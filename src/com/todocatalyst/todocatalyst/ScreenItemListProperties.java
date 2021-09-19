@@ -2,6 +2,8 @@ package com.todocatalyst.todocatalyst;
 
 //import com.codename1.io.Log;
 import com.codename1.io.Log;
+import com.codename1.io.Storage;
+import com.codename1.ui.Button;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.Display;
@@ -59,8 +61,9 @@ public class ScreenItemListProperties extends MyForm {
 //        form = this;
         // we use border layout so the list will take up all the available space
 //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
-        setLayout(BoxLayout.y());
-        setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
+//        setLayout(BoxLayout.y());
+//        setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
+        makeContainerBoxY();
 
 //        setToolbar(new Toolbar());
 //        setTitle(screenTitle);
@@ -71,8 +74,10 @@ public class ScreenItemListProperties extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        getContentPane().removeAll();
-        buildContentPane(getContentPane());
+//        getContentPane().removeAll();
+        container.removeAll();
+//        buildContentPane(getContentPane());
+        buildContentPane(container);
 //        restoreKeepPos();
         super.refreshAfterEdit();
     }
@@ -226,7 +231,9 @@ public class ScreenItemListProperties extends MyForm {
                 (t) -> itemList.setText((String) t),
                 () -> description.getText(),
                 (t) -> description.setText((String) t));
-        setEditOnShow(description); //UI: start editing this field
+        if (itemList.getText().isEmpty()) {
+            setEditOnShow(description); //UI: start editing this field
+        }
         content.add(description);
 
         content.add(makeSpacerThin());
@@ -248,17 +255,37 @@ public class ScreenItemListProperties extends MyForm {
         content.add(comment);
 
         content.add(makeSpacerThin());
+
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_NUMBER_UNDONE_TASKS_TEXT, Item.SHOW_NUMBER_UNDONE_TASKS_HELP,
+                () -> itemList.getShowNumberUndoneTasks(), (b) -> itemList.setShowNumberUndoneTasks(b)));
+
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_LEAF_TASKS_TEXT, Item.SHOW_LEAF_TASKS_HELP,
+                () -> itemList.getShowNumberLeafTasks(), (b) -> itemList.setShowNumberLeafTasks(b)));
+
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_NUMBER_DONE_TASKS_TEXT, Item.SHOW_NUMBER_DONE_TASKS_HELP,
+                () -> itemList.getShowNumberDoneTasks(), (b) -> itemList.setShowNumberDoneTasks(b)));
+
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_REMAINING_TEXT, Item.SHOW_REMAINING_HELP,
+                () -> itemList.getShowRemaining(), (b) -> itemList.setShowRemaining(b)));
+
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_TOTAL_TEXT, Item.SHOW_TOTAL_HELP,
+                () -> itemList.getShowTotal(), (b) -> itemList.setShowTotal(b)));
+
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_WORK_TIME_TEXT, Item.SHOW_WORK_TIME_HELP,
+                () -> itemList.getShowWorkTime(), (b) -> itemList.setShowWorkTime(b)));
+
+        content.add(makeSpacerThin());
 //        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(this, description, null, null); //normal that this appear as non-used!
 
 //        Label createdDate = new Label(itemList.getCreatedAt() == null || itemList.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(itemList.getCreatedAt())); //"<date set when saved>"
         Label createdDate = new Label(itemList.getCreatedAt() == null || itemList.getCreatedAt().getTime() == 0 ? MyDate.formatDateNew(new MyDate()) : MyDate.formatDateNew(itemList.getCreatedAt())); //"<date set when saved>"
 //        content.add(new Label(Item.CREATED_DATE)).add(createdDate);
-        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hide ? null : Icons.iconCreatedDate));
+        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hide ? null : Icons.iconCreatedDateCust, Icons.myIconFont));
 
 //        Label lastModifiedDate = new Label(itemList.getUpdatedAt() == null || itemList.getUpdatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(itemList.getUpdatedAt()));
         Label lastModifiedDate = new Label(itemList.getUpdatedAt() == null || itemList.getUpdatedAt().getTime() == 0 ? MyDate.formatDateNew(new MyDate()) : MyDate.formatDateNew(itemList.getUpdatedAt()));
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        content.add(layoutN(Item.PARSE_UPDATED_AT,Item.UPDATED_DATE, lastModifiedDate, "**", true, hide ? null : Icons.iconModifiedDate));
+        content.add(layoutN(Item.PARSE_UPDATED_AT, Item.UPDATED_DATE, lastModifiedDate, "**", true, hide ? null : Icons.iconModifiedDateCust,Icons.myIconFont));
 
         if (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(itemList.getObjectIdP() == null ? "<set on save>" : itemList.getObjectIdP(), "ScreenItemValueUneditable");
@@ -273,6 +300,11 @@ public class ScreenItemListProperties extends MyForm {
 
 //        setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(name.getText(), (ItemList) itemList.getOwner()));
         setCheckIfSaveOnExit(() -> checkItemListIsValidForSaving(description.getText(), itemList) == null);
+
+        content.add(new Button(CommandTracked.create("Export to CSV", null, (e) -> {
+            Storage.getInstance();
+            itemList.exportToCsv((itemList.getText().isEmpty() ? "unnamedList" : itemList.getText()) + ".csv");
+        }, "ExportListToCSV")));
 
         return content;
     }

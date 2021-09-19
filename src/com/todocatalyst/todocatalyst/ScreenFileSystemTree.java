@@ -26,7 +26,7 @@ public class ScreenFileSystemTree extends MyForm {
     ScreenFileSystemTree() {
         super("FileSystemTree", getCurrentFormAfterClosingDialogOrMenu(), () -> {
         });
-        setLayout(new BorderLayout());
+//        setLayout(new BorderLayout());
         TreeModel tm = new TreeModel() {
             @Override
             public Vector getChildren(Object parent) {

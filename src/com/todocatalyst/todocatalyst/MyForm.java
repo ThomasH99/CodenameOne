@@ -60,6 +60,7 @@ import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Vector;
+import jdk.nashorn.internal.codegen.CompilerConstants;
 
 /**
  * When instantiating MyForm the following must be done: NORMAL USE: - create a
@@ -81,7 +82,7 @@ import java.util.Vector;
  */
 //abstract public class MyForm extends Form {
 //public class MyScreen extends ParseObject {
-public class MyForm extends Form {
+public class MyForm extends Form implements ActionListener {
 
     //TODO copy graphical format from e.g. lignesd'azur on iPhone
 //    protected Map<Object, Runnable> parseIdMap2; // = new HashMap<Object, UpdateField>();
@@ -131,6 +132,37 @@ public class MyForm extends Form {
     private boolean triggerSaveOnExit;
     protected List<Runnable> refresh;
 //    protected String helpText;
+    private boolean hideSmallTimer;
+
+    public boolean isHideSmallTimer() {
+        return hideSmallTimer;
+    }
+
+    /**
+     * set to true to hide smallTimer in a particular screen (notably when
+     * calling editItem from BigTimer!)
+     *
+     * @param hideSmallTimer
+     */
+    public void setHideSmallTimer(boolean hideSmallTimer) {
+        this.hideSmallTimer = hideSmallTimer;
+    }
+
+    Container getSmallTimerContainer() {
+        return smallTimer;
+    }
+
+    void removeSmallTimerContainer() {
+        if (smallTimer != null) {
+            smallTimer.remove();
+            smallTimer = null;
+        }
+    }
+
+    void setSmallTimerContainer(Container smallTimer) {
+        ASSERT.that(this.smallTimer == null || this.smallTimer.getComponentForm() == null, () -> "setting new smallTimerCont but old one still attached to Form=" + this.smallTimer.getComponentForm());
+        this.smallTimer = smallTimer;
+    }
 
     /**
      * return true if this screen or a parent form will trigger a save to Parse
@@ -160,13 +192,18 @@ public class MyForm extends Form {
     static int GAP_LABEL_ICON = 0; //in pixels!
     static int GAP_LABEL_ICON_LARGE = 3; //in pixels!
 
-    protected Container newContentContainer; //used to access a just created new contentPane container (before it has been fully added)
-
+//    protected Container newContentContainer; //used to access a just created new contentPane container (before it has been fully added)
     protected MySearchCommand getSearchCmd() {
         return searchCmd;
     }
 
-    protected static void addToNorthOfContentPane(Container contentPane, Component searchCont) {
+    /**
+     *
+     * @param contentPane
+     * @param northCont
+     * @param pos position in NorthContainer: 0 first, Integer.max= last.
+     */
+    protected static void addToNorthOfContentPane(Container contentPane, Component northCont, int pos) {
         Layout contentPaneLayout = contentPane.getLayout();
         if (contentPaneLayout instanceof BorderLayout) {
             Component prevNorthComp = ((BorderLayout) contentPaneLayout).getNorth();
@@ -175,18 +212,55 @@ public class MyForm extends Form {
 //            } else 
             if (prevNorthComp == null) {
                 //no North comp
-                contentPane.add(BorderLayout.NORTH, searchCont);
+                contentPane.add(BorderLayout.NORTH, northCont);
             } else {
                 //if only a single componentn in north, create a new container for both previous component and searchCont
-                Container northCont = new Container(BoxLayout.y());
+                Container newNorthCont = new Container(BoxLayout.y());
 //                        Container parent = northComp.getParent();
-                northCont.add(searchCont); //add search at pos 0
                 prevNorthComp.remove();
-                northCont.add(prevNorthComp); //and existing content (e.g. StickyHeader) at pos 1
+                newNorthCont.add(prevNorthComp); //and existing content (e.g. StickyHeader) at pos 1
 //                        parent.add(northCont);
-                contentPane.add(BorderLayout.NORTH, northCont);
+                if (pos > newNorthCont.getComponentCount()) {
+                    pos = newNorthCont.getComponentCount();
+                }
+                newNorthCont.addComponent(pos, northCont); //add search at pos 0
+                contentPane.add(BorderLayout.NORTH, newNorthCont);
             }
         }
+    }
+
+    protected void addToNorthOfContentPane(Component northCont, int pos) {
+        addToNorthOfContentPane(getContentPane(), northCont, pos);
+    }
+
+    protected static void addToSouthOfContentPane(Container contentPane, Component southCont, int pos) {
+        Layout contentPaneLayout = contentPane.getLayout();
+        if (contentPaneLayout instanceof BorderLayout) {
+            Component prevSouthComp = ((BorderLayout) contentPaneLayout).getSouth();
+//            if (prevNorthComp instanceof Container) { //NO, don't because an existing search field may be Container
+//                ((Container) prevNorthComp).addComponent(0, searchCont); //add search at pos 0 (above eg a StickyHeader or HelpText)
+//            } else 
+            if (prevSouthComp == null) {
+                //no North comp
+                contentPane.add(BorderLayout.SOUTH, southCont);
+            } else {
+                //if only a single componentn in north, create a new container for both previous component and searchCont
+                Container newSouthCont = new Container(BoxLayout.y());
+//                        Container parent = northComp.getParent();
+                prevSouthComp.remove();
+                newSouthCont.add(prevSouthComp); //and existing content (e.g. StickyHeader) at pos 1
+//                        parent.add(northCont);
+                if (pos > newSouthCont.getComponentCount()) {
+                    pos = newSouthCont.getComponentCount();
+                }
+                newSouthCont.addComponent(pos, southCont); //add search at pos 0
+                contentPane.add(BorderLayout.SOUTH, newSouthCont);
+            }
+        }
+    }
+
+    protected void addToSouthOfContentPane(Component southCont, int pos) {
+        addToSouthOfContentPane(getContentPane(), southCont, pos);
     }
 
     protected void setSearchCmd(MySearchCommand searchCommand) {
@@ -236,16 +310,15 @@ public class MyForm extends Form {
      *
      * @param startEditTextArea
      */
-    protected void setStartEditingAsyncTextArea(TextArea startEditTextArea) {
-        this.startEditingAsyncTextArea = startEditTextArea;
-    }
-
-    public TextArea getStartEditingAsyncTextArea() {
-        return startEditingAsyncTextArea;
-    }
-
+//    protected void setStartEditingAsyncTextArea(TextArea startEditTextArea) {
+//        this.startEditingAsyncTextArea = startEditTextArea;
+//    }
+//
+//    public TextArea getStartEditingAsyncTextArea() {
+//        return startEditingAsyncTextArea;
+//    }
     public String getUniqueFormId() {
-        return uniqueFormId != null ? uniqueFormId : (getTitle() != null && getTitle().length() > 0 ? getTitle() : "NoScreenId");
+        return uniqueFormId != null ? uniqueFormId : (getTitle() != null && !getTitle().isEmpty() ? getTitle() : "NoScreenId");
     }
 
 //    public String getUniqueFormIdXXX(String extensionStr) {
@@ -255,6 +328,62 @@ public class MyForm extends Form {
         this.uniqueFormId = formUniqueId;
     }
 
+    @Override
+    public void actionPerformed(ActionEvent evt) {
+        assert false; //should never be called?!
+        if (evt.getSource() == TimerStack2.getInstance()) {
+            TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
+            if (timerInstance != null) {
+                Item timedItem = timerInstance.getTimedItemN(); //no more items to time, remove timer (if any)
+                if (timedItem != null) { //no more items to time, remove timer (if any)
+                    Container smallTimerN = getAndMakeSmallTimerContN();
+                    if (smallTimerN != null) {
+                        ScreenTimer7.buildContentPane(smallTimerN, this, false);
+                        ((MyForm) smallTimerN.getComponentForm()).animateLayout(ANIMATION_TIME_DEFAULT);
+                    }
+                }
+            } else { //timedItem == null
+                if (getAndMakeSmallTimerContN() != null) {
+                    Form f = getAndMakeSmallTimerContN().getComponentForm();
+                    getAndMakeSmallTimerContN().remove();
+                    ((MyForm) f).animateLayout(ANIMATION_TIME_DEFAULT);
+                }
+            }
+        }
+    }
+
+//    public void actionPerformedOLD(ActionEvent evt) {
+//        if (evt.getSource() == TimerStack2.getInstance()) {
+//            TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
+//            if (timerInstance != null) {
+//                Item timedItem = timerInstance.getTimedItemN(); //no more items to time, remove timer (if any)
+//                if (timedItem != null) { //no more items to time, remove timer (if any)
+//                    if (timerInstance.isFullScreen()) {
+//                        if (!(this instanceof ScreenTimer7)) {
+//                            new ScreenTimer7(this).show();
+//                        }
+//                    } else {
+//                        Container smallTimer = getSmallTimerContN();
+//                        ScreenTimer7.buildContentPane(smallTimer, this, false);
+//                    }
+//                } else { //timedItem == null
+//                    if (!timerInstance.isFullScreen() && getSmallTimerContN() != null) {
+//                        getSmallTimerContN().remove();
+//                    }
+//                }
+//            } else {
+//                if (this instanceof ScreenTimer7) {
+//                    showPreviousScreen(true);
+//                } else {
+//                    if (getSmallTimerContN() != null) {
+//                        getSmallTimerContN().remove();
+//                    }
+//                }
+//            }
+//        } else {
+//
+//        }
+//    }
 //    public TextArea getEditFieldOnShowOrRefresh() {
 //        return editFieldOnShowOrRefresh;
 //    }
@@ -335,9 +464,9 @@ public class MyForm extends Form {
 //    String SCREEN_TITLE = "";
     //TODO: move titles into Screens
     static final String SCREEN_LISTS_TITLE = "Lists";
-    static final String SCREEN_LISTS_HELP = "Lists of all task lists";
+    static final String SCREEN_LISTS_HELP = "All your lists. Add new with + or PinchInsert"; //Lists of all task lists";
     static final String SCREEN_CATEGORIES_TITLE = "Categories";
-    static final String SCREEN_CATEGORIES_HELP = "Lists of all categories";
+    static final String SCREEN_CATEGORIES_HELP = "All your categories. Add new with + or PinchInsert"; //Lists of all categories";
     static final String SCREEN_CATEGORIES_EMPTY = "**";
     static final String SCREEN_ALL_TASKS_TITLE = "All tasks";
     static final String SCREEN_ALL_TASKS_HELP = "Show all tasks and projects. Project subtasks are only shown under their project";
@@ -358,8 +487,8 @@ public class MyForm extends Form {
     static final String SCREEN_INBOX_EMPTY = "No tasks in your inbox";
     static final String SCREEN_PROJECTS_TITLE = "All projects";
     static final String SCREEN_PROJECTS_HELP = "Projects";
-    static final String SCREEN_TEMPLATES_TITLE = "Templates";
-    static final String SCREEN_TEMPLATES_HELP = "Templates: define templates to easily create common tasks or projects";
+    static final String SCREEN_TEMPLATES_TITLE = Item.TEMPLATE_LIST; //"Templates";
+    static final String SCREEN_TEMPLATES_HELP = "Define your own Templates to easily create common projects, subprojects or tasks. You can create templates directly from existing projects";
     static final String SCREEN_COMPLETION_LOG_TITLE = "Completed"; //"Completed tasks""Log"; // "Work og", "Completion log", "Completed tasks"
     static final String SCREEN_COMPLETION_LOG_HELP = "Completed tasks show your recently completed tasks in order of completion"; //"Log"; // "Work og", "Completion log", "Completed tasks"
     static final String SCREEN_COMPLETION_LOG_EMPTY = "No tasks completed the last " + MyPrefs.completionLogInterval.getInt() + " days";
@@ -383,6 +512,9 @@ public class MyForm extends Form {
     static final String SCREEN_TOUCHED_TITLE = "Edited"; //"Touched";
     static final String SCREEN_TOUCHED_HELP = "Edited: tasks that have been edited in recent days";
     static final String SCREEN_TOUCHED_EMPTY = "No tasks changed the last " + MyPrefs.touchedLogInterval.getInt() + " days";
+    static final String SCREEN_EDITED_TITLE = "Edited"; //"Touched";
+    static final String SCREEN_EDITED_HELP = "Edited: tasks that have been edited in recent days";
+    static final String SCREEN_EDITED_EMPTY = "No tasks changed the last " + MyPrefs.touchedLogInterval.getInt() + " days";
     static final String SCREEN_TOUCHED_24H = "Touched last 24h";
     static final String SCREEN_STATISTICS_TITLE = "Results"; //Achievements, Work, Progress, Feats, Outcome, Headway, "Review"; //"Accomplished"; //"Achievements"; //"Statistics", "History"
     static final String SCREEN_STATISTICS_HELP = "Review: recently completed tasks grouped by day/week/month and list/category, with their estimated and actual effort."; //"Accomplished"; //"Achievements"; //"Statistics", "History"
@@ -390,49 +522,153 @@ public class MyForm extends Form {
     static final String SCREEN_IMPROVE = "Improve"; //how to improve, more precise estimates, analysis per type of tasks (respect due date, estimates, split up, allow to become interrupted, ...)
     static final String SCREEN_IMPROVE_HELP = "Shows you insights on how well you do and gives feedback on how you may improve. COMING..."; //how to improve, more precise estimates, analysis per type of tasks (respect due date, estimates, split up, allow to become interrupted, ...)
     static final String SETTINGS_SCREEN_TITLE = "Settings for "; //"Statistics", "History"
+    static final String SCREEN_INTERRUPT = "Interrupt";// "Time interrupt"; 
+
+    //https://www.schemecolor.com/red-orange-yellow-blue.php
+    static int colorLightGreen = 0x89e19c; //??
+    static int colorDarkGreen = 0x89e19c; //https://www.colorcombos.com/color-schemes/380/ColorCombo380.html
+    static int colorClearBlue = 0x0088dd; //https://www.schemecolor.com/red-orange-yellow-blue.php
+    static int colorYellow = 0xffd301; //https://www.schemecolor.com/red-orange-yellow-blue.php
+    static int colorRoyalBlue = 0x2a52bd; //https://www.schemecolor.com/red-orange-yellow-blue.php
+    static int colorDeepOrange = 0xc23b21; //https://www.schemecolor.com/red-orange-yellow-blue.php
+    static int colorOrange = 0xff8b01; //https://www.schemecolor.com/red-orange-yellow-blue.php
+    static int colorRed = 0xa40001; //https://www.schemecolor.com/red-orange-yellow-blue.php
+    static int colorDarkGrape = 0x4a2748; //https://stitchpalettes.com/palette/pink-clouds-under-blue-sky-spa0189/
+    static int colorMauve = 0xa25a76; //https://stitchpalettes.com/palette/pink-clouds-under-blue-sky-spa0189/
+    static int colorMelon = 0xe07b8d; //https://stitchpalettes.com/palette/pink-clouds-under-blue-sky-spa0189/
+    static int colorLigthGreenish = 0xadefd1; //https://stitchpalettes.com/palette/pink-clouds-under-blue-sky-spa0189/
+    static int colorLigthBluish = 0x9cc3d5; //https://www.google.com/imgres?imgurl=https%3A%2F%2Fwww.designwizard.com%2Fwp-content%2Fuploads%2F2019%2F03%2FcolorCombination_11.jpg&imgrefurl=https%3A%2F%2Fwww.designwizard.com%2Fblog%2Fdesign-trends%2Fcolour-combination&tbnid=awgB95q5MyrCbM&vet=12ahUKEwjU0sS6yfnuAhVU8IUKHQqsBL4QMyg1egQIARA0..i&docid=LLgapaCCavj9ZM&w=800&h=600&q=dark%20blue%20color%20palette%20with%20contrast&hl=en&ved=2ahUKEwjU0sS6yfnuAhVU8IUKHQqsBL4QMyg1egQIARA0
 
     public enum ScreenType {
         NOT_INIT("Not initialized", ""),
-        ALARMS(SCREEN_ALARM_TITLE, SCREEN_ALARM_HELP, SCREEN_ALARM_EMPTY),
-        CATEGORIES(SCREEN_CATEGORIES_TITLE, SCREEN_CATEGORIES_HELP, SCREEN_CATEGORIES_EMPTY),
-        ALL_TASKS(SCREEN_ALL_TASKS_TITLE, SCREEN_ALL_TASKS_HELP),
+        ALARMS(SCREEN_ALARM_TITLE, SCREEN_ALARM_HELP, SCREEN_ALARM_EMPTY, Icons.iconMainAlarms, null),
+        CATEGORIES(SCREEN_CATEGORIES_TITLE, SCREEN_CATEGORIES_HELP, SCREEN_CATEGORIES_EMPTY, Icons.iconMainCategories, null),
+        ALL_TASKS(SCREEN_ALL_TASKS_TITLE, SCREEN_ALL_TASKS_HELP, "", Icons.iconMainAllTasksCust, Icons.myIconFont,
+                ScreenListOfItems.OPTION_DISABLE_DRAG_AND_DROP | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, DAO.SYSTEM_LIST_ALL),
         FILTER(SCREEN_FILTER_TITLE, SCREEN_FILTER_HELP, SCREEN_FILTER_EMPTY),
-        LISTS(SCREEN_LISTS_TITLE, SCREEN_LISTS_HELP),
-        INBOX(SCREEN_INBOX_TITLE, SCREEN_INBOX_HELP, SCREEN_INBOX_EMPTY),
-        PROJECTS(SCREEN_PROJECTS_TITLE, SCREEN_PROJECTS_HELP),
-        TEMPLATES(SCREEN_TEMPLATES_TITLE, SCREEN_TEMPLATES_HELP),
-        COMPLETION_LOG(SCREEN_COMPLETION_LOG_TITLE, SCREEN_COMPLETION_LOG_HELP, SCREEN_COMPLETION_LOG_EMPTY),
-        CREATION_LOG(SCREEN_CREATION_LOG_TITLE, SCREEN_CREATION_LOG_HELP, SCREEN_CREATION_LOG_EMPTY),
-        NEXT(SCREEN_NEXT_TITLE, SCREEN_NEXT_HELP, SCREEN_NEXT_EMPTY),
-        OVERDUE(SCREEN_OVERDUE_TITLE, SCREEN_OVERDUE_HELP, "No overdue tasks the last " + MyPrefs.overdueLogInterval.getInt() + " days"),
-        TODAY(SCREEN_TODAY_TITLE, SCREEN_TODAY_HELP, SCREEN_TODAY_EMPTY),
-        TOUCHED(SCREEN_TOUCHED_TITLE, SCREEN_TOUCHED_HELP, SCREEN_TOUCHED_EMPTY),
-        WORKSLOTS(SCREEN_WORKSLOTS_TITLE, SCREEN_WORKSLOTS_HELP, SCREEN_WORKSLOTS_EMPTY),
-        STATISTICS(SCREEN_STATISTICS_TITLE, SCREEN_STATISTICS_HELP);
+        LISTS(SCREEN_LISTS_TITLE, SCREEN_LISTS_HELP, "", Icons.iconMainListsCust, Icons.myIconFont),
+        INBOX(SCREEN_INBOX_TITLE, SCREEN_INBOX_HELP, SCREEN_INBOX_EMPTY, Icons.iconMainInbox, null,
+                ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES),
+        ALL_PROJECTS(SCREEN_PROJECTS_TITLE, SCREEN_PROJECTS_HELP, "", Icons.iconMainProjectsCust, Icons.myIconFont,
+                ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES //| ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER //ScreenListOfItems.OPTION_NO_TIMER | 
+                | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE
+                | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, DAO.SYSTEM_LIST_PROJECTS),
+        TEMPLATES(SCREEN_TEMPLATES_TITLE, SCREEN_TEMPLATES_HELP, "", Icons.iconMainTemplates, null, ScreenListOfItems.OPTION_TEMPLATE_EDIT, DAO.SYSTEM_LIST_TEMPLATES),
+        COMPLETION_LOG(SCREEN_COMPLETION_LOG_TITLE, SCREEN_COMPLETION_LOG_HELP, SCREEN_COMPLETION_LOG_EMPTY, Icons.iconMainCompletionLog, null,
+                ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER | ScreenListOfItems.OPTION_NO_WORK_TIME
+                | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, 0, DAO.SYSTEM_LIST_LOG),
+        CREATION_LOG(SCREEN_CREATION_LOG_TITLE, SCREEN_CREATION_LOG_HELP, SCREEN_CREATION_LOG_EMPTY, Icons.iconMainCreationLog, null,
+                ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
+                | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, 0, DAO.SYSTEM_LIST_DIARY),
+        NEXT(SCREEN_NEXT_TITLE, SCREEN_NEXT_HELP, SCREEN_NEXT_EMPTY, Icons.iconMainNextCust, Icons.myIconFont,
+                ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                //                        | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
+                | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, 0, DAO.SYSTEM_LIST_NEXT),
+        OVERDUE(SCREEN_OVERDUE_TITLE, SCREEN_OVERDUE_HELP, "No overdue tasks the last " + MyPrefs.overdueLogInterval.getInt() + " days", Icons.iconMainOverdueCust, Icons.myIconFont,
+                ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                | ScreenListOfItems.OPTION_NO_WORK_TIME | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, 0, DAO.SYSTEM_LIST_OVERDUE),
+        TODAY(SCREEN_TODAY_TITLE, SCREEN_TODAY_HELP, SCREEN_TODAY_EMPTY, Icons.iconMainToday, null,
+                ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NON_EDITABLE_LIST
+                //                        | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
+                | ScreenListOfItems.OPTION_NO_WORK_TIME, 0, DAO.SYSTEM_LIST_TODAY),
+        TOUCHED(SCREEN_TOUCHED_TITLE, SCREEN_TOUCHED_HELP, SCREEN_TOUCHED_EMPTY, Icons.iconMainTouched, null, colorLigthBluish,
+                ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
+                | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
+                | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, DAO.SYSTEM_LIST_TOUCHED),
+        WORKSLOTS(SCREEN_WORKSLOTS_TITLE, SCREEN_WORKSLOTS_HELP, SCREEN_WORKSLOTS_EMPTY, Icons.iconMainWorkSlots, null, DAO.SYSTEM_LIST_WORKSLOTS),
+        STATISTICS(SCREEN_STATISTICS_TITLE, SCREEN_STATISTICS_HELP, "", Icons.iconMainStatistics, null);
         private String screenTitle;
         private String helpText;
         private String emptyScrText;
+        private char icon;
+        private Font font;
+        private Integer color;
+        private int options;
+        String systemName;
 
-        ScreenType(String title, String helpText, String emptyScreenText) {
+//        ScreenType(String title, String helpText, String emptyScreenText, char icon, Font font, Integer color, int options, String systemName) {
+        ScreenType(String title, String helpText, String emptyScreenText, char icon, Font font, Integer color, int options, String systemName) {
             screenTitle = title;
             this.helpText = helpText;
             this.emptyScrText = emptyScreenText;
+            this.icon = icon;
+            this.font = font;
+            this.color = color;
+            this.options = options;
+            this.systemName = systemName;
+        }
+
+        ScreenType(String title, String helpText, String emptyScreenText, char icon, Font font, Integer color, int options) {
+            this(title, helpText, emptyScreenText, icon, font, color, 0, null);
+
+        }
+
+        ScreenType(String title, String helpText, String emptyScreenText, char icon, Font font, Integer color, String systemName) {
+            this(title, helpText, emptyScreenText, icon, font, color, 0, systemName);
+        }
+
+        ScreenType(String title, String helpText, String emptyScreenText, char icon, Font font, Integer color) {
+            this(title, helpText, emptyScreenText, icon, font, color, 0, null);
+        }
+
+        ScreenType(String title, String helpText, String emptyScreenText, char icon, Font font, String systemName) {
+            this(title, helpText, emptyScreenText, icon, font, null, 0, systemName);
+        }
+
+        ScreenType(String title, String helpText, String emptyScreenText, char icon, Font font) {
+            this(title, helpText, emptyScreenText, icon, font, 0, 0, null);
+        }
+
+        ScreenType(String title, String helpText, String emptyScreenText, char icon) {
+            this(title, helpText, emptyScreenText, icon, null);
+        }
+
+        ScreenType(String title, String helpText, String emptyScreenText) {
+            this(title, helpText, emptyScreenText, ' ', null);
         }
 
         ScreenType(String title, String helpText) {
-            this(title, helpText, null);
+            this(title, helpText, null, ' ', null);
         }
 
         String getTitle() {
             return screenTitle;
         }
 
+        String getSystemName() {
+//            return screenTitle.toUpperCase();
+            return systemName;
+        }
+
         String getHelpText() {
             return helpText;
         }
 
+        char getIcon() {
+            return icon;
+        }
+
+        Font getFont() {
+            return font;
+        }
+
+        Integer getColor() {
+            return color;
+        }
+
         String getEmptyScreenText() {
             return emptyScrText;
+        }
+
+        int getOptions() {
+            return options;
+        }
+
+        boolean isFilterEditable() {
+            return false; //always false for now, TODO: allow editing selected filterLists
         }
 
         static ScreenType getScreenType(String screenTitle) {
@@ -443,6 +679,14 @@ public class MyForm extends Form {
             }
             return null;
         }
+    }
+
+    protected static void setIconLabelColor(Label iconLabel, Integer color) {
+        if (color != null) {
+            iconLabel.getAllStyles().setBgColor(color);
+            iconLabel.getIconStyleComponent().getAllStyles().setBgColor(color);
+        }
+        iconLabel.setGap(0); //ensure icons is centered!
     }
 
     protected static final String REPEAT_RULE_KEY = "$REPEAT_RULE$73"; //used to store repeatRules in ParseId2Map so they can be calculated last
@@ -511,25 +755,32 @@ public class MyForm extends Form {
     private static int TIME_FOR_DOUBLE_TAP = 200; //50 works on simulator, but not on iPhone (probably too short)
 
     MyForm(ScreenType screenType, MyForm previousForm, Runnable updateActionOnDone) { //throws ParseException, IOException {
-        this(screenType.getTitle(), previousForm, updateActionOnDone, screenType.getHelpText());
-        this.screenType = screenType;
+//        this(screenType.getTitle(), previousForm, updateActionOnDone, null,screenType.getHelpText());
+//        this.screenType = screenType;
+        this(screenType, null, previousForm, updateActionOnDone, null, screenType.getHelpText());
     }
 
     MyForm(String title, MyForm previousForm, Runnable updateActionOnDone, String helpText) { //throws ParseException, IOException {
-        this(title, previousForm, updateActionOnDone, null, helpText);
+        this(null, title, previousForm, updateActionOnDone, null, helpText);
     }
 
     MyForm(String title, MyForm previousForm, Runnable updateActionOnDone) {
-        this(title, previousForm, updateActionOnDone, "");
+        this(null, title, previousForm, updateActionOnDone, null, null);
     }
 
-    MyForm(String title, MyForm previousForm, Runnable updateActionOnDone, Runnable updateActionOnCancel, String helpText) { //throws ParseException, IOException {
-//    MyForm(String title, UpdateField updateActionOnDone) { //throws ParseException, IOException {
+    MyForm(ScreenType screenType, String title, MyForm previousForm, Runnable updateActionOnDoneN, Runnable updateActionOnCancel, String helpText) { //throws ParseException, IOException {
+        //    MyForm(String title, UpdateField updateActionOnDone) { //throws ParseException, IOException {
 //        super(title);
-        super();
+        super(new BorderLayout());
 //        this.helpText=helpText;
-        getContentPane().setSafeArea(MyPrefs.enableSafeArea.getBoolean()); //protect scrollbar at bottom of screen from swipe commands
-        setSafeAreaChanged();
+        if (true) {
+            if (true) {
+                getContentPane().setSafeArea(MyPrefs.enableSafeArea.getBoolean()); //protect scrollbar at bottom of screen from swipe commands
+                setSafeAreaChanged();
+            } else {
+                setSafeArea(MyPrefs.enableSafeArea.getBoolean()); //setting for the Form includes the Toolbar in safeArea?!
+            }
+        }
         Log.p("contentPane.isSafeArea() = " + getContentPane().isSafeArea()
                 + "; contentPane.isSafeAreaRoot()=" + getContentPane().isSafeAreaRoot() + "; myForm.isSafeAreaRoot()=" + isSafeAreaRoot());
 //        editSessionStartTime = new MyDate(MyDate.currentTimeMillis()); //always track when an editing session was started
@@ -637,10 +888,17 @@ public class MyForm extends Form {
 //            });
 //        }
 //</editor-fold>
-        setTitle(title); //must do here to use overridden version of setTitle()
-        addTitleHelp(helpText); //must do here to use overridden version of setTitle()
+        if (screenType != null) {
+            configureWithScreenType(screenType);
+        } else {
+//        if (screenType == null || screenType == ScreenType.NOT_INIT) {
+            setTitle(title); //must do here to use overridden version of setTitle()
+            addTitleHelp(null, helpText); //must do here to use overridden version of setTitle()
+//            setTextToShowIfEmptyList("Insert new task using + or pinch insert");
+        }
 
-        this.parentForm = previousForm;
+//        this.parentForm = previousForm;
+        setParentForm(previousForm);
         if (false) {
             setCyclicFocus(false); //to avoid Next on keyboard on iPhone?!
         }
@@ -673,23 +931,25 @@ public class MyForm extends Form {
             }
         }
 
-        initMyStatusBar(); //initialize statusbar to jump to top/bottom/switch position on doubletap
-//        if (false) {
+        if (true) {
+            initMyStatusBar(); //initialize statusbar to jump to top/bottom/switch position on doubletap
+        }//        if (false) {
 //            setAutoSizeMode(true); //ensure title is centered even when icons are added
 //        }
 //        this.previousForm = previousForm;
 //        this.previousForm = getComponentForm();'
-        if (updateActionOnDone == null) {
-            updateActionOnDone = () -> {
-            };
-        }
-        addUpdateActionOnDone(updateActionOnDone);
-        if (updateActionOnCancel == null) {
-            updateActionOnCancel = () -> {
-            };
-        }
-        setUpdateActionOnCancel(updateActionOnCancel);
-        setTransitionInAnimator(CommonTransitions.createSlide(CommonTransitions.SLIDE_HORIZONTAL, false, 200));
+//        if (updateActionOnDone == null) {
+//            updateActionOnDone = () -> {
+//            };
+//        }
+        addDoneUpdateAction(updateActionOnDoneN);
+
+//        if (updateActionOnCancel == null) {
+//            updateActionOnCancel = () -> {
+//            };
+//        }
+        setCancelUpdateAction(updateActionOnCancel);
+//        setTransitionInAnimator(CommonTransitions.createSlide(CommonTransitions.SLIDE_HORIZONTAL, false, 200));
 //        setTransitionOutAnimator( CommonTransitions.createSlide(CommonTransitions.SLIDE_HORIZONTAL, false, 200));
 //        ASSERT.that(updateActionOnDone != null, () -> "doneAction should always be defined, Form=" + this); //NOT necessary, we may set it with setUpdateActionOnDone()
         parseIdMap2.parseIdMapReset();
@@ -699,8 +959,9 @@ public class MyForm extends Form {
 //        setup();
 //            void setup() {
 //        setTactileTouch(true); //enables opening contextmenu on touching a list element??
-        setScrollable(false); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
-        setLayout(new BorderLayout()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
+        if (false) { //automatically set for BorderLayout
+            setScrollable(false); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
+        }//        setLayout(new BorderLayout()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
 //        setLayout(BoxLayout.y()); //use CENTER to fill the screen correctly with scrolling content (avoid blanc bar at the bottom of the iPhone screen?)
         if (false) {
             setLayout(BoxLayout.y());
@@ -759,11 +1020,24 @@ public class MyForm extends Form {
 //        getProperties(); //get existing (previously saved) properties from Parse
 //</editor-fold>
         setMyShowAlarmsReplayCmd(makeAlarmsReplayCmd());
-        setBigTimerReplayCmd(makeBigTimerReplayCmd());
-
+//        if (false) { //need to be refreshed when screen is refreshed (eg if starting timer)
+//            setBigTimerReplayCmd(makeBigTimerReplayCmd());
+//        }
+        if (false) {
+            setBigTimerReplayCmd(makeBigTimerReplayCmd()); //NB. Must be done in refreshAfterEdit to be defined once a timer is activated
+        }
+        //below disabled since not added to Form
+//        if (MyPrefs.fingerTracking.getBoolean()) {
+//            startPointerTracking();
+//        }
 //        getContentPane().setSafeAreaRoot(MyPrefs.enableSafeArea.getBoolean()); //protect scrollbar at bottom of screen from swipe commands
-//        if (previousValues!=null&&previousValues.get(MySearchCommand.SEARCH_KEY) != null && getSearchCmd() != null) {
-//            getSearchCmd().actionPerformed(null); //re-activate Search, null=>reuse locally stored text
+        //        if (previousValues!=null&&previousValues.get(MySearchCommand.SEARCH_KEY) != null && getSearchCmd() != null) {
+        //            getSearchCmd().actionPerformed(null); //re-activate Search, null=>reuse locally stored text
+        //        }
+
+//        initPointerTracking();
+//        if (false) {
+//            TimerStack2.getInstance().setActionListener(this); //start listening to TimerChanges //NO, not here (WHY not??), do in MyForm.onShow()
 //        }
     }
 
@@ -773,7 +1047,8 @@ public class MyForm extends Form {
 
     void initMyStatusBar() {
 //        Button bar = new Button("", "FormTitle") {
-        Button statusBarButton = new Button("", "StatusBarButton") {
+//        Button statusBarButton = new Button(" ", "StatusBarButton") {
+        Button statusBarButton = new Button(" ", "StatusBar") {
 
             @Override
             public void pointerReleased(int x, int y) {
@@ -883,17 +1158,44 @@ public class MyForm extends Form {
                 }
             }
         };
-
+        statusBarButton.setName("statusBarButton");
         statusBarButton.setShowEvenIfBlank(true);
 
         //NB!! the code below relies on internal implementation sdetails in CN1 Toolbar.initTitleBarStatus() so it may break if that code changes!!
 //        Layout statusBarLayout = (BorderLayout) getToolbar().getLayout();
-        Container statusBar = (Container) ((BorderLayout) getToolbar().getLayout()).getNorth();
-        statusBar.setUIID("StatusBarZeroSize");
-        statusBar.setLayout(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
-        statusBar.add(BorderLayout.CENTER, statusBarButton);
+        Layout currentStatusBarLayout = getToolbar().getLayout();
+        if (currentStatusBarLayout instanceof BorderLayout) {
+            Component currentStatusBarNorthComp = ((BorderLayout) currentStatusBarLayout).getNorth();
+            if (currentStatusBarNorthComp != null) {
+                if (false) { //this code adds another component which may prevent the safeArea from working
+                    currentStatusBarNorthComp.remove();
+                    //NB: place the statusBarButton *after* the statusbar to make sure it gets within the touchable area
+                    getToolbar().add(BorderLayout.NORTH, BoxLayout.encloseY(currentStatusBarNorthComp, statusBarButton)); //add new statusBarButton above(y)/existing content
+                } else {
+                    if (currentStatusBarNorthComp instanceof Container) {
+//                        ((Container) currentStatusBarNorthComp).setLayout(new BoxLayout(BoxLayout.Y_AXIS)); //add new statusBarButton above (y)
+                        ((Container) currentStatusBarNorthComp).setLayout(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE)); //add new statusBarButton above (y)
+//                        ((Container) currentStatusBarNorthComp).addComponent(0, statusBarButton); //add new statusBarButton above (y)
+                        ((Container) currentStatusBarNorthComp).addComponent(BorderLayout.CENTER, statusBarButton); //add new statusBarButton above (y)
+                        currentStatusBarNorthComp.setUIID("Container"); //remove the previous "StatusBar" style (now taken over by the statusBarButton)
+                    } else {
+                        currentStatusBarNorthComp.remove();
+                        //NB: place the statusBarButton *after* the statusbar to make sure it gets within the touchable area
+//                        getToolbar().add(BorderLayout.NORTH, BoxLayout.encloseY(currentStatusBarNorthComp, statusBarButton)); //add new statusBarButton above(y)/existing content
+                        getToolbar().add(BorderLayout.CENTER, BoxLayout.encloseY(currentStatusBarNorthComp, statusBarButton)); //add new statusBarButton above(y)/existing content
+                    }
+                }
+            } else {
+                getToolbar().add(BorderLayout.NORTH, statusBarButton); //add new statusBarButton above(y)/existing content
+            }
+//        currentStatusBar.setUIID("StatusBarZeroSize");
+            //        currentStatusBar.setLayout(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
+            //        currentStatusBarNorthComp.add(BorderLayout.CENTER, statusBarButton);
+        } else {
+            ASSERT.that(false, "getToolbar().getLayout() NOT instanceof BorderLayout, is=" + currentStatusBarLayout);
+        }
         if (false) {
-            statusBar.setLeadComponent(statusBarButton);
+//            currentStatusBarNorthComp.setLeadComponent(statusBarButton);
         }
 
         if (false) {
@@ -923,7 +1225,8 @@ public class MyForm extends Form {
             super.setTitle(title);
         } else {
 //        Label titleComponent = new Label(getTitle(),"FormTitle") {
-            Button titleComponent = new Button(title, "FormTitle");
+//            Button titleComponent = new Button(title, "FormTitle");
+            Button titleComponent = new Button(title, "Title");
             titleComponent.setTextPosition(Label.RIGHT); //show icon on the left of title text
             if (iconFont != null) {
                 titleComponent.setFontIcon(iconFont, icon);
@@ -1058,8 +1361,11 @@ public class MyForm extends Form {
      */
     @Override
     protected void initGlobalToolbar() {
-        if (Toolbar.isGlobalToolbar()) {
+        if (false) {
+            super.initGlobalToolbar();
+        } else if (Toolbar.isGlobalToolbar()) {
             setToolbar(new Toolbar() {
+                @Override
                 protected void initTitleBarStatus() {
 //        Form f = getComponentForm();
 //        if (f != null && !f.shouldPaintStatusBar()) {
@@ -1090,7 +1396,7 @@ public class MyForm extends Form {
     }
 
     protected void setKeepPos() {
-        setKeepPos(new KeepInSameScreenPosition());
+        setKeepPos(new KeepInSameScreenPosition(this));
     }
 
     protected KeepInSameScreenPosition getKeepPos() {
@@ -1123,41 +1429,76 @@ public class MyForm extends Form {
         return screenType == null ? ScreenType.NOT_INIT : screenType; //avoid returning null
     }
 
-    protected void setScreenType(ScreenType screenType) {
+    protected void configureWithScreenType(ScreenType screenType) {
         this.screenType = screenType;
+        if (screenType != null && screenType != ScreenType.NOT_INIT) {
+            setTitle(screenType.getTitle()); //must do here to use overridden version of setTitle()
+            addTitleHelp(screenType.name(), screenType.getHelpText()); //must do here to use overridden version of setTitle()
+            setTextToShowIfEmptyList(screenType.getEmptyScreenText());
+        }
     }
 
     /**
      * returns the container in which to add the smallTimer, can be overridden
      * to place the smallTimer in other places than the default South container.
      *
-     * @return
+     * @return null if timer should not be visible in a given screen
      */
-    public Container getContainerForSmallTimer() {
-        Container containerForSmallTimer = null;
-        Form form = this;
-        if ((form instanceof ScreenCategoryPicker //|| form instanceof ScreenListOfAlarms
-                || form instanceof ScreenLogin || form instanceof ScreenObjectPicker
-                || form instanceof ScreenRepair || form instanceof ScreenTimer6)) {
-            return null;
-        } else {
-            Container formContentPane = form.getContentPane();
-            Layout contentPaneLayout = formContentPane.getLayout();
-            if (contentPaneLayout instanceof BorderLayout) {
+//    public Container getContainerForSmallTimer() {
+    public Container getAndMakeSmallTimerContN() {
+        if (true || getSmallTimerContainer() == null) { //true=disable caching of container
+//        Container smallTimer = null;
+            Form form = this;
+            if ((form instanceof ScreenCategoryPicker //|| form instanceof ScreenListOfAlarms
+                    || form instanceof ScreenLogin || form instanceof ScreenObjectPicker2// || form instanceof ScreenObjectPicker
+                    || form instanceof ScreenRepair || form instanceof ScreenTimer7 //                    || form instanceof ScreenListOfAlarms
+                    )) {
+//                return null;
+            } else {
+                if (false) {
+                    Container formContentPane = form.getContentPane();
+                    Layout contentPaneLayout = formContentPane.getLayout();
+                    if (contentPaneLayout instanceof BorderLayout) {
 //                timerContainer = getContentPaneSouth(form);
-                Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
-                if (southComponent instanceof Container) {
-                    containerForSmallTimer = (Container) southComponent;
-                } else if (southComponent == null) {
+                        Component southComponent = ((BorderLayout) contentPaneLayout).getSouth();
+                        if (southComponent instanceof Container) {
+//                        smallTimer = (Container) southComponent;
+                            //if we have a BorderLayout container in SOUTH, wrap it in a BoxLayout container
+                            if (((Container) southComponent).getLayout() instanceof BorderLayout) {
+                                Container newCont = new Container(BoxLayout.y());
+                                southComponent.remove();
+                                newCont.add(southComponent);
+                                formContentPane.add(BorderLayout.SOUTH, newCont);
+//                            setSmallTimerContainer((Container) ((BorderLayout) ((Container) southComponent).getLayout()).getSouth());
+                                setSmallTimerContainer(newCont);
+                            } else {
+                                setSmallTimerContainer((Container) southComponent);
+                            }
+//                    } else if (!(southComponent instanceof Container)) {
+////                        smallTimer = newCont;
+//                        setSmallTimerContainer(newCont);
+                        } else if (southComponent == null) {
+                            Container newCont = new Container(BoxLayout.y());
+                            formContentPane.add(BorderLayout.SOUTH, newCont);
+//                        smallTimer = newCont;
+                            setSmallTimerContainer(newCont);
+                        }
+                    }
+                } else { //else: nothing, only BorderLayout can currently show a smallTimer in the south container
                     Container newCont = new Container(BoxLayout.y());
-                    formContentPane.add(BorderLayout.SOUTH, newCont);
-                    containerForSmallTimer = newCont;
+                    addToSouthOfContentPane(newCont, Integer.MAX_VALUE);
+                    setSmallTimerContainer(newCont);
                 }
-            } //else: nothing, only BorderLayout can currently show a smallTimer in the south container
+            }
         }
-        return containerForSmallTimer;
+//        return containerForSmallTimer;
+//        return smallTimer;
+        return getSmallTimerContainer();
     }
 
+//    public void setSmallTimerCont(Container smallTimerContainer) {
+//        smallTimer = smallTimerContainer;
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private Container getSmallTimerCont(Container cont) {
 //        if (cont == null) {
@@ -1201,73 +1542,183 @@ public class MyForm extends Form {
 //        return null;
 //    }
 //</editor-fold>
-    public boolean removeSmallTimerCont() {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        Container smallTimerCont = getSmallTimerCont();
+//    public boolean removeSmallTimerContXXX() {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        Container smallTimerCont = getSmallTimerCont();
+////        if (smallTimerCont != null) {
+////            smallTimerCont.remove();
+////            return true;
+////        }
+////        return false;
+////</editor-fold>
+//        if (smallTimer != null) {
+//            smallTimer.remove();
+////            TimerStack2.getInstance().removeActionListener(smallTimer);
+//            return true;
+//        } else {
+//            return false;
+//        }
+//    }
+//    public boolean addSmallTimerContXXX(Container smallTimer) {
+//        removeSmallTimerContXXX(); //remove previous in case
+//        this.smallTimer = smallTimer;
+//        Container smallTimerCont = null; //getContainerForSmallTimer();
 //        if (smallTimerCont != null) {
-//            smallTimerCont.remove();
+//            if (smallTimerCont.getLayout() instanceof BorderLayout) {
+//                smallTimerCont.add(BorderLayout.SOUTH, smallTimer);
+//            } else {
+//                smallTimerCont.add(smallTimer);
+//            }
 //            return true;
 //        }
 //        return false;
-//</editor-fold>
-        if (smallTimer != null) {
-            smallTimer.remove();
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean addSmallTimerCont(Container smallTimer) {
-        removeSmallTimerCont(); //remove previous in case
-        this.smallTimer = smallTimer;
-        Container smallTimerCont = getContainerForSmallTimer();
-        if (smallTimerCont != null) {
-            if (smallTimerCont.getLayout() instanceof BorderLayout) {
-                smallTimerCont.add(BorderLayout.SOUTH, smallTimer);
-            } else {
-                smallTimerCont.add(smallTimer);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    private SpanButton helpField;
-    private Label helpTitle;
+//    }
+//
+//    public boolean getSmallTimerContXXX() {
+//        removeSmallTimerContXXX(); //remove previous in case
+//        this.smallTimer = smallTimer;
+//        Container smallTimerCont = null; //getContainerForSmallTimer();
+//        if (smallTimerCont != null) {
+//            if (smallTimerCont.getLayout() instanceof BorderLayout) {
+//                smallTimerCont.add(BorderLayout.SOUTH, smallTimer);
+//            } else {
+//                smallTimerCont.add(smallTimer);
+//            }
+//            return true;
+//        }
+//        return false;
+//    }
+//    private SpanLabel helpFieldTxt;
+//    private Container helpField;
+//    private Label helpTitle;
     private Container helpContainer;
+    private ActionListener showHideHelpTxtActionListener;
 
 //    protected void addHelpContainer(boolean show) {
-    protected void addHelpContainerXXX() {
-        helpTitle = new Label();
-        helpTitle.setUIID("HelpTitle");
-        helpField = new SpanButton();
+//    protected void addHelpContainerXXX() {
+//        helpTitle = new Label();
+//        helpTitle.setUIID("HelpTitle");
+//        helpField = new SpanButton();
+////        helpField.setUIID("HelpField");
+//        helpField.setTextUIID("HelpField");
+//        helpField.addActionListener(e -> {
+//            helpContainer.setHidden(!helpContainer.isHidden());
+//            helpContainer.getParent().animateLayout(ANIMATION_TIME_DEFAULT);
+//        });//clicking the help field makes it disappear
+//
+//        helpContainer = BoxLayout.encloseY(helpTitle, helpField);
+//
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        Layout layout = getContentPane().getLayout();
+////        if (layout instanceof BorderLayout) {
+////            Component south = ((BorderLayout) layout).getSouth();
+////            if (south instanceof Container) {
+////                ((Container) south).add(helpContainer);
+////            } else if (south instanceof Component) {
+////                //enclose existing component with helpContainer in a BoxY container
+////                south.getParent().addComponent(BorderLayout.SOUTH, BoxLayout.encloseY(south, helpContainer));
+////            }
+////        } else {
+////            ASSERT.that(false, "trying to add helpContainer to ContentPane withouth BorderLayout");
+////        }
+////</editor-fold>
+//        MyForm.addToNorthOfContentPane(getContentPane(), helpContainer, 0); //add to North, after SearchCont 
+//
+//        helpContainer.setHidden(true); //initial state is hidden (first click will change this)
+//    }
+    private void removeHelp(boolean animate) {
+        if (helpContainer != null) {
+            Component parent = helpContainer.getParent();
+            helpContainer.remove();
+//            helpField.removeActionListener(helpActLst);
+            helpContainer = null;
+            if (animate && parent instanceof Container) {
+                ((Container) parent).animateLayout(ANIMATION_TIME_DEFAULT);
+            }
+        }
+    }
+
+    private void installHelp(String topic, String helpText, ActionListener helpActionListener, boolean animate) {
+//            addHelpContainer(); //add 'lazily', after Form is initialized etc
+        removeHelp(false); //remove previous help
+        Container helpField;
+        if (true) {
+            SpanButton helpTxtSpanButton = null;
+            helpTxtSpanButton = new SpanButton(helpText, "HelpField");
+//            helpField.setMaterialIcon(Icons.iconTitleHelp); //Icons.iconCloseCircle
 //        helpField.setUIID("HelpField");
-        helpField.setTextUIID("HelpField");
-        helpField.addActionListener(e -> {
-            helpContainer.setHidden(!helpContainer.isHidden());
-            helpContainer.getParent().animateLayout(ANIMATION_TIME_DEFAULT);
-        });//clicking the help field makes it disappear
-
-        helpContainer = BoxLayout.encloseY(helpTitle, helpField);
-
+//        helpTxtSpanButton.setTextUIID("HelpField");
+//            helpField.setIconUIID("HelpField");
+//            helpField.setGap(0);
+//        helpTxtSpanButton.setText(helpText);
+            helpTxtSpanButton.setUIID("Container");
+            Button helpIconLabel = new Button("", "HelpIcon");
+            helpTxtSpanButton.addActionListener(helpActionListener);//clicking the help field makes it disappear
+            helpIconLabel.addActionListener(e -> Display.getInstance().execute("https://todocatalyst.com/help/#" + topic)); //show Help page
+//        helpIconLabel.setGap(Icons.iconTitleHelp); //Icons.iconCloseCircle
+            helpIconLabel.setMaterialIcon(Icons.iconTitleHelp); //Icons.iconCloseCircle
+//            helpField = new Container(new MyBorderLayout(MyBorderLayout.SIZE_WEST_BEFORE_EAST));
+            helpField = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
+            helpField.setLeadComponent(helpTxtSpanButton); //grap clicks on help icon button
+            helpField.add(BorderLayout.EAST, helpIconLabel);
+            helpField.add(BorderLayout.CENTER, helpTxtSpanButton);
+        } else {
+//            helpTxtSpanButton = new SpanButton(helpText, "HelpField");
+//            helpTxtSpanButton.setIconUIID("HelpIcon");
+//            helpTxtSpanButton.setMaterialIcon(Icons.iconTitleHelp); //Icons.iconCloseCircle
+//            helpTxtSpanButton.setUIID("Container");
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        Layout layout = getContentPane().getLayout();
-//        if (layout instanceof BorderLayout) {
-//            Component south = ((BorderLayout) layout).getSouth();
-//            if (south instanceof Container) {
-//                ((Container) south).add(helpContainer);
-//            } else if (south instanceof Component) {
-//                //enclose existing component with helpContainer in a BoxY container
-//                south.getParent().addComponent(BorderLayout.SOUTH, BoxLayout.encloseY(south, helpContainer));
-//            }
-//        } else {
-//            ASSERT.that(false, "trying to add helpContainer to ContentPane withouth BorderLayout");
-//        }
+//            helpLabel.setTextPosition(TextArea.RIGHT);
+//        Container helpField = BorderLayout.centerTotalBelowEastWest(helpFieldTxt, null, helpLabel);
+//        Container helpField = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
+//            Container helpField = new Container(new MyBorderLayout(MyBorderLayout.SIZE_WEST_BEFORE_EAST));
+//            helpField.setLeadComponent(helpTxtSpanButton); //grap clicks on help icon button
+//            helpField.add(BorderLayout.WEST, helpIconLabel);
+//            helpField.add(BorderLayout.CENTER, helpTxtSpanButton);
 //</editor-fold>
-        MyForm.addToNorthOfContentPane(getContentPane(), helpContainer); //add to North, after SearchCont 
+        }
+////<editor-fold defaultstate="collapsed" desc="comment">
+//        ActionListener helpActionListener = e -> {
+//////                helpContainer.setHidden(!helpContainer.isHidden());
+//////                helpContainer.getParent().animateLayout(ANIMATION_TIME_DEFAULT);
+////            if (helpContainer != null) {
+////                Component parent = helpContainer.getParent();
+////                helpContainer.remove();
+//////                    helpField.removeActionListener(helpActLst);
+////                helpContainer = null;
+////                if (parent instanceof Container) {
+////                    ((Container) parent).animateLayout(ANIMATION_TIME_DEFAULT);
+////                }
+////            }
+////            removeHelp(); //remove 
+//            if (helpContainer == null) {
+//                installHelp(topic, helpText, true); //always animate on when clicking to see
+//            } else {
+//                removeHelp(true);
+//            }
+//        };
+////</editor-fold>
+//        helpTxtSpanButton.addActionListener(helpActionListener);//clicking the help field makes it disappear
 
-        helpContainer.setHidden(true); //initial state is hidden (first click will change this)
+        if (topic != null && !topic.isEmpty()) {
+            Label helpTitle = new Label();
+            helpTitle.setUIID("HelpTitle");
+            helpTitle.setText(topic);
+//            helpContainer = BoxLayout.encloseY(helpTitle, helpField); //add help topic on top (not used yet)
+//            helpContainer = BoxLayout.encloseY(helpTitle, helpTxtSpanButton); //add help topic on top (not used yet)
+            helpContainer = BoxLayout.encloseY(helpTitle, helpField); //add help topic on top (not used yet)
+        } else {
+//            helpContainer = BoxLayout.encloseY(helpField);
+//            helpContainer = helpField;
+//            helpContainer = helpTxtSpanButton;
+            helpContainer = helpField;
+        }
+        addToNorthOfContentPane(helpContainer, 0); //add to North, *before* SearchCont 
+//            helpContainer.setHidden(true); //initial state is hidden (first click will change this)
+
+        if (animate && helpContainer.getParent() != null) {
+            helpContainer.getParent().animateLayout(ANIMATION_TIME_DEFAULT); //don't animate here since Form is not yet shown!?
+        }
     }
 
     /**
@@ -1275,65 +1726,47 @@ public class MyForm extends Form {
      * @param topic eg the name of the command for which help is shown
      * @param helpText the help text
      */
-    public void showHelp(String topic, String helpText) {
-        if (helpContainer != null) {
-            Component parent = helpContainer.getParent();
-            helpContainer.remove();
-            helpContainer = null;
-            if (parent instanceof Container) {
-                ((Container) parent).animateLayout(ANIMATION_TIME_DEFAULT);
-            }
-        } else {
-//            addHelpContainer(); //add 'lazily', after Form is initialized etc
-            helpField = new SpanButton();
-            helpField.setMaterialIcon(Icons.iconShowLess); //Icons.iconCloseCircle
-//        helpField.setUIID("HelpField");
-            helpField.setTextUIID("HelpField");
-            helpField.setIconUIID("HelpField");
-            helpField.setGap(0);
-            helpField.setText(helpText);
-            helpField.setTextPosition(TextArea.LEFT);
-            helpField.addActionListener(e -> {
-//                helpContainer.setHidden(!helpContainer.isHidden());
-//                helpContainer.getParent().animateLayout(ANIMATION_TIME_DEFAULT);
-                Component parent = helpContainer.getParent();
-                helpContainer.remove();
-                helpContainer = null;
-                if (parent instanceof Container) {
-                    ((Container) parent).animateLayout(ANIMATION_TIME_DEFAULT);
-                }
-            });//clicking the help field makes it disappear
+    private String SCREEN_HIDE_HELP_SETTING_STR = "HideScrHlpTxt"; //when set, hide(!) screen help => ensure help is visible from start until de-activated
 
-            if (topic != null && !topic.isEmpty()) {
-                helpTitle = new Label();
-                helpTitle.setUIID("HelpTitle");
-                helpTitle.setText(topic);
-                helpContainer = BoxLayout.encloseY(helpTitle, helpField);
-            } else {
-                helpContainer = BoxLayout.encloseY(helpField);
-            }
-            MyForm.addToNorthOfContentPane(getContentPane(), helpContainer); //add to North, after SearchCont 
-//            helpContainer.setHidden(true); //initial state is hidden (first click will change this)
-
-//        if (helpContainer.isHidden()) {
-//            helpContainer.setHidden(false);
-//            helpTitle.setText(topic);
-//            helpField.setText(helpText);
-            if (helpContainer.getParent() != null) {
-                helpContainer.getParent().animateLayout(ANIMATION_TIME_DEFAULT);
-            }
-//        } else {
-//            helpContainer.setHidden(true); //hide again on second click
-//        }
-        }
-    }
-
-    public void addTitleHelp(String helpText) {
+    public void addTitleHelp(String screenId, String helpText) {
 //        addHelpContainer(false);
         if (helpText != null && !helpText.isEmpty()) {
+            showHideHelpTxtActionListener = e -> {
+                if (screenId != null) { //if a setting can be derived from screenId:
+                    MyPrefs.flipBoolean(screenId + SCREEN_HIDE_HELP_SETTING_STR);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                        if (!MyPrefs.getBoolean(screenId + SCREEN_HELP_SETTING_STR)) {
+//                            showHelp(helpText, false);
+//                        }
+// if (helpContainer == null) {
+//                installHelp(topic, helpText, true); //always animate on when clicking to see
+//            } else {
+//                removeHelp(true);
+//            }
+//</editor-fold>
+                    if (MyPrefs.getBoolean(screenId + SCREEN_HIDE_HELP_SETTING_STR)) {
+                        removeHelp(true);
+                    } else {
+                        installHelp(null, helpText, showHideHelpTxtActionListener, true);
+                    }
+                } else {
+//                        installHelp(null, helpText, true);
+                    if (helpContainer != null) {
+                        removeHelp(true);
+                    } else {
+                        installHelp(null, helpText, showHideHelpTxtActionListener, true);
+                    }
+                }
+            };
+            //unless help is disabled, show it from start:
+            if (screenId != null && !MyPrefs.getBoolean(screenId + SCREEN_HIDE_HELP_SETTING_STR)) {
+//                showHelp(helpText, false);
+                installHelp(null, helpText, showHideHelpTxtActionListener, false);
+            }
+            //add actionListener to Title button to hide (or show) the help
             Component titleComponent = getToolbar().getTitleComponent();
             if (titleComponent instanceof Button) {
-                ((Button) titleComponent).addActionListener(e -> showHelp(null, helpText));
+                ((Button) titleComponent).addActionListener(showHideHelpTxtActionListener);
             }
         }
     }
@@ -1529,7 +1962,7 @@ public class MyForm extends Form {
      */
 //    static void dialogSetWaitingDateAndAlarm(Item item, Map<Object, UpdateField> parseIdMap2) {
     static void showDialogSetWaitingDateAndAlarmIfAppropriate(Item item) {
-        if (MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting.getBoolean()) {
+        if (true || MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting.getBoolean()) { //true: checked *before* calling
             //                || (item.getWaitingTillDate().getTime() != 0 && item.getWaitingAlarmDate().getTime() != 0)) {
 //                || (item.getWaitingTillDate().getTime() < MyDate.currentTimeMillis() || item.getWaitingAlarmDate().getTime() < MyDate.currentTimeMillis())) {
 
@@ -2163,22 +2596,22 @@ public class MyForm extends Form {
 //</editor-fold>
     /**
      *
-     * @param updateActionOnDone Runnable to add to actions when exiting Screen
+     * @param updateActionOnDoneN Runnable to add to actions when exiting Screen
      * with Done (Back), if null, no effect
      */
-    void addUpdateActionOnDone(Runnable updateActionOnDone) {
+    void addDoneUpdateAction(Runnable updateActionOnDoneN) {
         if (false && Config.TEST) {
-            ASSERT.that(updateActionOnDone == null || this.updateActionOnDone == null, "Setting updateActionOnDone twice, old="
-                    + this.updateActionOnDone + "; new=" + updateActionOnDone);
+            ASSERT.that(updateActionOnDoneN == null || this.updateActionOnDone == null, "Setting updateActionOnDone twice, old="
+                    + this.updateActionOnDone + "; new=" + updateActionOnDoneN);
         }
-        if (updateActionOnDone != null) {
+        if (updateActionOnDoneN != null) {
             if (this.updateActionOnDone == null) {
-                this.updateActionOnDone = updateActionOnDone;
+                this.updateActionOnDone = updateActionOnDoneN;
             } else {
                 Runnable oldUpdateAction = this.updateActionOnDone;
                 this.updateActionOnDone = () -> {
                     oldUpdateAction.run();
-                    updateActionOnDone.run();
+                    updateActionOnDoneN.run();
                 };
             }
         }
@@ -2188,7 +2621,7 @@ public class MyForm extends Form {
         return updateActionOnDone;
     }
 
-    void setUpdateActionOnCancel(Runnable updateActionOnCancel) {
+    void setCancelUpdateAction(Runnable updateActionOnCancel) {
         if (Config.TEST) {
             ASSERT.that(updateActionOnCancel == null || this.updateActionOnCancel == null, "Setting updateActionOnCancel twice, old="
                     + this.updateActionOnCancel + "; new=" + updateActionOnCancel);
@@ -2230,6 +2663,43 @@ public class MyForm extends Form {
      */
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
         // makeMyShowAlarmsReplayCmd(); //add the  //NOW done in MyForm init
+        if (Config.TEST) {
+//            toolbar.addCommandToOverflowMenu(makeDebugCommand());
+            toolbar.addCommandToOverflowMenu(ScreenRepair.makeSendErrorLog());
+            toolbar.addCommandToOverflowMenu(ScreenRepair.makeShowErrorLog(this));
+        }
+    }
+
+    protected void refreshTimerUI() {
+        TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
+        if (timerInstance != null) {
+//            if (!(this instanceof ScreenTimer7) && !isHideSmallTimer()) {
+//                Container smallTimer = getAndMakeSmallTimerContN();
+            removeSmallTimerContainer(); //just in case
+            ScreenTimer7.buildContentPane(null, this, false, true);
+//            }
+        } else { //no timer is currently running
+            removeSmallTimerContainer(); //just in case
+            //if timer not currently active set this listener to refresh the UI
+            TimerStack2.getInstance().setActionListener((e) -> {
+                TimerInstance2 timerInstance2 = TimerStack2.getTimerInstanceN();
+                if (timerInstance2 != null) { //if a timer has been started
+                    if (!(this instanceof ScreenTimer7)) {
+//                        refreshAfterEdit(); //NB! MUST call refresh *before* getting BigTimerCmd below
+                        if (!MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() && getBigTimerReplayCmd() != null) {
+                            setBigTimerReplayCmd(makeBigTimerReplayCmd()); //NB! MUST update  *before* getting BigTimerCmd below
+                            getBigTimerReplayCmd().actionPerformed(null); //start full screen timer 
+                        } else {
+//                            Container smallTimer = getAndMakeSmallTimerContN();
+//                            ScreenTimer7.buildContentPane(smallTimer, this, false); //will replace this listener by a new one to update the timer container/screen
+                            ScreenTimer7.buildContentPane(null, this, false, true); //will replace this listener by a new one to update the timer container/screen
+                        }
+                    }
+                } else {
+                    removeSmallTimerContainer();
+                }
+            });
+        }
     }
 
     /**
@@ -2256,19 +2726,35 @@ public class MyForm extends Form {
 //        TimerStack.getInstance().refreshOrShowTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
 //        TimerStack.getInstance().refreshOrShowSmallTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
 //</editor-fold>
-        TimerStack.getInstance().refreshOrShowSmallTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
 
-        if (true) {
-            revalidateWithAnimationSafety();
-//            restoreKeepPos();
-            if (false) {
-                if (getStartEditingAsyncTextArea() != null) {
-                    getStartEditingAsyncTextArea().startEditingAsync();
-                    Log.p("---->>> startEditingAsync() for TextArea named=" + getStartEditingAsyncTextArea().getName());
-                } else if (getPinchInsertContainer() != null) {
-                    getPinchInsertContainer().getTextArea().startEditingAsync();
-                }
+//        setBigTimerReplayCmd(makeBigTimerReplayCmd());
+//        TimerStack.getInstance().refreshOrShowSmallTimerUI(this); //add smallTimer if relevant. Pass 'this' since currentForm may be the previous (currently shown) form
+//        if (false) {
+//            TimerInstance2 timerInstance = TimerStack2.getInstance().getTimerInstanceN();
+//            if (timerInstance != null && timerInstance.isRunning() && !timerInstance.isFullScreen()) {
+////            removeSmallTimerCont(); //remove old smallTimer (if there is one)
+////            setKeepPos(new KeepInSameScreenPosition()); //is this necessary if smallTimer is in South container??
+//                Container smallTimer = new Container();
+//                ScreenTimer7.buildContentPane(smallTimer, this, false); //refresh the small container
+//                this.addSmallTimerContXXX(smallTimer);
+//            }
+//        }
+        if (false) {
+//            revalidateWithAnimationSafety();
+            if (true) {
+                revalidateLater();
+            } else {
+                animateLayout(ANIMATION_TIME_DEFAULT);
             }
+//            restoreKeepPos();
+//            if (false) {
+//                if (getStartEditingAsyncTextArea() != null) {
+//                    getStartEditingAsyncTextArea().startEditingAsync();
+//                    Log.p("---->>> startEditingAsync() for TextArea named=" + getStartEditingAsyncTextArea().getName());
+//                } else if (getPinchInsertContainer() != null) {
+//                    getPinchInsertContainer().getTextArea().startEditingAsync();
+//                }
+//            }
 //            if (getStartEditingAsyncTextArea() != null) {
 //                getStartEditingAsyncTextArea().startEditingAsync();
 //            }
@@ -2290,7 +2776,7 @@ public class MyForm extends Form {
 
 //        if (newContentContainer != null) {
 //            ContainerScrollY scrollable = findScrollableContYChild(newContentContainer);
-        ContainerScrollY scrollableContainer = findScrollableContYChild(newContentContainer != null ? newContentContainer : getContentPane());
+        ContainerScrollY scrollableContainer = findScrollableContYChild(container != null ? container : getContentPane());
         if (false && scrollableContainer != null) {
             scrollableContainer.setScrollVisible(true);
         }
@@ -2300,7 +2786,14 @@ public class MyForm extends Form {
 //            if (true && previousValues != null) {//            previousValues.setScrollComponent(findScrollableContYChild(contentContainer));
             previousValues.setListenToYScrollComponent(scrollableContainer);
         }
-//        }
+
+        setBigTimerReplayCmd(makeBigTimerReplayCmd()); //MUST be done in refreshAfterEdit (to be set once a timer is defined)
+        if (!(this instanceof ScreenTimer7)) { //don't refresh for ScreenTimer which is already build
+            refreshTimerUI();
+        }
+//        revalidate();
+        revalidateLater();
+        restoreKeepPos();
     }
 
 //    abstract void refreshAfterEdit(KeepInSameScreenPosition keepPos);
@@ -2489,6 +2982,9 @@ public class MyForm extends Form {
 //    }
 ////</editor-fold>
     void showPreviousScreen(boolean callRefreshAfterEdit) {
+//        if (false) {
+//            TimerStack2.getInstance().removeActionListenerXXX(this); //stop listening to the Timer //Necessary (since only one screen can be set as listener)?!
+//        }
         if (previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
             previousValues.deleteFile();
 //            previousValues.clear(); //if still accessed
@@ -2564,7 +3060,7 @@ public class MyForm extends Form {
 //    protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemList itemListOrg, ComponentListForSearch getCompList) {
     protected ActionListener makeSearchFunctionUpperLowerStickyHeaders(ItemAndListCommonInterface itemListOrg, ComponentListForSearch getCompList) {
         return (e) -> { //NB. if e==null=> reuse previous locally stored search string
-            String text;
+            String text = null;
             Component firstVisibleComp = null;
             MyForm myForm = (MyForm) getComponentForm();
 
@@ -2578,7 +3074,12 @@ public class MyForm extends Form {
 //                } else {
 //                    text = ""; //if ever the implementation with TextField is changed, simply reset the search when coming back to a Form
 //                }
-                text = (String) myForm.previousValues.get(MySearchCommand.SEARCH_TEXT_KEY); //reuse 
+                if (myForm.previousValues != null) {
+                    text = (String) myForm.previousValues.get(MySearchCommand.SEARCH_TEXT_KEY); //reuse 
+                }
+                if (text == null) {
+                    text = "";
+                }
             }
 //            Container compList = null;
 //            compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
@@ -2597,11 +3098,12 @@ public class MyForm extends Form {
                 }
                 myForm.setPinchInsertContainer(null);
             }
-
-            if (text != null && text.length() > 0) {
-                myForm.previousValues.put(MySearchCommand.SEARCH_TEXT_KEY, text);
-            } else {
-                myForm.previousValues.remove(MySearchCommand.SEARCH_TEXT_KEY);
+            if (myForm.previousValues != null) {
+                if (text != null && text.length() > 0) {
+                    myForm.previousValues.put(MySearchCommand.SEARCH_TEXT_KEY, text);
+                } else {
+                    myForm.previousValues.remove(MySearchCommand.SEARCH_TEXT_KEY);
+                }
             }
             if (compList != null && itemListOrg.size() > 0) { //disable on empty lists
                 int labelCount = 0;
@@ -2790,9 +3292,22 @@ public class MyForm extends Form {
             }
         };
         cmd.setMaterialIcon(Icons.iconBackToPreviousScreen);
-        cmd.setMaterialIconSize(MyPrefs.defaultIconSizeInMM.getFloat());
-        cmd.setIconGapMM(MyPrefs.defaultIconGapInMM.getFloat());
+        if (false) {
+            cmd.setMaterialIconSize(MyPrefs.defaultIconSizeInMM.getFloat());
+            cmd.setIconGapMM(MyPrefs.defaultIconGapInMM.getFloat());
+        }
         cmd.putClientProperty("android:showAsAction", "withText");
+        return cmd;
+    }
+
+    public Command makeDebugCommand() {
+        Command cmd = Command.create("Debug", null, (e) -> {
+            Dialog.show("DEBUG", "Select command",
+                    ScreenRepair.makeSendErrorLog(),
+                    ScreenRepair.makeShowErrorLog(this)
+            );
+//            cmd.actionPerformed(null);
+        });
         return cmd;
     }
 
@@ -2838,6 +3353,7 @@ public class MyForm extends Form {
         Command backCmd = makeDoneUpdateWithParseIdMapCommand();
 //        backCmd.putClientProperty("android:showAsAction", "withText");
 //            getToolbar().setBackCommand(makeDoneUpdateWithParseIdMapCommand(),Toolbar.BackCommandPolicy.AS_ARROW,MyPrefs.defaultIconSizeInMM.getFloat());
+//        getToolbar().setBackCommand(backCmd, Toolbar.BackCommandPolicy.AS_ARROW, MyPrefs.defaultIconSizeInMM.getFloat());
         getToolbar().setBackCommand(backCmd, Toolbar.BackCommandPolicy.AS_ARROW, MyPrefs.defaultIconSizeInMM.getFloat());
         return backCmd;
     }
@@ -2910,22 +3426,23 @@ public class MyForm extends Form {
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
 //        return MyReplayCommand.create(TimerStack.TIMER_REPLAY, title, icon, (e) -> {
 //        return CommandTracked.create("", icon, (e) -> {
-        return CommandTracked.create(includeText ? "Time interrupt" : "", Icons.iconInterrupt, (e) -> {
+        return CommandTracked.create(includeText ? SCREEN_INTERRUPT : "", Icons.iconInterrupt, (e) -> {
             Item newInterruptItem = new Item(false);
 //            newInterruptItem.setRemaining(0);//remove default estimate for interrupt tasks
             newInterruptItem.setInteruptOrInstantTask(true);
 //            DAO.getInstance().saveNew(newInterruptItem, true);
 //            DAO.getInstance().saveNew(newInterruptItem); //TODO!!!!: don't save until exeting the Timer to allow for Cancel in Timer?!!
 //            DAO.getInstance().saveNewTriggerUpdate();
-            DAO.getInstance().saveToParseNow(newInterruptItem); //TODO!!!!: don't save until exeting the Timer to allow for Cancel in Timer?!!
-//                if (ScreenTimerNew.getInstance().isTimerRunning()) {
+            if (false) {
+                DAO.getInstance().saveToParseNow(newInterruptItem); //saved together with new TimerInstance, TODO!!!!: don't save until exeting the Timer to allow for Cancel in Timer?!!
+            }//                if (ScreenTimerNew.getInstance().isTimerRunning()) {
 //                    item.setInteruptTask(true); //UI: automatically mark as Interrupt task if timer is already running. TODO is this right behavior?? Should all Interrupt tasks be marked as such or only when using timer?? Only when using Timer, otherwise just an 'instant task'
 //                    item.setTaskInterrupted(ScreenTimer.getInstance().getTimedItemN());
 //                }
 //                ScreenTimer.getInstance().startTimer(item, MyForm.this);
 //            ScreenTimer2.getInstance().startInterrupt(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
 //            TimerStack.getInstance().startInterruptOrInstantTask(interruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
-            TimerStack.getInstance().startInterruptOrInstantTask(newInterruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
+            TimerStack2.getInstance().startInterruptOrInstantTask(newInterruptItem, MyForm.this); //TODO!!! verify that item is always saved (within Timer, upon Done/Exit/ExitApp
             //TODO Allow to pick a common (predefined/template) interrupt task (long-press??)
             //Open it up in editing mode with timer running
 //            setupTimerForItem(item, 0);
@@ -2938,38 +3455,131 @@ public class MyForm extends Form {
 //        return CommandTracked.create(TimerStack.getInstance().isTimerActive() ? "Open Timer" : "Start Timer on list",
         return CommandTracked.create("Start Timer",
                 //                    TimerStack.getInstance().isTimerActive() ? Icons.iconLaunchTimerAlreadyRunning : Icons.iconLaunchTimer,
-                Icons.iconLaunchTimer,
+                Icons.iconTimerLaunch,
                 (e) -> {
                     if (itemListOrg instanceof ItemList) {
-                        TimerStack.getInstance().startTimerOnItemList((ItemList) itemListOrg, MyForm.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                        TimerStack2.getInstance().startTimerAndSave(null, (ItemList) itemListOrg, MyForm.this, false, false); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
                     } else if (itemListOrg instanceof Item) {
-                        TimerStack.getInstance().startTimerOnItem((Item) itemListOrg, MyForm.this); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                        TimerStack2.getInstance().startTimerAndSave((Item) itemListOrg, null, MyForm.this, false, true); //itemListOrg because Timer stores the original Parse objects and does its own filter/sort
+                    }
+                    if (!MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() && getBigTimerReplayCmd() != null) {
+                        getBigTimerReplayCmd().actionPerformed(null);
                     }
                 }, "InterruptInScreen" + getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
         );
+    }
+
+    public static Button makeSwipeButton(String text, String UIID, char icon, Font iconFont) {
+        return makeSwipeButton(text, UIID, icon, iconFont, null);
+    }
+
+    public static Button makeSwipeButton(String text, String UIID, char icon, Font iconFont, ActionListener actionListener) {
+        return makeSwipeButton(text, UIID, icon, iconFont, actionListener, null);
+    }
+
+    public static Button makeSwipeButton(String text, String UIID, Character icon, Font iconFont, ActionListener actionListener, Command cmd) {
+        return makeSwipeButton(text, true, UIID, icon, iconFont, actionListener, cmd);
+    }
+
+    public static Button makeSwipeButton(String text, boolean showText, String UIID, Character icon, Font iconFont, ActionListener actionListener, Command cmd) {
+
+        Button button = new Button(); //set command first, THEN set icons etc to override
+        if (cmd != null) {
+            button.setCommand(cmd);
+        }
+        if (actionListener != null) {
+            button.addActionListener(actionListener);
+        }
+        if (text != null && !text.isEmpty() && showText) {
+            button.setText(text);
+            if (Config.TEST) {
+                button.setName(text);
+            }
+        }
+        if (icon != null) {
+            if (iconFont == null) {
+                button.setMaterialIcon(icon);
+            } else {
+                button.setFontIcon(iconFont, icon);
+            }
+        }
+        button.setTextPosition(BOTTOM);
+        button.setGap(0);
+        button.setUIID(UIID);
+        return button;
+    }
+
+    /**
+     * move up the hierarchy of comp to find a SwipeableContainer and close the
+     * first one found
+     *
+     * @param comp
+     */
+    public static void closeParentSwipe(Component comp) {
+        if (comp instanceof SwipeableContainer) {
+            ((SwipeableContainer) comp).close();
+        } else {
+            Component c = comp;
+            while (c.getParent() != null) {
+                if (c.getParent() instanceof SwipeableContainer) {
+                    ((SwipeableContainer) c.getParent()).close();
+                    return;
+                } else {
+                    c = c.getParent();
+                }
+            }
+        }
     }
 
     /**
      * neither swipCont must NOT be null and must be added to a form
      *
      * @param swipCont
-     * @param itemOrItemList
+     * @param item
      * @param commandTrackId
      * @return
      */
-    public static Button makeTimerSwipeButton(SwipeableContainer swipCont, ItemAndListCommonInterface itemOrItemList, String commandTrackId) {
-        Button startTimer = new Button(CommandTracked.create(null, Icons.iconLaunchTimer, (ev) -> {
+    public static Button makeTimerSwipeButton(SwipeableContainer swipCont, Item item, ItemAndListCommonInterface itemOrItemList, String commandTrackId) {
+//    static public Button makeTimerSwipeButton(MyForm myForm, Item item, ItemAndListCommonInterface eltList, String commandTrackId) {
+        Button startTimer;
+        if (false) {
+////            SwipeableContainer swipCont = null;
+//            startTimer = new Button(CommandTracked.create("Timer", Icons.iconLaunchTimer, (ev) -> {
+////            if (swipCont != null) {
+////                MyForm myForm = (MyForm) swipCont.getComponentForm();
+//                if (myForm != null) {
+//                    myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
+//                }
+////                TimerStack2.getInstance().startTimerOnItemInItemList(item,eltList, myForm,false,true);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
+//                TimerStack2.getInstance().startTimer(item, eltList, myForm, false, true);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
+//                if (!MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() && myForm.getBigTimerReplayCmd() != null) {
+//                    myForm.getBigTimerReplayCmd().actionPerformed(null);
+//                }
+//
+//                swipCont.close(); //close before save 
+//            }, commandTrackId
+//            ));
+////            startTimer.setMaterialIcon(Icons.iconLaunchTimer);
+//            startTimer.setTextPosition(BOTTOM);
+//            startTimer.setGap(0);
+//            startTimer.setUIID("SwipeButtonTimer");
+        } else {
+            startTimer = makeSwipeButton("Timer", "SwipeButtonTimer", Icons.iconTimerLaunch, null, null,
+                    CommandTracked.create("Timer", Icons.iconTimerLaunch, (ev) -> {
 //            if (swipCont != null) {
-            MyForm myForm = (MyForm) swipCont.getComponentForm();
-            if (myForm != null) {
-                myForm.setKeepPos(new KeepInSameScreenPosition(itemOrItemList, swipCont));
-            }
-            TimerStack.getInstance().startTimerOnItemOrItemList(itemOrItemList, myForm);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
-            swipCont.close(); //close before save 
-        }, commandTrackId
-        ));
-//            startTimer.setMaterialIcon(Icons.iconLaunchTimer);
-        startTimer.setUIID("SwipeButtonTimer");
+                        MyForm myForm = (MyForm) swipCont.getComponentForm();
+                        if (myForm != null) {
+                            myForm.setKeepPos(new KeepInSameScreenPosition(itemOrItemList, swipCont));
+                        }
+                        TimerStack2.getInstance().startTimerAndSave(item, (item != null && MyPrefs.timerSwipeStartOnlyTimesSelectedTask.getBoolean() ? null : itemOrItemList), myForm, false, true);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
+                        if (!MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() && myForm.getBigTimerReplayCmd() != null) {
+                            myForm.getBigTimerReplayCmd().actionPerformed(null);
+                        }
+
+//                        closeParentSwipe(startTimer); //close before save 
+                        swipCont.close();
+                    }, commandTrackId));
+        }
         return startTimer;
     }
 
@@ -3146,6 +3756,39 @@ public class MyForm extends Form {
         return cmd;
     }
 
+    //NEW ITEMLIST
+    public Command makeCommandNewItemList(ItemListList itemListList) {
+        return MyReplayCommand.createKeep("CreateNewList", "Add List", Icons.iconListNew, (e) -> {
+            ItemList itemList = new ItemList();
+            setKeepPos(new KeepInSameScreenPosition());
+            new ScreenItemListProperties(itemList, this, () -> {
+                if (itemList.hasSaveableData()) {
+                    itemListList.addToList(itemList, !MyPrefs.insertNewItemListsInStartOfItemListList.getBoolean()); //TODO: why always add to start of list?! Make it a setting like elsewhere?
+                    DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                }
+            }).show();
+        });
+    }
+
+    //NEW CATEGORY
+    public Command makeCommandNewCategory(String cmdName, CategoryList categoryOwnerList, MyForm previousForm, MyForm.Action refreshOnItemEdits) { //static since reused in other screens
+        //NEW CATEGORY
+        return MyReplayCommand.create("CreateNewCategory", cmdName, Icons.iconCategoryNew, (e) -> {
+            Category category = new Category();
+            previousForm.setKeepPos(new KeepInSameScreenPosition());
+            new ScreenCategoryProperties(category, previousForm, () -> {
+                if (category.hasSaveableData()) { //UI: do nothing for an empty category, allows user to add category and immediately return if regrests or just pushed wrong button
+                    category.setOwner(categoryOwnerList); //TODO should store ordered list of categories
+                    categoryOwnerList.addItemAtIndex(category, MyPrefs.addNewCategoriesToBeginningOfCategoryList.getBoolean() ? 0 : categoryOwnerList.size());
+                    DAO.getInstance().saveToParseNow((ParseObject) category); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject //TODO reactivate when implemented storing list of categories
+                    if (refreshOnItemEdits != null) {
+                        refreshOnItemEdits.launchAction();
+                    }
+                }
+            }).show();
+        }, true);
+    }
+
 //    public Command makeCommandNewItemSaveToItemList(ItemAndListCommonInterface itemListOrg, String cmdText, char icon) {
 //        return makeCommandNewItemSaveToItemList(itemListOrg, "CreateNewItem", cmdText, icon);
 //    }
@@ -3248,6 +3891,25 @@ public class MyForm extends Form {
         );
     }
 
+    public Command makeExportToCSVCommand(ItemAndListCommonInterface itemOrg) {
+        return Command.createMaterial("ExportCSV", 'X', e -> itemOrg.exportToCsv());
+    }
+
+    public Command makeImportTasksAsTextLines(ItemAndListCommonInterface itemOrg) {
+        ASSERT.that(!(itemOrg instanceof Category), "Cannot add text to categories"); //
+        return Command.createMaterial("Tasks from text", 'X', e -> {
+            TextArea textArea = new TextArea(10, 30);
+            Command ok = new Command("OK");
+            if (Dialog.show("Paste tasks as text, '-' for subtasks", textArea, ok, new Command("Cancel")) == ok) {
+                if (!textArea.getText().isEmpty()) {
+                    itemOrg.importTaskListAsTextLines(textArea.getText());
+                    DAO.getInstance().saveToParseNow((ParseObject) itemOrg);
+                    refreshAfterEdit();
+                }
+            }
+        });
+    }
+
     public static Button makeAddTimeStampToCommentAndStartEditing(TextArea comment) {
         //TODO only make interrupt task creation available in Timer (where it really interrupts something)?? There is [+] for 'normal' task creation elsewhere... Actually, 'Interrupt' should be sth like 'InstantTimedTask'
         //TODO implement longPress to start Interrupt *without* starting the timer (does it make sense? isn't it the same as [+] to add new task?)
@@ -3310,19 +3972,19 @@ public class MyForm extends Form {
         return false;
     }
 
-    public Component makeSpacer() {
+    public static Component makeSpacer() {
         Label l = new Label("", "Spacer");
         l.setShowEvenIfBlank(true);
         return l;
     }
 
-    public Component makeSpacerThin() {
+    public static Component makeSpacerThin() {
         Label l = new Label("", "SpacerThin");
         l.setShowEvenIfBlank(true);
         return l;
     }
 
-    public Component makeSpacerThick() {
+    public static Component makeSpacerThick() {
         Label l = new Label("", "SpacerThick");
         l.setShowEvenIfBlank(true);
         return l;
@@ -3411,7 +4073,7 @@ public class MyForm extends Form {
         ActionListener al = (e) -> {
 //            if (MyPrefs.getBoolean(helpSettingId)) {
             MyPrefs.setBoolean(helpSettingId, !MyPrefs.getBoolean(helpSettingId));
-            helpTxt.setHidden(MyPrefs.getBoolean(helpSettingId));
+            helpTxt.setHidden(!MyPrefs.getBoolean(helpSettingId));
             helpCont.getParent().animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
 //            }
         };
@@ -3561,7 +4223,8 @@ public class MyForm extends Form {
                 }
             } else {
 //                ScreenListOfAlarms.getInstance().refreshAfterEdit(); //ALREADY done in ScreenListOfAlarms.getInstance().show() // refresh to ensure new list of alarms is shown
-                ScreenListOfAlarms.getInstance().show(currentForm, true); //true=flip transition
+//                ScreenListOfAlarms.getInstance().show(currentForm, true); //true=flip transition
+                new ScreenListOfAlarms(currentForm).show(); //true=flip transition
             }
         });
 
@@ -3578,12 +4241,16 @@ public class MyForm extends Form {
     }
 
     private MyReplayCommand makeBigTimerReplayCmd() {
-        MyReplayCommand showBigTimer = MyReplayCommand.createKeep(SHOW_BIG_TIMER_SCREEN_REPLAY_CMD_ID, "", Icons.iconEdit, (e) -> {
-            ASSERT.that(TimerStack.getInstance().getCurrentTimerInstanceN() != null, "makeBigTimerReplayCmd called from screen=" + getUniqueFormId() + " but TimerInstance==null");
-            ASSERT.that(!(this instanceof ScreenListOfAlarms), "makeBigTimerReplayCmd called from from ScreenListOfAlarms, shoulnd't happen");
-            new ScreenTimer6(this).show();
-        });
-        return showBigTimer;
+        if (TimerStack2.getInstance().getCurrentTimerInstanceN() != null) {
+            MyReplayCommand showBigTimer = MyReplayCommand.createKeep(SHOW_BIG_TIMER_SCREEN_REPLAY_CMD_ID, "", Icons.iconEdit, (e) -> {
+//                ASSERT.that(TimerStack2.getInstance().getCurrentTimerInstanceN() != null, "makeBigTimerReplayCmd called from screen=" + getUniqueFormId() + " but TimerInstance==null");
+//                ASSERT.that(!(this instanceof ScreenListOfAlarms), "makeBigTimerReplayCmd called from from ScreenListOfAlarms, shoulnd't happen");
+                new ScreenTimer7(this).show();
+            });
+            return showBigTimer;
+        } else {
+            return null;
+        }
     }
 
     protected void setBigTimerReplayCmd(MyReplayCommand showBigTimerReplayCmd) {
@@ -3592,7 +4259,6 @@ public class MyForm extends Form {
 
     protected MyReplayCommand getBigTimerReplayCmd() {
         return showBigTimerReplayCmd;
-
     }
 
     interface CreateItem {
@@ -3756,6 +4422,10 @@ public class MyForm extends Form {
     protected static Component layoutN(String fieldLabelTxt, Component field, String help) { //normal edit field with [>]
 //        return layoutN(fieldLabelTxt, field, help, null, true, false, true, false);
         return new EditFieldContainer(fieldLabelTxt, field, help, null, true, false, false, true);
+    }
+
+    protected static Component layoutN(Component field, String help) { //normal edit field with [>]
+        return layoutN(null, field, help);
     }
 
     protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, Character materialIcon) { //normal edit field with [>]
@@ -4516,6 +5186,13 @@ public class MyForm extends Form {
 //        previousValuesFilename = filename;
 //    }
     protected SaveEditedValuesLocally previousValues;
+    protected Container container; //principal container for CENTER of BorderLayout
+
+    protected void makeContainerBoxY() {// {
+        container = new Container(BoxLayout.y());
+        container.setScrollableY(true);
+        getContentPane().addComponent(BorderLayout.CENTER, container);
+    }
 //    Map<Object, Object> previousValues;
 
 //    protected void initLocalSaveOfEditedValues(String filename) {
@@ -4897,6 +5574,9 @@ public class MyForm extends Form {
 //     }
     static void initField(String fieldIdentifier, Component field, GetVal getOrg, PutVal putOrgN, GetVal getFieldN, PutVal putFieldN, Object undefinedValue,
             GetVal getDefaultValue, GetBool isInheritedN, SaveEditedValuesLocally previousValues, ParseIdMap2 parseIdMap2, List<Runnable> refresh) {
+        if (Config.TEST) {
+            ASSERT.that(field != null, "field shouldn't be null");
+        }
         //initialize 
         if (putFieldN != null && getOrg.getVal() != null) {
             putFieldN.setVal(getOrg.getVal());
@@ -4936,7 +5616,9 @@ public class MyForm extends Form {
                             r.run();
                         }
                     }
-                    f.refreshFields();
+                    if (f != null) {
+                        f.refreshFields();
+                    }
                 }                //save updated element locally
                 if (previousValues != null) {
                     previousValues.saveElementToSaveLocally();
@@ -4948,7 +5630,8 @@ public class MyForm extends Form {
 
             //add change listenerlisten to changes an update+save if edited to different value than item.orgValue
             if (field instanceof TextArea) {
-                ((TextArea) field).addActionListener((e) -> updateElement.actionPerformed(null));
+//                ((TextArea) field).addActionListener((e) -> updateElement.actionPerformed(null));
+                ((TextArea) field).addActionListener(updateElement);
 //                ((TextArea) field).addDataChangedListener((type, index) -> updateElement.actionPerformed(null));
 //                ((TextArea) field).setDoneListener((e) -> updateElement.actionPerformed(null));
             } else if (field instanceof Button) {
@@ -4970,7 +5653,11 @@ public class MyForm extends Form {
 //        ASSERT.that(false, "not implemented!!!");
 //        getContentPane().animateLayoutAndWait(300); //need AndWait to ensure that form is animited into place before setting InlineAddTask text field in focus??! 
 //        getContentPane().animateLayout(150); //need AndWait to ensure that form is animited into place before setting InlineAddTask text field in focus??! 
-        getContentContainer().animateLayout(ANIMATION_TIME_DEFAULT); //need AndWait to ensure that form is animited into place before setting InlineAddTask text field in focus??! 
+        if (false) {
+            getContentContainer().animateLayout(ANIMATION_TIME_DEFAULT); //need AndWait to ensure that form is animited into place before setting InlineAddTask text field in focus??! 
+        } else {
+            animateLayout(ANIMATION_TIME_FAST);
+        }
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private Component layout(String label, Component setting, String help) {
@@ -5058,7 +5745,7 @@ public class MyForm extends Form {
 //            Form prevForm = Display.getInstance().getCurrent(); //!!doesn't get previous form because it was not actually shown
 //            MyAnalyticsService.visit(getTitle(), prevForm != null ? prevForm.getTitle() : "noPrevForm");
 //            MyAnalyticsService.visit(getUniqueFormId(), prevForm != null ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
-            if (MyAnalyticsService.isEnabled()) {
+            if (true || MyAnalyticsService.isEnabled()) {
 //                MyAnalyticsService.visit(getUniqueFormId(), prevForm instanceof MyForm ? ((MyForm) prevForm).getUniqueFormId() : "noPrevForm");
                 MyAnalyticsService.visit(getUniqueFormId(), parentForm instanceof MyForm ? ((MyForm) parentForm).getUniqueFormId() : "noPrevForm");
             }
@@ -5067,13 +5754,16 @@ public class MyForm extends Form {
                 previousValues.scrollToSavedYOnFirstShow(findScrollableContYChild());
             }
             super.show();
-            if (false && ReplayLog.getInstance().justFinishedReplaying()) { //show bigTimer if was active
+            if (ReplayLog.getInstance().justFinishedReplaying()) { //show bigTimer if was active
                 //if bigTimer was active, and we're not replaying, then show big timer again (from whatever screen was the last in replay)
-                TimerInstance timerInstance = TimerStack.getInstance().getCurrentTimerInstanceN();
-                if (!(this instanceof ScreenTimer6) && timerInstance != null && timerInstance.isFullScreen()) { //                    TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);
-                    //                        && !ReplayLog.getInstance().isReplayInProgress() //THE test above on justFinished should be enough
-                    new ScreenTimer6(MyForm.this, timerInstance).show();
-                }
+//                if (false) {
+//                    TimerInstance2 timerInstance = TimerStack2.getInstance().getCurrentTimerInstanceN();
+//                    if (timerInstance != null && !(this instanceof ScreenTimer7) && timerInstance.isFullScreen()) { //                    TimerStack.getInstance().refreshOrShowTimerUI(MyForm.this);
+//                        //                        && !ReplayLog.getInstance().isReplayInProgress() //THE test above on justFinished should be enough
+////                    new ScreenTimer7(MyForm.this, timerInstance).show();
+//                        new ScreenTimer7(MyForm.this).show();
+//                    }
+//                }
 //            else
 //                super.show();
             }
@@ -6111,6 +6801,19 @@ public class MyForm extends Form {
     }
 
     /**
+     * reset the values that are updated while the pinch is ongoing
+     */
+    private void resetPinchOngoingValues() {
+        //reset all values
+//            pinchContainer = null; //indicates done with this container //DOESN'T work since a pinch may be followed by another pinch w/o any drag or swipe!
+        pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
+        pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
+        initSimulY = -1;
+        initSimulY = -1;
+        pinchInsertInitiated = false;
+    }
+
+    /**
      * called either when two fingers (pointer) are released (pointerReleasea9,
      * or if one finger is released (changing from pinch to drag)
      */
@@ -6120,65 +6823,70 @@ public class MyForm extends Form {
         }
 //        if (true || isPinchInsertEnabled()) { //checked before calling pinchInsertFinished()
         if (pinchInsertInitiated) { //checked before calling pinchInsertFinished()
-            Container parentToAnimate = null;
+            Container parentToAnimateN = null;
             if (pinchContainer == null) { //no new pinch created
                 if (previousPinchContainer != null) { //if pinched-in previous container
                     if (Config.TEST_PINCH) {
-                        Log.p("[A] removing  pinchContainerPrevious");
+                        Log.p("[A] removing  previousPinchContainer");
                     }
 //                    if (!minimumPinchSizeReached(pinchDistance, previousPinchContainer)) {
                     if (!minimumPinchSizeReached(pinchDistance, getWrappedPinchableContainer(previousPinchContainer))) {
-                        parentToAnimate = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(previousPinchContainer); //just remove it
-                        ASSERT.that(parentToAnimate != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent());
+                        parentToAnimateN = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParentN(previousPinchContainer); //just remove it
+                        ASSERT.that(parentToAnimateN != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent());
                         previousPinchContainer = null;
                     }
                 }
                 //TODO!!! what if we do a new pinch out at the same place as before (where a pinch cont is already inserted)?? ideally do nothing, but complicated to detect
             } else { //a new pinch created, pinchContainer != null
                 //delete inserted container (whether a new container not sufficiently pinched OUT or an existing SubtaskContainer pinched IN)
-                if (minimumPinchSizeReached(pinchDistance, getWrappedPinchableContainer(pinchContainer))) {
+                if (minimumPinchSizeReached(pinchDistance, getWrappedPinchableContainer(pinchContainer))) { //leave the pinchContainer
                     if (Config.TEST_PINCH) {
                         Log.p("pinchContainerPrevious left visible");
                     }
 //                    Container pinchContainerParent = MyDragAndDropSwipeableContainer.removeFromParentScrollYContAndReturnCont(pinchContainer);
                     if (previousPinchContainer != null && !MyDragAndDropSwipeableContainer.removeFromParentScrollYContainer(previousPinchContainer)) {
                         if (Config.TEST_PINCH) {
-                            Log.p("!! pinchContainerPrevious not removed correctly");
+                            ASSERT.that("!! previousPinchContainer not removed correctly");
                         }
                     } //remove previous in one exists
                     previousPinchContainer = pinchContainer; //save just inserted container
 
+                    resetPinchOngoingValues();
                     pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
 
-                    parentToAnimate = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
+                    parentToAnimateN = MyDragAndDropSwipeableContainer.getParentScrollYContainerN(pinchContainer);
                     //once container is inserted, activate editing 
                     if (MyPrefs.pinchInsertActivateEditing.getBoolean() && getPinchInsertContainer() != null && getPinchInsertContainer().getTextArea() != null) {
                         getPinchInsertContainer().getTextArea().startEditingAsync();
                     }
-                    ASSERT.that(parentToAnimate != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent()); //possible when inserting the very first element
-                } else {
+                    ASSERT.that(parentToAnimateN != null, "error in removing pinchContainer from its scrollY parent, direct parent=" + previousPinchContainer.getParent()); //possible when inserting the very first element
+                } else { //minimumSize not reached, remove the pinchContainer
                     if (Config.TEST_PINCH) {
                         Log.p("[B] removing  pinchContainer");
                     }
-                    parentToAnimate = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(pinchContainer); //remove new pinch container, leave old one (if exists) in pinchContainerPrevious
-                    ASSERT.that(pinchContainer.getParent() == null, "removeFromParentScrollYContainer) did not remove pinchContainer from its parent");
-                    if (true || pinchContainer.getParent() != null) {
-                        pinchContainer.remove(); //TODO just use .remove() - should be enough to remove the pinchContainer and faster/safer than removeFromParentScrollYContainer
-                    }
+                    parentToAnimateN = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParentN(pinchContainer); //remove new pinch container, leave old one (if exists) in pinchContainerPrevious
+//                    ASSERT.that(pinchContainer.getParent() == null, "removeFromParentScrollYContainer) did not remove pinchContainer from its parent");
+                    ASSERT.that(MyDragAndDropSwipeableContainer.getParentScrollYContainerN(pinchContainer) == null, "removeFromParentScrollYContainer) did not remove pinchContainer from its parent");
+                    pinchContainer = null; //remove ref to container once it's removed
+//                    if (true || pinchContainer.getParent() != null) {
+//                        pinchContainer.remove(); //TODO just use .remove() - should be enough to remove the pinchContainer and faster/safer than removeFromParentScrollYContainer
+//                    }
                 }
             }
             //reset all values
-            pinchContainer = null; //indicates done with this container //DOESN'T work since a pinch may be followed by another pinch w/o any drag or swipe!
-            pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
-            pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
-//                MyForm.this.revalidate(); //necessary after using replace()??
-            initY = -1;
+            resetPinchOngoingValues();
+//            pinchContainer = null; //indicates done with this container //DOESN'T work since a pinch may be followed by another pinch w/o any drag or swipe!
+//            pinchDistance = Integer.MAX_VALUE; //ensure that insertContainer is shown in full height even if pinch was released before pinchDistance reached that value
+//            pinchInitialYDistance = Integer.MIN_VALUE; //reset pinchdistance
+////                MyForm.this.revalidate(); //necessary after using replace()??
+//            initSimulY = -1;
+//            initSimulY = -1;
+//            pinchInsertInitiated = false;
 //                animateHierarchy(300);
-            if (parentToAnimate != null) {
+            if (parentToAnimateN != null) {
 //                parentToAnimate.animateHierarchy(300);
-                parentToAnimate.revalidateWithAnimationSafety();
+                parentToAnimateN.revalidateWithAnimationSafety();
             }
-            pinchInsertInitiated = false;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (pointerReleasedListener != null) {
 //                removePointerReleasedListener(pointerReleasedListener);
@@ -6325,54 +7033,89 @@ public class MyForm extends Form {
         super.pointerReleased(x, y);
     }
 
-    private int initY = -1;
+    private int initSimulY = -1;
 
+//    private int initSimulY = -1; //capture the point where the mouse starts simulating a pinch out
     @Override
     public void pointerDragged(int[] x, int[] y) {
+//        xs = x;
+//        ys = y;
+
 //<editor-fold defaultstate="collapsed" desc="code to simulate two fingers on CN1 Simulator">
         boolean testingPinchOnSimulator = Config.TEST_PINCH && Display.getInstance().isSimulator();
         if (testingPinchOnSimulator) {
-            int displayHeight = Display.getInstance().getDisplayHeight();
-            //when testing in simulatoer, the simulated pinch zone is half the drop target zone
-            int simulatePinchZoneWidthInPixels = Display.getInstance().convertToPixels(MyPrefs.dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask.getInt(), true) / 2;
-            if (Display.getInstance().isSimulator() && y.length == 1 && x.length == 1
-                    //                    && x[0] >= Display.getInstance().getDisplayWidth() * (100 - Config.TEST_PINCH_SCR_WIDTH_PERCENT) / 100
-                    && x[0] >= Display.getInstance().getDisplayWidth() - simulatePinchZoneWidthInPixels
-                    && y[0] < displayHeight / 2) {
-                //simulate a pinch by mirroring the y values when dragging on the very right (10%) of the screen
-                int[] y2 = new int[2];
-                int[] x2 = new int[2];
-                y2[0] = y[0];
-                x2[0] = x[0];
-                int x0 = x[0];
+            if (true) {
+                int displayHeight = Display.getInstance().getDisplayHeight();
+                int initialFingerDist = Display.getInstance().convertToPixels(10); //10mm=1cm
+
+                //when testing in simulatoer, the simulated pinch zone is half the drop target zone
+                int simulatePinchZoneWidthInPixels = Display.getInstance().convertToPixels(MyPrefs.simulatedPinchZoneWidth.getInt(), true);
+                if (y.length == 1 && x.length == 1
+                        //                    && x[0] >= Display.getInstance().getDisplayWidth() * (100 - Config.TEST_PINCH_SCR_WIDTH_PERCENT) / 100
+                        && x[0] >= Display.getInstance().getDisplayWidth() - simulatePinchZoneWidthInPixels / 2
+                        && x[0] <= Display.getInstance().getDisplayWidth() + simulatePinchZoneWidthInPixels / 2) {
+                    if (initSimulY == -1) { //capture the y pos wherethe mouse was first clicked
+                        initSimulY = y[0];
+                    }
+                    //simulate a pinch by mirroring the y values when dragging on the very right (10%) of the screen
+                    int[] y2 = new int[2];
+                    int[] x2 = new int[2];
+                    y2[0] = y[0];
+                    x2[0] = x[0];
+                    x2[1] = x[0]; //set simulated x for other finger to same value as first finger
+
+                    //mirror simulated y position of other finger as 1cm + mouse position above the initial position where mouse was positioned
+                    int mouseDist = initSimulY - y[0]; //dist positive when moving UP
+                    int simulY = initSimulY + initialFingerDist + mouseDist;
+                    y2[1] = Math.min(displayHeight, Math.max(0, simulY)); //make sure the simulated y position stays within the screen
+//set simulated y to y mirrored around the middle of the screen
+
+                    x = x2; //replace org values with simulatd pair
+                    y = y2;
+                }
+            } else {
+                int displayHeight = Display.getInstance().getDisplayHeight();
+                //when testing in simulatoer, the simulated pinch zone is half the drop target zone
+                int simulatePinchZoneWidthInPixels = Display.getInstance().convertToPixels(MyPrefs.dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask.getInt(), true) / 2;
+                if (Display.getInstance().isSimulator() && y.length == 1 && x.length == 1
+                        //                    && x[0] >= Display.getInstance().getDisplayWidth() * (100 - Config.TEST_PINCH_SCR_WIDTH_PERCENT) / 100
+                        && x[0] >= Display.getInstance().getDisplayWidth() - simulatePinchZoneWidthInPixels
+                        && y[0] < displayHeight / 2) {
+                    //simulate a pinch by mirroring the y values when dragging on the very right (10%) of the screen
+                    int[] y2 = new int[2];
+                    int[] x2 = new int[2];
+                    y2[0] = y[0];
+                    x2[0] = x[0];
+                    int x0 = x[0];
 //                int x1=x[1];
-                int y0 = y[0];
+                    int y0 = y[0];
 //                int y1=y[1];
 
-                x2[1] = x[0]; //set simulated x for other finger to same value as first finger
+                    x2[1] = x[0]; //set simulated x for other finger to same value as first finger
 //                y2[1] = Math.min(displayHeight, (displayHeight / 2 - y[0]) + displayHeight / 2); //set simulated y to y mirrored around the middle of the screen
 //                y2[1] = Math.min(displayHeight, y[0] + displayHeight / 12); //set simulated y to y mirrored around the middle of the screen
-                if (initY == -1) {
-                    initY = y[0]; //1 pixel below
-                    y2[1] = initY;
-                } else {
-                    int dist = initY - y[0]; //dist positive when moving UP
-                    int simulY;
+                    if (initSimulY == -1) {
+                        initSimulY = y[0]; //1 pixel below
+                        y2[1] = initSimulY;
+                    } else {
+                        int dist = initSimulY - y[0]; //dist positive when moving UP
+                        int simulY;
 //                    if (y[0]<initY) {
 //                        simulY = initY + dist;
 //                    } else {
 //                        simulY = initY - dist;
 //                    }
-                    simulY = initY + dist;
-                    y2[1] = Math.min(displayHeight, Math.max(0, simulY)); //set simulated y to y mirrored around the middle of the screen
-                }
+                        simulY = initSimulY + dist;
+                        y2[1] = Math.min(displayHeight, Math.max(0, simulY)); //set simulated y to y mirrored around the middle of the screen
+                    }
 //                y2[1] = Math.min(displayHeight, y[0] + 140); //80==roughly one workslot container
 //                Log.p("simulating pinch x[0]=" + x[0] + " y[0]=" + y[0] + " simulated x[1]=" + x[1] + " y[1]=" + y[1]);
-                if (false && Config.TEST_PINCH) {
-                    Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
+                    if (false && Config.TEST_PINCH) {
+                        Log.p("simulating pinch x[0]=" + x2[0] + " y[0]=" + y2[0] + " simulated x[1]=" + x2[1] + " y[1]=" + y2[1]);
+                    }
+                    x = x2; //replace org values with simulatd pair
+                    y = y2;
                 }
-                x = x2; //replace org values with simulatd pair
-                y = y2;
             }
         }
 //</editor-fold>
@@ -6477,7 +7220,7 @@ public class MyForm extends Form {
                     if (Config.TEST_PINCH) {
                         Log.p("inserted pinchContainer");
                     }
-                    parent = MyDragAndDropSwipeableContainer.getParentScrollYContainer(pinchContainer);
+                    parent = MyDragAndDropSwipeableContainer.getParentScrollYContainerN(pinchContainer);
                 } else { //we're pinching in, if there's already previous pinch container, animate to squeeze it in (and remove)
                     parent = previousPinchContainer != null ? previousPinchContainer.getParent() : null;
                 }
@@ -6838,12 +7581,23 @@ public class MyForm extends Form {
         UIManager.getInstance().addThemeProps(theme);
     }
 
+//    @Override
+//    public void onShowCompletedXXX() {
+//        if (true) {
+//            TimerStack2.getInstance().setActionListener(this);
+//        }
+//        TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
+//        if (false && timerInstance != null && !(this instanceof ScreenTimer7) && timerInstance.isFullScreen()) {
+//            new ScreenTimer7(this).show();
+//        }
+//    }
     @Override
-    protected void onShow() {
-        if (getStartEditingAsyncTextArea() != null) {
-            getStartEditingAsyncTextArea().startEditingAsync();
-            Log.p("---->>> startEditingAsync() for TextArea named=" + getStartEditingAsyncTextArea().getName());
-        } else if (getPinchInsertContainer() != null) {
+    protected void onShow() { //onShow is called *before* Form.revalidateWithAnimationSafety() so changes to MyForm done here will be displayed
+//        if (getStartEditingAsyncTextArea() != null) {
+//            getStartEditingAsyncTextArea().startEditingAsync();
+//            Log.p("---->>> startEditingAsync() for TextArea named=" + getStartEditingAsyncTextArea().getName());
+//        } else 
+        if (getPinchInsertContainer() != null) {
             getPinchInsertContainer().getTextArea().startEditingAsync();
         }
 
@@ -6856,6 +7610,45 @@ public class MyForm extends Form {
         if (previousValues != null && previousValues.get(MySearchCommand.SEARCH_KEY) != null && getSearchCmd() != null) {
             getSearchCmd().actionPerformed(null); //re-activate Search, null=>reuse locally stored text
         }
+
+        //always make the shown form (and that only) listen to TimerStack changes
+        if (false) {
+//            TimerStack2.getInstance().setActionListener(this);
+//        } else {
+            TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
+//        if (timerInstance != null && !(this instanceof ScreenTimer7) && !timerInstance.isFullScreen()) {
+            if (timerInstance != null) {
+                if (!(this instanceof ScreenTimer7) && !isHideSmallTimer()) {
+                    Container smallTimer = getAndMakeSmallTimerContN();
+                    ScreenTimer7.buildContentPane(smallTimer, this, false);
+                }
+            } else { //no timer is currently running
+//                if (getSmallTimerContainer() != null) {
+//                    getSmallTimerContainer().remove(); //remove any smallTimer still visible - ever used??
+//                }
+                removeSmallTimerContainer();
+                //if timer not currently active set this listener to refresh the UI
+                TimerStack2.getInstance().setActionListener((e) -> {
+                    TimerInstance2 timerInstance2 = TimerStack2.getTimerInstanceN();
+                    if (timerInstance2 != null) { //if a timer is started
+                        if (!(this instanceof ScreenTimer7)) {
+                            refreshAfterEdit(); //NB! MUST call refresh *before* getting BigTimerCmd below
+                            if (!MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() && getBigTimerReplayCmd() != null) {
+                                getBigTimerReplayCmd().actionPerformed(null); //start full screen timer 
+                            } else {
+                                Container smallTimer = getAndMakeSmallTimerContN();
+                                ScreenTimer7.buildContentPane(smallTimer, this, false); //will replace this listener by a new one to update the timer container/screen
+                            }
+                        }
+                    } else { //                        if (getSmallTimerContainer() != null) {
+                        //                        getSmallTimerContainer().remove(); //remove any smallTimer still visible - ever used??
+                        //                    }
+                        removeSmallTimerContainer();
+                    }
+                });
+            }
+        }
+        ASSERT.that(TimerStack2.getInstance().listeners == null || TimerStack2.getInstance().listeners.getListenerCollection().size() == 1, "sth went wrong adding timerstack listener");
     }
 
     /**
@@ -6865,6 +7658,90 @@ public class MyForm extends Form {
 
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        private int trackXPointer = -1;
+//    private int trackYPointer = -1;
+//    int[] xs;
+//    int[] ys;
+//    private Image trackingImage;
+//    private ActionListener trackListener;
+//    private ActionListener trackReleaseListener;
+//    @Override
+//    public void pointerPressed(int[] x, int[] y) {
+//        xs = x;
+//        ys = y;
+//        super.pointerPressed(x, y);
+//    }
+//    @Override
+//    public void pointerReleased(int[] x, int[] y) {
+//        xs = null;
+//        ys = null;
+//        super.pointerReleased(x, y);
+//    }
+//    public void setPointerTracking(boolean on, Image image) {
+//        if (on) {
+////        if(getGlassPane()!=null) throw new Exception();
+//            trackingImage = image;
+//            setGlassPane((g, rect) -> {
+////                if (trackXPointer != -1) {
+////                    g.drawImage(trackingImage, trackXPointer-image.getWidth()/2, trackYPointer-image.getHeight()/2); //show image center at pointer position
+////                }
+//                if (xs != null) {
+//                    g.drawImage(trackingImage, xs[0] - image.getWidth() / 2, ys[0] - image.getHeight() / 2); //show image center at pointer position
+//                    if (xs.length >= 2) {
+//                        g.drawImage(trackingImage, xs[1] - image.getWidth() / 2, ys[1] - image.getHeight() / 2); //show image center at pointer position
+//                    }
+//                }
+//            });
+////            trackListener = e -> {
+////                trackXPointer = e.getX();
+////                trackYPointer = e.getY();
+////            };
+////            trackReleaseListener = e -> {
+////                trackXPointer = -1;
+////                trackYPointer = -1;
+////            };
+////            addPointerPressedListener(trackListener);
+////            addPointerDraggedListener(trackListener);
+////            addPointerReleasedListener(trackReleaseListener);
+//        } else {
+//            setGlassPane(null);
+////            removePointerPressedListener(trackListener);
+////            removePointerDraggedListener(trackListener);
+////            removePointerReleasedListener(trackReleaseListener);
+//            trackingImage = null;
+//        }
+//    }
+//
+//    public void setPointerTracking(boolean on) {
+//        if (on) {
+//            Style s = UIManager.getInstance().getComponentStyle("Label");
+//            s.setFgColor(0xff0000);
+//            s.setBgTransparency(0);
+//            Image fingerPosImage = FontImage.createMaterial(FontImage.MATERIAL_TRIP_ORIGIN, s).toImage(); //TRIP_ORIGIN //GPS_NOT_FIXED //ALBUM //MODE_STANDNY //ADJUST //FILTER_TILTXX
+//            setPointerTracking(true, fingerPosImage);
+//        } else {
+//            setPointerTracking(false, null);
+//        }
+//    }
+//
+//    public Image getPointerTrackingImage() {
+//        return trackingImage;
+//    }
+//
+//    public boolean isPointerTracking() {
+//        return getPointerTrackingImage() != null;
+//    }
+//
+//    private void initPointerTracking() {
+////        if (getPreviousForm() instanceof Form) {
+//        if (Display.getInstance().getCurrent() != null) {
+//            if (Display.getInstance().getCurrent().isPointerTracking()) {
+//                setPointerTracking(true, Display.getInstance().getCurrent().getPointerTrackingImage());
+//            }
+//        }
+//    }
+//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void pointerDraggedADVANCED(int[] x, int[] y) {
 //        if (!pinchInsertEnabled) {

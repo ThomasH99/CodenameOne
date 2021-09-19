@@ -28,6 +28,7 @@ import com.codename1.ui.Button;
 import com.codename1.ui.Component;
 import com.codename1.ui.Container;
 import com.codename1.ui.Display;
+import com.codename1.ui.Form;
 import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.StickyHeader;
@@ -40,6 +41,7 @@ import com.codename1.ui.geom.Dimension;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
 import com.codename1.ui.plaf.Style;
+import com.codename1.ui.tree.Tree;
 import com.codename1.ui.util.EventDispatcher;
 import java.util.List;
 //import com.todocatalyst.todocatalyst.InlineInsertNewElementContainer.InsertNewElementFunc;
@@ -88,6 +90,7 @@ public class MyTree2 extends ContainerScrollY {
 
     private ActionListener expandCollapseListener = new Handler();
     private MyTreeModel model;
+    private MyForm parentForm;
     private static Image folder;
     private static Image openFolder;
     private static Image nodeImage;
@@ -98,7 +101,7 @@ public class MyTree2 extends ContainerScrollY {
 //    private FilterSortDef itemListFilteredSorted;
 //    private InsertNewElementFunc insertNewElementFunc = null;
 //    private InsertNewElementFunc newInsertContainer = null;
-    private PinchInsertContainer insertNewElementFunc = null;
+    private PinchInsertContainer insertNewElementFuncXXX = null;
     private PinchInsertContainer newInsertContainer = null;
 //    private TextArea startEditTextArea = null;
 
@@ -119,7 +122,7 @@ public class MyTree2 extends ContainerScrollY {
 //        return startEditTextArea;
 //    }
 
-    StickyHeaderGenerator stickyHeaderGen = null;
+    private StickyHeaderGenerator stickyHeaderGenN = null;
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
@@ -156,8 +159,8 @@ public class MyTree2 extends ContainerScrollY {
      * @param model the model to expand, e.g. an Item or ItemList
      * @param expandedObjects list of expanded objects to know it should be
      * expanded by default when displaying
-     * @param insertNewTask function to determine a newTaskContainer should be
-     * insert below an Item
+     * @param insertNewTaskXXX function to determine a newTaskContainer should
+     * be insert below an Item
      */
 //    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask) {
 //    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, InsertNewElementFunc insertNewTask) {
@@ -165,9 +168,35 @@ public class MyTree2 extends ContainerScrollY {
 //    }
 //    public MyTree2(MyTreeModel model, HashSet expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
 //    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, InsertNewElementFunc insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
-    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, PinchInsertContainer insertNewTask, StickyHeaderGenerator stickyHeaderGen) {
+//    public MyTree2(MyTreeModel model, ExpandedObjects expandedObjects, PinchInsertContainer insertNewTaskXXX, StickyHeaderGenerator stickyHeaderGen) {
+//        this(null, model, expandedObjects, insertNewTaskXXX, stickyHeaderGen);
+//    }
+    public MyTree2(MyForm myForm, MyTreeModel model, ExpandedObjects expandedObjects, PinchInsertContainer insertNewTaskXXX, StickyHeaderGenerator stickyHeaderGen) {
+//        this(myForm, model, expandedObjects, insertNewTaskXXX, stickyHeaderGen, false, true);
+        this(myForm, model, stickyHeaderGen, false, true);
+    }
+
+//    public MyTree2(MyForm myForm, MyTreeModel model, ExpandedObjects expandedObjectsXXX, PinchInsertContainer insertNewTaskXXX, StickyHeaderGenerator stickyHeaderGen, boolean showTopLevel, boolean makeScrollable) {
+    public MyTree2(MyForm myForm, MyTreeModel model) {
+        this(myForm, model, null, true, false);
+    }
+
+    public MyTree2(MyForm myForm, MyTreeModel model, boolean noHeaders) {
+        this(myForm, model, null, true, false, noHeaders);
+    }
+
+    public MyTree2(MyForm myForm, MyTreeModel model, boolean showTopLevel, boolean makeScrollable) {
+        this(myForm, model, null, showTopLevel, makeScrollable);
+    }
+
+    public MyTree2(MyForm myForm, MyTreeModel model, StickyHeaderGenerator stickyHeaderGen, boolean showTopLevel, boolean makeScrollable) {
+        this(myForm, model, stickyHeaderGen, showTopLevel, makeScrollable, false);
+    }
+
+    public MyTree2(MyForm myForm, MyTreeModel model, StickyHeaderGenerator stickyHeaderGen, boolean showTopLevel, boolean makeScrollable, boolean noHeaders) {
         super();
         this.model = model;
+        this.parentForm = myForm;
 //        setUIID("MyTree2");
         if (Config.TEST) {
             setName("MyTree2");
@@ -177,28 +206,38 @@ public class MyTree2 extends ContainerScrollY {
 //        } else {
 //            this.expandedObjects = new HashSet();
 //        }
-        this.expandedObjects = expandedObjects;
+        this.expandedObjects = myForm.expandedObjects; //expandedObjectsXXX;
 //        this.itemListFilteredSorted = itemListFilteredSorted;
-        this.insertNewElementFunc = insertNewTask;
-        this.stickyHeaderGen = stickyHeaderGen;
+//        this.insertNewElementFuncXXX = insertNewTaskXXX;
 
-        FilterSortDef itemListFilteredSorted;
-        if (MyPrefs.hideStickyHeadersForSortedLists.getBoolean()) {
-            this.stickyHeaderGen = (item) -> null; //will also override any alerady given value for stickyHeaderGen
-        } else if (this.stickyHeaderGen == null) {
+        FilterSortDef itemListFilterSort = null;
+        if (this.model instanceof ItemAndListCommonInterface) {
+            itemListFilterSort = ((ItemAndListCommonInterface) this.model).getFilterSortDef(true);
+        }
+
+        this.stickyHeaderGenN = stickyHeaderGen;
+        if (this.model instanceof WorkSlotList) {
+            this.stickyHeaderGenN = (item) -> null; //TODO!!! make stickyHeader gen for workslot start dates (day/week/month, like statistics)
+        } else if (itemListFilterSort == null || MyPrefs.hideStickyHeadersForSortedLists.getBoolean() || !itemListFilterSort.isStickyHeadersOn()) {
+            this.stickyHeaderGenN = (item) -> null; //will also override any already given value for stickyHeaderGen
+        } else if (this.stickyHeaderGenN == null) {
             if (this.model instanceof ItemList
                     //                    && (itemListFilteredSorted = ((ItemList) this.model).getFilterSortDefN()) != null
-                    && (itemListFilteredSorted = ((ItemList) this.model).getFilterSortDef(true)) != null
-                    && itemListFilteredSorted.isSortOn()) {
+                    && itemListFilterSort != null
+                    && itemListFilterSort.isSortOn()) {
 //            FilterSortDef itemListFilteredSorted = ((ItemList) model).getFilterSortDef();
 //        if (this.itemListFilteredSorted != null && this.itemListFilteredSorted.isSortOn()) {
 //            if (itemListFilteredSorted != null && itemListFilteredSorted.isSortOn()) {
 //            stickyHeaderGen = makeStickyHeaderGen(this.itemListFilteredSorted.getSortFieldId());
-                this.stickyHeaderGen = makeStickyHeaderGen(itemListFilteredSorted.getSortFieldId());
+                this.stickyHeaderGenN = makeStickyHeaderGen(itemListFilterSort.getSortFieldId());
 //            }
-            } else {
-                this.stickyHeaderGen = (item) -> null;
             }
+//            else {
+//                this.stickyHeaderGenN = (item) -> null;
+//            }
+        }
+        if (noHeaders) {
+            this.stickyHeaderGenN = null;
         }
 
 //        BoxLayout layout;
@@ -207,17 +246,32 @@ public class MyTree2 extends ContainerScrollY {
 //        FlowLayout layout ;
 //        layout =(new FlowLayout(Component.CENTER));
 //        layout.
-        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
-        setScrollableY(true);
-        setAlwaysTensile(true); //always allow pull down even of short lists
+//        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+        setUIID("Tree");
+        setLayout(BoxLayout.y());
+//        if (!myForm.isScrollableY()) { //don't make scrollable if parentForm already is (eg when creating in ScreenMain)
+        if (makeScrollable) { //don't make scrollable if parentForm already is (eg when creating in ScreenMain)
+            setScrollableY(true);
+            setAlwaysTensile(true); //always allow pull down even of short lists
+        }
 
 //        if (folder == null) {
 //            folder = UIManager.getInstance().getThemeImageConstant("treeFolderImage");
 //            openFolder = UIManager.getInstance().getThemeImageConstant("treeFolderOpenImage");
 //            nodeImage = UIManager.getInstance().getThemeImageConstant("treeNodeImage");
 //        }
-        buildBranch(null, 0, this, false);
-        setUIID("Tree");
+        if (true) {
+            if (showTopLevel) {
+//            buildBranch(this.model, 0, this, false, true);
+//                buildBranch(this.model, 0, this, false, true);
+                buildNode(this.model, null, 0, this, false);
+            } else {
+//            buildBranch(null, 0, this, false);
+                buildBranch(this.model, 0, this, false, false);
+            }
+        } else { //        buildBranch(this.model, 0, this, false, showTopLevel);
+            buildBranch(null, 0, this, false, showTopLevel);
+        }
     }
 
 //    void resetExpandedObjects() {
@@ -363,12 +417,11 @@ public class MyTree2 extends ContainerScrollY {
      *
      * @param model the model of the tree
      */
-    public void setModel(MyTreeModel model) {
-        this.model = model;
-        removeAll();
-        buildBranch(null, 0, this, false);
-    }
-
+//    public void setModelXXX(MyTreeModel model) {
+//        this.model = model;
+//        removeAll();
+//        buildBranch(null, 0, this, false);
+//    }
     /**
      * Sets the icon for a tree folder
      *
@@ -470,7 +523,7 @@ public class MyTree2 extends ContainerScrollY {
 //        dest.setUIID("ExpandedList");
 //        parent.addComponent(BorderLayout.CENTER, dest);
         ContainerScrollY dest = getInsertSubtaskCont(parent);
-        buildBranch(o, depth, dest, expandAllLevels);
+        buildBranch(o, depth, dest, expandAllLevels, false); //false since parent is already shown
 //        if (isInitialized() && animate) {
 //            // prevent a race condition on node expansion contraction
 //            parent.animateHierarchyAndWait(300);
@@ -679,7 +732,7 @@ public class MyTree2 extends ContainerScrollY {
         }
         //then really remove the collapsed items:
 //        while(getAnimationManager().isAnimating());
-        if (false&&true) {
+        if (false && true) {
             for (int i = 0, size = itemNodeParent.getComponentCount(); i < size; i++) {
                 Component comp = itemNodeParent.getComponentAt(i);
                 if (comp != itemNode) { //don't collapse North:ItemNode
@@ -702,60 +755,126 @@ public class MyTree2 extends ContainerScrollY {
         return null;
     }
 
+//    private void buildNode(Object current, ItemAndListCommonInterface parent, int depth, Container destination, boolean expandAllLevels) {
+    private void buildNode(Object current, Object parent, int depth, Container destination, boolean expandAllLevels) {
+        if (depth == 0 && stickyHeaderGenN != null) {
+            Component stickyHeader = stickyHeaderGenN.getComp(current);
+            if (stickyHeader != null) {
+                destination.add(stickyHeader); //add a Label with the header
+            }
+        }
+
+        Component nodeComponent;
+        //Hack to 
+//        nodeComponent = createNode(current, depth, (ItemAndListCommonInterface) parent);
+        nodeComponent = createNode(current, depth, parent);
+        Container componentArea = new Container(new BorderLayout());
+        componentArea.setUIID("TreeContainer"); //wraps a possibly expanded task
+
+        componentArea.addComponent(BorderLayout.NORTH, nodeComponent);
+        if (Config.TEST) {
+            componentArea.setName("TreeCont-" + nodeComponent.getName()); //reuse name 
+        }
+        destination.addComponent(componentArea);
+
+        bindNodeListener(expandCollapseListener, nodeComponent);
+        nodeComponent.putClientProperty(KEY_OBJECT, current);
+        nodeComponent.putClientProperty(KEY_PARENT, parent);
+        //store the list of this item for use in drag and drop
+        nodeComponent.putClientProperty(KEY_DEPTH, new Integer(depth + 1));
+        if (expandedObjects != null && current instanceof ItemAndListCommonInterface
+                && expandedObjects.contains((ItemAndListCommonInterface) current) || expandAllLevels) {
+            if (expandAllLevels) {
+                expandedObjects.add(current);
+            }
+            expandNode(true, nodeComponent, expandAllLevels);
+        }
+//        PinchInsertContainer newInsertCont;
+//        return newInsertCont;
+    }
+
+//    private void buildBranchXXX(Object parent, int depth, Container destination, boolean expandAllLevels, boolean showParent) {
+//        if (showParent) {
+//            buildNode(parent, null, 0, destination, expandAllLevels);
+//        } else {
+//            buildBranch(parent, depth, destination, expandAllLevels);
+//        }
+//    }
     /**
      * Adds the child components of a tree branch to the destination container.
      * Expands the entire hierarchy if expandAllLevels==true.
      */
-    private void buildBranch(Object parent, int depth, Container destination, boolean expandAllLevels) {
-        List children = model.getChildrenList(parent);
+//    private void buildBranch(Object parent, int depth, Container destination, boolean expandAllLevels) {
+//        buildBranch(parent, depth, destination, expandAllLevels, expandAllLevels);
+//    }
+    private void buildBranch(Object parent, int depth, Container destination, boolean expandAllLevels, boolean showParent) {
+//        List children = model.getChildrenList(parent);
+        List children;
         if (expandedObjects != null) {
-            if (parent == null) {
+//            if (parent == null) {
+            if (showParent) {
                 //parent==null corresponds to expanding the list
 //                assert model instanceof Item;
+                children = model.getChildrenList(null);
                 expandedObjects.add(model);
             } else {
 //                assert parent instanceof Item;
+                children = model.getChildrenList(parent);
                 expandedObjects.add(parent);
             }
+        } else {
+            children = model.getChildrenList(showParent ? null : parent);
         }
         int size = children.size();
         Integer depthVal = new Integer(depth + 1);
         destination.putClientProperty(KEY_LIST_CONTAINER, "true"); //mark the container in which the new containers are inserted
         for (int iter = 0; iter < size; iter++) {
             final Object current = children.get(iter);
-
-            //STICKYHEADER
+            if (true) {
+//                buildNode(current, (showParent ? (ItemAndListCommonInterface) parent:null) , 0, destination, expandAllLevels);
+//                buildNode(current,  (ItemAndListCommonInterface) parent , 0, destination, expandAllLevels);
+//                buildNode(current, parent instanceof WorkSlotList? ((WorkSlotList)parent).getWorkSlots():(ItemAndListCommonInterface) parent , 0, destination, expandAllLevels);
+                buildNode(current, parent, 0, destination, expandAllLevels);
+            } else {
+                //STICKYHEADER
 //            Component stickyHeader = makeStickyHeader(current);
 //            if (stickyHeader != null) {
 //                destination.add(stickyHeader); //add the sticky header to the tree container(??)
 //            }
-            if (depth == 0 && stickyHeaderGen != null) {
-                Component stickyHeader = stickyHeaderGen.getComp(current);
-                if (stickyHeader != null) {
-                    destination.add(stickyHeader); //add a Label with the header
+                if (depth == 0 && stickyHeaderGenN != null) {
+                    Component stickyHeader = stickyHeaderGenN.getComp(current);
+                    if (stickyHeader != null) {
+                        destination.add(stickyHeader); //add a Label with the header
+                    }
                 }
-            }
 
-            Category category = null;
-            Component nodeComponent;
-            //Hack to 
-            if (parent instanceof Category) {
-                nodeComponent = createNode(current, depth, (Category) parent);
-                category = (Category) parent;
-            } else if (parent == null && model instanceof Category) {
-                nodeComponent = createNode(current, depth, (Category) model); //hack when buildBranch is called with parent==null 
-                category = (Category) model;
-            } else if (parent == null && current instanceof Category) {
-                nodeComponent = createNode(current, depth, (Category) current); //hack when buildBranch is called with parent==null 
-                category = (Category) current;
-            } else if (parent instanceof ItemAndListCommonInterface) {
-//                nodeComponent = createNode(current, depth);
-                nodeComponent = createNode(current, depth, (ItemAndListCommonInterface) parent, null);
-//            } else if (current instanceof ExpiredAlarm) {
-//                nodeComponent = createNode(current, depth, (ItemAndListCommonInterface) parent, null);
-            } else {
-                nodeComponent = createNode(current, depth);
-            }
+//            Category category = null;
+                Component nodeComponent;
+                //Hack to 
+                if (false) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                if (parent instanceof Category) {
+//                    nodeComponent = createNode(current, depth, (Category) parent);
+////                category = (Category) parent;
+//                } else if (parent == null && model instanceof Category) {
+//                    nodeComponent = createNode(current, depth, (Category) model); //hack when buildBranch is called with parent==null
+////                category = (Category) model;
+//                } else if (parent == null && current instanceof Category) {
+//                    nodeComponent = createNode(current, depth, (Category) current); //hack when buildBranch is called with parent==null
+////                category = (Category) current;
+//                } else if (parent instanceof ItemAndListCommonInterface) {
+////                nodeComponent = createNode(current, depth);
+////                    nodeComponent = createNode(current, depth, (ItemAndListCommonInterface) parent, null);
+//                    nodeComponent = createNode(current, depth, (ItemAndListCommonInterface) parent);
+////            } else if (current instanceof ExpiredAlarm) {
+////                nodeComponent = createNode(current, depth, (ItemAndListCommonInterface) parent, null);
+//                } else {
+//                    nodeComponent = createNode(current, depth);
+//                }
+//</editor-fold>
+                } else {
+                    nodeComponent = createNode(current, depth, (ItemAndListCommonInterface) parent);
+                }
 //            if (Config.TEST && current instanceof ItemAndListCommonInterface) nodeComponent.setName("TreeNode-" + ((ItemAndListCommonInterface) current).getText()); //NO, each create sets the name itself
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (model.isLeaf(current)) {
@@ -763,20 +882,20 @@ public class MyTree2 extends ContainerScrollY {
 ////                bindNodeListener(new Handler(current), nodeComponent);
 //            } else {
 //</editor-fold>
-            Container componentArea = new Container(new BorderLayout());
-            componentArea.setUIID("TreeContainer"); //wraps a possibly expanded task
+                Container componentArea = new Container(new BorderLayout());
+                componentArea.setUIID("TreeContainer"); //wraps a possibly expanded task
 
-            componentArea.addComponent(BorderLayout.NORTH, nodeComponent);
-            if (Config.TEST) {
-                componentArea.setName("TreeCont-" + nodeComponent.getName()); //reuse name 
-            }
-            destination.addComponent(componentArea);
+                componentArea.addComponent(BorderLayout.NORTH, nodeComponent);
+                if (Config.TEST) {
+                    componentArea.setName("TreeCont-" + nodeComponent.getName()); //reuse name 
+                }
+                destination.addComponent(componentArea);
 
 //            if (Config.TEST) destination.setName("TreeTop-" + componentArea.getName()); //reuse name 
-            bindNodeListener(expandCollapseListener, nodeComponent);
-            nodeComponent.putClientProperty(KEY_OBJECT, current);
-            nodeComponent.putClientProperty(KEY_PARENT, parent);
-            //store the list of this item for use in drag and drop
+                bindNodeListener(expandCollapseListener, nodeComponent);
+                nodeComponent.putClientProperty(KEY_OBJECT, current);
+                nodeComponent.putClientProperty(KEY_PARENT, parent);
+                //store the list of this item for use in drag and drop
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (parent == null) {
 //                nodeComponent.putClientProperty(KEY_LIST, model);
@@ -784,60 +903,63 @@ public class MyTree2 extends ContainerScrollY {
 //                nodeComponent.putClientProperty(KEY_LIST, parent);
 //            }
 //</editor-fold>
-            nodeComponent.putClientProperty(KEY_DEPTH, depthVal);
+                nodeComponent.putClientProperty(KEY_DEPTH, depthVal);
 //            if (expandedObjects != null && expandedObjects.contains(current) || expandAllLevels) {
-            if (expandedObjects != null && current instanceof ItemAndListCommonInterface
-                    && expandedObjects.contains((ItemAndListCommonInterface) current) || expandAllLevels) {
-                if (expandAllLevels) {
-                    expandedObjects.add(current);
-                }
-                expandNode(true, nodeComponent, expandAllLevels);
+                if (expandedObjects != null && current instanceof ItemAndListCommonInterface
+                        && expandedObjects.contains((ItemAndListCommonInterface) current) || expandAllLevels) {
+                    if (expandAllLevels) {
+                        expandedObjects.add(current);
+                    }
+                    expandNode(true, nodeComponent, expandAllLevels);
 //                    nodeComponent.putClientProperty(KEY_EXPANDED, "true"); //done in expandNode()
-            }
-            //check if a new insertNewTask container should be created for current and if so insert it:
+                }
+                //check if a new insertNewTask container should be created for current and if so insert it:
 //            if (insertNewTask != null && current instanceof Item && model instanceof ItemAndListCommonInterface) {
 //            InsertNewElementFunc newInsertCont;
-            PinchInsertContainer newInsertCont;
-            if (false && insertNewElementFunc != null) { //now handled directly in the Screen.refreshAfterEdit
-                if (current instanceof WorkSlot) {
-//                    newInsertCont = insertNewElementFunc.make((ItemAndListCommonInterface) current, null, null);
-                    newInsertCont = insertNewElementFunc.make((ItemAndListCommonInterface) current, ((WorkSlot) current).getOwner(), null); //insert add'l workslots in same list as current, category has no sense for workslots
-                    if (newInsertCont != null) {
-                        if (Config.TEST && current instanceof ItemAndListCommonInterface) {
-                            ((Component) newInsertCont).setName("TreeInsertContainer-" + ((ItemAndListCommonInterface) current).getText());
-                        }
-                        destination.add((Component) newInsertCont);
-                        setInsertField(newInsertCont);
-                    }
-                } else if ((current instanceof ItemAndListCommonInterface //instanceof false if current==null!
-                        && (parent instanceof ItemAndListCommonInterface
-                        || (parent == null && model instanceof ItemAndListCommonInterface)))) {
+//            PinchInsertContainer newInsertCont;
 //<editor-fold defaultstate="collapsed" desc="comment">
-//                Component insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) model);
-//                InsertNewTaskContainer insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) parent);
-//                InlineInsertNewElementContainer insertNewTask = insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
-//                MyForm myForm = (MyForm) getComponentForm();
-//                InsertNewElementFunc insertNewElement = myForm.getInlineInsertContainer(); //insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
-//                if (insertNewElement != null) {
-//</editor-fold>
-                    newInsertCont = insertNewElementFunc.make((ItemAndListCommonInterface) current,
-                            parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model, category);
-                    if (newInsertCont != null) {
-//                    destination.add(insertNewElement);
-                        if (Config.TEST && current instanceof ItemAndListCommonInterface) {
-                            ((Component) newInsertCont).setName("TreeInsertContainer-" + ((ItemAndListCommonInterface) current).getText());
-                        }
-                        destination.add((Component) newInsertCont);
-//                        myForm.setInlineInsertContainer(newInsertContainer);
-//                    setAsyncEditField(newInsertContainer.getTextArea());
-                        setInsertField(newInsertCont);
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    getComponentForm().setEditOnShow(insertNewTask.getTextField()); //ComponentForm should never be undefined here since MyTree should already be in a form
-//                    destination.getComponentForm().setEditOnShow(insertNewTask.getTextField()); //UI: set for edit
-//</editor-fold>
-                    }
+//            if (false && insertNewElementFuncXXX != null) { //now handled directly in the Screen.refreshAfterEdit
+//                if (current instanceof WorkSlot) {
+////                    newInsertCont = insertNewElementFunc.make((ItemAndListCommonInterface) current, null, null);
+//                    newInsertCont = insertNewElementFuncXXX.make((ItemAndListCommonInterface) current, ((WorkSlot) current).getOwner(), null); //insert add'l workslots in same list as current, category has no sense for workslots
+//                    if (newInsertCont != null) {
+//                        if (Config.TEST && current instanceof ItemAndListCommonInterface) {
+//                            ((Component) newInsertCont).setName("TreeInsertContainer-" + ((ItemAndListCommonInterface) current).getText());
+//                        }
+//                        destination.add((Component) newInsertCont);
+//                        setInsertField(newInsertCont);
+//                    }
+//                } else if ((current instanceof ItemAndListCommonInterface //instanceof false if current==null!
+//                        && (parent instanceof ItemAndListCommonInterface
+//                        || (parent == null && model instanceof ItemAndListCommonInterface)))) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                Component insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) model);
+////                InsertNewTaskContainer insertNewTsk = insertNewTask.make((Item) current, (ItemAndListCommonInterface) parent);
+////                InlineInsertNewElementContainer insertNewTask = insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
+////                MyForm myForm = (MyForm) getComponentForm();
+////                InsertNewElementFunc insertNewElement = myForm.getInlineInsertContainer(); //insertNewElementFunc.make((Item) current, parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model);
+////                if (insertNewElement != null) {
+////</editor-fold>
+//                    newInsertCont = insertNewElementFuncXXX.make((ItemAndListCommonInterface) current,
+//                            parent != null ? (ItemAndListCommonInterface) parent : (ItemAndListCommonInterface) model, category);
+//                    if (newInsertCont != null) {
+////                    destination.add(insertNewElement);
+//                        if (Config.TEST && current instanceof ItemAndListCommonInterface) {
+//                            ((Component) newInsertCont).setName("TreeInsertContainer-" + ((ItemAndListCommonInterface) current).getText());
+//                        }
+//                        destination.add((Component) newInsertCont);
+////                        myForm.setInlineInsertContainer(newInsertContainer);
+////                    setAsyncEditField(newInsertContainer.getTextArea());
+//                        setInsertField(newInsertCont);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    getComponentForm().setEditOnShow(insertNewTask.getTextField()); //ComponentForm should never be undefined here since MyTree should already be in a form
+////                    destination.getComponentForm().setEditOnShow(insertNewTask.getTextField()); //UI: set for edit
+////</editor-fold>
+//                    }
+////                }
 //                }
-                }
+//            }
+//</editor-fold>
             }
         }
     }
@@ -892,11 +1014,10 @@ public class MyTree2 extends ContainerScrollY {
     /**
      * THJ: refreshes the tree (rebuild all nodes with updated values)
      */
-    public void refresh() {
-        removeAll();
-        buildBranch(null, 0, this, false);
-    }
-
+//    public void refreshXXX() {
+//        removeAll();
+//        buildBranch(null, 0, this, false);
+//    }
     /**
      * Creates a node within the tree, this method is protected allowing tree to
      * be subclassed to replace the rendering logic of individual tree buttons.
@@ -1093,19 +1214,46 @@ public class MyTree2 extends ContainerScrollY {
         return cont instanceof MyTree2 ? (MyTree2) cont : null;
     }
 
-    protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
+//    protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
+    protected Component createNode(Object node, int depth, Object parentList) {
 //        assert false;
 //        return createNode(node, depth, category);
 //        return null;
-        return createNode(node, depth); //NB! The 'circular' calls between the different createNode is because one will be overridden when instantiating the Tree
+//        return createNode(node, depth); //NB! The 'circular' calls between the different createNode is because one will be overridden when instantiating the Tree
+        Container cmp = null;
+//        MyForm f = (MyForm) getComponentForm();
+        if (node instanceof Item) {
+//            cmp = ScreenListOfItems.buildItemContainer(f, (Item) node, null, null, f.expandedObjects);
+//            cmp = ScreenListOfItems.buildItemContainer(f, (Item) node, null, null);
+            cmp = ScreenListOfItems.buildItemContainer(parentForm, (Item) node, (ItemAndListCommonInterface) parentList);
+//        } else if (node instanceof WorkSlotList) {
+////            cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, f, f.keepPos, false, true);
+////            cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, f, f.keepPos, false, true);
+//            cmp = ScreenListOfWorkSlots.buildWorkSlotContainer(parentForm, (WorkSlot) node, false, true);
+        } else if (node instanceof WorkSlot) {
+//            cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, f, f.keepPos, false, true);
+//            cmp = ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) node, f, f.keepPos, false, true);
+//            cmp = ScreenListOfWorkSlots.buildWorkSlotContainer(parentForm, (WorkSlot) node, false, false);
+            cmp = ScreenListOfWorkSlots.buildWorkSlotContainer(parentForm, (WorkSlot) node);
+        } else if (node instanceof Category) {
+//            cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, f.keepPos, false, f.expandedObjects);
+            cmp = ScreenListOfCategories.buildCategoryContainer(parentForm, (Category) node);
+        } else if (node instanceof ItemList) {
+//            cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, f.keepPos, false, f.expandedObjects);
+            cmp = ScreenListOfItemLists.buildItemListContainer(parentForm, (ItemList) node);
+        } else {
+//                        assert false;
+            ASSERT.that(false, "node of unknown type=" + node);
+        }
+        setIndent(cmp, depth);
+        return cmp;
     }
 
-    protected Component createNode(Object node, int depth, Category category) {
-//        assert false;
-//        return null;
-        return createNode(node, depth, null, null); //NB! The 'circular' calls between the different createNode is because one will be overridden when instantiating the Tree
-    }
-
+//    protected Component createNode(Object node, int depth, Category category) {
+////        assert false;
+////        return null;
+//        return createNode(node, depth, null, null); //NB! The 'circular' calls between the different createNode is because one will be overridden when instantiating the Tree
+//    }
     protected Component createNode(Object node, int depth) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        assert false;
@@ -1128,7 +1276,9 @@ public class MyTree2 extends ContainerScrollY {
 //        return cmp;
 //        return null;
 //</editor-fold>
-        return createNode(node, depth, null); //NB! The 'circular' calls between the different createNode is because one will be overridden when instantiating the Tree
+        ASSERT.that("shouldn't get called?!");
+//        return createNode(node, depth, null); //NB! The 'circular' calls between the different createNode is because one will be overridden when instantiating the Tree
+        return null;
     }
 
     protected void bindNodeListener(ActionListener l, Component node) {
@@ -1170,11 +1320,11 @@ public class MyTree2 extends ContainerScrollY {
     }
 
     void setStickyHeaderGenerator(StickyHeaderGenerator stickyHeaderGen) {
-        this.stickyHeaderGen = stickyHeaderGen;
+        this.stickyHeaderGenN = stickyHeaderGen;
     }
 
     StickyHeaderGenerator getStickyHeaderGenerator() {
-        return stickyHeaderGen;
+        return stickyHeaderGenN;
     }
 
     static String newTimeString(long timeInMillis) {
@@ -1245,6 +1395,10 @@ public class MyTree2 extends ContainerScrollY {
     private static String makeHeader(String fieldName, String fieldValue) {
         return fieldName + " " + fieldValue;
     }
+//    private static String makeHeaderToday(ItemAndListCommonInterface element) {
+//        for(Date d:element.getif()
+//        return fieldName + " " + fieldValue;
+//    }
 
     private static String makeHeader(String fieldName, Object fieldValue) {
         return makeHeader(fieldName, fieldValue == null ? "Not defined" : fieldValue.toString(), fieldValue, null);
@@ -1292,6 +1446,10 @@ public class MyTree2 extends ContainerScrollY {
                     case Item.PARSE_UPDATED_AT:
 //                        newStr = getDiffStr(previousStickyStr, Item.UPDATED_DATE + " " + MyDate.formatDateNew(item.getUpdatedAt()));
                         newStr = getDiffStr(previousStickyStr, makeHeader(Item.UPDATED_DATE, MyDate.formatDateNew(item.getUpdatedAt()), item.getUpdatedAt(), new MyDate(0)));
+                        break;
+                    case Item.PARSE_EDITED_DATE:
+//                        newStr = getDiffStr(previousStickyStr, Item.UPDATED_DATE + " " + MyDate.formatDateNew(item.getUpdatedAt()));
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EDITED_DATE, MyDate.formatDateNew(item.getEditedDate()), item.getEditedDate(), new MyDate(0)));
                         break;
                     case Item.PARSE_COMPLETED_DATE:
 //                        newStr = getDiffStr(previousStickyStr, Item.COMPLETED_DATE + " " + MyDate.formatDateNew(item.getCompletedDateD()));
@@ -1377,7 +1535,7 @@ public class MyTree2 extends ContainerScrollY {
 //                        }
 //                        newStr = str;
 //</editor-fold>
-                        Item.TodaySortOrder sortBy = item.getTodaySortOrder();
+                        TodaySortOrder sortBy = item.getTodaySortOrder();
                         switch (sortBy) {
                             case DUE_TODAY_CREATED:
                             case DUE_TODAY_ONGOING:
@@ -1388,14 +1546,15 @@ public class MyTree2 extends ContainerScrollY {
                                 newStr = Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitUntilDate());
                                 break;
                             case STARTING_TODAY_CREATED:
-                            case STARTING_TODAY_ONGOING:
-                            case STARTING_TODAY_WAITING:
+//                            case STARTING_TODAY_ONGOING:
+//                            case STARTING_TODAY_WAITING:
                                 newStr = Item.START_BY_TIME + " " + MyDate.formatDateNew(item.getStartByDateD());
                                 break;
                         }
                         break;
                     default:
                         ASSERT.that(false, "Unhandled parseId in StickyHeader = " + parseId);
+                        break;
                 }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (newStr != null && !newStr.equals(previousStickyStr)) {

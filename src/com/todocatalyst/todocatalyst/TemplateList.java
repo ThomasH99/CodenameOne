@@ -7,6 +7,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.io.Externalizable;
 import com.codename1.io.Util;
 import com.parse4cn1.ParseObject;
+import com.todocatalyst.todocatalyst.MyForm.ScreenType;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -16,8 +17,8 @@ import java.util.List;
 
 /**
  * stores the (manually sorted) list of categories defined by the user.Updated
- whenever a Category is created or deleted or if the order of categories is
- changed by the user.
+ * whenever a Category is created or deleted or if the order of categories is
+ * changed by the user.
  *
  * @author Thomas
  * @param <E>
@@ -98,6 +99,20 @@ public class TemplateList<T> extends ItemList {
 //        }
 //        return false;
 //    }
+    @Override
+    public Character getItemListIcon() {
+        return ScreenType.TEMPLATES.getIcon();
+    }
+
+    @Override
+    public String getText() {
+        String s = getString(PARSE_TEXT);
+        if (s == null) { //temporary fix
+            return Item.TEMPLATE_LIST;
+        } else {
+            return super.getText(); //To change body of generated methods, choose Tools | Templates.
+        }
+    }
 
     @Override
     public int getVersion() {

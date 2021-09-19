@@ -694,7 +694,7 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
     private Item makeNewItemN(boolean createEvenIfTextEmpty) {
         if ((textEntryField.getText() != null && !textEntryField.getText().isEmpty()) || createEvenIfTextEmpty) {
             Item newItem = new Item(textEntryField.getText(), true); //true: interpret textual values, ok to create item even if no text entered (user just wants to create task here, but enter text+details in full sreen edit)
-            newItem.setRemainingDefaultValueIfNone();
+//            newItem.setRemainingDefaultValueIfNone(); //now done when interpreting the text entry in the line above
             //must set owner here to display correctly if going to full screen edit of item (and if there is a repeatRule)
             newItem.setOwner(insertAsSubt && refItem instanceof Item ? refItem : itemOrItemListForNewElements);
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -856,8 +856,8 @@ public class PinchInsertItemContainer extends PinchInsertContainer {
 //</editor-fold>
     public void closePinchContainer(boolean stopAddingInlineContainers) {
         //UI: close the text field
-        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(this);
-        ASSERT.that(parent != null, "if parent==null it would mean this inlineCont was not removed!");
+        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParentN(this);
+        ASSERT.that((textEntryField.getText() != null && !textEntryField.getText().isEmpty()) || parent != null, "if parent==null it would mean this inlineCont was not removed! inlineCont=" + this);
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
         if (stopAddingInlineContainers) {
 //            if (false) 

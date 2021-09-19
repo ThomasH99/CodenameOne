@@ -34,52 +34,50 @@ public class ScreenSettingsTimer extends ScreenSettingsCommon {
      *
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
-    protected void buildContentPane(Container cont) {
+    protected void buildContentPane(Container content) {
 //        cont.setScrollableY(true);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAutomaticallyStartTimer);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowNextTask);
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerAutomaticallyStartTimer));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerShowNextTask));
 //        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowNextTaskWithRemainingTime);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowRemainingForNextTask);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAutomaticallyGotoNextTask);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysShowDialogToAskToUpdateRemainingTimeAterTimingAnItem);
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerShowRemainingForNextTask));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerAutomaticallyGotoNextTask));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerAlwaysShowDialogToAskToUpdateRemainingTimeAterTimingAnItem));
         if (false) {
-            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowEffortEstimateDetails);
+            content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerShowEffortEstimateDetails));
         }
-        addSettingInt(cont, parseIdMap2, MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds, 0, 30, 1);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowSecondsInTimer);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowTotalActualInTimer);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerKeepScreenAlwaysOnInTimer);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeWaitingTasks);
+        content.add(makeEditIntSetting(parseIdMap2, MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds, 0, 30, 1));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerShowSecondsInTimer));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerShowTotalActualInTimer));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerKeepScreenAlwaysOnInTimer));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerIncludeWaitingTasks));
         if (false) {
-            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerIncludeDoneTasks);
+            content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerIncludeDoneTasks));
         }
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.enableTimerToRestartOnLists);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject);
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerSwipeStartOnlyTimesSelectedTask));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerCanBeSwipeStartedEvenOnInvalidItem));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerEnableRestartOnLists));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject));
         if (false) {
 //            Component setting0 = SettingTimeInMinutes(cont, parseIdMap2, MyPrefs.timerBuzzerInterval); //disable until buzzer can run in background
-            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerBuzzerActive); //disable until buzzer can run in background
-            addSettingTimeInMinutes(cont, parseIdMap2, MyPrefs.timerBuzzerInterval); //disable until buzzer can run in background
+            content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerBuzzerActive)); //disable until buzzer can run in background
+            content.add(makeEditTimeInMinutesSetting(parseIdMap2, MyPrefs.timerBuzzerInterval)); //disable until buzzer can run in background
         }
-        addSettingInt(cont, parseIdMap2, MyPrefs.timerUpdateInterval, 1, 60, 1);
+        if (Config.TEST) { //too complicated, enough to chose to see seconds or not
+            content.add(makeEditIntSetting(parseIdMap2, MyPrefs.timerUpdateInterval, 1, 60, 1));
+        }
         if (false) {
-            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysExpandListHierarchy);
+            content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerAlwaysExpandListHierarchy));
 //            addSettingInt(cont, parseIdMap2, MyPrefs.timerMaxTimerDurationInHoursXXX, 0, 12, 1);
         }
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList);
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow);
-        cont.add(makeSpacerThin());
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerShowPopupDialogWhenNoMoreTasksInProjectOrItemList));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow));
+        content.add(makeSpacerThin());
 //        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerMayPauseAlreadyRunningTimer,()->);
 //        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAskBeforeStartingOnNewElement);
-        Component setting1 = settingBoolean(parseIdMap2, MyPrefs.timerAskBeforeStartingOnNewElement);
+        Component setting1 = makeEditBooleanSetting(parseIdMap2, MyPrefs.timerAskBeforeStartingOnNewElement);
 //        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerMayPauseAlreadyRunningTimer, () -> setting1.setHidden(false), () -> setting1.setHidden(true));
-        addSettingBoolean(cont, parseIdMap2, MyPrefs.timerMayPauseAlreadyRunningTimer, setting1);
-        cont.add(setting1);
-        if (false) {
-            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow);
-            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow);
-            addSettingBoolean(cont, parseIdMap2, MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow);
-        }
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerMayPauseAlreadyRunningTimer, setting1));
+        content.add(setting1);
     }
 }

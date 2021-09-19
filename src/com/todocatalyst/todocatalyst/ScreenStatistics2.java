@@ -4,6 +4,7 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.compat.java.util.Objects;
 import com.codename1.components.SpanLabel;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.Container;
@@ -35,13 +36,13 @@ public class ScreenStatistics2 extends MyForm {
      * edit a list of statistics over recently done tasks
      *
      */
-    ScreenStatistics2(String screenTitle, MyForm previousForm, Runnable updateActionOnDone, String helpText) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
-        super(screenTitle, previousForm, updateActionOnDone);
+    ScreenStatistics2(MyForm previousForm, Runnable updateActionOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+        super(ScreenType.STATISTICS, previousForm, updateActionOnDone);
 //        this.itemListList = itemListList;
         setUniqueFormId("ScreenStatistics");
-        setScreenType(ScreenType.STATISTICS);
-        setScrollable(false);
-        if (!(getLayout() instanceof BorderLayout)) {
+        configureWithScreenType(ScreenType.STATISTICS);
+////        setScrollable(false);
+        if (false && !(getLayout() instanceof BorderLayout)) {
             setLayout(new BorderLayout());
         }
         this.previousValues = new SaveEditedValuesLocally(getUniqueFormId());
@@ -49,18 +50,21 @@ public class ScreenStatistics2 extends MyForm {
         addCommandsToToolbar(getToolbar()); //since Search refers to itemListStatus which is rebuild everytime, search must also be updated in refreshAfterEdit
 
         //must update dates both here and in refreshAfterEdit
-        endDate = new MyDate(); //end of interval is now
-        startDate = new MyDate(endDate.getTime() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
-
-        reloadData();
+//        endDate = new MyDate(); //end of interval is now
+//        startDate = new MyDate(endDate.getTime() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//        reloadData();
         refreshAfterEdit();
     }
 
     @Override
     public void refreshAfterEdit() {
-        getContentPane().removeAll();
-        endDate = new MyDate(); //end of interval is now
-        startDate = new MyDate(endDate.getTime() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//        getContentPane().removeAll();
+        endDate = MyDate.getEndOfDay(new MyDate()); //end of interval is now (*end* of last day in interval)
+        Date newStartDate = MyDate.getStartOfDay(new MyDate(endDate.getTime() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS));
+        if (!Objects.equals(newStartDate, startDate)) {
+            startDate = newStartDate;
+            reloadData();
+        }
 //        SortStatsOnXXX sortOn = SortStatsOnXXX.valueOfDefault(MyPrefs.statisticsSortBy.getString());
 //        sortItems(doneItemsFromParseUnsorted, sortOn); //now done in buildStatisticsSortedByTime
 //        itemListStats = buildStatisticsSortedByTime(doneItemsFromParseUnsorted, workSlots);
@@ -76,11 +80,11 @@ public class ScreenStatistics2 extends MyForm {
             getToolbar().removeCommand(getSearchCmd());
         }
 //        mySearchCmd = new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(itemListStats));
-        setSearchCmd ( new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(itemListStats)));
+        setSearchCmd(new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(itemListStats)));
         getToolbar().addCommandToRightBar(getSearchCmd());
 
-        revalidate();
-        restoreKeepPos();
+//        revalidate();
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 
@@ -121,15 +125,17 @@ public class ScreenStatistics2 extends MyForm {
         }
 
 //        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", "Settings", Icons.iconSettings, (e) -> {
-        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("Settings", "", Icons.iconSettings, (e) -> {
+//        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("Settings", "", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", "", Icons.iconSettings, (e) -> {
             int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
             new ScreenSettingsStatistics(ScreenStatistics2.this, () -> {
-                if (daysInThePast != MyPrefs.statisticsScreenNumberPastDaysToShow.getInt()) {
-                    reloadData(); //reload data after (possibly) changing settings (number of days in the past to show)
-                }
-                if (false) {
-                    refreshAfterEdit();
-                }
+                //Everything below now done in refreshAfterEdit which is automatically called on return
+//                if (daysInThePast != MyPrefs.statisticsScreenNumberPastDaysToShow.getInt()) {
+//                    reloadData(); //reload data after (possibly) changing settings (number of days in the past to show)
+//                }
+//                if (false) {
+//                    refreshAfterEdit();
+//                }
             }).show();
         }
         ));
@@ -1005,14 +1011,16 @@ public class ScreenStatistics2 extends MyForm {
     protected Container buildContentPane(ItemList itemListStats) {
         parseIdMap2.parseIdMapReset();
         if ((itemListStats != null && itemListStats.size() > 0)) {
-            MyTree2 cl = new MyTree2(itemListStats, expandedObjects, null, null) {
+            MyTree2 cl = new MyTree2(this,itemListStats, expandedObjects, null, null) {
                 @Override
                 protected Component createNode(Object node, int depth) {
                     Container cmp = null;
                     if (node instanceof Item) {
-                        cmp = ScreenListOfItems.buildItemContainer(ScreenStatistics2.this, (Item) node, itemListStats, null, expandedObjects);
+//                        cmp = ScreenListOfItems.buildItemContainer(ScreenStatistics2.this, (Item) node, itemListStats, null, expandedObjects);
+                        cmp = ScreenListOfItems.buildItemContainer(ScreenStatistics2.this, (Item) node, itemListStats);
                     } else if (node instanceof ItemList) {
-                        cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, null, true, expandedObjects);
+//                        cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, null, true, expandedObjects);
+                        cmp = ScreenListOfItemLists.buildItemListContainer(ScreenStatistics2.this,(ItemList) node,  true);
                     } else {
                         assert false : "should only be Item or ItemList";
                     }

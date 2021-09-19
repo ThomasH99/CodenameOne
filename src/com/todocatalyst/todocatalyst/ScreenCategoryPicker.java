@@ -85,9 +85,9 @@ public class ScreenCategoryPicker extends MyForm {
 //        this.item = item;
         setPinchInsertEnabled(true);
 //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
-        setLayout(new BorderLayout());
+//        setLayout(new BorderLayout());
 //        setScrollable(false); //disable scrolling of form, necessary to let lists handle their own 
-        setScrollableY(true); //disable scrolling of form, necessary to let lists handle their own scrolling 
+//        setScrollableY(true); //disable scrolling of form, necessary to let lists handle their own scrolling 
 //        addSearchToTitle();
 //        setToolbar(new Toolbar());
         addCommandsToToolbar(getToolbar());
@@ -214,7 +214,8 @@ public class ScreenCategoryPicker extends MyForm {
 //</editor-fold>
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd(listOfAllCategories, ScreenCategoryPicker.this, () -> refreshAfterEdit()));
 //        toolbar.addCommandToRightBar(ScreenListOfCategories.makeNewCategoryCmd("",listOfAllCategories, ScreenCategoryPicker.this, ()->{})); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
-        toolbar.addCommandToOverflowMenu(ScreenListOfCategories.makeNewCategoryCmd("Add Category", listOfAllCategories, ScreenCategoryPicker.this, () -> {
+//        toolbar.addCommandToOverflowMenu(ScreenListOfCategories.makeNewCategoryCmd("Add Category", listOfAllCategories, ScreenCategoryPicker.this, () -> {
+        toolbar.addCommandToOverflowMenu(makeCommandNewCategory("Add Category", listOfAllCategories, ScreenCategoryPicker.this, () -> {
         })); //NO need to call () -> refreshAfterEdit() - is already done in showPreviousScreen
 
 //        addSearchToTitle();

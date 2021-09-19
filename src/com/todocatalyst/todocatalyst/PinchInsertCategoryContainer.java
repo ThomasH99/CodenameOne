@@ -212,7 +212,7 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
 //    closePinchContainer(boolean stopAddingInlineContainers)
     public void closePinchContainer(boolean stopAddingInlineContainers) {
         //UI: close the text field
-        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(this);
+        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParentN(this);
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
         if (true || stopAddingInlineContainers) {
 //            if(false)

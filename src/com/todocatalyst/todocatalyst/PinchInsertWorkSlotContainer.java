@@ -248,7 +248,7 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
     @Override
     public void closePinchContainer(boolean stopAddingInlineContainers) {
 //        closeInsertNewWorkSlotContainer(null);
-        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(this);
+        Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParentN(this);
         myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
         if (stopAddingInlineContainers) {
 //            if(false)

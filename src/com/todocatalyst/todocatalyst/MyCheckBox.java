@@ -38,7 +38,7 @@ public class MyCheckBox extends Button {
          *
          * @param oldStatus
          * @param newStatus
-         * @return
+         * @return true if newStatus was set was different from oldStatus
          */
         boolean processNewStatusValue(ItemStatus oldStatus, ItemStatus newStatus);
     }
@@ -77,6 +77,18 @@ public class MyCheckBox extends Button {
 
     public MyCheckBox(ItemStatus itemStatus) {//, IsItemOngoing itemOngoing) {
         this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null, false);
+    }
+
+    public MyCheckBox(Item item) {//, IsItemOngoing itemOngoing) {
+        this(item != null ? item.getStatus() : ItemStatus.CREATED, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), (oldStatus, newStatus) -> {
+            if (item != null
+                    && newStatus != oldStatus
+                    && item.setStatus(newStatus)) {
+                DAO.getInstance().saveToParseNow(item); //save (and trigger change event)
+                return true;
+            };
+            return false;
+        }, null, null, null, false);
     }
 
     public MyCheckBox(ItemStatus itemStatus, boolean makeInactive) {//, IsItemOngoing itemOngoing) {
@@ -191,7 +203,7 @@ public class MyCheckBox extends Button {
 //        }
 //</editor-fold>
 
-        setStatus(initialItemStatus); //NB! Do this *after* initializing the icons above, but *before* setting statusChangeHandler to avoid infinite loop
+        setStatus(initialItemStatus, false); //NB! Do this *after* initializing the icons above, but *before* setting statusChangeHandler to avoid infinite loop
         this.activateFullMenuOnSingleClick = activateFullMenuOnSingleClick;
         this.statusChangeHandler = statusChangeHandler;
 
@@ -282,7 +294,7 @@ public class MyCheckBox extends Button {
 //            if (!inactive && runStatusChangeHandler && statusChangeHandler != null) {
 //                statusChangeHandler.processNewStatusValue(oldStatus, itemStatus);
 //            }
-            if (statusChangeHandler == null || statusChangeHandler.processNewStatusValue(oldStatus, itemStatus)) {
+            if (statusChangeHandler == null || (!runStatusChangeHandler || statusChangeHandler.processNewStatusValue(oldStatus, itemStatus))) {
                 this.itemStatus = itemStatus; //update before making call below to avoid infinite loop
                 setStatusIcon(itemStatus);
             }

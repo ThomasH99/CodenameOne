@@ -244,9 +244,13 @@ public class RepeatRuleParseObject
     }
 
     public RepeatRuleParseObject(RepeatRuleParseObject repeatRule) {
+        this(repeatRule,false);
+    }
+    
+    public RepeatRuleParseObject(RepeatRuleParseObject repeatRule, boolean copyListsOfRepeatInstances) {
         this();
         if (repeatRule != null) {
-            repeatRule.copyMeInto(this);
+            repeatRule.copyMeInto(this, copyListsOfRepeatInstances);
         }
     }
 
@@ -6574,7 +6578,7 @@ public class RepeatRuleParseObject
     }
 
     public void copyMeInto(RepeatRuleParseObject destiny, boolean copyState) {
-        copyMeInto(destiny, false, false);
+        copyMeInto(destiny, copyState, false);
     }
 
     public void copyMeInto(RepeatRuleParseObject destiny, boolean copyState, boolean makeTemplateCopyXXX) {

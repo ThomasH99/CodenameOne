@@ -7,7 +7,10 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.io.Externalizable;
 import com.codename1.io.Log;
 import com.codename1.io.Util;
+import com.codename1.ui.events.ActionEvent;
+import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.events.DataChangedListener;
+import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import com.todocatalyst.todocatalyst.Item.CopyMode;
@@ -42,8 +45,9 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     public final static String CLASS_NAME = "WorkSlot";
 
 //    public static int MINUTES_IN_MILLISECONDS = MyDate.MINUTE_IN_MILLISECONDS; //60 * 1000;
-    final static String WORKSLOT = "Workslot";
-    final static String WORKSLOTS = "Workslots";
+    final static String WORKSLOT = "Time block"; //Workslot";
+    final static String WORKSLOTS = "Time blocks"; //Workslots";
+    final static String OWNER = Item.OWNER;
     final static String DESCRIPTION = "Description";//"Name";
     final static String DESCRIPTION_HELP = Format.f("Optional description of the {0 workslot}", WORKSLOT);//"Name";
     final static String DESCRIPTION_HINT = Format.f("Optional {0 workslot} description", WORKSLOT);//"Optional description";//"Name";
@@ -115,6 +119,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    private List<Item> itemsWithSlicesOfThisWorkSlot = new ArrayList(); //unsorted /for now
     private List itemsWithNonZeroSlicesOfThisWorkSlot = new ArrayList(); //unsorted /for now
     private List<Runnable> opsAfterSubtaskUpdates = new ArrayList(); //operations to run once all changes to Item's fields have been made, e.g. repeatRules
+    private EventDispatcher listeners; // = new EventDispatcher();
 
     public WorkSlot() {
         super(CLASS_NAME);
@@ -2043,8 +2048,9 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public void setStatus(ItemStatus itemStatus) {
-        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean setStatus(ItemStatus itemStatus) {
+        ASSERT.that("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return false;
     }
 
     @Override
@@ -2200,7 +2206,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public void deletePrepare(Date deletedDate) {
+    public void onDelete(Date deletedDate) {
 
         //DELETE IN OWNER
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2243,6 +2249,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //            else
 //        DAO.getInstance().saveInBackground((ParseObject) this);
 //        return true;
+        fireDeleteEvent();
     }
 
     @Override
@@ -2267,13 +2274,18 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     @Override
-    public void updateBeforeSave() {
+    public void onSave() {
         if (opsAfterSubtaskUpdates != null) {
             while (!opsAfterSubtaskUpdates.isEmpty()) {
                 Runnable f = opsAfterSubtaskUpdates.remove(0); //ensures that each operation is only called once, even if iterating (the run() calls an operation which calls saveInBackground triggering 
                 f.run();
             }
         }
+    }
+
+    @Override
+    public void onDelete() {
+        fireDeleteEvent(); //only fire if changed
     }
 
     /**
@@ -2497,6 +2509,86 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             currentRepeatRule.setUpdatePending(false); //MUST set false before updating to avoid recursion when new RR instances 
             currentRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this, true);
         }
+    }
+
+    public Date[] getTodayDates() {
+        Date todayStart = MyDate.getStartOfToday();
+        Date todayEnd = MyDate.getEndOfToday();
+        Date startDate = getStartTimeD();
+        Date endDate = getEndTimeD();
+        Date startDateToday;
+        Date endDateToday;
+        if (endDate.getTime() < todayStart.getTime() || startDate.getTime() > todayEnd.getTime()) { //no overlap with today
+            startDateToday = null;
+            endDateToday = null;
+        }
+
+        if (startDate.getTime() >= todayStart.getTime() && startDate.getTime() <= todayEnd.getTime()) {
+            startDateToday = startDate; //start falls within today
+        } else {
+            startDateToday = todayStart; //start falls *before* today so adjusted to startToday
+        }
+
+        if (endDate.getTime() >= todayStart.getTime() && endDate.getTime() <= todayEnd.getTime()) {
+            endDateToday = endDate;
+        } else {
+            endDateToday = todayEnd;
+        }
+
+        if (startDateToday != null) {
+            ASSERT.that(endDateToday != null, "either both dates are null or none of them are!");
+            return new Date[]{startDateToday, endDateToday};
+        } else {
+            ASSERT.that(endDateToday == null, "either both dates are null or none of them are!");
+            return new Date[0];
+        }
+    }
+
+    /**
+     * Adds a listener
+     *
+     * @param l implementation of the action listener interface
+     */
+    @Override
+    public void addActionListener(ActionListener l) {
+        if (listeners == null) {
+            listeners = new EventDispatcher();
+        }
+        listeners.addListener(l);
+    }
+
+    /**
+     * Removes the given action listener
+     *
+     * @param l implementation of the action listener interface
+     */
+    @Override
+    public void removeActionListener(ActionListener l) {
+        if (listeners != null) {
+            listeners.removeListener(l);
+        }
+    }
+
+    @Override
+//    public List<ActionListener> getActionListeners() {
+    public EventDispatcher getActionListeners() {
+        return listeners;
+    }
+
+    @Override
+    public void update(ActionEvent evt) {
+//        nothing to do for now
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent evt) {
+        update(evt);
+        fireEvent(evt);
+    }
+
+    @Override
+    public void pullToRefresh() {
+
     }
 
 }

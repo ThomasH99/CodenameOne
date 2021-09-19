@@ -2398,6 +2398,9 @@ public class MyDate extends Date {
 //        return cal.getTime();
         return new MyDate(getStartOfDay(time).getTime() + DAY_IN_MILLISECONDS - 1);
     }
+    static Date getEndOfToday() {
+        return getEndOfDay(new MyDate());
+    }
 
 //    @Override
     public boolean equalsXXX(Object date) {

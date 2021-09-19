@@ -29,7 +29,7 @@ import java.util.Objects;
  */
 public class FilterSortDef extends ParseObject {
 
-    private Comparator nonSavedComparator = null;
+    private Comparator nonSavedComparatorXXX = null;
     private boolean isNoSave = false;
     private String cmdUniqueId = null;
 //    private static FilterSortDef defaultFilter = null;
@@ -44,6 +44,7 @@ public class FilterSortDef extends ParseObject {
     static String PARSE_SORT_FIELD = "sortField";
     static String PARSE_SORT_DESCENDING = "sortDescending";
     static String PARSE_SORT_ON = "sortActive";
+    static String PARSE_STICKYHEADERS_OFF = "headersOff";
     static String PARSE_FILTER_OPTIONS = "filterOptions"; //the specific definition of the filter
 //    private static String PARSE_SCREEN_ID = "ScreenId";
 //    private static String PARSE_FILTERED_OBJECT_ID = "filteredObjectId";
@@ -78,7 +79,11 @@ public class FilterSortDef extends ParseObject {
 //        if (!Objects.equals(this.getObjectIdP(), filterSortDef.getObjectIdP())) {
 //            return false;
 //        }
-        if (!Objects.equals(getFilterOptionsFromParse(), filterSortDef.getFilterOptionsFromParse())) {
+        //NB below comparison will only work if options are always stored in the same order (which seems to tbe case currently)
+//        if (!Objects.equals(getFilterOptionsFromParse(), filterSortDef.getFilterOptionsFromParse())) {
+//            return false;
+//        }
+        if (!equalsOptions(this, filterSortDef)) {
             return false;
         }
         if (!Objects.equals(getSortFieldId(), filterSortDef.getSortFieldId())) {
@@ -191,13 +196,14 @@ public class FilterSortDef extends ParseObject {
 //    public static String FILTER_SHOW_WITH_ACTUALS_ONLY = "showWithActualsOnly";
 //    public static String FILTER_SHOW_ALL = "showAll";
 //</editor-fold>
+    public static String FILTER_SHOW_ALL = "All";
     public static String FILTER_SHOW_NEW_TASKS = "New";
     public static String FILTER_SHOW_ONGOING_TASKS = "Ongoing";
     public static String FILTER_SHOW_WAITING_TASKS = "Waiting";
     public static String FILTER_SHOW_DONE_TASKS = "Done";
+
     public static String FILTER_SHOW_DONE_TILL_MIDNIGHT = "TillMidnight";
     public static String FILTER_SHOW_CANCELLED_TASKS = "Cancelled";
-
     public static String FILTER_SHOW_BEFORE_HIDE_UNTILDATE = "BeforeHideUntil";
     public static String FILTER_SHOW_TASKS_THAT_DEPEND_ON_UNDONE_TASKS = "DependingOnTasks";
     public static String FILTER_SHOW_EXPIRES_ON_DATE = "ExpiresOn";
@@ -207,30 +213,36 @@ public class FilterSortDef extends ParseObject {
     public static String FILTER_SHOW_STARRED_TASKS_ONLY = "Starred";
     public static String FILTER_SHOW_WITHOUT_ESTIMATES_ONLY = "WithoutEstimates";
     public static String FILTER_SHOW_WITH_ACTUALS_ONLY = "WithActuals";
+
     public static String FILTER_SHOW_WITH_REMAINING_ONLY = "WithRemaining";
-    public static String FILTER_SHOW_ALL = "All";
+    public static String FILTER_SHOW_CHALLENGE_EASY = "ChalEasy";
+    public static String FILTER_SHOW_CHALLENGE_HARD = "ChalHard";
 
     public final static String FILTER_SORT_TODAY_VIEW = "TODAY_VIEW";
 //    public final static String FILTER_SORT_OWNER = "SORT_ON_OWNER";
 
 //    private boolean showInitialized; // = false;
     private boolean initialized; // = true;
+
     private boolean showAll; // = true;
 //    private boolean showDefault;// = true;
     private boolean showNewTasks;// = true;
     private boolean showOngoingTasks;// = true;
     private boolean showWaitingTasks;
     private boolean showDoneTasks;
+
     private boolean showDoneTillMidnight;
     private boolean showCancelledTasks;
     private boolean showBeforeHideUntilDate;
     private boolean showDependingOnUndoneTasks;
     private boolean showExpiresOnDate;
+
     private boolean showProjectsOnly;
     private boolean showInterruptTasksOnly;
     private boolean showStarredTasksOnly;
     private boolean showWithoutEstimatesOnly;
     private boolean showWithActualsOnly;
+
     private boolean showWithRemainingOnly;
     private boolean showChallengeEasy;
     private boolean showChallengeHard;
@@ -713,6 +725,54 @@ public class FilterSortDef extends ParseObject {
         }
     }
 
+    /**
+     * @return the sortOn
+     */
+    public boolean isStickyHeadersOn() {
+        if (getBoolean(PARSE_STICKYHEADERS_OFF) == null) {
+//            return getBoolean(PARSE_STICKYHEADERS_OFF);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+    /**
+     * returns tru if the filter does not have any effect (no sorting, no
+     * filtering)
+     *
+     * @return
+     */
+//    public boolean isNeutralXXX() {
+//        boolean neutral
+//                = showNewTasks
+//                && showOngoingTasks
+//                && showWaitingTasks
+//                && showDoneTasks
+//                && showCancelledTasks
+//                && showBeforeHideUntilDate
+//                && showDependingOnUndoneTasks
+//                && showExpiresOnDate
+//                && !showProjectsOnly
+//                && !showInterruptTasksOnly
+//                && !showWithoutEstimatesOnly
+//                && !showWithActualsOnly;
+//
+//        return !isSortOn() && (showAll || neutral);
+//    }
+//</editor-fold>
+    /**
+     * @param showHeaders the sortOn to set
+     */
+    public void setStickyHeadersOn(boolean showHeaders) {
+        if (showHeaders) {
+            remove(PARSE_STICKYHEADERS_OFF);
+        } else {
+            put(PARSE_STICKYHEADERS_OFF, showHeaders);
+        }
+    }
+
     public boolean isSortDescending() {
         if (getBoolean(PARSE_SORT_DESCENDING) != null) {
             return getBoolean(PARSE_SORT_DESCENDING);
@@ -761,6 +821,10 @@ public class FilterSortDef extends ParseObject {
 //    private void saveBoolsToParseXXX() {
 //        setFilterOptionsInParse(getFilterBoolsAsString());
 //    }
+    private void setFilterBoolsFromOptionsString() {
+        setFilterBoolsFromOptionsString(getFilterOptionsFromParse());
+    }
+
     private void setFilterBoolsFromOptionsString(String filterOptions) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        showNewTasks = filterOptions.indexOf("showNewTasks") != -1;
@@ -787,25 +851,59 @@ public class FilterSortDef extends ParseObject {
 //        }
 
         showAll = filterOptions.contains(FILTER_SHOW_ALL); // NB. String.contains not implemented for CN1
-
         showNewTasks = filterOptions.contains(FILTER_SHOW_NEW_TASKS) || showAll;
         showOngoingTasks = filterOptions.contains(FILTER_SHOW_ONGOING_TASKS) || showAll;
         showWaitingTasks = filterOptions.contains(FILTER_SHOW_WAITING_TASKS) || showAll;
         showDoneTasks = filterOptions.contains(FILTER_SHOW_DONE_TASKS) || showAll;
+
         showDoneTillMidnight = filterOptions.contains(FILTER_SHOW_DONE_TILL_MIDNIGHT) || showAll;
         showCancelledTasks = filterOptions.contains(FILTER_SHOW_CANCELLED_TASKS) || showAll;
         showBeforeHideUntilDate = filterOptions.contains(FILTER_SHOW_BEFORE_HIDE_UNTILDATE) || showAll;
         showDependingOnUndoneTasks = filterOptions.contains(FILTER_SHOW_TASKS_THAT_DEPEND_ON_UNDONE_TASKS) || showAll;
         showExpiresOnDate = filterOptions.contains(FILTER_SHOW_EXPIRES_ON_DATE) || showAll;
 
-        showProjectsOnly = filterOptions.contains(FILTER_SHOW_PROJECTS_ONLY);
-        showInterruptTasksOnly = filterOptions.contains(FILTER_SHOW_INTERRUPT_TASKS_ONLY);
-        showStarredTasksOnly = filterOptions.contains(FILTER_SHOW_STARRED_TASKS_ONLY);
-        showWithoutEstimatesOnly = filterOptions.contains(FILTER_SHOW_WITHOUT_ESTIMATES_ONLY);
-        showWithActualsOnly = filterOptions.contains(FILTER_SHOW_WITH_ACTUALS_ONLY);
-        showWithRemainingOnly = filterOptions.contains(FILTER_SHOW_WITH_REMAINING_ONLY);
+        showProjectsOnly = filterOptions.contains(FILTER_SHOW_PROJECTS_ONLY) || showAll;
+        showInterruptTasksOnly = filterOptions.contains(FILTER_SHOW_INTERRUPT_TASKS_ONLY) || showAll;
+        showStarredTasksOnly = filterOptions.contains(FILTER_SHOW_STARRED_TASKS_ONLY) || showAll;
+        showWithoutEstimatesOnly = filterOptions.contains(FILTER_SHOW_WITHOUT_ESTIMATES_ONLY) || showAll;
+        showWithActualsOnly = filterOptions.contains(FILTER_SHOW_WITH_ACTUALS_ONLY) || showAll;
+
+        showWithRemainingOnly = filterOptions.contains(FILTER_SHOW_WITH_REMAINING_ONLY) || showAll;
+        showChallengeEasy = filterOptions.contains(FILTER_SHOW_CHALLENGE_EASY) || showAll;
+        showChallengeHard = filterOptions.contains(FILTER_SHOW_CHALLENGE_HARD) || showAll;
 
 //        showInitialized = true;
+    }
+
+    /**
+     * compare all the options (independently of the order in which they may be
+     * set/stored in the option string)
+     *
+     * @param f1
+     * @param f2
+     * @return
+     */
+    public static boolean equalsOptions(FilterSortDef f1, FilterSortDef f2) {
+        f1.setFilterBoolsFromOptionsString();
+        f2.setFilterBoolsFromOptionsString();
+        return f1.showAll == f2.showAll
+                && f1.showNewTasks == f2.showNewTasks
+                && f1.showOngoingTasks == f2.showOngoingTasks
+                && f1.showWaitingTasks == f2.showWaitingTasks
+                && f1.showDoneTasks == f2.showDoneTasks
+                && f1.showDoneTillMidnight == f2.showDoneTillMidnight
+                && f1.showCancelledTasks == f2.showCancelledTasks
+                && f1.showBeforeHideUntilDate == f2.showBeforeHideUntilDate
+                && f1.showDependingOnUndoneTasks == f2.showDependingOnUndoneTasks
+                && f1.showExpiresOnDate == f2.showExpiresOnDate
+                && f1.showProjectsOnly == f2.showProjectsOnly
+                && f1.showInterruptTasksOnly == f2.showInterruptTasksOnly
+                && f1.showStarredTasksOnly == f2.showStarredTasksOnly
+                && f1.showWithoutEstimatesOnly == f2.showWithoutEstimatesOnly
+                && f1.showWithActualsOnly == f2.showWithActualsOnly
+                && f1.showWithRemainingOnly == f2.showWithRemainingOnly
+                && f1.showChallengeEasy == f2.showChallengeEasy
+                && f1.showChallengeHard == f2.showChallengeHard;
     }
 
 //    private void extractAndSetFilterOptions() {
@@ -876,7 +974,10 @@ public class FilterSortDef extends ParseObject {
                 + (showInterruptTasksOnly ? FILTER_SHOW_INTERRUPT_TASKS_ONLY + " " : "")
                 + (showStarredTasksOnly ? FILTER_SHOW_STARRED_TASKS_ONLY + " " : "")
                 + (showWithoutEstimatesOnly ? FILTER_SHOW_WITHOUT_ESTIMATES_ONLY + " " : "")
-                + (showWithActualsOnly ? FILTER_SHOW_WITH_ACTUALS_ONLY + " " : "");
+                + (showWithActualsOnly ? FILTER_SHOW_WITH_ACTUALS_ONLY + " " : "")
+                + (showWithRemainingOnly ? FILTER_SHOW_WITH_REMAINING_ONLY + " " : "")
+                + (showChallengeEasy ? FILTER_SHOW_CHALLENGE_EASY + " " : "")
+                + (showChallengeHard ? FILTER_SHOW_CHALLENGE_HARD + " " : "");
 //        put(PARSE_FILTER_OPTIONS, filterOptions);
         return filterOptions;
     }
@@ -1012,15 +1113,16 @@ public class FilterSortDef extends ParseObject {
                 && (showBeforeHideUntilDate || item.getHideUntilDateD().getTime() == 0 || MyDate.currentTimeMillis() >= item.getHideUntilDateD().getTime()) //before now <=> hideUntil date is already passed so show the item
                 && (showDependingOnUndoneTasks || item.isDependingOnTasksDone())
                 && (showExpiresOnDate || item.getExpiresOnDate().getTime() == 0 || item.getExpiresOnDate().getTime() < MyDate.currentTimeMillis()) //before now <=> hideUntil date is already passed so show the item
+
                 && (!showProjectsOnly || item.isProject()) //before now <=> hideUntil date is already passed so show the item
                 && (!showInterruptTasksOnly || item.isInteruptOrInstantTask()) //before now <=> hideUntil date is already passed so show the item
                 && (!showStarredTasksOnly || item.isStarred()) //before now <=> hideUntil date is already passed so show the item
                 && (!showWithoutEstimatesOnly || !item.has(Item.PARSE_EFFORT_ESTIMATE)) //before now <=> hideUntil date is already passed so show the item
                 && (!showWithActualsOnly || item.has(Item.PARSE_ACTUAL_EFFORT)) //before now <=> hideUntil date is already passed so show the item
+
                 && (!showWithRemainingOnly || item.has(Item.PARSE_REMAINING_EFFORT_TOTAL)) //before now <=> hideUntil date is already passed so show the item
                 && (!showChallengeEasy || Objects.equals(item.getChallengeN(), Challenge.EASY))
-                && (!showChallengeHard || Objects.equals(item.getChallengeN(), Challenge.HARD))
-                );
+                && (!showChallengeHard || Objects.equals(item.getChallengeN(), Challenge.HARD)));
 //            return false;
     }
 
@@ -1030,7 +1132,7 @@ public class FilterSortDef extends ParseObject {
      * @param query
      */
 //        void updateQuery(FilterPredicate fp, ParseQuery query) {
-    void updateQuery(ParseQuery query) {
+    void updateQueryXXX(ParseQuery query) {
         FilterSortDef fp = this;
         if (!fp.showNewTasks) {
             query.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.CREATED.toString());
@@ -1115,13 +1217,13 @@ public class FilterSortDef extends ParseObject {
 //        return (int) (d1 - d2);
     }
 
-    void setSortingComparator(Comparator<Item> sorter) {
-        nonSavedComparator = sorter;
+    void setSortingComparatorXXX(Comparator<Item> sorter) {
+        nonSavedComparatorXXX = sorter;
     }
 
     Comparator<Item> getSortingComparator() {
-        if (nonSavedComparator != null) {
-            return nonSavedComparator;
+        if (nonSavedComparatorXXX != null) {
+            return nonSavedComparatorXXX;
         } else {
             return getSortingComparator(getSortFieldId(), isSortDescending());
         }
@@ -1484,8 +1586,8 @@ public class FilterSortDef extends ParseObject {
                         //                        : (i1, i2) -> i2.getChallengeN().compareTo(i1.getChallengeN());
                         //                        ? (i1, i2) -> compareNullValueLast(i1.getChallengeN(), i2.getChallengeN())
                         //                        : (i1, i2) -> compareNullValueLast(i2.getChallengeN(), i1.getChallengeN());
-//                        ? (i1, i2) -> compareChallengeValue(i1.getChallengeN(), i2.getChallengeN())
-//                        : (i1, i2) -> compareChallengeValue(i2.getChallengeN(), i1.getChallengeN());
+                        //                        ? (i1, i2) -> compareChallengeValue(i1.getChallengeN(), i2.getChallengeN())
+                        //                        : (i1, i2) -> compareChallengeValue(i2.getChallengeN(), i1.getChallengeN());
                         ? (i1, i2) -> Challenge.compare(i1.getChallengeN(), i2.getChallengeN())
                         : (i1, i2) -> Challenge.compare(i2.getChallengeN(), i1.getChallengeN());
             case Item.PARSE_DREAD_FUN_VALUE:
@@ -1495,9 +1597,9 @@ public class FilterSortDef extends ParseObject {
                         //                        ? (i1, i2) -> compareDreadFunValue(i1.getDreadFunValueN(), i2.getDreadFunValueN())
                         //                        : (i1, i2) -> compareDreadFunValue(i2.getDreadFunValueN(), i1.getDreadFunValueN());
                         //                        ? (i1, i2) -> compareNullValueLast(i1.getDreadFunValueN(), i2.getDreadFunValueN())
-//                        //                        : (i1, i2) -> compareNullValueLast(i2.getDreadFunValueN(), i1.getDreadFunValueN());
-//                        ? (i1, i2) -> compareDreadFunValue(i1.getDreadFunValueN(), i2.getDreadFunValueN())
-//                        : (i1, i2) -> compareDreadFunValue(i2.getDreadFunValueN(), i1.getDreadFunValueN());
+                        //                        //                        : (i1, i2) -> compareNullValueLast(i2.getDreadFunValueN(), i1.getDreadFunValueN());
+                        //                        ? (i1, i2) -> compareDreadFunValue(i1.getDreadFunValueN(), i2.getDreadFunValueN())
+                        //                        : (i1, i2) -> compareDreadFunValue(i2.getDreadFunValueN(), i1.getDreadFunValueN());
                         //                        : (i1, i2) -> compareNullValueLast(i2.getDreadFunValueN(), i1.getDreadFunValueN());
                         ? (i1, i2) -> DreadFunValue.compare(i1.getDreadFunValueN(), i2.getDreadFunValueN())
                         : (i1, i2) -> DreadFunValue.compare(i2.getDreadFunValueN(), i1.getDreadFunValueN());
@@ -1546,10 +1648,10 @@ public class FilterSortDef extends ParseObject {
                         : (i1, i2) -> compareInt(i2.getImpUrgPrioValue(), i1.getImpUrgPrioValue());
             case Item.PARSE_IMPORTANCE:
                 return sortDescending
-//                        ? (i1, i2) -> compareNullValueLast(i1.getImportanceN(), i2.getImportanceN()) //show highest values at top
-//                        : (i1, i2) -> compareNullValueLast(i2.getImportanceN(), i1.getImportanceN());
-//                        ? (i1, i2) -> compareHighMediumLow(i1.getImportanceN(), i2.getImportanceN()) //show highest values at top
-//                        : (i1, i2) -> compareHighMediumLow(i2.getImportanceN(), i1.getImportanceN());
+                        //                        ? (i1, i2) -> compareNullValueLast(i1.getImportanceN(), i2.getImportanceN()) //show highest values at top
+                        //                        : (i1, i2) -> compareNullValueLast(i2.getImportanceN(), i1.getImportanceN());
+                        //                        ? (i1, i2) -> compareHighMediumLow(i1.getImportanceN(), i2.getImportanceN()) //show highest values at top
+                        //                        : (i1, i2) -> compareHighMediumLow(i2.getImportanceN(), i1.getImportanceN());
                         ? (i1, i2) -> HighMediumLow.compare(i1.getImportanceN(), i2.getImportanceN()) //show highest values at top
                         : (i1, i2) -> HighMediumLow.compare(i2.getImportanceN(), i1.getImportanceN());
             case Item.PARSE_URGENCY:
@@ -1558,7 +1660,8 @@ public class FilterSortDef extends ParseObject {
                         : (i1, i2) -> HighMediumLow.compare(i2.getUrgencyN(), i1.getUrgencyN());
             case FILTER_SORT_TODAY_VIEW:
 //                                return (i1, i2) -> 0; //no sorting, arrive sorted from parse query
-                return (i1, i2) -> i1.getTodaySortOrder().compareTo(i2.getTodaySortOrder());
+//                return (i1, i2) -> i1.getTodaySortOrder().compareTo(i2.getTodaySortOrder());
+                return (i1, i2) -> compareInt(i1.getTodaySortOrder().getSortOrder(), i2.getTodaySortOrder().getSortOrder());
             case Item.PARSE_CATEGORIES:
                 return sortDescending
                         ? (i1, i2) -> compareCategoriesNoCatLast(i1.getCategories(), i2.getCategories()) //show highest values at top
@@ -1594,7 +1697,7 @@ public class FilterSortDef extends ParseObject {
 //    public ArrayList<Item> filter(Collection<ItemAndListCommonInterface> target) {
     public List<Item> filterItemList(Collection<ItemAndListCommonInterface> target) {
         FilterSortDef predicate = this;
-        ArrayList filteredCollection = new ArrayList();
+        ArrayList filteredCollection = new ArrayList(); //must make a copy to avoid modifying the underlying list (in case it is saved later)
 //        for (Item t : target) {
         for (ItemAndListCommonInterface t : target) {
             if (t instanceof Item) { //can also be a WorkSlot in Today view, then simply don't apply any filter

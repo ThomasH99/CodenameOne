@@ -16,7 +16,7 @@ import java.util.Date;
  */
 public class MyPrefs {
 
-    final static boolean prod = !Config.TEST;
+    static boolean prod = Config.PRODUCTION_RELEASE;
     //TODAY view
     static PrefEntry todayViewIncludeWaitingExpiringToday
             = new PrefEntry("In Today, include tasks until today", "todayViewIncludeWaitingExpiringToday", prod ? true : true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
@@ -30,6 +30,8 @@ public class MyPrefs {
             = new PrefEntry("In Today, leaf tasks instead of top-level projects instead of leaf tasks", "todayViewShowLeafTasksInsteadOfProjects", prod ? false : false, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
     static PrefEntry todayViewIncludeOverdueFromThisManyPastDays
             = new PrefEntry("In Today, include tasks from this many past days", "todayViewIncludeOverdueFromThisManyPastDays", prod ? 0 : 1, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
+    static PrefEntry todayViewShowDueTodayByTaskStatus
+            = new PrefEntry("In Today, show due today sorted by task status (Ongoing first)", "todayViewShowDueTodayByTaskStatus", prod ? false : true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
 
 //ESTIMATES
     static PrefEntry automaticallyUseFirstEffortEstimateMinusActualAsInitialRemaining
@@ -55,7 +57,7 @@ public class MyPrefs {
                     "Default time estimate to use for non-estimated tasks. Set to typical average value of actual effort for small tasks to avoid having to estimate these. Set to 0 to de-activate.");
 
     static PrefEntry estimateRemainingOnlyUseSubtasksRemaining
-            = new PrefEntry("Only use subtasks' Remaining estimates", "estimateRemainingOnlyUseSubtasksRemaining", prod ? true : false,
+            = new PrefEntry("Only use subtasks' Remaining estimates", "estimateRemainingOnlyUseSubtasksRemaining", prod ? true : true,
                     "Otherwise a project's remaining is the sum of the project task's own remaining and the sum of the remaining of all subtasks");
 
     static PrefEntry estimateEffortEstimateOnlyUseSubtasksEstimates
@@ -92,24 +94,27 @@ public class MyPrefs {
 
     //DRAG AND DROP
     static PrefEntry dragDropAsSubtaskEnabled
-            = new PrefEntry("Drag and drop to right edge of screen inserts as subtask", "dragDropAsSubtaskEnabled", prod ? false : true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
+            = new PrefEntry("Drag and drop to right edge of screen inserts as subtask", "dragDropAsSubtaskEnabled", prod ? false : true, ""); 
 
     static PrefEntry dragDropAsSupertaskEnabled
-            = new PrefEntry("Drag and drop to left edge of screen inserts tasks at level above", "dragDropAsSupertaskEnabled", prod ? false : true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
+            = new PrefEntry("Drag and drop to left edge of screen inserts tasks at level above", "dragDropAsSupertaskEnabled", prod ? false : true, ""); 
 
 //    static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
     static PrefEntry dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask
             = new PrefEntry("Approximate width in millimeters of the drop zone that will drop dragged items as either subtasks (right side of drop target) or supertasks (left side)",
                     "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", prod ? 5 : 10, "**");
+    static PrefEntry simulatedPinchZoneWidth
+            = new PrefEntry("Approximate width in millimeters of center screen zone where dragging will simulate a two finger pinch",
+                    "simulatedPinchZoneWidth", prod ? 8 : 10, "**");
 
 //    static PrefEntry dragDropLeftDropZoneWidth
-//            = new PrefEntry("Width of the left-hand drop zone (%)", "dragDropLeftDropZoneWidth", 10, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
+//            = new PrefEntry("Width of the left-hand drop zone (%)", "dragDropLeftDropZoneWidth", 10, ""); 
 //    
 //    static PrefEntry dragDropRightDropZoneWidth
-//            = new PrefEntry("Width of the right-hand drop zone (%)", "dragDropRightDropZoneWidth", 10, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
+//            = new PrefEntry("Width of the right-hand drop zone (%)", "dragDropRightDropZoneWidth", 10, ""); 
     //Edit ITEM screen - Screenitem2
     static PrefEntry itemEditEnableSwipeBetweenTabs
-            = new PrefEntry("Enable swiping between task details", "itemEditEnableSwipeBetweenTabs", prod ? true : true, ""); //one single option to start Timer for new tasks/interrupt tasks, or when working though an itemlist in the Timer (having separate options for New Item and for Next Item is too complex)
+            = new PrefEntry("Enable swiping between task details", "itemEditEnableSwipeBetweenTabs", prod ? true : true, ""); 
 
     //TIMER - ScreenTimer6
     static PrefEntry timerAutomaticallyStartTimer
@@ -131,6 +136,8 @@ public class MyPrefs {
     //TODO! setting update interval to minutes (60sec) should also prevent showing seconds in timer display (otherwise you may end up with eg 36s frozen, but changing sometimes due to relative imprecision of timer update!! and only minutes advancing)
     static PrefEntry timerShowSecondsInTimer
             = new PrefEntry("Show seconds in Timer", "showSecondsInTimer", prod ? true : true, "Hiding seconds may feel less stressful but doesn't visually show that the Timer is running");
+    static PrefEntry timerShowSecondsInSmallTimer
+            = new PrefEntry("Show seconds in small Timer", "timerShowSecondsInSmallTimer", prod ? false : true, "Hiding seconds may feel less stressful but doesn't visually show that the Timer is running");
 
     static PrefEntry timerBuzzerActive
             = new PrefEntry("Buzz at regular intervals to remind that Timer is running", "timerBuzzerActive", prod ? false : false, ""); //, "Reminder vibration interval when Timer is running");
@@ -142,6 +149,9 @@ public class MyPrefs {
 
     static PrefEntry timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds
             = new PrefEntry("Minimum timer threshold (seconds)", "timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds", (int) (prod ? 15 : 5), "Tasks will not be marked ongoing and the time will not be saved until after this number seconds. Useful to avoid that skipping a task in Timer marks it ongoing"); //, "Reminder vibration interval when Timer is running");
+    
+    static PrefEntry timerMaxDurationMillis
+            = new PrefEntry("Maximum time for the Timer (hh:mm)", "timerMaxDurationMillis", (int) (prod ? 99 * MyDate.HOUR_IN_MILISECONDS + 59 * MyDate.MINUTE_IN_MILLISECONDS : 1 * MyDate.HOUR_IN_MILISECONDS), "Tasks will not be marked ongoing and the time will not be saved until after this number seconds. Useful to avoid that skipping a task in Timer marks it ongoing"); //, "Reminder vibration interval when Timer is running");
 
     static PrefEntry timerShowEffortEstimateDetails
             = new PrefEntry("Show Estimate, total time and Remaining time for task", "timerShowEffortEstimateDetails", prod ? false : false,
@@ -149,7 +159,7 @@ public class MyPrefs {
 
     //TODO!!!! in Timer: check waiting date when skipping, or not, waiting tasks
     static PrefEntry timerIncludeWaitingTasks
-            = new PrefEntry("Time Waiting tasks even before the waiting date is met", "timerDoNotSkipWaitingTasks", prod ? false : false,
+            = new PrefEntry("Time Waiting tasks even before the waiting date is met", "timerIncludeWaitingTasks", prod ? false : false,
                     "Normally, the Timer will skip Waiting tasks until the waiting date. This setting will include them**");
 
     static PrefEntry timerIncludeDoneTasks
@@ -210,20 +220,38 @@ public class MyPrefs {
     static PrefEntry timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject
             = new PrefEntry("If the currently timed task is no longer in the timed list or project, then start Timer on first task", "timerAlwaysRestartTimerOnListOrProjectIfTimedTaskNotFoundInListOrProject",
                     prod ? false : false, "**");
-    static PrefEntry enableTimerToRestartOnLists
+    static PrefEntry timerEnableRestartOnLists
             = new PrefEntry("Enable Timer to restart over on a timed list, for example if the previously timed task is no longer in the list",
-                    "enableTimerToRestartOnLists", prod ? false : false,
-                    "**");
+                    "enableTimerToRestartOnLists", prod ? false : false,                    "**");
+    static PrefEntry timerAskBeforeRestartingOnList
+            = new PrefEntry("Ask before Timer wrapping around to start of timed list",
+                    "timerAskBeforeRestartingOnList", prod ? false : false,                    "**");
     static PrefEntry timerAskBeforeStartingOnNewElement
             = new PrefEntry("Ask before starting Timer starts on new task or list always If Possible to start **Always show new timers in current screenshow",
                     "timerAskBeforeStartingOnNewElement", prod ? true : true, "**");
     static PrefEntry timerMayPauseAlreadyRunningTimer
             = new PrefEntry("Starting Timer on a new task or list will pause an already running timer", "timerMayPauseAlreadyRunningTimer", prod ? true : true,
                     "**");
+    static PrefEntry timerAddQuotationMarksToSourceHierarchy 
+            = new PrefEntry("Add quotation marks when showing the hierarchy of the timed tasks",
+                    "timerAddQuotationMarksToSourceHierarchy", prod ? true : true, "**");
+    static PrefEntry timerSwipeStartOnlyTimesSelectedTask 
+            = new PrefEntry("Swipe-starting the Timer only times the selected task (does not continue for following tasks in list)",
+                    "timerSwipeStartOnlyTimesSelectedTask", prod ? false : true, "**");
+    static PrefEntry timerSetInterruptedTaskEvenForPausedTimer 
+            = new PrefEntry("**Mark a task as interrupted even if timer was paused", //TODO: improve description if made available to users
+                    "timerSetInterruptedTaskEvenForPausedTimer", prod ? false : true, "**");
+    static PrefEntry timerAddNewTaskToTimedListInsteadOfTimedProject 
+            = new PrefEntry("Add new tasks in Timer to timed list/category instead of timed project", 
+                    "timerAddNewTaskToTimedListInsteadOfTimedProject", prod ? false : false, "**");
+    static PrefEntry timerShowInterruptedTimerListExpanded 
+            = new PrefEntry("**", 
+                    "timerShowInterruptedTimerListExpanded", prod ? false : false, "**");
+
+    
     static PrefEntry hideIconsInEditTaskScreen //also used for SCreenWorkSlot!
             = new PrefEntry("Hide the icons when editing to save screen space",
                     "hideIconsInEditTaskScreen", prod ? false : false, "Get a cleaner or more space-efficient look");
-
     //COMMENTS
     static PrefEntry commentsAddToBeginningOfComment
             = new PrefEntry("Insert time-stamped comments at beginning of comment", "commentsAddToBeginningOfComment", prod ? false : false, "Add automatic comments to beginning of comment instead of at the end");
@@ -329,10 +357,10 @@ public class MyPrefs {
             = new PrefEntry("Automatically update task when deleting " + Item.WAIT_UNTIL_DATE,
                     "waitingSetStatusEtcWhenDeletingWaitingUntilDate", prod ? false : true, "**");
     static PrefEntry waitingSetWaitingAlarmWhenSettingWaitingUntilDate
-            = new PrefEntry("Automatically set a Waiting reminder " + Item.WAIT_UNTIL_DATE,
+            = new PrefEntry(Format.f("Automatically set a {0} when setting {1}", Item.WAITING_ALARM_DATE, Item.WAIT_UNTIL_DATE),
                     "waitingSetWaitingAlarmWhenSettingWaitingUntilDate", prod ? false : true, "**");
     static PrefEntry waitingSetWaitingAlarmMinutesBeforeWaitingUntilDate
-            = new PrefEntry("Automatically set a Waiting reminder " + Item.WAIT_UNTIL_DATE,
+            = new PrefEntry("Set a Waiting reminder " + Item.WAIT_UNTIL_DATE,
                     "waitingSetWaitingAlarmWhenSettingWaitingUntilDate", prod ? 60 : 1, "**");
 
     static PrefEntry updateRemainingOrEstimateWhenTheOtherIsChangedAndNoValueHasBeenSetManuallyForItem
@@ -495,7 +523,7 @@ public class MyPrefs {
 //    static PrefEntry itemProjectPropertiesDerivedFromSubtasks
 //            = new PrefEntry("Project properties like [STARTED_ON] shows values from subtasks", "itemProjectPropertiesDerivedFromSubtasks", true, "**");
     static PrefEntry workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime
-            = new PrefEntry(Format.f("Prioritize {0} from Categories", Item.WORTIME), "workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime",
+            = new PrefEntry(Format.f("Prioritize {0} from Categories", Item.WORKTIME), "workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime",
                     prod ? true : true, "If one of a tasks categories has work time, use that to calculate the finish time instead of the work time of the Porject or List the task belongs to");
 
     //INTERNAL / TECHNICAL / CACHE
@@ -536,10 +564,13 @@ public class MyPrefs {
     static PrefEntry reloadChangedDataInBackground
             = new PrefEntry("Refresh changed data in background", "reloadChangedDataInBackground",
                     prod ? false : false, "** - NOT END USER");
+    static PrefEntry fingerTracking
+            = new PrefEntry("Show finger position (for demos)", "fingerTracking",
+                    prod ? false : false, "** - NOT END USER");
 
 //    static PrefEntry defaultIconSizeInMM = new PrefEntry("Default icons size in millimeters", "defaultIconSizeInMM", Float.parseFloat(Form.getUIManager().getThemeConstant("menuImageSize", "4.5")), "** - NOT END USER");
     static PrefEntry defaultIconSizeInMM = new PrefEntry("Default icons size in millimeters",
-            "defaultIconSizeInMM", 6.0f, "** - NOT END USER"); //NB! Also set in theme.css/#Constants: overflowImageSize and menuImageSize
+            "defaultIconSizeInMM", 5.0f, "** - NOT END USER"); //NB! Also set in theme.css/#Constants: overflowImageSize and menuImageSize
 
     static PrefEntry defaultIconGapInMM
             = new PrefEntry("Default icons size in 0.1 millimeters", "defaultIconGapInMM", 0.5f, "** - NOT END USER");
@@ -574,8 +605,10 @@ public class MyPrefs {
             = new PrefEntry("**", "enableCancelInAllScreens", false, "temporarily used to disable Cancel everywhere due to problems eg with too complex to Cancel when inserting Templates with subtasks");
     static PrefEntry dateShowDatesInUSFormat
             = new PrefEntry("**", "dateShowDatesInUSFormat", prod ? false : false, "**");
-    static PrefEntry disableGoogleAnalytics
-            = new PrefEntry("**", "disableGoogleAnalytics", prod ? false : false, "diable sending anonymous usage pattern information to Google Analytics (used to help improve TDC");
+    static PrefEntry googleAnalyticsDisable
+            = new PrefEntry("**", "googleAnalyticsDisable", prod ? false : false, "Disable sending anonymous feature usage information to Google Analytics (helps improve TodoCatalyst)");
+    static PrefEntry googleAnalyticsLocalLog
+            = new PrefEntry("**", "googleAnalyticsLocalLog", prod ? true : false, "log analytic data");
     static PrefEntry enableRepairCommandsInMenus
             = new PrefEntry("enableRepairCommandsInMenus", "enableRepairCommandsInMenus", prod ? false : true, "**");
     static PrefEntry pinchInsertEnabled
@@ -598,6 +631,8 @@ public class MyPrefs {
     //TESTING settings
     static PrefEntry testPickersOnDevice
             = new PrefEntry("Activate different pickers in ScreenItem2 to test pickers on iOS", "testPickersOnDevice", prod ? false : true, "**");
+    static PrefEntry productionView
+            = new PrefEntry("Show production view (TEST=FALSE)", "productionView", prod ? false : false, "**");
 
 //PINCH
     static PrefEntry pinchAdjustUpper //used to play with/tune the adjustment factor used if pinch fingers are far apart
@@ -707,6 +742,8 @@ public class MyPrefs {
 
     static PrefEntry touchedLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_TOUCHED_TITLE, "touchedLogInterval",
             prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED_TITLE);
+    static PrefEntry editedLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_EDITED_TITLE, "editedLogInterval",
+            prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED_TITLE);
     static PrefEntry nextInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_NEXT_TITLE, "nextInterval",
             prod ? 30 : 30, "How many days ahead in time are included in " + ScreenMain.SCREEN_NEXT_TITLE);
 
@@ -781,18 +818,21 @@ public class MyPrefs {
             "listOfCategoriesShowTotalNumberOfLeafTasks", prod ? false : true, "**");
 
     //LIST OF ITEMLISTS
-    static PrefEntry listOfItemListsShowNumberUndoneTasks = new PrefEntry("Show number of tasks", "listOfItemListsShowNumberUndoneTasks",
+    static PrefEntry listOfItemListsShowNumberUndoneTasks = new PrefEntry(Item.SHOW_NUMBER_UNDONE_TASKS_TEXT, "listOfItemListsShowNumberUndoneTasks",
             prod ? true : true, "**");
-    static PrefEntry listOfItemListsShowNumberDoneTasks = new PrefEntry("Show number of completed tasks, e.g. 7/23", "listOfItemListsShowNumberDoneTasks",
+    static PrefEntry listOfItemListsShowNumberDoneTasks = new PrefEntry(Item.SHOW_NUMBER_DONE_TASKS_TEXT, "listOfItemListsShowNumberDoneTasks",
             prod ? false : true, "**");
-    static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry("Show sum of Remaining estimates for remaining tasks",
+    static PrefEntry listOfItemListsShowRemainingEstimate = new PrefEntry(Item.SHOW_REMAINING_TEXT,
             "listOfItemListsShowRemainingEstimate", prod ? true : true, "**"); //, "e.g. 3h20", Only shown if not-zero. NB. May make displaying the list slower for very large lists or slow devices
-    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry(Format.f("Show sum of {0 estimate} for remaining tasks", Item.EFFORT_ESTIMATE),
+//    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry(Format.f("Show sum of {0 estimate} for remaining tasks", Item.EFFORT_ESTIMATE),
+    static PrefEntry listOfItemListsShowTotalTime = new PrefEntry(Item.SHOW_TOTAL_TEXT,
             "listOfItemListsShowTotalTime", prod ? false : true, "**");
-    static PrefEntry listOfItemListsShowWorkTime = new PrefEntry("Show sum of defined work time for the list",
-            "listOfItemListsShowWorkTime", prod ? false : true, "**"); //"e.g. 1h10/23h12/[4h00]
-    static PrefEntry listOfItemListsShowTotalNumberOfLeafTasks = new PrefEntry("Show number of leaf tasks instead of number of projects",
+    static PrefEntry listOfItemListsShowTotalNumberOfLeafTasks = new PrefEntry(Item.SHOW_LEAF_TASKS_TEXT,
             "listOfItemListsShowTotalNumberOfLeafTasks", prod ? false : true, "**");
+    static PrefEntry listOfItemListsShowWorkTime = new PrefEntry(Item.SHOW_WORK_TIME_TEXT,
+            "listOfItemListsShowWorkTime", prod ? false : true, "**"); //"e.g. 1h10/23h12/[4h00]
+    static PrefEntry listOfItemListsShowActual = new PrefEntry(Item.SHOW_WORK_TIME_TEXT,
+            "listOfItemListsShowActual", prod ? false : false, "**"); //"e.g. 1h10/23h12/[4h00]
 
     static PrefEntry hideStickyHeadersForSortedLists = new PrefEntry("Do not show group headers for sorted lists",
             "showStickyHeadersForSortedLists", prod ? false : false, "**"); //show as 'flat' lists
@@ -873,7 +913,7 @@ public class MyPrefs {
             return settingId + "=" + ((String) Preferences.get(settingId, (String) defaultValue));
         }
 
-        public String getFieldScription() {
+        public String getFieldDescription() {
             return fieldDescription == null ? "" : fieldDescription;
         }
 

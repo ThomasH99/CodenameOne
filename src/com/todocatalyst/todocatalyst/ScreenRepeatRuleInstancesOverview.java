@@ -8,43 +8,46 @@ package com.todocatalyst.todocatalyst;
 //import com.codename1.io.Log;
 import com.codename1.io.Log;
 import com.codename1.ui.Container;
+import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
 import com.codename1.ui.layouts.BoxLayout;
+import static com.todocatalyst.todocatalyst.MyForm.layoutN;
 
 /**
  *
  * @author thomashjelm
  */
 //public class ScreenRepeatRuleHistory {
-
 /**
  *
  * @author Thomas
  */
 public class ScreenRepeatRuleInstancesOverview extends MyForm {
 
-    private static String screenTitle = RepeatRuleParseObject.REPEAT_RULE+" history"; //TODO!!! replace history by for example: "overview of tasks(workSlots
+    private static String SCREEN_TITLE = RepeatRuleParseObject.REPEAT_RULE + " history"; //TODO!!! replace history by for example: "overview of tasks(workSlots
     private RepeatRuleParseObject repeatRule;
 
-    ScreenRepeatRuleInstancesOverview(RepeatRuleParseObject repeatRule, MyForm previousForm) { //throws ParseException, IOException {
-        this(repeatRule, previousForm, null);
-    }
-
+//    ScreenRepeatRuleInstancesOverview(RepeatRuleParseObject repeatRule, MyForm previousForm) { //throws ParseException, IOException {
+//        this(repeatRule, previousForm, null);
+//    }
     ScreenRepeatRuleInstancesOverview(RepeatRuleParseObject repeatRule, MyForm previousForm, Runnable doneAction) { //throws ParseException, IOException {
-        super("", previousForm, doneAction);
-        setTitle(screenTitle);
-        this.repeatRule=repeatRule;
+        super(SCREEN_TITLE, previousForm, doneAction);
+//        setTitle(SCREEN_TITLE);
+        this.repeatRule = repeatRule;
         setUniqueFormId("ScreenRepeatRuleInstancesOverview");
-        setLayout(BoxLayout.y());
-        setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
+//        setLayout(BoxLayout.y());
+        makeContainerBoxY();
+//        setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
         addCommandsToToolbar(getToolbar());
         refreshAfterEdit();
     }
 
     @Override
     public void refreshAfterEdit() {
-        getContentPane().removeAll();
-        buildContentPane(getContentPane());
+//        getContentPane().removeAll();
+        container.removeAll();
+//        buildContentPane(getContentPane());
+        buildContentPane(container, repeatRule, this);
         super.refreshAfterEdit();
     }
 
@@ -53,7 +56,7 @@ public class ScreenRepeatRuleInstancesOverview extends MyForm {
         super.addCommandsToToolbar(toolbar);
         toolbar.addCommandToLeftBar(makeDoneUpdateWithParseIdMapCommand());
 
-        if (false&&MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //currently no editing in this screen, so no reason to Cancel
+        if (false && MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) { //currently no editing in this screen, so no reason to Cancel
             toolbar.addCommandToOverflowMenu("Cancel", null, (e) -> {
                 Log.p("Clicked");
                 showPreviousScreen(true); //false);
@@ -61,34 +64,48 @@ public class ScreenRepeatRuleInstancesOverview extends MyForm {
         }
     }
 
-    private Container buildContentPane(Container content) {
-        
+    private static Container buildContentPane(Container content, RepeatRuleParseObject repeatRule, MyForm myForm) {
+
 //                if (repeatRule != null && repeatRule.getListOfUndoneInstances().size() > 0) {
-                if (repeatRule != null ) {
-                    
-                    long now = MyDate.currentTimeMillis();
-                    
-                    Container dones = new Container(BoxLayout.y()); //should automatically be sorted by completion date
-                    Container undones = new Container(BoxLayout.y()); //should automatically be sorted by due date
-                    
-                    ExpandableContainer showDones = new ExpandableContainer("Past instances", dones, ()->true, null); //true: default collapse past repeat
-                    ExpandableContainer showUndones = new ExpandableContainer("Current instances", undones, ()->false, null);
-                    
-                    for (Object e: repeatRule.getListOfDoneInstances()) {
-                        if (e instanceof Item)
-                            dones.add(ScreenListOfItems.buildItemContainer(ScreenRepeatRuleInstancesOverview.this, (Item) e, null, null));
-                        else if (e instanceof WorkSlot)
-                            dones.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) e, ScreenRepeatRuleInstancesOverview.this, null, false, false, now));
-                    }
-                    for (Object e: repeatRule.getListOfUndoneInstances()) {
-                        if (e instanceof Item)
-                            undones.add(ScreenListOfItems.buildItemContainer(ScreenRepeatRuleInstancesOverview.this, (Item) e, null, null));
-                        else if (e instanceof WorkSlot)
-                            undones.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) e, ScreenRepeatRuleInstancesOverview.this, null, false, false, now));
-                    }
-                    
-                    add(showDones);
-                    add(showUndones);
+        if (repeatRule != null) {
+
+            long now = MyDate.currentTimeMillis();
+
+            if (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
+                Label itemObjectId = new Label(repeatRule.getObjectIdP() == null ? "<set on save>" : repeatRule.getObjectIdP(), "ScreenItemValueUneditable");
+                content.add(layoutN(Item.PARSE_OBJECT_ID_VIRT, Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, Icons.iconObjectId));
+            }
+
+            if (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
+                Label itemGuid = new Label(repeatRule.getGuid() == null ? "<set on save>" : repeatRule.getGuid(), "ScreenItemValueUneditable");
+                content.add(layoutN(Item.PARSE_GUID_VIRT, Item.OBJECT_GUID, itemGuid, Item.OBJECT_GUID_HELP, true, Icons.iconObjectId));
+            }
+
+            //UI: show undones first since likely the shorter list and then expanding the full list of Done will not push it out of the bottom of the screen and effectively hide it
+            Container undones = new Container(BoxLayout.y()); //should automatically be sorted by due date
+            for (Object e : repeatRule.getListOfUndoneInstances()) {
+                if (e instanceof Item) {
+                    undones.add(ScreenListOfItems.buildItemContainer(myForm, (Item) e, null, null));
+                } else if (e instanceof WorkSlot) {
+//                    undones.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) e, myForm, null, false, false, now));
+                    undones.add(ScreenListOfWorkSlots.buildWorkSlotContainer(myForm,(WorkSlot) e,  false, false, now));
+                }
+            }
+            ExpandableContainer showUndones = new ExpandableContainer("Current instances", undones, () -> false, null);
+            content.add(showUndones);
+
+            Container dones = new Container(BoxLayout.y()); //should automatically be sorted by completion date
+            for (Object e : repeatRule.getListOfDoneInstances()) {
+                if (e instanceof Item) {
+                    dones.add(ScreenListOfItems.buildItemContainer(myForm, (Item) e, null, null));
+                } else if (e instanceof WorkSlot) {
+//                    dones.add(ScreenListOfWorkSlots.buildWorkSlotContainer((WorkSlot) e, myForm, null, false, false, now));
+                    dones.add(ScreenListOfWorkSlots.buildWorkSlotContainer(myForm, (WorkSlot) e,  false, false, now));
+                }
+            }
+            ExpandableContainer showDones = new ExpandableContainer("Past instances", dones, () -> false, null); //true: default collapse past repeat
+            content.add(showDones);
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            Container repeatRuleDetailsContainer = content;
 //            Container repeatRuleHideableDetailsContainer = content;

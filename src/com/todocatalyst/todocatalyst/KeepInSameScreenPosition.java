@@ -549,7 +549,9 @@ public class KeepInSameScreenPosition {
                         if (false && Config.TEST_SCROLL_Y) {
                             Log.p("KeepInSameScreenPosition-2: scrolling to Y=" + scrollY + ", relScroll=" + relScroll + ", scrollableCompY=" + scrollableCompY);
                         }
-                        ((ContainerScrollY) scrollableContainer).setScrollYPublic(scrollY); //Math.max since scroll position cannot be maintained if earlier components shrink
+                        if (scrollableContainer instanceof ContainerScrollY) {
+                            ((ContainerScrollY) scrollableContainer).setScrollYPublic(scrollY); //Math.max since scroll position cannot be maintained if earlier components shrink
+                        }
                     } else {
                         if (false && Config.TEST_SCROLL_Y) {
                             Log.p("KeepInSameScreenPosition-3: scrolling comp=" + newComponent + " to visible");

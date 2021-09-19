@@ -61,8 +61,9 @@ public class ScreenRepair extends MyForm {
         super(SCREEN_TITLE, null, () -> {
         });
         this.parentForm = mainScreen;
-        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
-        setScrollableY(true);
+//        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
+//        setScrollableY(true);
+        makeContainerBoxY();
         addCommandsToToolbar();
 //        buildContentPane(getContentPane());
         refreshAfterEdit();
@@ -70,9 +71,11 @@ public class ScreenRepair extends MyForm {
 
     @Override
     public void refreshAfterEdit() {
-        getContentPane().removeAll();
-        buildContentPane(getContentPane());
-        restoreKeepPos();
+//        getContentPane().removeAll();
+        container.removeAll();
+//        buildContentPane(getContentPane());
+        buildContentPane(container);
+//        restoreKeepPos();
         super.refreshAfterEdit();
     }
 
@@ -705,6 +708,139 @@ public class ScreenRepair extends MyForm {
 
     }
 
+    static Command makeSendErrorLog() {
+        return Command.createMaterial("Send error log", Icons.iconSettings, e -> {
+//                String log = Log.getLogContent();
+            if (Dialog.show("Send log", "", "OK", "Cancel")) {
+//                            Log.sendLog();
+                try {
+                    DAO.emailLog(e);
+                } catch (Exception ex) {
+                    Dialog.show("Send log", "Send email not working. Exception: " + ex.toString(), "OK", null);
+                }
+            }
+        });
+    }
+
+    static Command makeShowErrorLog(MyForm previousForm) {
+        return Command.createMaterial("Show error log", Icons.iconSettings, evt -> {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                String log = Log.getInstance().getFileURL();
+//                String log = Log.getLogContent();
+//                if (Log.getInstance().isFileWriteEnabled()) {
+//                if(Log.getInstance().getFileURL() == null) {
+//                    Log.getInstance().setFileURL("file:///" + FileSystemStorage.getInstance().getRoots()[0] + "/codenameOne.log");
+//                }
+//</editor-fold>
+            String text = "";
+            ArrayList<String> list = new ArrayList();
+//                if (Log.getInstance().getFileURL() != null) {
+
+            //from here: http://stackoverflow.com/questions/39745935/how-to-read-textfile-line-by-line-into-textarea-in-codename-one
+//                    InputStream is = Display.getInstance().getResourceAsStream(this.getClass(), "/b1.txt");
+//                    InputStream is = Display.getInstance().getResourceAsStream(this.getClass(), Log.getInstance().getFileURL());
+//            byte[] read = com.codename1.io.Util.readInputStream(Storage.getInstance().createInputStream("CN1Log__$"));
+            try {
+                InputStream is = Storage.getInstance().createInputStream("CN1Log__$");
+                //String s = com.codename1.util.StringUtil.readToString(is, "UTF-8");
+                String s;
+                s = com.codename1.io.Util.readToString(is, "UTF-8");
+                for (String line : StringUtil.tokenize(s, '\n')) {
+                    // line represents each line in the file...
+                    list.add(line);
+                }
+            } catch (IOException ex) {
+                Log.e(ex);
+            }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                    Reader r;
+//                    try {
+//                        r = new InputStreamReader(FileSystemStorage.getInstance().openInputStream(Log.getInstance().getFileURL()));
+//                        char[] buffer = new char[1024];
+//                        int size = r.read(buffer);
+//                        while (size > -1) {
+//                            String t = new String(buffer, 0, size);
+//                            text += t; //new String(buffer, 0, size);
+//                            size = r.read(buffer);
+//                        }
+//                        r.close();
+//                    } catch (IOException ex) {
+////                            Logger.getLogger(ScreenRepair.class.getName()).log(Level.SEVERE, null, ex);
+//                        Log.e(ex);
+//                    }
+//                }
+//</editor-fold>
+//                Command showMoreCmd = new Command("Show 10");
+//                int startLineNb = list.size();
+//                do {
+//                    startLineNb -= 10;
+//                } while (Dialog.show("Last log lines", new com.codename1.ui.List(list.subList(startLineNb, list.size()).toArray()),
+//                        new Command[]{new Command("Exit"), startLineNb > 0 ? showMoreCmd : new Command("No more")}) == showMoreCmd && startLineNb > 0);
+            MyForm logForm = new MyForm("Log", previousForm, () -> {
+            }) {
+                public void refreshAfterEdit() {
+                }
+            };
+//                logForm.setLayout(BoxLayout.y());
+//                logForm.setScrollableY(true);
+            logForm.makeContainerBoxY();
+//                logForm.getToolbar().addSearchCommand((e) -> {
+//                    String txt = (String) e.getSource();
+//                    boolean searchOnLowerCaseOnly;
+////                    if (!txt.equals(txt.toLowerCase()))
+//                    searchOnLowerCaseOnly = txt.equals(txt.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
+////                    Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+//                    Container compList = logForm.getContentPane();
+//                    boolean showAll = txt == null || txt.length() == 0;
+//                    for (int i = 0, size = list.size(); i < size; i++) {
+//                        //https://www.codenameone.com/blog/toolbar-search-mode.html:
+//                        if (searchOnLowerCaseOnly) {
+//                            compList.getComponentAt(i).setHidden(((String) list.get(i)).toLowerCase().indexOf(txt) < 0);
+//                        } else {
+//                            compList.getComponentAt(i).setHidden(((String) list.get(i)).indexOf(txt) < 0);
+//                        }
+//                    }
+//                    compList.animateLayout(ANIMATION_TIME_FAST);
+//                }, MyPrefs.defaultIconSizeInMM.getFloat());
+
+//                logForm.getToolbar().addSearchCommand(new MySearchCommand(logForm.getContentPane(), (e) -> {
+//                logForm.setSearchCmd(new MySearchCommand(logForm, (e) -> {
+            logForm.getToolbar().addSearchCommand((e) -> {
+                String txt = (String) e.getSource();
+                boolean searchOnLowerCaseOnly;
+//                    if (!txt.equals(txt.toLowerCase()))
+                searchOnLowerCaseOnly = txt.equals(txt.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
+//                    Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
+//                    Container compList = logForm.getContentPane();
+//                    Container container = container;
+                boolean showAll = txt == null || txt.length() == 0;
+                for (int i = 0, size = list.size(); i < size; i++) {
+                    //https://www.codenameone.com/blog/toolbar-search-mode.html:
+                    if (searchOnLowerCaseOnly) {
+                        logForm.container.getComponentAt(i).setHidden(((String) list.get(i)).toLowerCase().indexOf(txt) < 0);
+                    } else {
+                        logForm.container.getComponentAt(i).setHidden(((String) list.get(i)).indexOf(txt) < 0);
+                    }
+                }
+                logForm.container.animateLayout(ANIMATION_TIME_FAST);
+            });
+//                logForm.getToolbar().addSearchCommand(logForm.getSearchCmd());
+
+            Container c = null;
+            for (String s : list) {
+                c = new SpanLabel(s, "ErrorLogText");
+//                    logForm.addComponent(c);
+                logForm.container.addComponent(c);
+            }
+//                logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneCommandWithNoUpdate());
+            logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneUpdateWithParseIdMapCommand());
+            logForm.container.scrollComponentToVisible(c); //scroll down to show last line in list
+            logForm.show();
+//                logForm.scrollComponentToVisible(c); //scroll down to show last line in list
+        }
+        );
+    }
+
     //////////////////////////////////////////////////////////
     /**
      * This method shows the main user interface of the app
@@ -843,13 +979,19 @@ public class ScreenRepair extends MyForm {
         content.add(new Button(Command.create("Login form", null, (e9) -> {
 //            Form hi = new MyForm("Native Logs Reader", BoxLayout.y());
             ScreenLogin loginScreen = new ScreenLogin(ScreenRepair.this, true);
-            loginScreen.go(true);
+            loginScreen.show();
         })));
-        
+
         content.add(new Button(MyReplayCommand.create("Welcome screen", null, (e9) -> {
 //            Form hi = new MyForm("Native Logs Reader", BoxLayout.y());
             ScreenWelcome loginScreen = new ScreenWelcome(ScreenRepair.this, true);
             loginScreen.show();
+        })));
+        
+        content.add(new Button(MyReplayCommand.create("Getting Started screen", null, (e9) -> {
+//            Form hi = new MyForm("Native Logs Reader", BoxLayout.y());
+            ScreenGettingStarted gettingStartedScreen = new ScreenGettingStarted(ScreenRepair.this, true);
+            gettingStartedScreen.show();
         })));
 
         content.add(new Button(Command.create("Native logs", null, (e9) -> {
@@ -1110,139 +1252,9 @@ public class ScreenRepair extends MyForm {
         }));
 
 //        content.add(new Button(new Command("Show error log", Icons.get().iconSettingsLabelStyle) {
-        content.add(new Button(new Command("Show error log", Icons.iconSettings) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                String log = Log.getInstance().getFileURL();
-//                String log = Log.getLogContent();
-//                if (Log.getInstance().isFileWriteEnabled()) {
-//                if(Log.getInstance().getFileURL() == null) {
-//                    Log.getInstance().setFileURL("file:///" + FileSystemStorage.getInstance().getRoots()[0] + "/codenameOne.log");
-//                }
-//</editor-fold>
-                String text = "";
-                ArrayList<String> list = new ArrayList();
-//                if (Log.getInstance().getFileURL() != null) {
+        content.add(new Button(makeShowErrorLog(this)));
 
-                //from here: http://stackoverflow.com/questions/39745935/how-to-read-textfile-line-by-line-into-textarea-in-codename-one
-//                    InputStream is = Display.getInstance().getResourceAsStream(this.getClass(), "/b1.txt");
-//                    InputStream is = Display.getInstance().getResourceAsStream(this.getClass(), Log.getInstance().getFileURL());
-//            byte[] read = com.codename1.io.Util.readInputStream(Storage.getInstance().createInputStream("CN1Log__$"));
-                try {
-                    InputStream is = Storage.getInstance().createInputStream("CN1Log__$");
-                    //String s = com.codename1.util.StringUtil.readToString(is, "UTF-8");
-                    String s;
-                    s = com.codename1.io.Util.readToString(is, "UTF-8");
-                    for (String line : StringUtil.tokenize(s, '\n')) {
-                        // line represents each line in the file...
-                        list.add(line);
-                    }
-                } catch (IOException ex) {
-                    Log.e(ex);
-                }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    Reader r;
-//                    try {
-//                        r = new InputStreamReader(FileSystemStorage.getInstance().openInputStream(Log.getInstance().getFileURL()));
-//                        char[] buffer = new char[1024];
-//                        int size = r.read(buffer);
-//                        while (size > -1) {
-//                            String t = new String(buffer, 0, size);
-//                            text += t; //new String(buffer, 0, size);
-//                            size = r.read(buffer);
-//                        }
-//                        r.close();
-//                    } catch (IOException ex) {
-////                            Logger.getLogger(ScreenRepair.class.getName()).log(Level.SEVERE, null, ex);
-//                        Log.e(ex);
-//                    }
-//                }
-//</editor-fold>
-//                Command showMoreCmd = new Command("Show 10");
-//                int startLineNb = list.size();
-//                do {
-//                    startLineNb -= 10;
-//                } while (Dialog.show("Last log lines", new com.codename1.ui.List(list.subList(startLineNb, list.size()).toArray()),
-//                        new Command[]{new Command("Exit"), startLineNb > 0 ? showMoreCmd : new Command("No more")}) == showMoreCmd && startLineNb > 0);
-                MyForm logForm = new MyForm("Log", ScreenRepair.this, () -> {
-                }) {
-                    public void refreshAfterEdit() {
-                    }
-                ;
-                };
-                logForm.setLayout(BoxLayout.y());
-                logForm.setScrollableY(true);
-//                logForm.getToolbar().addSearchCommand((e) -> {
-//                    String txt = (String) e.getSource();
-//                    boolean searchOnLowerCaseOnly;
-////                    if (!txt.equals(txt.toLowerCase()))
-//                    searchOnLowerCaseOnly = txt.equals(txt.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
-////                    Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
-//                    Container compList = logForm.getContentPane();
-//                    boolean showAll = txt == null || txt.length() == 0;
-//                    for (int i = 0, size = list.size(); i < size; i++) {
-//                        //https://www.codenameone.com/blog/toolbar-search-mode.html:
-//                        if (searchOnLowerCaseOnly) {
-//                            compList.getComponentAt(i).setHidden(((String) list.get(i)).toLowerCase().indexOf(txt) < 0);
-//                        } else {
-//                            compList.getComponentAt(i).setHidden(((String) list.get(i)).indexOf(txt) < 0);
-//                        }
-//                    }
-//                    compList.animateLayout(ANIMATION_TIME_FAST);
-//                }, MyPrefs.defaultIconSizeInMM.getFloat());
-
-//                logForm.getToolbar().addSearchCommand(new MySearchCommand(logForm.getContentPane(), (e) -> {
-                setSearchCmd(new MySearchCommand(logForm, (e) -> {
-                    String txt = (String) e.getSource();
-                    boolean searchOnLowerCaseOnly;
-//                    if (!txt.equals(txt.toLowerCase()))
-                    searchOnLowerCaseOnly = txt.equals(txt.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
-//                    Container compList = (Container) ((BorderLayout) getContentPane().getLayout()).getCenter();
-                    Container compList = logForm.getContentPane();
-                    boolean showAll = txt == null || txt.length() == 0;
-                    for (int i = 0, size = list.size(); i < size; i++) {
-                        //https://www.codenameone.com/blog/toolbar-search-mode.html:
-                        if (searchOnLowerCaseOnly) {
-                            compList.getComponentAt(i).setHidden(((String) list.get(i)).toLowerCase().indexOf(txt) < 0);
-                        } else {
-                            compList.getComponentAt(i).setHidden(((String) list.get(i)).indexOf(txt) < 0);
-                        }
-                    }
-                    compList.animateLayout(ANIMATION_TIME_FAST);
-                }));
-                logForm.getToolbar().addSearchCommand(getSearchCmd());
-
-                Container c = null;
-                for (String s : list) {
-                    c = new SpanLabel(s);
-                    logForm.addComponent(c);
-                }
-//                logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneCommandWithNoUpdate());
-                logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneUpdateWithParseIdMapCommand());
-                logForm.show();
-                logForm.scrollComponentToVisible(c); //scroll down to show last line in list
-            }
-        }
-        ));
-
-        content.add(
-                new Button(new Command("Send error log", Icons.iconSettings) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt
-                    ) {
-//                String log = Log.getLogContent();
-                        if (Dialog.show("Send log", "", "OK", "Cancel")) {
-//                            Log.sendLog();
-                            try {
-                                DAO.emailLog(evt);
-                            } catch (Exception e) {
-                                Dialog.show("Send log", "Send email not working. Exception: " + e.toString(), "OK", null);
-                            }
-                        }
-                    }
-                }
-                ));
+        content.add(new Button(makeSendErrorLog()));
 
         content.add(new Button(new Command("Show device info") {
             @Override

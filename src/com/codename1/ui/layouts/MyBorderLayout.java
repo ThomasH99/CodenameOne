@@ -172,7 +172,7 @@ public class MyBorderLayout extends BorderLayout {
     public MyBorderLayout(int behavior) {
         setCenterBehavior(behavior);
     }
-    
+
     public MyBorderLayout(int behavior, int eastWestSizeApproach) {
         setSizeEastWestMode(eastWestSizeApproach);
         setCenterBehavior(behavior);
@@ -323,7 +323,8 @@ public class MyBorderLayout extends BorderLayout {
      */
     public final static int SIZE_WEST_BEFORE_EAST = 1;
     /**
-     * give full preferred size to east container before sizing west - default value
+     * give full preferred size to east container before sizing west - default
+     * value
      */
     public final static int SIZE_EAST_BEFORE_WEST = 2;
     private int eastWestSizeApproach = SIZE_EAST_BEFORE_WEST;
@@ -386,13 +387,26 @@ public class MyBorderLayout extends BorderLayout {
         if (eastWestSizeApproach == SIZE_EAST_BEFORE_WEST) {
             if (realEast != null) {
                 Component c = realEast;
-                positionLeftRight(realEast, targetWidth, bottom, top);
+                positionLeftRight(c, targetWidth, bottom, top);
                 c.setX(right - c.getWidth() - c.getStyle().getMarginRight(rtl));
                 right -= (c.getWidth() + c.getStyle().getHorizontalMargins());
             }
             if (realWest != null) {
-                positionLeftRight(realWest, targetWidth - (realEast != null ? (realEast.getWidth()+ realEast.getStyle().getHorizontalMargins()) : 0), bottom, top);
                 Component c = realWest;
+                if (realEast != null) {
+                    int horWid = realEast.getWidth();
+                    int horMar = realEast.getStyle().getHorizontalMargins();
+                    int horPad = realEast.getStyle().getHorizontalPadding();
+                    int xx = realEast.getWidth() + realEast.getStyle().getHorizontalMargins();
+                    int xxx = realEast.getWidth() + realEast.getStyle().getHorizontalMargins() + realEast.getStyle().getHorizontalPadding();
+                }
+//                positionLeftRight(realWest, targetWidth - (realEast != null ? (realEast.getWidth() + realEast.getStyle().getHorizontalMargins() + realEast.getStyle().getHorizontalPadding()) : 0), bottom, top);
+                int westTargetWidth = realEast != null ? (realEast.getWidth()
+                        + realEast.getStyle().getHorizontalMargins()
+                        //                        + realWest.getStyle().getMarginRight(rtl)) : 0;
+                        + realWest.getStyle().getHorizontalMargins()) : 0;
+                positionLeftRight(c, targetWidth - (westTargetWidth), bottom, top);
+//                positionLeftRight(realWest, targetWidth - (realEast != null ? (realEast.getWidth() + realEast.getStyle().getHorizontalMargins()) : 0), bottom, top);
                 c.setX(left + c.getStyle().getMarginLeft(rtl));
                 left += (c.getWidth() + c.getStyle().getMarginLeftNoRTL() + c.getStyle().getMarginRightNoRTL());
             }

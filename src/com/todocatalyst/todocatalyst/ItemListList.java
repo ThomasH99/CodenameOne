@@ -5,6 +5,8 @@
 package com.todocatalyst.todocatalyst;
 
 //import static com.todocatalyst.todocatalyst.CategoryList.PARSE_CATEGORY_LIST;
+import com.codename1.ui.Font;
+import static com.todocatalyst.todocatalyst.MyForm.ScreenType.LISTS;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -29,17 +31,21 @@ public class ItemListList extends ItemList {
 
     public ItemListList() {
         super(CLASS_NAME);
+        setText("Lists");
     }
 
     static synchronized public ItemListList getInstance() { //syncrhonized to avoid clashing with reload below
         if (INSTANCE == null) {
             INSTANCE = DAO.getInstance().getItemListListFromParse();
+            if (INSTANCE.getText().isEmpty()) { //repair
+                INSTANCE.setText("Lists");
+            }
         }
         return INSTANCE;
     }
-    
-    public String toString(){
-        return "ItemListList:"+super.toString();
+
+    public String toString() {
+        return "ItemListList:" + super.toString();
     }
 
     Object findItemListWithName(String itemListName) {
@@ -95,6 +101,21 @@ public class ItemListList extends ItemList {
         super.setList(list);
     }
 
+    @Override
+    public int getNumberOfItems(boolean onlyUndone, boolean countLeafTasks) {
+        return getListFull().size(); //cheating to return the number of lists
+    }
+
+    @Override
+    public Character getItemListIcon() {
+        return LISTS.getIcon();
+    }
+
+    @Override
+    public Font getItemListIconFont() {
+        return Icons.myIconFont;
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public synchronized boolean reloadFromParseXXX(boolean forceLoadFromParse, Date startDate, Date endDate) {
 ////        ItemListList t= INSTANCE;
@@ -120,7 +141,6 @@ public class ItemListList extends ItemList {
 //        return false;
 //    }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public List<ItemList> getList() {
 //    @Override

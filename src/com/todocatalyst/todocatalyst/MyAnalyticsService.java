@@ -102,6 +102,8 @@ public class MyAnalyticsService {
     private String agent;
     private String domain;
     private static boolean failSilently = true;
+    private static boolean enableLocalTrace = false;
+    private static boolean enableAnalytics = false;
 
     /**
      * Indicates whether analytics is enabled for this application
@@ -109,7 +111,7 @@ public class MyAnalyticsService {
      * @return true if analytics is enabled
      */
     public static boolean isEnabled() {
-        return instance != null && instance.isAnalyticsEnabled();
+        return (instance != null && instance.isAnalyticsEnabled());
     }
 
     /**
@@ -131,11 +133,17 @@ public class MyAnalyticsService {
      * myapp.mycompany.com)
      */
     public static void init(String agent, String domain) {
+        init(agent, domain, true, false);
+    }
+
+    public static void init(String agent, String domain, boolean enableAnalytics, boolean enableLocalTrace) {
         if (instance == null) {
             instance = new MyAnalyticsService();
         }
         instance.agent = agent;
         instance.domain = domain;
+        instance.enableLocalTrace = enableLocalTrace; //when true, no analytics will be send, but the analytic content will be traced locally in the Log
+        instance.enableAnalytics = enableAnalytics; //when true, no analytics will be send, but the analytic content will be traced locally in the Log
     }
 
     /**
@@ -170,9 +178,9 @@ public class MyAnalyticsService {
      * @param referer the page from which the user came
      */
     private void visitPage(String page, String referer) {
-        if (MyPrefs.disableGoogleAnalytics.getBoolean()) {
-            return;
-        }
+//        if (MyPrefs.disableGoogleAnalytics.getBoolean()) {
+//            return;
+//        }
         if (appsMode) {
             // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#apptracking
             ConnectionRequest req = GetGARequest();
@@ -188,10 +196,13 @@ public class MyAnalyticsService {
                 String cleanReferer = clean(referer);
                 req.addArgument("cd", cleanReferer);
             }
-//            Log.p("Analytics VISIT: " + req.getRequestBody());
-            Log.p("Analytics VISIT: " + "Page=" + cleanedPageId);// + " Ref=" + cleanReferer);
 //            if (!Config.FULLY_LOCAL_STORAGE)
-            NetworkManager.getInstance().addToQueue(req);
+            if (enableLocalTrace) { //            Log.p("Analytics VISIT: " + req.getRequestBody());
+                Log.p("Analytics VISIT: CleanedPage=" + cleanedPageId);// + " Ref=" + cleanReferer);
+            }
+            if (enableAnalytics) {
+                NetworkManager.getInstance().addToQueue(req);
+            }
         } else {
             String url = Display.getInstance().getProperty("cloudServerURL", "https://codename-one.appspot.com/") + "anal";
             ConnectionRequest r = new ConnectionRequest();
@@ -212,7 +223,12 @@ public class MyAnalyticsService {
             r.addArgument("d", instance.domain);
             r.setPriority(ConnectionRequest.PRIORITY_LOW);
 //            if (!Config.FULLY_LOCAL_STORAGE)
-            NetworkManager.getInstance().addToQueue(r);
+            if (enableLocalTrace) { //            Log.p("Analytics VISIT: " + req.getRequestBody());
+                Log.p("Analytics VISIT: Page=" + page);// + " Ref=" + cleanReferer);
+            }
+            if (enableAnalytics) {
+                NetworkManager.getInstance().addToQueue(r);
+            }
         }
     }
 
@@ -224,9 +240,9 @@ public class MyAnalyticsService {
      * @param eventValue only send if >=0
      */
     private void eventHit(String eventCategory, String eventAction, String eventLabel, int eventValue) {
-        if (MyPrefs.disableGoogleAnalytics.getBoolean()) {
-            return;
-        }
+//        if (MyPrefs.disableGoogleAnalytics.getBoolean()) {
+//            return;
+//        }
 //        if(appsMode) {
         // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#apptracking
         ConnectionRequest req = GetGARequest();
@@ -258,9 +274,16 @@ public class MyAnalyticsService {
         }
 
 //        Log.p("Analytics EVENT: " + req.getRequestBody()); //return null
-        Log.p("Analytics EVENT: " + "Cat=" + ecCleaned + " Act=" + eaCleaned + " Lab=" + elCleaned + " Val=" + eventValue);
+//        if (MyPrefs.logGoogleAnalytics.getBoolean()) {
+//            Log.p("Analytics EVENT: " + "Cat=" + ecCleaned + " Act=" + eaCleaned + " Lab=" + elCleaned + " Val=" + eventValue);
+//        }
 //        if (!Config.FULLY_LOCAL_STORAGE)
-        NetworkManager.getInstance().addToQueue(req);
+        if (enableLocalTrace) { //            Log.p("Analytics VISIT: " + req.getRequestBody());
+            Log.p("Analytics HIT: Cat=" + eventCategory + " Act=" + eventAction + " Lbl=" + eventLabel + " Val=" + eventValue);// + " Ref=" + cleanReferer);
+        }
+        if (enableAnalytics) {
+            NetworkManager.getInstance().addToQueue(req);
+        }
     }
 
     static void event(String eventCategory, String eventAction, String eventLabel, int eventValue) {
@@ -292,9 +315,9 @@ public class MyAnalyticsService {
      * @param fatal is the exception fatal
      */
     public static void sendCrashReport(Throwable t, String message, boolean fatal) {
-        if (MyPrefs.disableGoogleAnalytics.getBoolean() || !appsMode) {
-            return;
-        }
+//        if (MyPrefs.disableGoogleAnalytics.getBoolean() || !appsMode) {
+//            return;
+//        }
 
         // https://developers.google.com/analytics/devguides/collection/protocol/v1/devguide#exception
         ConnectionRequest req = GetGARequest();
@@ -315,10 +338,14 @@ public class MyAnalyticsService {
             req.addArgument("exf", "0");
         }
 
+        if (enableLocalTrace) { //            Log.p("Analytics VISIT: " + req.getRequestBody());
 //        Log.p("Analytics CRASH: " + req.getRequestBody());
-        Log.p("Analytics CRASH: " + "Throwable=\"" + t + "\", Msg (len=" + messageCleaned.length() + ")=\"" + messageCleaned + "\", Fatal=\"" + (fatal ? "YES\"" : "no\""));
+            Log.p("Analytics CRASH: " + "Throwable=\"" + t + "\", Msg (len=" + messageCleaned.length() + ")=\"" + messageCleaned + "\", Fatal=\"" + (fatal ? "YES\"" : "no\""));
+        }
 //        if (!Config.FULLY_LOCAL_STORAGE)
-        NetworkManager.getInstance().addToQueue(req);
+        if (enableAnalytics) {
+            NetworkManager.getInstance().addToQueue(req);
+        }
     }
 
     private static ConnectionRequest GetGARequest() {

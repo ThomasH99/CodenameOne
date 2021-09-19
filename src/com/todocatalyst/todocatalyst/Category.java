@@ -1041,13 +1041,12 @@ public class Category<E extends ItemAndListCommonInterface> extends ItemList imp
      * @param deleteDate
      */
     @Override
-    public void deletePrepare(Date deleteDate) {
-        
+    public void onDelete(Date deleteDate) {
+
 //        List<ParseObject> modified = new ArrayList();
-
         //if a timer was active for this itemList, then remove that (and update any timed item even though it may get soft-deleted below)
-        TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
-
+//        TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
+//        fireDeleteEvent();
         //remove category from all items referring to it
         List<Item> items = getListFull();
         for (Item item : items) {
@@ -1088,10 +1087,13 @@ public class Category<E extends ItemAndListCommonInterface> extends ItemList imp
         //set softDeleted date as delete-marker
         setSoftDeletedDate(deleteDate);
 
-        DAO.getInstance().saveToParseLater((List) items); //save all items that had the category removed
-        DAO.getInstance().saveToParseLater(updatedMetaLists);
-        DAO.getInstance().saveToParseLater((ParseObject) CategoryList.getInstance());
+        fireDeleteEvent();
 
+        if (false) { //shouldn't be necessary, when saving the soft-deleted object all the referenced & updated ones should be saved by DAO
+            DAO.getInstance().saveToParseLater((List) items); //save all items that had the category removed
+            DAO.getInstance().saveToParseLater(updatedMetaLists);
+            DAO.getInstance().saveToParseLater((ParseObject) CategoryList.getInstance());
+        }
 //        return modified;
     }
 //    /**

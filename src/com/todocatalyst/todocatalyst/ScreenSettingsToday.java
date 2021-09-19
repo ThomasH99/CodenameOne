@@ -34,12 +34,13 @@ public class ScreenSettingsToday extends ScreenSettingsCommon {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
-        addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeStartingToday);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeWaitingExpiringToday);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeAlarmsExpiringToday);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewIncludeWorkSlotsCoveringToday);
-        addSettingBoolean(content, parseIdMap2, MyPrefs.todayViewShowLeafTasksInsteadOfProjects);
-        addSettingInt(content, parseIdMap2, MyPrefs.todayViewIncludeOverdueFromThisManyPastDays, 0, 60, 1); //UI: max 60 days of overdue
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeStartingToday));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeWaitingExpiringToday));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeAlarmsExpiringToday));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeWorkSlotsCoveringToday));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewShowLeafTasksInsteadOfProjects));
+//        addSettingInt(content, parseIdMap2, MyPrefs.todayViewIncludeOverdueFromThisManyPastDays, 0, 60, 1); //UI: max 60 days of overdue
+        content.add(makeEditIntSetting(parseIdMap2, MyPrefs.todayViewIncludeOverdueFromThisManyPastDays, 0, 60, 1)); //UI: max 60 days of overdue
 
 //        addSettingInt(content, parseIdMap2, MyPrefs.workSlotDefaultDurationInMinutes, 0, 60*24, 5); //UI: workslots limited to 24h duration
     }

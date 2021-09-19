@@ -89,8 +89,8 @@ public class ScreenListOfCategories extends MyForm {
 //        setScrollable(false); //disable scrolling of form, necessary to let lists handle their own scrolling
 //        getContentPane().setScrollableY(true);
 //</editor-fold>
-        setScrollable(false);
-        if (!(getLayout() instanceof BorderLayout)) {
+//        setScrollable(false);
+        if (false && !(getLayout() instanceof BorderLayout)) {
             setLayout(new BorderLayout());
         }
         setPinchInsertEnabled(true);
@@ -131,13 +131,17 @@ public class ScreenListOfCategories extends MyForm {
     }
 
     protected void animateMyForm() {
-        ((Container) ((BorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(ANIMATION_TIME_FAST);
+        if (false) {
+            ((Container) ((BorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(ANIMATION_TIME_FAST);
+        } else {
+            animateLayout(ANIMATION_TIME_FAST);
+        }
     }
 
     @Override
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
-        getContentPane().removeAll();
+//        getContentPane().removeAll();
         categoryList.resetWorkTimeDefinition();
         Container cont = buildContentPaneForItemList(categoryList);
         getContentPane().add(BorderLayout.CENTER, cont);
@@ -205,7 +209,8 @@ public class ScreenListOfCategories extends MyForm {
         //NEW CATEGORY
 //        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("New Category", categoryList, ScreenListOfCategories.this, () -> refreshAfterEdit()));
 //        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("New Category", categoryList, ScreenListOfCategories.this, null));
-        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("Add Category", categoryList, ScreenListOfCategories.this, null));
+//        toolbar.addCommandToOverflowMenu(makeNewCategoryCmd("Add Category", categoryList, ScreenListOfCategories.this, null));
+        toolbar.addCommandToOverflowMenu(makeCommandNewCategory("Add Category", categoryList, ScreenListOfCategories.this, null));
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        toolbar.addCommandToRightBar(MyReplayCommand.create("CreateNewCategory", "", Icons.iconNewToolbarStyle(), (e) -> {
 //            Category category = new Category();
@@ -276,20 +281,19 @@ public class ScreenListOfCategories extends MyForm {
      * @param content
      * @return
      */
-    static Container buildCategoryContainer(Category category, CategoryList categoryList) {
-        return buildCategoryContainer(category, categoryList, null);
-    }
+//    static Container buildCategoryContainer(Category category, CategoryList categoryList) {
+//        return buildCategoryContainer(category, categoryList, null);
+//    }
+//    static Container buildCategoryContainer(Category category, CategoryList categoryList, KeepInSameScreenPosition keepPos) {
+//        return buildCategoryContainer(category, categoryList, keepPos, null);
+//    }
+//    static Container buildCategoryContainer(Category category, CategoryList categoryList, KeepInSameScreenPosition keepPos, MyForm.Action refreshOnItemEdits) {
+//        return buildCategoryContainer(category, categoryList, keepPos, refreshOnItemEdits, null);
+//    }
+//    static Container buildCategoryContainer(MyForm myForm, Category category, CategoryList categoryListXXX, KeepInSameScreenPosition keepPos, MyForm.Action refreshOnItemEdits, ExpandedObjects expandedObjects) {
+    static Container buildCategoryContainer(MyForm myForm, Category category) {
 
-    static Container buildCategoryContainer(Category category, CategoryList categoryList, KeepInSameScreenPosition keepPos) {
-        return buildCategoryContainer(category, categoryList, keepPos, null);
-    }
-
-    static Container buildCategoryContainer(Category category, CategoryList categoryList, KeepInSameScreenPosition keepPos, MyForm.Action refreshOnItemEdits) {
-        return buildCategoryContainer(category, categoryList, keepPos, refreshOnItemEdits, null);
-    }
-
-    static Container buildCategoryContainer(Category category, CategoryList categoryList, KeepInSameScreenPosition keepPos, MyForm.Action refreshOnItemEdits, ExpandedObjects expandedObjects) {
-
+        ExpandedObjects expandedObjects = myForm.expandedObjects;
         Container mainCont = new Container(new BorderLayout());
         mainCont.setUIID("CategoryListContainer");
         if (Config.TEST) {
@@ -352,8 +356,8 @@ public class ScreenListOfCategories extends MyForm {
         }
 //        swipCont.putClientProperty(ScreenListOfItems.DISPLAYED_ELEMENT, category);
 
-        if (keepPos != null) {
-            keepPos.testItemToKeepInSameScreenPosition(category, swipCont);
+        if (myForm.keepPos != null) {
+            myForm.keepPos.testItemToKeepInSameScreenPosition(category, swipCont);
         }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -439,9 +443,9 @@ public class ScreenListOfCategories extends MyForm {
 //        cont.addComponent(BorderLayout.CENTER, new Label(category.getText()));
 //</editor-fold>
         Button expandCategorySubTasksButton = new Button();
-        WorkSlotList wSlots = category.getWorkSlotListN();
+        WorkSlotList wSlotsN = category.getWorkSlotListN();
 //        MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText(), swipCont, () -> true); //D&D
-        MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText() + (Config.TEST && wSlots != null && wSlots.size() > 0 ? "[W]" : ""), swipCont, () -> {
+        MyButtonInitiateDragAndDrop categoryLabel = new MyButtonInitiateDragAndDrop(category.getText() + (Config.TEST && wSlotsN != null && wSlotsN.size() > 0 ? "[W]" : ""), swipCont, () -> {
             boolean enabled = ((MyForm) mainCont.getComponentForm()).isDragAndDropEnabled();
             if (enabled && expandCategorySubTasksButton != null) {
                 Object e = swipCont.getClientProperty(KEY_EXPANDED);
@@ -489,9 +493,9 @@ public class ScreenListOfCategories extends MyForm {
 //                    DAO.getInstance().saveToParseNow((ParseObject) category);
 //                }
 //                    refreshAfterEdit();
-                if (refreshOnItemEdits != null) {
-                    refreshOnItemEdits.launchAction(); //refresh when items have been edited
-                }
+//                if (refreshOnItemEditsXXX != null) {
+//                    refreshOnItemEditsXXX.launchAction(); //refresh when items have been edited
+//                }
 //                return true;
             }, 0).show();
         });
@@ -543,112 +547,155 @@ public class ScreenListOfCategories extends MyForm {
 //            cont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandCategorySubTasksButton);
         }
-
-        if (MyPrefs.listOfCategoriesShowRemainingEstimate.getBoolean()) {
-            long remainingEffort = category.getRemainingTotal();
-//            long totalEffort = MyPrefs.listOfCategoriesShowTotalTime.getBoolean() ? category.getEstimate() : 0;
-            long totalEffort = MyPrefs.listOfCategoriesShowTotalTime.getBoolean() ? category.getTotalEffort() : 0;
-            String effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
-                    + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
-
-            if (MyPrefs.listOfCategoriesShowWorkTime.getBoolean()) {
-                WorkSlotList workSlots = category.getWorkSlotListN();
-                long workTimeSumMillis = workSlots != null ? category.getWorkSlotListN().getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
-
-                if (workTimeSumMillis != 0) {
-                    effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
+        
+        int numberItems = category.getSize();
+        if (numberItems >= 0) {
+            Command expandSubTasksCmd = CommandTracked.create("", null,
+                    (e) -> {
+                        expandCategorySubTasksButton.setUIID(expandCategorySubTasksButton.getUIID().equals("CategoryListShowItems")
+                                ? "CategoryListShowItemsExpanded"
+                                : "CategoryListShowItems");
+                    },
+                    "CategoryExpandSubtasks");// {
+            expandCategorySubTasksButton.setCommand(expandSubTasksCmd);
+            String subTaskStr = numberItems + "";
+            if (category.getShowNumberDoneTasks() && !category.getShowActual()) { //don't show total in statistics since ALL tasks are done
+                int totalNbTasks = category.getNumberOfItems(false, category.getShowNumberLeafTasks());
+                if (totalNbTasks != 0) {
+                    subTaskStr += "/" + totalNbTasks;
                 }
             }
-            east.addComponent(new Label(effortStr, "CategoryListRemainingTime")); //format: "remaining/workTime"
-            east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
-            east.addComponent(editItemPropertiesButton);
-        } else {
-            east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
-            east.addComponent(editItemPropertiesButton);
+            expandCategorySubTasksButton.setText(subTaskStr);
+            expandCategorySubTasksButton.setUIID(expandedObjects != null && expandedObjects.contains(category) ? "CategoryListShowItemsExpanded" : "CategoryListShowItems");
+            swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandCategorySubTasksButton);
         }
+        
+        
+        if (false) {
+            if (MyPrefs.listOfCategoriesShowRemainingEstimate.getBoolean()) {
+                long remainingEffort = category.getRemainingTotal();
+//            long totalEffort = MyPrefs.listOfCategoriesShowTotalTime.getBoolean() ? category.getEstimate() : 0;
+                long totalEffort = MyPrefs.listOfCategoriesShowTotalTime.getBoolean() ? category.getTotalEffort() : 0;
+                String effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
+                        + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
+
+                if (MyPrefs.listOfCategoriesShowWorkTime.getBoolean()) {
+                    WorkSlotList workSlotsN = category.getWorkSlotListN();
+                    long workTimeSumMillis = workSlotsN != null ? workSlotsN.getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
+
+                    if (workTimeSumMillis != 0) {
+                        effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
+                    }
+                }
+            }
+            }
+            if (category.getShowRemaining()) {
+                WorkSlotList workSlotsN = category.getWorkSlotListN();
+                long workTimeSumMillis = workSlotsN != null ? workSlotsN.getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
+
+                long remainingEffort = category.getRemainingTotal();
+                long totalEffort = category.getShowTotal() ? category.getEstimateTotal() : 0;
+
+                String effortStr;
+                if (category.getShowActual()) {
+                    effortStr = MyDate.formatDurationStd(category.getActualTotal());
+                } else {
+                    effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
+                            + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
+                    if (workTimeSumMillis != 0 && category.getShowWorkTime()) {
+                        effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
+                    }
+                }
+                east.addComponent(new Label(effortStr, "CategoryListRemainingTime")); //format: "remaining/workTime"
+                east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
+                east.addComponent(editItemPropertiesButton);
+            } else {
+                east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
+                east.addComponent(editItemPropertiesButton);
+            }
 
 //        east.addComponent(editItemPropertiesButton);
-        if (MyPrefs.showCategoryDescriptionInCategoryList.getBoolean() && !category.getComment().equals("")) {
-            mainCont.addComponent(BorderLayout.SOUTH,
-                    new Container(BoxLayout.x()).add(
-                            new Label("(" + category.getComment() + ")", "CategoryListDescriptionLabel")));
-        }
+            if (MyPrefs.showCategoryDescriptionInCategoryList.getBoolean() && !category.getComment().equals("")) {
+                mainCont.addComponent(BorderLayout.SOUTH,
+                        new Container(BoxLayout.x()).add(
+                                new Label("(" + category.getComment() + ")", "CategoryListDescriptionLabel")));
+            }
 
 //        east.addComponent(new Label(new SimpleDateFormat().format(new Date(itemList.getFinishTime(item, 0)))));
 //        return cont;
 //TODO any swipeable actions on category list??
-        return swipCont;
-    }
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    class TreeItemList extends TreeInitialCollapse {
-//
-//        private int myDepthIndent = 15;
-////            Tree dt = new Tree(listOfItemLists) {
-//
-//        TreeItemList(ItemList listOfItemLists, boolean collapseTopLevelNode) {
-//            super(listOfItemLists, collapseTopLevelNode);
-//            setNodeIcon(null);
-//            setFolderOpenIcon(Icons.get().iconShowLessLabelStyle);
-//            setFolderIcon(Icons.get().iconShowMoreLabelStyle);
-//        }
-//
-//        @Override
-//        protected Component createNode(Object node, int depth) {
-//            Container cmp = null;
-////            if (node instanceof ItemList) {
-////                cmp = buildItemListContainer((ItemList) node, itemListList);
-////            } else if (node instanceof Item) {
-////                cmp = Container.encloseIn(BoxLayout.y(), new Label(((Item) node).getText())); //TODO!!! replace by appropriate container
-////            } else {
-////                assert false : "unknown type of node" + node;
-////            }
-//            if (node instanceof Item) {
-////                cmp = ItemContainer.buildTreeOrSingleItemContainer((Item) node, (ItemList) treeParent);
-////                cmp = ItemContainer.buildItemContainer((Item) node, (ItemList) treeParent);
-//                cmp = ScreenListOfItems.buildItemContainer((Item) node, category, () -> true;() -> {
-//                }
-//              );
-//            } else if (node instanceof Category) {
-//                cmp = buildCategoryContainer((Category) node); //, (ItemList) treeParent);
-//            } else {
-//                assert false : "treeParent should only be Item or ItemList: treeParent=" + treeParent;
-//            }
-//
-////                cmp.setUIID("TreeNode"); cmp.setTextUIID("TreeNode"); if(model.isLeaf(node)) {cmp.setIcon(nodeImage);} else {cmp.setIcon(folder);}
-//            cmp.getSelectedStyle().setMargin(LEFT, depth * myDepthIndent);
-//            cmp.getUnselectedStyle().setMargin(LEFT, depth * myDepthIndent);
-//            cmp.getPressedStyle().setMargin(LEFT, depth * myDepthIndent);
-//            cmp.setScrollable(false); //to avoid nested scrolling, http://stackoverflow.com/questions/36044418/how-to-extend-infinitecontainer-with-the-capability-of-expanding-the-nodes-in-th
-//            return cmp;
-//        }
-//
-//        @Override
-//        protected void bindNodeListener(ActionListener l, Component node) {
-////            Object expandCollapseButton = node.getClientProperty("subTasksButton");
-////            if (expandCollapseButton != null && expandCollapseButton instanceof Button) //            ((Button) (((Container) node).getClientProperty("subTasksButton"))).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
-////            {
-////                ((Button) (expandCollapseButton)).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
-////            }
-//            Object expandCollapseButton = node.getClientProperty("subTasksButton");
-//            if (expandCollapseButton != null && expandCollapseButton instanceof Button) {
-//                ((Button) (expandCollapseButton)).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
-//                ((Button) (expandCollapseButton)).putClientProperty("TreeContainer", node);
-//            }
-//
-//        }
-//
-//        @Override
-//        protected void setNodeIcon(Image icon, Component node) {
-//            Object expandCollapseButton = node.getClientProperty("subTasksButton");
-////            ((Button) (((Container) node).getClientProperty("subTasksButton"))).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
-//            if (expandCollapseButton != null && expandCollapseButton instanceof Button) {
-//                ((Button) (expandCollapseButton)).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
-//            }
-//        }
-//    };
-//</editor-fold>
+            return swipCont;
+        }
+        //<editor-fold defaultstate="collapsed" desc="comment">
+        //    class TreeItemList extends TreeInitialCollapse {
+        //
+        //        private int myDepthIndent = 15;
+        ////            Tree dt = new Tree(listOfItemLists) {
+        //
+        //        TreeItemList(ItemList listOfItemLists, boolean collapseTopLevelNode) {
+        //            super(listOfItemLists, collapseTopLevelNode);
+        //            setNodeIcon(null);
+        //            setFolderOpenIcon(Icons.get().iconShowLessLabelStyle);
+        //            setFolderIcon(Icons.get().iconShowMoreLabelStyle);
+        //        }
+        //
+        //        @Override
+        //        protected Component createNode(Object node, int depth) {
+        //            Container cmp = null;
+        ////            if (node instanceof ItemList) {
+        ////                cmp = buildItemListContainer((ItemList) node, itemListList);
+        ////            } else if (node instanceof Item) {
+        ////                cmp = Container.encloseIn(BoxLayout.y(), new Label(((Item) node).getText())); //TODO!!! replace by appropriate container
+        ////            } else {
+        ////                assert false : "unknown type of node" + node;
+        ////            }
+        //            if (node instanceof Item) {
+        ////                cmp = ItemContainer.buildTreeOrSingleItemContainer((Item) node, (ItemList) treeParent);
+        ////                cmp = ItemContainer.buildItemContainer((Item) node, (ItemList) treeParent);
+        //                cmp = ScreenListOfItems.buildItemContainer((Item) node, category, () -> true;() -> {
+        //                }
+        //              );
+        //            } else if (node instanceof Category) {
+        //                cmp = buildCategoryContainer((Category) node); //, (ItemList) treeParent);
+        //            } else {
+        //                assert false : "treeParent should only be Item or ItemList: treeParent=" + treeParent;
+        //            }
+        //
+        ////                cmp.setUIID("TreeNode"); cmp.setTextUIID("TreeNode"); if(model.isLeaf(node)) {cmp.setIcon(nodeImage);} else {cmp.setIcon(folder);}
+        //            cmp.getSelectedStyle().setMargin(LEFT, depth * myDepthIndent);
+        //            cmp.getUnselectedStyle().setMargin(LEFT, depth * myDepthIndent);
+        //            cmp.getPressedStyle().setMargin(LEFT, depth * myDepthIndent);
+        //            cmp.setScrollable(false); //to avoid nested scrolling, http://stackoverflow.com/questions/36044418/how-to-extend-infinitecontainer-with-the-capability-of-expanding-the-nodes-in-th
+        //            return cmp;
+        //        }
+        //
+        //        @Override
+        //        protected void bindNodeListener(ActionListener l, Component node) {
+        ////            Object expandCollapseButton = node.getClientProperty("subTasksButton");
+        ////            if (expandCollapseButton != null && expandCollapseButton instanceof Button) //            ((Button) (((Container) node).getClientProperty("subTasksButton"))).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
+        ////            {
+        ////                ((Button) (expandCollapseButton)).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
+        ////            }
+        //            Object expandCollapseButton = node.getClientProperty("subTasksButton");
+        //            if (expandCollapseButton != null && expandCollapseButton instanceof Button) {
+        //                ((Button) (expandCollapseButton)).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
+        //                ((Button) (expandCollapseButton)).putClientProperty("TreeContainer", node);
+        //            }
+        //
+        //        }
+        //
+        //        @Override
+        //        protected void setNodeIcon(Image icon, Component node) {
+        //            Object expandCollapseButton = node.getClientProperty("subTasksButton");
+        ////            ((Button) (((Container) node).getClientProperty("subTasksButton"))).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
+        //            if (expandCollapseButton != null && expandCollapseButton instanceof Button) {
+        //                ((Button) (expandCollapseButton)).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
+        //            }
+        //        }
+        //    };
+        //</editor-fold>
 
-    protected Container buildContentPaneForItemList(ItemList itemLists) {
+    protected Container buildContentPaneForItemList(ItemList categoryLists) {
         parseIdMap2.parseIdMapReset();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        InfiniteContainer cl = new InfiniteContainer(20) {
@@ -669,8 +716,8 @@ public class ScreenListOfCategories extends MyForm {
 //        };
 //        return cl;
 //</editor-fold>
-        if (itemLists != null && itemLists.size() > 0) {
-            dt = new MyTree2(itemLists, expandedObjects, null, null) {
+        if (categoryLists != null && categoryLists.size() > 0) {
+            dt = new MyTree2(this, categoryLists, expandedObjects, null, null) {
                 Category category;
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -679,34 +726,33 @@ public class ScreenListOfCategories extends MyForm {
 //                return createNode(node, depth, null);
 //            }
 //</editor-fold>
-                @Override
-                protected Component createNode(Object node, int depth, Category cat) {
-                    Container cmp = null;
-                    if (node instanceof Item) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> dt.removeFromCache(),
-//                            false, //selectionMode not allowed for Categories??
-//                            null); //TODO any reason to support operations on multiple selected categories?
-//TODO!!! store expanded itemLists:
-//                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> refreshAfterEdit(),
-////                    cmp = ScreenListOfItems.buildItemContainer((Item) node, () -> true, () -> refreshAfterEdit(),
-//                            false, //selectionMode not allowed for list of itemlists //TODO would some actions make sense on multiple lists at once??
-//                            null, //selected objects
-////                            category, keepPos, expandedObjects, ()->animateMyForm(), false); //hack: get access to the latest category (the one above the items in the Tree list)
-//                            category, keepPos, expandedObjects, ()->animateMyForm(), false, false); //hack: get access to the latest category (the one above the items in the Tree list)
-//</editor-fold>
-                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfCategories.this, (Item) node, null, cat, expandedObjects); //hack: get access to the latest category (the one above the items in the Tree list)
-                    } else if (node instanceof Category) {
-//                        cmp = buildCategoryContainer((Category) node, categoryList, keepPos, () -> refreshAfterEdit(), expandedObjects); //, (ItemList) treeParent);
-                        cmp = buildCategoryContainer((Category) node, categoryList, keepPos, null, expandedObjects); //, (ItemList) treeParent);
-                        category = (Category) node; //huge hack: store the category of the latest category container for use when constructing the following
-                    } else {
-                        assert false : "should only be Item or ItemList, was:" + node;
-                    }
-                    setIndent(cmp, depth);
-                    return cmp;
-                }
-
+//                @Override
+//                protected Component createNode(Object node, int depth, Category cat) {
+//                    Container cmp = null;
+//                    if (node instanceof Item) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> dt.removeFromCache(),
+////                            false, //selectionMode not allowed for Categories??
+////                            null); //TODO any reason to support operations on multiple selected categories?
+////TODO!!! store expanded itemLists:
+////                    cmp = ScreenListOfItems.buildItemContainer((Item) node, null, () -> true, () -> refreshAfterEdit(),
+//////                    cmp = ScreenListOfItems.buildItemContainer((Item) node, () -> true, () -> refreshAfterEdit(),
+////                            false, //selectionMode not allowed for list of itemlists //TODO would some actions make sense on multiple lists at once??
+////                            null, //selected objects
+//////                            category, keepPos, expandedObjects, ()->animateMyForm(), false); //hack: get access to the latest category (the one above the items in the Tree list)
+////                            category, keepPos, expandedObjects, ()->animateMyForm(), false, false); //hack: get access to the latest category (the one above the items in the Tree list)
+////</editor-fold>
+//                        cmp = ScreenListOfItems.buildItemContainer(ScreenListOfCategories.this, (Item) node, null, cat, expandedObjects); //hack: get access to the latest category (the one above the items in the Tree list)
+//                    } else if (node instanceof Category) {
+////                        cmp = buildCategoryContainer((Category) node, categoryList, keepPos, () -> refreshAfterEdit(), expandedObjects); //, (ItemList) treeParent);
+//                        cmp = buildCategoryContainer((Category) node, categoryList, keepPos, null, expandedObjects); //, (ItemList) treeParent);
+//                        category = (Category) node; //huge hack: store the category of the latest category container for use when constructing the following
+//                    } else {
+//                        assert false : "should only be Item or ItemList, was:" + node;
+//                    }
+//                    setIndent(cmp, depth);
+//                    return cmp;
+//                }
             };
             return dt;
         } else {

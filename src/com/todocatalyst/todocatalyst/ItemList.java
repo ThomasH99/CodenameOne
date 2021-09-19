@@ -3,6 +3,9 @@ package com.todocatalyst.todocatalyst;
 //package todo;
 import com.codename1.io.Log;
 import com.codename1.ui.Component;
+import com.codename1.ui.Font;
+import com.codename1.ui.events.ActionEvent;
+import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.events.DataChangedListener;
 import com.codename1.ui.events.SelectionListener;
 import com.codename1.ui.tree.TreeModel;
@@ -18,6 +21,7 @@ import static com.todocatalyst.todocatalyst.MyUtil.removeTrailingPrecedingSpaces
 //import com.todocatalyst.todocatalyst.MyTree.MyTreeModel;
 import java.util.Vector;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Date;
@@ -65,8 +69,20 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     final static String PARSE_SYSTEM_NAME = "systemName"; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
     final static String PARSE_EDITED_DATE = Item.PARSE_EDITED_DATE; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
     final static String PARSE_DELETED_DATE = Item.PARSE_DELETED_DATE; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
+
+    final static String PARSE_SHOW_WHAT_LIST_STATS = "show";
+    final static String SHOW_NUMBER_UNDONE_TASKS = "Undone";
+    final static String SHOW_NUMBER_DONE_TASKS = "Done";
+    final static String SHOW_LEAF_TASKS = "Leaf";
+    final static String SHOW_TOTAL = "Total";
+    final static String SHOW_REMAINING = "Remaining";
+    final static String SHOW_ACTUAL = "Actual";
+    final static String SHOW_WORK_TIME = "WorkTime";
+    final static String SHOW_WORK_ALL = SHOW_NUMBER_UNDONE_TASKS + SHOW_NUMBER_DONE_TASKS + SHOW_LEAF_TASKS + SHOW_TOTAL + SHOW_REMAINING + SHOW_WORK_TIME;
 //    final static String PARSE_DELETED = "deleted"; //has this object been deleted on some device?
 //    final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
+    final static int ACTION_EVENT_CHANGED = DataChangedListener.CHANGED;
+    final static int ACTION_EVENT_REMOVED = DataChangedListener.REMOVED;
 
     public boolean hasUserModifiedData() {
         boolean userModifiedData
@@ -89,14 +105,16 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * contains the list of workslots (if defined, otherwise null)
      */
 //    private WorkTimeDefinition workTimeDefinition; //STORED inline
-    private EventDispatcher dataListener; // = new EventDispatcher();
-    private EventDispatcher selectionListener; // = new EventDispatcher();
+//    private EventDispatcher dataListener; // = new EventDispatcher();
+//    private EventDispatcher selectionListener; // = new EventDispatcher();
+    private EventDispatcher listeners; // = new EventDispatcher();
 //    private Bag<E> itemBag; // = new HashtableAddedDirectly();
 //    private List<WorkSlot> workSlotListBuffer;
 //    private WorkSlotList workSlotListBuffer;
 //    private WorkTimeDefinition workTimeDefinitionBuffer;
     private WorkTimeAllocator workTimeAllocator; //calculated when needed
     private Character itemListIcon;
+    private Font iconFont;
 
     public void setItemListIcon(char itemListIcon) {
         this.itemListIcon = itemListIcon;
@@ -104,6 +122,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 
     public Character getItemListIcon() {
         return itemListIcon;
+    }
+
+    public void setItemListIconFont(Font iconFont) {
+        this.iconFont = iconFont;
+    }
+
+    public Font getItemListIconFont() {
+        return iconFont;
     }
 
     /**
@@ -1253,7 +1279,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     public boolean addToList(ItemAndListCommonInterface itemOrListToAdd) {
-        return addToList(itemOrListToAdd, MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+        return addToList(itemOrListToAdd, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
     }
 
     @Override
@@ -1712,15 +1738,20 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public void setFilterSortDef(FilterSortDef filterSortDef, boolean saveEvenDefaultFilter) {
 //        if (filterSortDef != null && filterSortDef != FilterSortDef.getDefaultFilter()) { //only save if not the default filter
 //        if ((filterSortDef != null && !filterSortDef.equals(FilterSortDef.getDefaultFilter())) || saveEvenDefaultFilter) { //only save if changed compared to the default filter
-        if ((filterSortDef == null
-                || filterSortDef.equals(getDefaultFilterSortDef()) //                || isFilterSortDefInherited(filterSortDef
-                ) && !saveEvenDefaultFilter) { //only save if changed compared to the default filter
-//            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved --> should be done in DAO now
-//                DAO.getInstance().saveInBackground(filterSortDef); //
-//            }
-            remove(PARSE_FILTER_SORT_DEF);
-        } else {
+//        if ((filterSortDef == null || filterSortDef.equals(getDefaultFilterSortDef()))
+//                && !saveEvenDefaultFilter) { //only save if changed compared to the default filter
+////                || isFilterSortDefInherited(filterSortDef
+////            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved --> should be done in DAO now
+////                DAO.getInstance().saveInBackground(filterSortDef); //
+////            }
+//            remove(PARSE_FILTER_SORT_DEF);
+//        } else {
+//            put(PARSE_FILTER_SORT_DEF, filterSortDef);
+//        }
+        if (filterSortDef != null && (!filterSortDef.equals(getDefaultFilterSortDef()) || saveEvenDefaultFilter)) { //only save if changed compared to the default filter
             put(PARSE_FILTER_SORT_DEF, filterSortDef);
+        } else {
+            remove(PARSE_FILTER_SORT_DEF);
         }
 //        filteredSortedList = null;
     }
@@ -1832,15 +1863,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param deleteDate
      */
     @Override
-    public void deletePrepare(Date deleteDate) {
+    public void onDelete(Date deleteDate) {
 
         //if a timer was active for this itemList, then remove that (and update any timed item even though it may get soft-deleted below)
-        TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
-
+//        TimerStack.getInstance().updateTimerWhenItemListIsDeleted(this);
+//        fireDeleteEvent();
         //since we're deleting the list, and thus soft-deleting all its tasks (and their subtasks, recursively), we don't need to remove the list as the tasks' owner!
         List<Item> tasks = (List) getListFull(); //w/o copy get a java.util.ConcurrentModificationException
         for (Item item : tasks) {
-            item.deletePrepare(deleteDate); //item.deletePrepare will remove item from its owner, in this case, this list
+            item.onDelete(deleteDate); //item.deletePrepare will remove item from its owner, in this case, this list
         }
         DAO.getInstance().deleteLater((List) tasks, false); //save soft-deleted state of all subtasks
 
@@ -1871,6 +1902,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         }
 
         setSoftDeletedDate(deleteDate);
+
+        fireDeleteEvent();
 //        return true;
     }
 
@@ -2484,36 +2517,42 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                countUndone += ((ItemAndListCommonInterface) elt).getNumberOfUndoneItems(countLeafTasks);
 //            }
 //</editor-fold>
-            countUndone += ((ItemAndListCommonInterface) elt).getNumberOfUndoneItems(countLeafTasks);
+            if (elt instanceof WorkSlot) {
+                countUndone += 1;
+            } else if (elt instanceof ItemList) {
+                countUndone += 1;
+            } else {
+                countUndone += ((ItemAndListCommonInterface) elt).getNumberOfUndoneItems(countLeafTasks);
+            }
         }
         return countUndone;
     }
+    //<editor-fold defaultstate="collapsed" desc="comment">
+    //    static public int getNumberOfUndoneItemsOLD(List list, boolean recurse) {
+    //        if (list == null || list.size() == 0) {
+    //            return 0;
+    //        }
+    //        int countUndone = 0;
+    ////        for (Object item : itemList) {
+    ////        for (E item : itemList) {
+    //        for (Object item : list) {
+    ////            if (!((ItemAndListCommonInterface) item).isDone()) {
+    //            if (item instanceof ItemAndListCommonInterface && !(((ItemAndListCommonInterface) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
+    //                countUndone++;
+    //                //only count undone subtasks if project is not done
+    ////                if (includeSubTasks) {
+    //////                    countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems();
+    ////                    countUndone += ((Item) item).getNumberOfUndoneItems();
+    ////                }
+    //            }
+    //            if (recurse && list instanceof ItemAndListCommonInterface) {
+    //                countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems(true);
+    //            }
+    //        }
+    //        return countUndone;
+    //    }
+    //</editor-fold>
 
-//<editor-fold defaultstate="collapsed" desc="comment">
-//    static public int getNumberOfUndoneItemsOLD(List list, boolean recurse) {
-//        if (list == null || list.size() == 0) {
-//            return 0;
-//        }
-//        int countUndone = 0;
-////        for (Object item : itemList) {
-////        for (E item : itemList) {
-//        for (Object item : list) {
-////            if (!((ItemAndListCommonInterface) item).isDone()) {
-//            if (item instanceof ItemAndListCommonInterface && !(((ItemAndListCommonInterface) item).isDone())) { //use Item to optimize (since implementing isDone() on a list would be expensive
-//                countUndone++;
-//                //only count undone subtasks if project is not done
-////                if (includeSubTasks) {
-//////                    countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems();
-////                    countUndone += ((Item) item).getNumberOfUndoneItems();
-////                }
-//            }
-//            if (recurse && list instanceof ItemAndListCommonInterface) {
-//                countUndone += ((ItemAndListCommonInterface) item).getNumberOfUndoneItems(true);
-//            }
-//        }
-//        return countUndone;
-//    }
-//</editor-fold>
     public static int getNumberOfItemsThatWillChangeStatus(List list, boolean recurse, ItemStatus newStatus, boolean changingFromDone) {
         if (list == null || list.size() == 0) {
             return 0;
@@ -2543,6 +2582,14 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             }
         }
         return nbCountChangeStatus;
+    }
+
+    public int getNumberOfDoneItems(boolean countLeafTasks) {
+        return getCountOfSubtasksWithStatus(getListFull(), countLeafTasks, Arrays.asList(ItemStatus.DONE)); //by default, only count direct subtasks (how many remaining subtasks *this* project has)
+    }
+
+    public int getNumberOfDoneItems() {
+        return getNumberOfDoneItems(false);
     }
 
 //    public int getCountOfSubtasksWithStatus(boolean recurse, List<ItemStatus> statuses) {
@@ -3462,9 +3509,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @return
      */
     public void updateTo(List newList) {
-        List l = getListFull();
-        l.clear();
-        l.addAll(newList);
+//        List l = getListFull();
+//        l.clear();
+//        l.addAll(newList);
+//        setList(l);
+        setList(newList);
     }
 
     public boolean addAllNotMakingOwner(Collection<ItemAndListCommonInterface> c) {
@@ -3494,15 +3543,19 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public void setStatus(ItemStatus itemStatus) {
+    public boolean setStatus(ItemStatus itemStatus) {
 //        ItemList subtasks = getItemList();
 //        for (E itemOrList : itemList) {
 //        for (E itemOrList : getList()) {
 //        for (<? extends ItemAndListCommonInterface> itemOrList : getList()) {
+        boolean result = true;
         for (ItemAndListCommonInterface itemOrList : getListFull()) { //full to set for every subtask, even hidden ones
 //            ((ItemAndListCommonInterface) itemOrList).setStatus(newStatus);
-            itemOrList.setStatus(itemStatus);
+            if (itemOrList instanceof Item) {
+                result = result && ((Item) itemOrList).setStatus(itemStatus, true, true, true, new MyDate(), true, true, true); //only one false result will give a false return (but not currently used for lists, only for projects where user can cancel if changing too many subtasks)
+            }
         }
+        return result;
     }
 
 //    @Override
@@ -3947,9 +4000,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             remove(PARSE_WORKSLOTS);
         }
         workslotsCached = workSlots;
-        if (false) { //done in WorkSlotList
-            resetWorkTimeDefinition(); //need to reset this each time the WorkSlot list is changed
-        }
+//        if (false) { //done in WorkSlotList
+//            resetWorkTimeDefinition(); //need to reset this each time the WorkSlot list is changed
+//        }
     }
 
     public void setWorkSlotsInParseOLD(List workSlots) {
@@ -3970,9 +4023,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             remove(PARSE_WORKSLOTS);
         }
         workslotsCached = null;
-        if (false) { //done in WorkSlotList
-            resetWorkTimeDefinition(); //need to reset this each time the WorkSlot list is changed
-        }
+//        if (false) { //done in WorkSlotList
+//            resetWorkTimeDefinition(); //need to reset this each time the WorkSlot list is changed
+//        }
     }
 
     /**
@@ -4146,16 +4199,29 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public static FilterSortDef getSystemDefaultFilter(ScreenType screenType) {
         switch (screenType) {
             case NEXT:
-                return new FilterSortDef(screenType.name(), Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_DUE_DATE,
+                        FilterSortDef.FILTER_SHOW_NEW_TASKS
+                        + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
                         + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false, false);
             case OVERDUE:
-                return new FilterSortDef(screenType.name(), Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_DUE_DATE,
+                        FilterSortDef.FILTER_SHOW_NEW_TASKS
+                        + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
+                        + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
             case COMPLETION_LOG:
-                return new FilterSortDef(screenType.name(), Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, false);
             case CREATION_LOG:
-                return new FilterSortDef(screenType.name(), Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
             case TOUCHED:
-                return new FilterSortDef(screenType.name(), Item.PARSE_UPDATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
+            case TODAY:
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
+            case ALL_TASKS:
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
+            case ALL_PROJECTS:
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
+            default:
+                ASSERT.that(false, "No default filter defined for " + screenType.getTitle());
         }
         return null;
     }
@@ -4212,6 +4278,202 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return (date == null) ? new MyDate(0) : date;
     }
 
+    private String setString(String full, String str, boolean set) {
+        if (set) {
+            if (full != null) {
+                if (!full.contains(str)) {
+                    full += str;
+                }
+            } else {
+                full = str;
+            }
+        } else {
+            full = MyUtil.replaceSubstring(full, str, "");
+        }
+        return full;
+    }
+
+    @Override
+    public boolean getShowNumberUndoneTasks() {
+        return getShowWhatListStats().contains(SHOW_NUMBER_UNDONE_TASKS);
+    }
+
+    @Override
+    public void setShowNumberUndoneTasks(boolean set) {
+        addShowWhatListStats(SHOW_NUMBER_UNDONE_TASKS, set);
+    }
+
+    @Override
+    public boolean getShowNumberDoneTasks() {
+        return getShowWhatListStats().contains(SHOW_NUMBER_DONE_TASKS);
+    }
+
+    @Override
+    public void setShowNumberDoneTasks(boolean set) {
+        addShowWhatListStats(SHOW_NUMBER_DONE_TASKS, set);
+    }
+
+    @Override
+    public boolean getShowNumberLeafTasks() {
+        return getShowWhatListStats().contains(SHOW_LEAF_TASKS);
+    }
+
+    @Override
+    public void setShowNumberLeafTasks(boolean set) {
+        addShowWhatListStats(SHOW_LEAF_TASKS, set);
+    }
+
+    @Override
+    public boolean getShowRemaining() {
+        return getShowWhatListStats().contains(SHOW_REMAINING);
+    }
+
+    @Override
+    public void setShowRemaining(boolean set) {
+        addShowWhatListStats(SHOW_REMAINING, set);
+    }
+
+    @Override
+    public boolean getShowActual() {
+        return getShowWhatListStats().contains(SHOW_ACTUAL);
+    }
+
+    @Override
+    public void setShowActual(boolean set) {
+        addShowWhatListStats(SHOW_ACTUAL, set);
+    }
+
+    @Override
+    public boolean getShowTotal() {
+        return getShowWhatListStats().contains(SHOW_TOTAL);
+    }
+
+    @Override
+    public void setShowTotal(boolean set) {
+        addShowWhatListStats(SHOW_TOTAL, set);
+    }
+
+    @Override
+    public boolean getShowWorkTime() {
+        return getShowWhatListStats().contains(SHOW_WORK_TIME);
+    }
+
+    @Override
+    public void setShowWorkTime(boolean set) {
+        addShowWhatListStats(SHOW_WORK_TIME, set);
+    }
+
+    @Override
+    public void setShowWhatListStats(String set) {
+        put(PARSE_SHOW_WHAT_LIST_STATS, set);
+    }
+
+    public void addShowWhatListStatsXXX(String str) {
+
+    }
+
+    public void addShowWhatListStats(String str, boolean set) {
+        String s = getShowWhatListStats();
+        if (set && !s.contains(str)) {
+            s += str;
+        } else {
+            s = MyUtil.replaceSubstring(s, str, "");
+        }
+        setShowWhatListStats(s);
+    }
+
+    public String getShowWhatListStats() {
+        String s = getString(PARSE_SHOW_WHAT_LIST_STATS);
+        return s != null ? s : SHOW_NUMBER_UNDONE_TASKS + SHOW_REMAINING; //UI: default is show nb undone tasks and remaining time
+    }
+
+    public void setShowWhat(boolean nbUndoneTasks, boolean nbDoneTasks, boolean nbLeafTasks, boolean remaining, boolean total, boolean workTime) {
+        setShowNumberUndoneTasks(nbUndoneTasks);
+        setShowNumberDoneTasks(nbDoneTasks);
+        setShowNumberLeafTasks(nbLeafTasks);
+        setShowRemaining(remaining);
+        setShowTotal(total);
+        setShowWorkTime(workTime);
+    }
+
+    /**
+     * Adds a listener
+     *
+     * @param l implementation of the action listener interface
+     */
+    @Override
+    public void addActionListener(ActionListener l) {
+        if (listeners == null) {
+            listeners = new EventDispatcher();
+        }
+        listeners.addListener(l);
+    }
+
+    /**
+     * Removes the given action listener
+     *
+     * @param l implementation of the action listener interface
+     */
+    @Override
+    public void removeActionListener(ActionListener l) {
+        if (listeners != null) {
+            listeners.removeListener(l);
+        }
+    }
+
+    @Override
+//    public List<ActionListener> getActionListeners() {
+    public EventDispatcher getActionListeners() {
+        return listeners;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent evt) {
+        if (false) {
+            Object actionSource = evt.getSource();
+            int keyEvent = evt.getKeyEvent(); //use the keyEvent to carry the actual event
+            if (actionSource instanceof Item && getListFull().contains(actionSource) || keyEvent == DataChangedListener.REMOVED) {
+//            updateAllValuesDerivedFromSubtasks();
+//currently no actions done on ItemList when its items change (only for currently displayed list which sends a changeEvent to the Form
+            }
+        }
+        update(null);
+        fireEvent(evt);
+    }
+
+    @Override
+    public void update(ActionEvent evt) {
+//        super.update();
+        resetWorkTimeDefinition();
+    }
+
+    public void pullToRefresh() {
+
+    }
+
+//    @Override
+//    public void fireChangeEvent() {
+//        if (listeners != null) {
+//            listeners.fireActionEvent(new ActionEvent(this, ACTION_EVENT_CHANGED));
+//        }
+//    }
+//    @Override
+//    public void fireDeleteEvent() {
+//        if (listeners != null) {
+//            listeners.fireActionEvent(new ActionEvent(this, ACTION_EVENT_REMOVED));
+//        }
+//    }
+    @Override
+    public void onSave() {
+        if (isDirty()) {
+            fireChangeEvent(); //only fire if changed
+        }
+    }
+
+    @Override
+    public void onDelete() {
+        fireDeleteEvent(); //only fire if changed
+    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public List<ItemAndListCommonInterface> getWorkTimeProviders() {

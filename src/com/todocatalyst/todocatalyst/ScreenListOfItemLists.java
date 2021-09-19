@@ -88,16 +88,16 @@ public class ScreenListOfItemLists extends MyForm {
 //    ScreenListOfItemLists(ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone) {
 //        this(itemListList.getText(), itemListList, previousForm, updateItemListOnDone);
 //    }
-
-    ScreenListOfItemLists(String title, ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone, String helpText) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+//    ScreenListOfItemLists(String title, ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone, String helpText) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
+    ScreenListOfItemLists(ItemListList itemListList, MyForm previousForm, Runnable updateItemListOnDone) { //, GetUpdatedList updateList) { //throws ParseException, IOException {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListList));
-        super(title, previousForm, updateItemListOnDone, helpText);
+        super(ScreenType.LISTS, previousForm, updateItemListOnDone);
 //        addUpdateActionOnDone(() -> updateItemListOnDone.update2(itemListList));
 //        addUpdateActionOnDone(() -> updateItemListOnDone.update2(itemListList));
         setUniqueFormId("ScreenListOfItemLists");
         this.itemListList = itemListList;
-        setScrollable(false);
-        if (!(getLayout() instanceof BorderLayout)) {
+//        setScrollable(false);
+        if (false && !(getLayout() instanceof BorderLayout)) {
             setLayout(new BorderLayout());
         }
         setPinchInsertEnabled(true);
@@ -118,7 +118,11 @@ public class ScreenListOfItemLists extends MyForm {
     }
 
     protected void animateMyForm() {
-        ((Container) ((BorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(ANIMATION_TIME_FAST);
+        if (false) {
+            ((Container) ((BorderLayout) getContentPane().getLayout()).getCenter()).animateLayout(ANIMATION_TIME_FAST);
+        } else {
+            animateLayout(ANIMATION_TIME_FAST);
+        }
     }
 
     @Override
@@ -208,32 +212,35 @@ public class ScreenListOfItemLists extends MyForm {
         //NEW ITEMLIST
 //        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconNew, (e) -> {
 //        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "New List", Icons.iconListNew, (e) -> {
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "Add List", Icons.iconListNew, (e) -> {
-            ItemList itemList = new ItemList();
-            setKeepPos(new KeepInSameScreenPosition());
-            new ScreenItemListProperties(itemList, ScreenListOfItemLists.this, () -> {
+        if (false) {
+            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("CreateNewList", "Add List", Icons.iconListNew, (e) -> {
+                ItemList itemList = new ItemList();
+                setKeepPos(new KeepInSameScreenPosition());
+                new ScreenItemListProperties(itemList, ScreenListOfItemLists.this, () -> {
 //                    if (itemList.getText().length() > 0||itemList.getComment().length() > 0) {
-                if (itemList.hasSaveableData()) {
+                    if (itemList.hasSaveableData()) {
 //                    itemList.setOwner(itemListList); //NB cannot set an owner which is not saved in parse
 //                    DAO.getInstance().save(itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    itemListList.addItemAtIndex(itemList, 0);
 //                    itemListList.addToList(0, itemList);
-                    itemListList.addToList(itemList, !MyPrefs.insertNewItemListsInStartOfItemListList.getBoolean()); //TODO: why always add to start of list?! Make it a setting like elsewhere?
+                        itemListList.addToList(itemList, !MyPrefs.insertNewItemListsInStartOfItemListList.getBoolean()); //TODO: why always add to start of list?! Make it a setting like elsewhere?
 //                    DAO.getInstance().saveNew(true,(ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    DAO.getInstance().saveNew((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    DAO.getInstance().saveNewTriggerUpdate();
 //                    DAO.getInstance().saveToParseNow((ParseObject) itemList, (ParseObject) itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                    DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                        DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    DAO.getInstance().saveInBackground((ParseObject)itemListList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                    previousForm.revalidate(); //refresh list to show new items(??)
 //                    previousForm.refreshAfterEdit();//refresh list to show new items(??)
 //                    if (false) {
 //                        refreshAfterEdit();//refresh list to show new items(??)
 //                    }
-                }
-            }).show();
+                    }
+                }).show();
+            }
+            ));
         }
-        ));
+        toolbar.addCommandToOverflowMenu(makeCommandNewItemList(itemListList));
 
         //INTERRUPT TASK
         toolbar.addCommandToOverflowMenu(makeInterruptCommand(true));
@@ -261,10 +268,10 @@ public class ScreenListOfItemLists extends MyForm {
      * @return
      */
 //    protected Container buildItemListContainer(ItemList itemList, ItemList itemListList) {
-    protected static Container buildItemListContainer(ItemList itemList, KeepInSameScreenPosition keepPos) {
-        return buildItemListContainer(itemList, keepPos, false);
-    }
-
+//    protected static Container buildItemListContainer(ItemList itemList, KeepInSameScreenPosition keepPos) {
+////        return buildItemListContainer(itemList, keepPos, false);
+//        return buildItemListContainer(itemList, false, null, null);
+//    }
 //    }
 //    protected static Container buildItemListContainer(ItemList itemList, KeepInSameScreenPosition keepPos, boolean statisticsMode, boolean showDetailsByDefault) {
     /**
@@ -275,16 +282,25 @@ public class ScreenListOfItemLists extends MyForm {
      * @param statisticsMode if true, removes edit button and
      * @return
      */
-    protected static Container buildItemListContainer(ItemList itemList, KeepInSameScreenPosition keepPos, boolean statisticsMode) {
-        return buildItemListContainer(itemList, keepPos, statisticsMode, null);
+//    protected static Container buildItemListContainer(ItemList itemList, KeepInSameScreenPosition keepPos, boolean statisticsMode) {
+//        return buildItemListContainer(itemList, keepPos, statisticsMode, null);
+//    }
+    protected static Container buildItemListContainer(MyForm form, ItemList itemList) {
+//        return buildItemListContainer(form,itemList, form.keepPos, false, form.expandedObjects);
+        return buildItemListContainer(form, itemList, false);
     }
 
-    protected static Container buildItemListContainer(ItemList itemList, KeepInSameScreenPosition keepPos, boolean statisticsMode, ExpandedObjects expandedObjects) {
-        return buildItemListContainer(itemList, keepPos, statisticsMode, expandedObjects, null);
-    }
-
-    protected static Container buildItemListContainer(ItemList itemList, KeepInSameScreenPosition keepPos, boolean statisticsMode, ExpandedObjects expandedObjects,
-            Character materialIcon) {
+//    protected static Container buildItemListContainer(MyForm myForm,ItemList itemList, KeepInSameScreenPosition keepPos, boolean statisticsMode, ExpandedObjects expandedObjectsXXX) {
+    protected static Container buildItemListContainer(final MyForm myForm, final ItemList itemList,  boolean statisticsMode) {
+     
+//        return buildItemListContainer(itemList, keepPos, statisticsMode, expandedObjects, null);
+//    }
+//
+////    protected static Container buildItemListContainer(ItemList itemList, KeepInSameScreenPosition keepPos, boolean statisticsMode, ExpandedObjects expandedObjects, Character materialIcon) {
+//    protected static Container buildItemListContainer(ItemList itemList, KeepInSameScreenPosition keepPos, boolean statisticsMode, ExpandedObjects expandedObjects) {
+        statisticsMode = statisticsMode || (itemList instanceof ItemBucket); //force statistics ode when showing an ItemBucket
+        ExpandedObjects expandedObjects = myForm.expandedObjects;
+        KeepInSameScreenPosition keepPos = myForm.keepPos;
         Container mainCont = new Container(new BorderLayout());
         mainCont.setName("MainItemListContainer");
         if (itemList instanceof ItemBucket) {
@@ -292,7 +308,34 @@ public class ScreenListOfItemLists extends MyForm {
         } else {
             mainCont.setUIID("ItemListContainer");
         }
-//        mainCont.setUIID("ItemListContainer");
+        boolean showNumberUndoneTasks;
+        boolean showNumberDoneTasks;
+        boolean showNumberLeafTasks;
+        boolean showRemaining;
+        boolean showTotal;
+        boolean showWorkTime;
+        if (false) {
+            showNumberUndoneTasks = false;
+            showNumberDoneTasks = false;
+            showNumberLeafTasks = false;
+            showRemaining = false;
+            showTotal = false;
+            showWorkTime = false;
+        } else if (true) {
+            showNumberUndoneTasks = itemList.getShowNumberUndoneTasks();
+            showNumberDoneTasks = itemList.getShowNumberDoneTasks();
+            showNumberLeafTasks = itemList.getShowNumberLeafTasks();
+            showRemaining = itemList.getShowRemaining();
+            showTotal = itemList.getShowTotal();
+            showWorkTime = itemList.getShowWorkTime();
+        } else {
+            showNumberUndoneTasks = MyPrefs.listOfItemListsShowNumberUndoneTasks.getBoolean();
+            showNumberDoneTasks = MyPrefs.listOfItemListsShowNumberDoneTasks.getBoolean();
+            showNumberLeafTasks = MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean();
+            showRemaining = MyPrefs.listOfItemListsShowRemainingEstimate.getBoolean();
+            showTotal = MyPrefs.listOfItemListsShowTotalTime.getBoolean();
+            showWorkTime = MyPrefs.listOfItemListsShowWorkTime.getBoolean();
+        }
         Container leftSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
         leftSwipeContainer.setName("ItemListLeftSwipeCont");
         Container rightSwipeContainer = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
@@ -445,10 +488,10 @@ public class ScreenListOfItemLists extends MyForm {
 //        cont.addComponent(BorderLayout.CENTER, new Label(itemList.getText()));
 //</editor-fold>
 //        Button itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText()+(itemList.getWorkSlotListN()!=null?"#":""), swipCont, () -> true); //D&D
-        WorkSlotList wSlots = itemList.getWorkSlotListN();
+        WorkSlotList wSlotsN = itemList.getWorkSlotListN();
 //        MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(itemList.getText() + (itemList.getWorkSlotListN(false).size() > 0 ? "%" : ""), swipCont, () -> true); //D&D
         MyButtonInitiateDragAndDrop itemListLabel = new MyButtonInitiateDragAndDrop(itemList.getText()
-                + (Config.TEST && wSlots != null && wSlots.size() > 0 ? "[W]" : ""),
+                + (Config.TEST && wSlotsN != null && wSlotsN.size() > 0 ? "[W]" : ""),
                 //                swipCont, () -> true); //D&D
                 swipCont, () -> {
 //                    boolean enabled = ((MyForm)get.isDragAndDropEnabled();
@@ -464,7 +507,11 @@ public class ScreenListOfItemLists extends MyForm {
                 }); //D&D
 //        itemListLabel.setMaterialIcon(' '); //FontImage.MATERIAL_LIST); //UI: ' '==blank icon?! Add white space to allow to customize list icons later
         if (itemList.getItemListIcon() != null) {
-            itemListLabel.setMaterialIcon(itemList.getItemListIcon()); //FontImage.MATERIAL_LIST); //UI: ' '==blank icon?! Add white space to allow to customize list icons later
+            if (itemList.getItemListIconFont() != null) {
+                itemListLabel.setFontIcon(itemList.getItemListIconFont(), itemList.getItemListIcon()); //FontImage.MATERIAL_LIST); //UI: ' '==blank icon?! Add white space to allow to customize list icons later
+            } else {
+                itemListLabel.setMaterialIcon(itemList.getItemListIcon()); //FontImage.MATERIAL_LIST); //UI: ' '==blank icon?! Add white space to allow to customize list icons later
+            }
         } else {
             itemListLabel.setMaterialIcon(Icons.iconList); //FontImage.MATERIAL_LIST); //UI: ' '==blank icon?! Add white space to allow to customize list icons later
         }
@@ -483,26 +530,32 @@ public class ScreenListOfItemLists extends MyForm {
             editItemListPropertiesButton.setCommand(MyReplayCommand.create("EditItemList-" + itemList.getReplayId(), "", Icons.iconEdit,
                     (ActionEvent e) -> {
                         MyForm f = ((MyForm) mainCont.getComponentForm());
-                        f.setKeepPos(new KeepInSameScreenPosition());
+//                        f.setKeepPos(new KeepInSameScreenPosition());
+                        f.setKeepPos();
 //                DAO.getInstance().fetchAllElementsInSublist((ItemList) itemList, true); //fetch all subtasks (recursively) before editing this list
 //                new ScreenListOfItems(itemList.getText(), itemList, ScreenListOfItemLists.this, (iList) -> {
-                        new ScreenListOfItems(itemList.getText(), () -> itemList, (MyForm) mainCont.getComponentForm(),
-                                //                        (ItemAndListCommonInterface iList) -> {
-                                () -> {
-                                    if (false) {
+                        if (false) {
+                            new ScreenListOfItems(itemList.getText(), () -> itemList, (MyForm) mainCont.getComponentForm(),
+                                    //                        new ScreenListOfItems( () -> itemList, (MyForm) mainCont.getComponentForm(),
+                                    //                        (ItemAndListCommonInterface iList) -> {
+                                    () -> {
+                                        if (false) {
 //                    if (true) {
 //                            ((MyForm) swipCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
-                                        f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
-                                        itemList.setList(itemList.getListFull());
+                                            f.setKeepPos(new KeepInSameScreenPosition(itemList, swipCont));
+                                            itemList.setList(itemList.getListFull());
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveInBackground((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                                        //TODO!!!! how to make below save run in background? (objId is needed eg for EditItemList-ObjId of new list)
+//TODO!!!! how to make below save run in background? (objId is needed eg for EditItemList-ObjId of new list)
 //                        DAO.getInstance().saveAndWait((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveNew((ParseObject) itemList,true); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveNew((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                        DAO.getInstance().saveNewTriggerUpdate(); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                                        DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
-                                    }
+//</editor-fold>
+                                            DAO.getInstance().saveToParseNow((ParseObject) itemList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
+                                        }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, itemListList), null); //update the container with edited content
 //                        if (false) {
 //                            swipCont.getParent().replace(swipCont, buildItemListContainer(itemList, keepPos), null); //update the container with edited content //TODO!! add animation?
@@ -515,7 +568,6 @@ public class ScreenListOfItemLists extends MyForm {
 //                        f.refreshAfterEdit();
 //                    }
 //                        return true;
-//<editor-fold defaultstate="collapsed" desc="comment">
 //                                categoryList.addItemAtIndex(category, 0);
 //                                DAO.getInstance().save(categoryList); //=> java.lang.IllegalStateException: unable to encode an association with an unsaved ParseObject
 //                            itemList.setList(itemList.getList());
@@ -531,7 +583,18 @@ public class ScreenListOfItemLists extends MyForm {
 //                                itemList.addItem(newItemList);
 //                            }).show();
 //</editor-fold>
-                                }, 0).show();
+                                    }, 0).show();
+                        }
+                        if (false) {
+                            if (itemList instanceof CategoryList) {
+                                new ScreenListOfCategories((CategoryList) itemList, (MyForm) mainCont.getComponentForm(), null).show();
+                            } else if (itemList instanceof ItemListList) {
+                                new ScreenListOfItemLists((ItemListList) itemList, (MyForm) mainCont.getComponentForm(), null).show();
+                            } else {
+                                new ScreenListOfItems(() -> itemList, (MyForm) mainCont.getComponentForm()).show();
+                            }
+                        }
+                        new ScreenListOfItems(() -> itemList, (MyForm) mainCont.getComponentForm()).show();
                     }
             )
             );
@@ -557,63 +620,106 @@ public class ScreenListOfItemLists extends MyForm {
 //        east.add(new Label("R"+MyDate.formatTimeDuration(remaining)+"W"+MyDate.formatTimeDuration(workTime)));
 //</editor-fold>
         //EXPAND list
-        WorkSlotList workSlots = itemList.getWorkSlotListN();
-        long workTimeSumMillis = workSlots != null ? workSlots.getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
-        if (MyPrefs.listOfItemListsShowNumberUndoneTasks.getBoolean()) {
-            int numberItems;
+        WorkSlotList workSlotsN = itemList.getWorkSlotListN();
+        long workTimeSumMillis = workSlotsN != null ? workSlotsN.getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
+
+        int numberItems = -1;
+        if (false && itemList == ItemListList.getInstance()) {
+            numberItems = ItemListList.getInstance().size();
+        } else if (itemList == TemplateList.getInstance()) {
+            numberItems = ItemListList.getInstance().size();
+        } else if (showNumberUndoneTasks) {
 //            WorkSlotList workSlots = itemList.getWorkSlotListN();
 //         workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0;
             if (true || !statisticsMode) {
 //                numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(false);
-                numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean());
-                ASSERT.that(!statisticsMode || numberItems > 0, "the list should only exist in statistics mode if it is not empty");
-                if (true || numberItems > 0) { //UI: show '0' number of subtasks for empty lists
-//                Button subTasksButton = new Button();
-//                Command expandSubTasks = new CommandTracked("[" + numberItems + "]", "ExpandSubtasks");// {
-//                    Command expandSubTasks = new CommandTracked("", "ExpandSubtasks");// {
-                    Command expandSubTasksCmd = CommandTracked.create("", null,
-                            (e) -> {
-                                expandItemListSubTasksButton.setUIID(expandItemListSubTasksButton.getUIID().equals("ListOfItemListsShowItems")
-                                        ? "ListOfItemListsShowItemsExpanded"
-                                        : "ListOfItemListsShowItems");
-                            },
-                            "ListOfItemListsExpandSubtasks");// {
-                    expandItemListSubTasksButton.setCommand(expandSubTasksCmd);
-                    String subTaskStr = numberItems + "";
-                    if (!statisticsMode && MyPrefs.listOfItemListsShowNumberDoneTasks.getBoolean()) { //don't show total in statistics since ALL tasks are done
-                        int totalNbTasks = itemList.getNumberOfItems(false, MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean());
-                        if (totalNbTasks != 0) {
-                            subTaskStr += "/" + totalNbTasks;
-                        }
-                    }
-                    expandItemListSubTasksButton.setText(subTaskStr);
-//            subTasksButton.setIcon(Icons.get().iconShowMoreLabelStyle);
-                    expandItemListSubTasksButton.setUIID(expandedObjects != null && expandedObjects.contains(itemList) ? "ListOfItemListsShowItemsExpanded" : "ListOfItemListsShowItems");
-//            swipCont.putClientProperty("subTasksButton", subTasksButton);
-                    swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandItemListSubTasksButton);
-                    if (false) {
-                        east.addComponent(expandItemListSubTasksButton);
-                    }
-//            cont.setLeadComponent(subTasksButton); //ensure events generated by button arrives at main container??? WORKS! Makes the button receive every action from the container
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            subTasksButton.setCommand(new Command("[" + itemList.getSize() + "]") {
-//                @Override
-//                public void actionPerformed(ActionEvent evt) {
-//                    super.actionPerformed(evt); //To change body of generated methods, choose Tools | Templates.
-//                }
-//            }
-//            );
-//            subTasksButton.setCommand(new Command("[" + itemList.getSize() + "]")); //the Command doesn't have to do anything since Tree binds a listener to the button
-//</editor-fold>
+                if (itemList.getShowActual()) {
+                    numberItems = itemList.size(); //use size() for TemplateList to get all top-level items
+                } else {
+                    numberItems = itemList == ItemListList.getInstance() ? ItemListList.getInstance().size() : (statisticsMode
+                            ? itemList.getNumberOfItems(false, true)
+                            //                                                        : itemList.getNumberOfUndoneItems(MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean()));
+                            : itemList.getNumberOfUndoneItems(itemList.getShowNumberUndoneTasks())); //don't use setting but list value
                 }
+                ASSERT.that(!statisticsMode || numberItems > 0, "the list should only exist in statistics mode if it is not empty");
+//                if (true || numberItems > 0) { //UI: show '0' number of subtasks for empty lists
+////                Button subTasksButton = new Button();
+////                Command expandSubTasks = new CommandTracked("[" + numberItems + "]", "ExpandSubtasks");// {
+////                    Command expandSubTasks = new CommandTracked("", "ExpandSubtasks");// {
+//                    Command expandSubTasksCmd = CommandTracked.create("", null,
+//                            (e) -> {
+//                                expandItemListSubTasksButton.setUIID(expandItemListSubTasksButton.getUIID().equals("ListOfItemListsShowItemsExpandable")
+//                                        ? "ListOfItemListsShowItemsExpanded"
+//                                        : "ListOfItemListsShowItemsExpandable");
+//                            },
+//                            "ListOfItemListsExpandSubtasks");// {
+//                    expandItemListSubTasksButton.setCommand(expandSubTasksCmd);
+//                    String subTaskStr = numberItems + "";
+//                    if (!statisticsMode && showNumberDoneTasks && !itemList.getShowActual()) { //don't show total in statistics since ALL tasks are done
+//                        int totalNbTasks = itemList.getNumberOfItems(false, showNumberLeafTasks);
+//                        if (totalNbTasks != 0) {
+//                            subTaskStr += "/" + totalNbTasks;
+//                        }
+//                    }
+//                    expandItemListSubTasksButton.setText(subTaskStr);
+////            subTasksButton.setIcon(Icons.get().iconShowMoreLabelStyle);
+//                    expandItemListSubTasksButton.setUIID(expandedObjects != null && expandedObjects.contains(itemList) ? "ListOfItemListsShowItemsExpanded" : "ListOfItemListsShowItemsExpandable");
+////            swipCont.putClientProperty("subTasksButton", subTasksButton);
+//                    swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandItemListSubTasksButton);
+//                    if (false) {
+//                        east.addComponent(expandItemListSubTasksButton);
+//                    }
+////            cont.setLeadComponent(subTasksButton); //ensure events generated by button arrives at main container??? WORKS! Makes the button receive every action from the container
+////<editor-fold defaultstate="collapsed" desc="comment">
+////            subTasksButton.setCommand(new Command("[" + itemList.getSize() + "]") {
+////                @Override
+////                public void actionPerformed(ActionEvent evt) {
+////                    super.actionPerformed(evt); //To change body of generated methods, choose Tools | Templates.
+////                }
+////            }
+////            );
+////            subTasksButton.setCommand(new Command("[" + itemList.getSize() + "]")); //the Command doesn't have to do anything since Tree binds a listener to the button
+////</editor-fold>
+//                }
             }
         }
+        if (numberItems >= 0) {
+            Command expandSubTasksCmd = CommandTracked.create("", null,
+                    (e) -> {
+                        expandItemListSubTasksButton.setUIID(expandItemListSubTasksButton.getUIID().equals("ListOfItemListsShowItemsExpandable")
+                                ? "ListOfItemListsShowItemsExpanded"
+                                : "ListOfItemListsShowItemsExpandable");
+                    },
+                    "ListOfItemListsExpandSubtasks");// {
+            expandItemListSubTasksButton.setCommand(expandSubTasksCmd);
+            String subTaskStr = numberItems + "";
+            if (!statisticsMode && showNumberDoneTasks && !itemList.getShowActual()) { //don't show total in statistics since ALL tasks are done
+                int totalNbTasks = itemList.getNumberOfItems(false, showNumberLeafTasks);
+                if (totalNbTasks != 0) {
+                    subTaskStr += "/" + totalNbTasks;
+                }
+            }
+            expandItemListSubTasksButton.setText(subTaskStr);
+            expandItemListSubTasksButton.setUIID(expandedObjects != null && expandedObjects.contains(itemList) ? "ListOfItemListsShowItemsExpanded" : "ListOfItemListsShowItemsExpandable");
+            swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandItemListSubTasksButton);
+        }
 
-        if (!statisticsMode) {
-            if (MyPrefs.listOfItemListsShowRemainingEstimate.getBoolean()) {
+        if (itemList == TemplateList.getInstance()) {
+            if (false) { //don't show total of templates, no relevance!
+                long estimateTotal = itemList.getEstimateTotal();
+                Label estimateTotalLabel = new Label(MyDate.formatDurationStd(estimateTotal));
+//            estimateTotalLabel.setFontIcon(Icons.myIconFont, Icons.iconEstimateCust);
+                east.addComponent(estimateTotalLabel);
+                east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"east.addComponent(editItemListPropertiesButton);
+                east.addComponent(editItemListPropertiesButton);
+            }
+                east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"east.addComponent(editItemListPropertiesButton);
+                east.addComponent(editItemListPropertiesButton);
+        } else if (!statisticsMode) {
+            if (showRemaining) {
 
                 long remainingEffort = itemList.getRemainingTotal();
-                long totalEffort = MyPrefs.listOfItemListsShowTotalTime.getBoolean() ? itemList.getEstimateTotal() : 0;
+                long totalEffort = showTotal ? itemList.getEstimateTotal() : 0;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long workTime = itemList.getWorkSlotListN().getWorkTimeSum();
 //        if (remainingEffort != 0) {
@@ -623,10 +729,15 @@ public class ScreenListOfItemLists extends MyForm {
 //        List<WorkSlot> workslots = itemList.getWorkSlotListN();
 //        long workTimeSumMillis = WorkSlot.sumWorkSlotList(workslots);
 //</editor-fold>
-                String effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
-                        + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
-                if (workTimeSumMillis != 0 && MyPrefs.listOfItemListsShowWorkTime.getBoolean()) {
-                    effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
+                String effortStr;
+                if (itemList.getShowActual()) {
+                    effortStr = MyDate.formatDurationStd(itemList.getActualTotal());
+                } else {
+                    effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
+                            + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
+                    if (workTimeSumMillis != 0 && showWorkTime) {
+                        effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
+                    }
                 }
 //                east.addComponent(new Label((remainingEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
 //                        + (workTimeSumMillis != 0 ? ((remainingEffort != 0 ? "/" : "") + MyDate.formatDurationStd(workTimeSumMillis)) : ""),"ListOfItemListsRemainingTime")); //format: "remaining/workTime"
@@ -642,7 +753,8 @@ public class ScreenListOfItemLists extends MyForm {
 //            long estimatedEffort = itemList.getEffortEstimate();
 //            east.addComponent(new Label("Act:" + MyDate.formatDurationStd(actualEffort),Icons.iconActualEffort));
             Label actualTotalLabel = new Label(MyDate.formatDurationStd(actualTotal));
-            actualTotalLabel.setMaterialIcon(Icons.iconActualEffortCust);
+//            actualTotalLabel.setMaterialIcon(Icons.iconActualEffortCust);
+            actualTotalLabel.setFontIcon(Icons.myIconFont, Icons.iconActualEffortCust);
             east.addComponent(actualTotalLabel);
 //                    + "/E" + MyDate.formatTimeDuration(estimatedEffort)
 //                    + "/W" + MyDate.formatTimeDuration(workTimeSumMillis)));
@@ -714,7 +826,7 @@ public class ScreenListOfItemLists extends MyForm {
 //                        southCont.setHidden(!southDetailsContainer.isHidden()); //toggle hidden details
                     southCont.setHidden(!southCont.isHidden()); //toggle hidden details
                 }
-                MyForm myForm = (MyForm) mainCont.getComponentForm();
+//                MyForm myForm = (MyForm) mainCont.getComponentForm();
                 //add/remove itemList to showDetails set
                 if (myForm != null) {
                     if (myForm.showDetails != null) {
@@ -750,28 +862,31 @@ public class ScreenListOfItemLists extends MyForm {
 
 //        return cont;
 //</editor-fold>
-        if (false) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
-//            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
-//            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, "SwipeLaunchTimerOnItemList", Icons.iconNewItemFromTemplate, (e) -> {
-            leftSwipeContainer.add(new Button(CommandTracked.create("", Icons.iconNewItemFromTemplate, (e) -> {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//                    Item newTemplateInstantiation = new Item();
-//                    item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
-//                    new ScreenItem(newTemplateInstantiation, (MyForm) swipCont.getComponentForm(), () -> {
-//                        DAO.getInstance().save(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner
-//                    }).show();
-//                ScreenTimer.getInstance().startTimerOnItemList(itemList, null, (MyForm) swipCont.getComponentForm());
-//</editor-fold>
-//                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
-                TimerStack.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
-//            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
-//            }, "InterruptInScreen"+((MyForm) mainCont.getComponentForm()).getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
-            }, "InterruptInScreenListOfItemLists" //only push this command if we start with BigTimer (do NOT always start with smallTimer)
-            )));
-        }
+//        if (false) { //DONE CANNOT launch Timer on a list without a filter (or will only use the manual sort order which will be counter-intuitive if the user always uses a certain filter)
+////            leftSwipeContainer.add(new Button(MyReplayCommand.create(ScreenTimer2.TIMER_REPLAY+itemList.getObjectIdP(),null, Icons.iconNewItemFromTemplate, (e) -> {
+////            leftSwipeContainer.add(new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, "SwipeLaunchTimerOnItemList", Icons.iconNewItemFromTemplate, (e) -> {
+//            leftSwipeContainer.add(new Button(CommandTracked.create("", Icons.iconNewItemFromTemplate, (e) -> {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////                    Item newTemplateInstantiation = new Item();
+////                    item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE);
+////                    new ScreenItem(newTemplateInstantiation, (MyForm) swipCont.getComponentForm(), () -> {
+////                        DAO.getInstance().save(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner
+////                    }).show();
+////                ScreenTimer.getInstance().startTimerOnItemList(itemList, null, (MyForm) swipCont.getComponentForm());
+////</editor-fold>
+////                ScreenTimer2.getInstance().startTimerOnItemList(itemList, (MyForm) swipCont.getComponentForm());
+//                TimerStack2.getInstance().startTimerAndSave(null, itemList, (MyForm) swipCont.getComponentForm(), false, false);
+////            }, () -> !MyPrefs.timerAlwaysStartWithNewTimerInSmallWindow.getBoolean() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+////            }, "InterruptInScreen"+((MyForm) mainCont.getComponentForm()).getUniqueFormId() //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+//            }, "InterruptInScreenListOfItemLists" //only push this command if we start with BigTimer (do NOT always start with smallTimer)
+//            )));
+//        }
         if (!statisticsMode && itemList.getList().size() > 0) {
-            rightSwipeContainer.add(makeTimerSwipeButton(swipCont, itemList, "InterruptInScreenListOfItemLists"));
+//            rightSwipeContainer.add(makeTimerSwipeButton(swipCont, itemList, "InterruptInScreenListOfItemLists"));
+            rightSwipeContainer.add(makeTimerSwipeButton(swipCont, null, itemList, "SwipeTimerOnListInScreenListOfItemLists"));
         }
+        
+//           itemList.addActionListener((e)->buildItemListContainer(myForm, itemList, statisticsMode));
         return swipCont;
     }
 
@@ -946,13 +1061,13 @@ public class ScreenListOfItemLists extends MyForm {
 //        };
 //</editor-fold>
         if (listOfItemLists != null && listOfItemLists.getList().size() > 0) {
-            MyTree2 cl = new MyTree2(listOfItemLists, expandedObjects, null, null) {
-                @Override
-                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
-                    Container cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItemLists.this, (Item) node, itemOrItemList, category);
-                    setIndent(cmp, depth);
-                    return cmp;
-                }
+            MyTree2 cl = new MyTree2(this, listOfItemLists, expandedObjects, null, null) {
+//                @Override
+//                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList, Category category) {
+//                    Container cmp = ScreenListOfItems.buildItemContainer(ScreenListOfItemLists.this, (Item) node, itemOrItemList, category);
+//                    setIndent(cmp, depth);
+//                    return cmp;
+//                }
 
                 @Override
                 protected Component createNode(Object node, int depth) {
@@ -968,7 +1083,8 @@ public class ScreenListOfItemLists extends MyForm {
                         }
                     } else if (node instanceof ItemList) {
 //                      cmp = buildCategoryContainer((Category) node, categoryList, keepPos, ()->refreshAfterEdit());
-                        cmp = buildItemListContainer((ItemList) node, keepPos, false, expandedObjects);
+//                        cmp = buildItemListContainer((ItemList) node, keepPos, false, expandedObjects);
+                        cmp = buildItemListContainer(ScreenListOfItemLists.this, (ItemList) node);
                         if (Config.TEST) {
                             cmp.setName(((ItemList) node).getText());
                         }
