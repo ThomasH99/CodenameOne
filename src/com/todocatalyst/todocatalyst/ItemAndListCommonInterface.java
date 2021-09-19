@@ -1528,8 +1528,20 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return added;
     }
 
+    default public String getSystemName() {
+        return "";
+    }
+    
+    /**
+     * replayId will normally be the guid, except for systemLists where it will be the systemName (which takes precedence over guid)
+     * @return 
+     */
     default public String getReplayId() {
-        return getGuid();
+        if (!getSystemName().isEmpty()) {
+            return getSystemName();
+        } else {
+            return getGuid();
+        }
     }
 
     /**

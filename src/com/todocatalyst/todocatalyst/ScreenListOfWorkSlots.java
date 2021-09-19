@@ -508,8 +508,12 @@ public class ScreenListOfWorkSlots extends MyForm {
             if (!txt.isEmpty()) {
                 content.addComponent(new SpanLabel(txt, "WorkSlotDetails"));
             }
+        } else {
+            if (!workSlot.getText().isEmpty()) {
+                content.addComponent(new SpanLabel(workSlot.getText(), "WorkSlotDetails"));
+            }
         }
-        
+
         center.addComponent(content);
 //        if (showOwner && workSlot.getOwner() != null) {
 //            cont.addComponent(BorderLayout.CENTER, center);

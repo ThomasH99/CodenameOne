@@ -609,6 +609,15 @@ WelcomeScreen {
     /*background: lightgreen;*/ 
     background: whitesmoke; 
 }
+GettingStartedScreen {
+    /*    margin: 20mm 10mm 10mm 10mm; 
+        border: 2pt solid;  cn1-round-border;/*
+        border-color: var(--ios-blue);  cn1-round-border;/*
+        padding: 2mm;
+        border-radius: 4mm;*/
+    /*background: lightgreen;*/ 
+    background: lightgray; /*whitesmoke;*/
+}
 WelcomeContainer { 
     /*margin: 10%; 8mm;*/ 
     border: 2pt solid;  /*cn1-round-border;/**/
@@ -2569,6 +2578,28 @@ TreeContainer {
     /*border-radius: 0mm;*/
 }
 
+DropTargetPlaceholder {
+    /*cn1-derive: Label;*/
+    cn1-derive: Container;
+    padding:0mm;
+    margin: 0mm;
+    background: grey; /*background for swipeable icons 
+    /*border-left: 1mm solid blueviolet; 
+    /*background-color: transparent;
+    /*border: 1px solid gray; /*cn1-pill-border */
+    /*border-radius: 0mm;*/
+}
+DropTargetPlaceholderTst {
+    /*cn1-derive: Label;*/
+    cn1-derive: DropTargetPlaceholder;
+    padding:0mm;
+    margin: 0mm;
+    background: yellow; /*background for swipeable icons 
+    /*border-left: 1mm solid blueviolet; 
+    /*background-color: transparent;
+    /*border: 1px solid gray; /*cn1-pill-border */
+    /*border-radius: 0mm;*/
+}
 MyDragAndDropSwipeableContainer {
     /*cn1-derive: Label;*/
     cn1-derive: Container;
@@ -3225,14 +3256,15 @@ Scroll{ /*also HorizontalScroll*/
     background: transparent; /*used for background of scrollable section*/
     /*    margin:0.2mm;
         padding: 0.4mm;*/
-    margin:0 0mm 0 0.2mm; /*the scrollbar size and its placement/closeness to top/bottom/sides of scrollable container- all Form components stay outside of it*/
-    padding: 0 0mm 0 0.4mm; /*the width of the scrollbar*/
+    margin:0 0mm 0 0mm; /*the *static* scrollbar size and its placement/closeness to top/bottom/sides of scrollable container- all Form components stay outside of it*/
+    /*making the margin 0 size seems to prevent permanently/statically 'reserving' screen estate for and simply super-impose the bar itself on top of the UI */
+    padding: 0 0mm 0 0.5mm; /*the width of the actual displayed scrollbar*/
 }
 
 ScrollThumb{ /*also HorizontalScrollThumb*/
     cn1-derive:Scroll; 
     /*color: red;*/
-    background: lightslategray; /*used for scrollable section*/
+    background: gray; /*lightslategray; /*the color of the actual visible scrollbar, used for scrollable section*/
     /*    margin:2mm;
         padding: 2mm;*/
 }

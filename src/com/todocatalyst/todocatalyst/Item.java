@@ -1260,7 +1260,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
-    public boolean isWaiting() {
+    public boolean isWaitingAndSetWaitUntilDateNotReached() {
 //        return getStatus() == ItemStatus.WAITING && (System.currentTimeMillis() < getWaitingTillDateD().getTime() || getWaitingTillDateD().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
         return getStatus() == ItemStatus.WAITING && (MyDate.currentTimeMillis() < getWaitUntilDate().getTime() || getWaitUntilDate().getTime() == 0); //UI: once the waiting date is reached, even if status is (still) Waiting, it will appear in lists etc as not waiting
 //    ItemStatus status = getStatus();
@@ -12899,9 +12899,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public boolean isValidItemForTimer() {
-        return ((!isDone() && !isWaiting()) //valid if not done and not waiting (so this expr is true for all other status values!)
+        return ((!isDone() && !isWaitingAndSetWaitUntilDateNotReached()) //valid if not done and not waiting (so this expr is true for all other status values!)
                 //TODO!!!! in Timer: check waiting date when skipping, or not, waiting tasks
-                || (isWaiting() && MyPrefs.timerIncludeWaitingTasks.getBoolean()) ////or if waiting, but settings allow to time waiting tasks
+                || (isWaitingAndSetWaitUntilDateNotReached() && MyPrefs.timerIncludeWaitingTasks.getBoolean()) ////or if waiting, but settings allow to time waiting tasks
                 || (isDone() && MyPrefs.timerIncludeDoneTasks.getBoolean())); //or if done, but settings allow to time done tasks
     }
 

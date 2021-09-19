@@ -438,7 +438,7 @@ public class ScreenListOfItemLists extends MyForm {
 //        swipCont.setUIID("ItemListContainer");
 
         if (Config.TEST) {
-            swipCont.setName("ItemListSwipCont-" + itemList.getText());
+            swipCont.setName("ItemListMyDDSwipCont-" + itemList.getText());
         }
 
         if (keepPos != null) {
@@ -627,7 +627,7 @@ public class ScreenListOfItemLists extends MyForm {
         if (false && itemList == ItemListList.getInstance()) {
             numberItems = ItemListList.getInstance().size();
         } else if (itemList == TemplateList.getInstance()) {
-            numberItems = ItemListList.getInstance().size();
+            numberItems = TemplateList.getInstance().size();
         } else if (showNumberUndoneTasks) {
 //            WorkSlotList workSlots = itemList.getWorkSlotListN();
 //         workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0;

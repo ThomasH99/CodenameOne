@@ -360,10 +360,12 @@ public class ScreenLogin extends MyForm {
 //        getContentPane().setScrollVisible(false);
 //        getContentPane().setAlwaysTensile(false); //only scroll if needed(???)
         //hide titlebar: http://stackoverflow.com/questions/42871223/how-do-i-hide-get-rid-the-title-bar-on-a-form-codename-one
+// blog post on native controls: https://www.codenameone.com/blog/native-controls.html        
 //        getToolbar().setUIID("Container");
 //        getToolbar().hideToolbar();
 //        email = new TextField("", "Email", 20, TextArea.EMAILADDR);
-        NTextField email = new NTextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
+        NTextField email = new NTextField(TextField.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
+//         email = new NTextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
         email.setWidth(20);
 //        TextField email = new TextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
         if (MyPrefs.loginStoreEmail.getBoolean()) {
@@ -371,7 +373,8 @@ public class ScreenLogin extends MyForm {
         }
 
 //        password = new TextField("", "Password", 20, TextArea.PASSWORD);
-        password = new NTextField(TextArea.PASSWORD);
+//        password = new NTextField(TextArea.PASSWORD);
+        password = new NTextField(TextField.PASSWORD);
         password.setWidth(20);
 //        password.setHint("Password");
 //        password.addDataChangedListener((type, index) -> {

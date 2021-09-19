@@ -80,13 +80,13 @@ public class ScreenGettingStarted extends MyForm {
 //    };
     private final static String[] full = new String[]{
         "Tips", "Most things in TodoCatalyst are pretty easy. But here are a few tips that are useful to know before you start",
-        "Drag and drop", "You can drag and drop element around to reorder manually sorted lists, simply long-press the task or list title",
+        "Help everywhere", "There is help available almost everywhere. Click the text of task fields, screen titles or settings to reveal/hide it",
+        "Drag and drop", "You can drag and drop element around to reorder manually sorted lists, simply long-press the task, list or category and drop it in its new position",
         "Long-press task status", "Long-press the task status to set a task Waiting or Cancel it",
         "Swipe commands", "In most lists you can swipe an element to access useful functions",
         "Swipe time fields", "To delete a date or duration, left-swipe and press the (x)",
         "Pinch insert tasks", "You can easily insert new tasks (or lists, categories, ...) directly where you want with pinch-insert (squeeze out with two fingers)",
-        "Help everywhere", "There is help available almost everywhere. Click the text of task fields, screen titles or settings to reveal/hide it. Long-press",
-        "Long-press", "Many elements have additional functionality when you long-press, swipe on...",
+//        "Long-press", "Many elements have additional functionality when you long-press, swipe on...",
         //        "Long-press", "In the home screen, long-press one of the Plan/Do/Check sections to expand that and collapse the other sections",
         "Long-press to collapse all list headers", "In sorted lists, long-press a section header to collapse/expand ALL sections at once",
         "Long-press to expand all project subtasks", "Long-press to expand the full hierarchy of a project",

@@ -299,7 +299,7 @@ public class ScreenListOfAlarms extends MyForm {
 //            getContentPane().add(BorderLayout.SOUTH, cancelAllButtonsCont);
             addToSouthOfContentPane(cancelAllButtonsCont, 0);
 //            alarmCont.animateHierarchy(300); //works??
-            alarmCont.animateLayout(ANIMATION_TIME_DEFAULT); //works??
+//            alarmCont.animateLayout(ANIMATION_TIME_DEFAULT); //works??
 //            exitOnEmptyAlarmList = false;
 //        revalidate();
 //        restoreKeepPos();

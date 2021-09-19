@@ -328,21 +328,21 @@ public class ScreenWorkSlot extends MyForm {
         //OWNER
         ItemAndListCommonInterface ownerObj = workSlot.getOwner();
         String ownerText = ""; // = item.getOwner() != null ? ((ItemAndListCommonInterface) item.getOwner()).getText() : ""; //TODO 
-        String ownerLabelTxt = Item.BELONGS_TO; // = item.getOwner() != null ? ((ItemAndListCommonInterface) item.getOwner()).getText() : ""; //TODO 
+        String ownerLabelTxt = WorkSlot.BELONGS_TO; // = item.getOwner() != null ? ((ItemAndListCommonInterface) item.getOwner()).getText() : ""; //TODO 
         if (ownerObj != null) {
             ownerText = ownerObj.getText(); //TODO only call top-level projects for "Project"? 
             if (ownerObj instanceof Item) {
 //                ownerText = Item.PROJECT + ": " + ((Item) ownerObj).getText(); //TODO only call top-level projects for "Project"? 
-                ownerLabelTxt = Item.BELONGS_TO_PROJECT;
+                ownerLabelTxt = WorkSlot.BELONGS_TO_PROJECT;
             } else if (ownerObj instanceof Category) {
 //                ownerText = Category.CATEGORY + ": " + ((Category) ownerObj).getText();
-                ownerLabelTxt = Item.BELONGS_TO_CATEGORY;
+                ownerLabelTxt = WorkSlot.BELONGS_TO_CATEGORY;
             } else if (ownerObj instanceof ItemList) {
 //                ownerText = ItemList.ITEM_LIST + ": " + ((ItemList) ownerObj).getText();
-                ownerLabelTxt = Item.BELONGS_TO_LIST;
+                ownerLabelTxt = WorkSlot.BELONGS_TO_LIST;
             }
         }
-        boolean editOwner = true;
+        boolean editOwner = workSlot.getRepeatRuleN()==null||workSlot.getRepeatRuleN().getRepeatType()==RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT; //UI: cannot (currently) change owner for a repeating workslot
         if (editOwner) {
             SpanButton editOwnerButton = new SpanButton();
             editOwnerButton.setText(workSlot.getOwner() != null ? workSlot.getOwner().getText() : "");
@@ -389,7 +389,8 @@ public class ScreenWorkSlot extends MyForm {
             }
             );
             editOwnerButton.setCommand(editOwnerCmd);
-            content.add(layoutN(Item.PARSE_OWNER_ITEM, Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, false, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+//            content.add(layoutN(Item.PARSE_OWNER_ITEM, Item.BELONGS_TO, editOwnerButton, Item.BELONGS_TO_HELP, false, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
+            content.add(layoutN(Item.PARSE_OWNER_ITEM, ownerLabelTxt, editOwnerButton, WorkSlot.BELONGS_TO_HELP, false, hideIcons ? null : Icons.iconOwner)); //.add(new SpanLabel("Click to move task to other projects or lists"));
 
         } else {
             SpanLabel ownerLabel = new SpanLabel(ownerText);
