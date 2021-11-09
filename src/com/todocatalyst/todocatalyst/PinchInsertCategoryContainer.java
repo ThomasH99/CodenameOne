@@ -63,15 +63,18 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
      * @param itemOrItemListForNewTasks2
      */
 //    public InlineInsertNewCategoryContainer(MyForm myForm, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeElement) {
-    public PinchInsertCategoryContainer(MyForm myForm, Category category, boolean insertBeforeElement) {
-        this(myForm, category, (CategoryList) category.getOwner(), insertBeforeElement);
-    }
+//    public PinchInsertCategoryContainer(MyForm myForm, Category category, boolean insertBeforeElement) {
+//        this(myForm, category, (CategoryList) category.getOwner(), insertBeforeElement);
+//    }
 
-    public PinchInsertCategoryContainer(MyForm form, Category category2, CategoryList categoryList, boolean insertBeforeElement) {
+//    public PinchInsertCategoryContainer(MyForm form, Category category2, CategoryList categoryList, boolean insertBeforeElement) {
+    public PinchInsertCategoryContainer(MyForm form, Category category2, boolean insertBeforeElement) {
+        super();
         this.myForm = form;
         this.category = category2;
         ASSERT.that(categoryList != null, "why itemOrItemListForNewTasks2==null here?");
-        this.categoryList = categoryList;
+//        this.categoryList = categoryList;
+        this.categoryList =  category2.getOwner();
         this.insertBeforeElement = insertBeforeElement;
         Container cont = new Container(new BorderLayout());
         cont.setUIID("InlineInsertCategoryCont");
@@ -98,17 +101,18 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
 //                this.categoryList.addToList(newCategory);
                     insertNewCategoryAndSaveChanges(newCategory);
                     closePinchContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
+                            DAO.getInstance().saveToParseNow((ParseObject) newCategory); //save here, *after* closing pinch so changeEvent triggers correct refresh
                 } else {
-                    closePinchContainer(false);
+                    closePinchContainer(true);
                 }
                 myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
             }
         });
 
-        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
-            textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
+        if (myForm.previousValues.get(SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
+            textEntryField.setText((String) myForm.previousValues.get(SAVE_LOCALLY_INLINE_INSERT_TEXT));
         }
-        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
+        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
         cont.add(BorderLayout.CENTER, textEntryField);
 
@@ -119,7 +123,7 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
                 //TODO!!! Replay: store the state/position of insertContainer. NO, too detailed...
 //                myForm.lastInsertNewElementContainer = null;
                 //if there is a previous container somewhere (not removed/closed by user), then remove when creating a new one
-                closePinchContainer(false);
+                closePinchContainer(true);
             }));
             closeButton.setUIID("CatPinchInsertTextCloseButton");
             cont.add(BorderLayout.WEST, closeButton);
@@ -129,10 +133,10 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
         editNewCmd = MyReplayCommand.create("PinchCreateCategory", "", Icons.iconEdit, (ev) -> {
             if ((newCategory = createNewCategory()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                 myForm.setKeepPos(new KeepInSameScreenPosition(newCategory, this, -1)); //if editing the new task in separate screen, 
-                myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
+                myForm.previousValues.put(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
                 new ScreenCategoryProperties(newCategory, (MyForm) getComponentForm(), () -> {
                     insertNewCategoryAndSaveChanges(newCategory);
-                    myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
+                    myForm.previousValues.remove(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
                     closePinchContainer(true);
                     if(false)myForm.refreshAfterEdit();
                 }).show();
@@ -200,29 +204,30 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
 //        DAO.getInstance().saveNew((ParseObject) categoryList, true);
 //        DAO.getInstance().saveNew((ParseObject) newCategory);
 //        DAO.getInstance().saveNew((ParseObject) categoryList);
-        DAO.getInstance().saveToParseNow((ParseObject) newCategory);
+//        DAO.getInstance().saveToParseNow((ParseObject) newCategory);
 //        DAO.getInstance().saveNewTriggerUpdate();
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newCategory.getObjectIdP());
-        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY, newCategory.getGuid());
+        myForm.previousValues.put(SAVE_LOCALLY_REF_ELT_GUID_KEY, newCategory.getGuid());
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT, false); //always insert *after* just created inline item
-        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
-        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
+        myForm.previousValues.remove(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
+        myForm.previousValues.remove(SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
     }
 
 //    closePinchContainer(boolean stopAddingInlineContainers)
-    public void closePinchContainer(boolean stopAddingInlineContainers) {
+    public void closePinchContainer(boolean stopAddingInlineContainersXXX) {
+        stopAddingInlineContainersXXX=true;
         //UI: close the text field
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParentN(this);
-        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
-        if (true || stopAddingInlineContainers) {
+        myForm.previousValues.remove(SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
+        if (true || stopAddingInlineContainersXXX) {
 //            if(false)
                 myForm.setPinchInsertContainer(null); //remove this as inlineContainer
 //            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
-            myForm.previousValues.removePinchInsertKeys(); //delete the marker on exit
+            removePinchInsertKeys(myForm.previousValues); //delete the marker on exit
             
 //            ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
         }
-        if (parent != null && stopAddingInlineContainers) {
+        if (parent != null && stopAddingInlineContainersXXX) {
             parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
         }
     }
@@ -241,10 +246,10 @@ public class PinchInsertCategoryContainer extends PinchInsertContainer  {
 //            }
 //        }
 //    }
-    @Override
-    public PinchInsertContainer make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
-        return null;
-    }
+//    @Override
+//    public PinchInsertContainer make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
+//        return null;
+//    }
 
     @Override
     public TextArea getTextArea() {

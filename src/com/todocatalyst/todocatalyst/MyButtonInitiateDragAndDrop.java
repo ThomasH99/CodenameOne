@@ -23,12 +23,18 @@ public class MyButtonInitiateDragAndDrop extends SpanButton {
 
     private Component dragAndDropComponent;
     private MyForm.GetBoolean isDragAndDropEnabledFct;
+//    private ItemAndListCommonInterface owner; //need to know if owner is sorted to prevent D&D if so
     int BUZZER_DRAG_ON_DURATION = 50;//100;
 
     MyButtonInitiateDragAndDrop(String text, Component dragAndDropComponent, MyForm.GetBoolean isDragAndDropEnabledFunction) {
+//        this(text, dragAndDropComponent, isDragAndDropEnabledFunction, null);
+//    }
+//
+//    MyButtonInitiateDragAndDrop(String text, Component dragAndDropComponent, MyForm.GetBoolean isDragAndDropEnabledFunction, ItemAndListCommonInterface owner) {
         super(text);
         this.dragAndDropComponent = dragAndDropComponent;
         this.isDragAndDropEnabledFct = isDragAndDropEnabledFunction;
+//        this.owner = owner;
 //        setLeadComponent(dragAndDropComponent);
 //        getTextComponent().setVerticalAlignment(TextArea.CENTER);
 //        getTextComponent().setVerticalAlignment(TextArea.BOTTOM);

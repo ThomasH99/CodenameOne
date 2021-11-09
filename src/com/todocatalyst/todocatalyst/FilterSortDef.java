@@ -487,7 +487,7 @@ public class FilterSortDef extends ParseObject {
         Item.IMPORTANCE_URGENCY,
         Item.IMPORTANCE,
         Item.URGENCY,
-        Item.STATUS};
+        Item.STATUS,};
 
     private static String[] sortFields = new String[]{
         Item.PARSE_DUE_DATE,
@@ -508,7 +508,7 @@ public class FilterSortDef extends ParseObject {
         Item.PARSE_IMPORTANCE_URGENCY_VIRT,
         Item.PARSE_IMPORTANCE,
         Item.PARSE_URGENCY,
-        Item.PARSE_STATUS};
+        Item.PARSE_STATUS,};
 
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
@@ -1729,7 +1729,13 @@ public class FilterSortDef extends ParseObject {
      * @return
      */
     public List sortItemListInLine(List filteredList) {
-        Comparator comp = getSortingComparator();
+        return sortItemListInLine(filteredList, null);
+    }
+
+    public List sortItemListInLine(List filteredList, Comparator comp) {
+        if (comp == null) {
+            comp = getSortingComparator();
+        }
 //        Collections.sort(filteredList, filterPredicate.getSortingComparator());
         if (comp != null) { //skip sort if no sorting set (e.g. Manual)
             Collections.sort(filteredList, comp);
@@ -1759,11 +1765,14 @@ public class FilterSortDef extends ParseObject {
      */
 //    public List<? extends ItemAndListCommonInterface> filterAndSortItemList(List orgList) {
     public List<ItemAndListCommonInterface> filterAndSortItemList(List orgList) {
+        return filterAndSortItemList(orgList,null);
+    }
+    public List<ItemAndListCommonInterface> filterAndSortItemList(List orgList,Comparator comp) {
 //        ItemList<Item> filteredAndSorted = new ItemList(filter(orgList, filterPredicate));
 //        Collections.sort(filteredAndSorted, filterPredicate.getSortingComparator());
 //        filterAndSortList(filteredAndSorted);
         if (isSortOn()) {
-            return sortItemListInLine(filterItemList(orgList));
+            return sortItemListInLine(filterItemList(orgList),comp);
         } else {
             return filterItemList(orgList);
         }

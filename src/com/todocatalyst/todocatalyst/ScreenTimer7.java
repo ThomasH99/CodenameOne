@@ -861,7 +861,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
         MyDurationPicker remainingEffort = new MyDurationPicker("BigTimerEffort", "Button", Icons.myIconFont, Icons.iconRemainingCust, 0, true);
 //            remainingEffort.setDuration(timedItem.getRemainingEffort());
 //        remainingEffort.setDuration(timedItemN != null ? timedItemN.getRemainingForTaskItselfFromParse() : 0);
-        remainingEffort.setDuration(timedItemN != null ? timedItemN.getRemainingForTaskItself(): 0);
+        remainingEffort.setDuration(timedItemN != null ? timedItemN.getRemainingForTaskItself() : 0);
 
         //BUZZER timer
         final int BUZZER_DURATION = 300;
@@ -952,6 +952,10 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                     if (timedItemN.getStatus() == ItemStatus.CREATED
                             && timerInstanceN.getElapsedTotalTime() >= MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt() * MyDate.SECOND_IN_MILLISECONDS) {
                         timedItemN.setStatus(ItemStatus.ONGOING, false); //update status, timer will be updated on callback
+                        timedItemN.setEditedDateToNow();
+                        DAO.getInstance().saveToParseLater(timedItemN);
+                        TimerStack2.getInstance().fireChangedEvent();
+                        DAO.getInstance().triggerParseUpdate();
                     }
                 });
 //                setTimedItemToOngoing.schedule(((int) ((long) MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds.getInt()) * MyDate.SECOND_IN_MILLISECONDS
@@ -1026,10 +1030,11 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                     if (!Objects.equals(description.getText(), timedItemN.getText())) { //check if text is different since actionListener may be called twice in a row
 //                    TimerStack2.getTimedItemN().setText(description.getText());
                         timedItemN.setText(description.getText());
+                        timedItemN.setEditedDateToNow(); //TODO: do this in e.g. saveToParse or Item.onSave if any of the relevant fields are dirty?!
 //                    DAO.getInstance().saveToParseNow(TimerStack2.getTimedItemN());
 //                    DAO.getInstance().saveToParseLater(TimerStack2.getTimedItemN());
-                        DAO.getInstance().saveToParseLater(timedItemN);
                         TimerStack2.getInstance().fireChangedEvent();
+                        DAO.getInstance().saveToParseLater(timedItemN);
                         DAO.getInstance().triggerParseUpdate();
                     }
                 }
@@ -1311,8 +1316,9 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                     timedItemN.setEstimateForTask(estimate.getDuration(), false); //saved immediately on edit
 //                    DAO.getInstance().saveToParseNow(TimerStack2.getTimedItemN());
 //                    DAO.getInstance().saveToParseLater(TimerStack2.getTimedItemN());
-                    DAO.getInstance().saveToParseLater(timedItemN);
+                    timedItemN.setEditedDateToNow();
                     TimerStack2.getInstance().fireChangedEvent();
+                    DAO.getInstance().saveToParseLater(timedItemN);
                     DAO.getInstance().triggerParseUpdate();
                 }
             });
@@ -1331,8 +1337,9 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
 //                    TimerStack2.getTimedItemN().setRemainingForTaskItself(remainingEffort.getDuration(), false); //saved immediately on edit
                     timedItemN.setRemainingForTaskItself(remainingEffort.getDuration(), false); //saved immediately on edit
 //                    DAO.getInstance().saveToParseNow(TimerStack2.getTimedItemN());
-                    DAO.getInstance().saveToParseLater(timedItemN);
+                    timedItemN.setEditedDateToNow();
                     TimerStack2.getInstance().fireChangedEvent();
+                    DAO.getInstance().saveToParseLater(timedItemN);
                     DAO.getInstance().triggerParseUpdate();
                 }
             });
@@ -1430,6 +1437,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                 } else {
 //                    TimerStack2.getTimedItemN().setComment(comment.getText());
                     timedItemN.setComment(comment.getText());
+                    timedItemN.setEditedDateToNow();
 //                    DAO.getInstance().saveToParseNow(TimerStack2.getTimedItemN());
                     TimerStack2.getInstance().fireChangedEvent();
 //                    DAO.getInstance().saveToParseLater(TimerStack2.getTimedItemN());
@@ -1501,6 +1509,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
 //                    timedItem.setStatus(ItemStatus.WAITING, true, true, true, true);
                     timedItemN.setStatus(ItemStatus.WAITING);
 //                    DAO.getInstance().saveToParseNow(timedItemN);
+                    timedItemN.setEditedDateToNow();
                     timedItemN.fireChangeEvent();
                     DAO.getInstance().triggerParseUpdate(); //trigger save of all changes after user interaction
                 }, "TimerCmdSetTaskWaitingAndGotoNextTaskOrExit")); //"Wait"), 
@@ -1579,7 +1588,8 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                 Container autoOptionsCont = new Container(new GridLayout(2));
 
                 autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(null, MSG_AUTO_START_BUTTON,
-                        () -> timerInstanceN.isAutoStartTimer(), (b) -> timerInstanceN.setAutoStartTimer(b), () -> DAO.getInstance().saveToParseNow(timerInstanceN), MSG_AUTO_START_BUTTON_HELP));
+                        () -> timerInstanceN.isAutoStartTimer(), (b) -> timerInstanceN.setAutoStartTimer(b), () -> DAO.getInstance().saveToParseNow(timerInstanceN),
+                        MSG_AUTO_START_BUTTON_HELP, "TimerSwitch"));
 //                autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(MSG_AUTO_NEXT_BUTTON, MSG_AUTO_NEXT_BUTTON_HELP, () -> timerInstanceN.isAutoGotoNextTask(), (b) -> timerInstanceN.setAutoGotoNextTask(b)));
 
                 autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(null, MSG_AUTO_NEXT_BUTTON,
@@ -1594,7 +1604,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                             addNewTasksCont.getComponentForm().animateLayout(ANIMATION_TIME_DEFAULT);
                             DAO.getInstance().saveToParseNow(timerInstanceN);
                         },
-                        MSG_AUTO_NEXT_BUTTON_HELP));
+                        MSG_AUTO_NEXT_BUTTON_HELP, "TimerSwitch"));
 //            timerButtonsContainer.add(GridLayout.encloseIn(2,
 //                    MyBorderLayout.centerEastWest(null, new Switch(), new SpanLabel("Auto-next")),
 //                    MyBorderLayout.centerEastWest(null, new Switch(), new SpanLabel("Auto-start"))
@@ -1612,6 +1622,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                 completedButton = new Button(CommandTracked.create("Completed", Icons.iconItemStatusDone,
                         (e) -> {
                             timedItemN.setStatus(ItemStatus.DONE);
+                            timedItemN.setEditedDateToNow();
                             timedItemN.fireChangeEvent(); //prefer fireChangeEvent to DAO.save to avoid a double save (status chg often impacts timer which triggers a save of item)
                             DAO.getInstance().triggerParseUpdate(); //trigger save of all changes after user interaction
                         },

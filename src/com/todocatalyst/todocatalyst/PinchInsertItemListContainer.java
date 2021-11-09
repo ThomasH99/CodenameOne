@@ -62,7 +62,10 @@ public class PinchInsertItemListContainer extends PinchInsertContainer {
      * @param myForm
      * @param refItemList
      */
-    public PinchInsertItemListContainer(MyForm form, ItemList refItemList, ItemListList ownerList, boolean insertBeforeRefElement) {
+//    public PinchInsertItemListContainer(MyForm form, ItemList refItemList, ItemListList ownerList, boolean insertBeforeRefElement) {
+    public PinchInsertItemListContainer(MyForm form, ItemList refItemList, boolean insertBeforeRefElement) {
+        super();
+
 //        this(myForm, ItemListList.getInstance(), refItemList, insertBeforeRefElement);
 //    }
 //
@@ -72,11 +75,14 @@ public class PinchInsertItemListContainer extends PinchInsertContainer {
         ASSERT.that(refItemList != null, () -> "why itemOrItemListForNewTasks2==null here?");
 //        this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
 
-        if (ownerList != null) {
-            this.itemOrItemListForNewItemLists = ownerList;
-        } else if (refItemList != null) {
-            this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
+        if (false) {
+//            if (ownerList != null) {
+//                this.itemOrItemListForNewItemLists = ownerList;
+//            } else if (refItemList != null) {
+//                this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
+//            }
         }
+        this.itemOrItemListForNewItemLists = (ItemListList) refItemList.getOwner();
 
         this.insertBeforeRefElement = insertBeforeRefElement;
 
@@ -103,6 +109,7 @@ public class PinchInsertItemListContainer extends PinchInsertContainer {
 //                            myForm.setKeepPos(new KeepInSameScreenPosition(lastCreatedItem != null ? lastCreatedItem : element, this, -1)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                     insertNewItemListAndSaveChanges(newItemList);
                     closePinchContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
+                    DAO.getInstance().saveToParseNow((ParseObject) newItemList); //save here, *after* closing pinch so changeEvent triggers correct refresh
                 } else {
 //                    closePinchContainer(false); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
                     closePinchContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
@@ -111,10 +118,10 @@ public class PinchInsertItemListContainer extends PinchInsertContainer {
             }
         });
 
-        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
-            textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
+        if (myForm.previousValues.get(SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
+            textEntryField.setText((String) myForm.previousValues.get(SAVE_LOCALLY_INLINE_INSERT_TEXT));
         }
-        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
+        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
 //        contForTextEntry.add(BorderLayout.CENTER, textEntryField);
         cont.add(MyBorderLayout.CENTER, textEntryField);
@@ -135,11 +142,12 @@ public class PinchInsertItemListContainer extends PinchInsertContainer {
         editNewCmd = MyReplayCommand.create("PinchCreateItemList", "", Icons.iconEdit, (ev) -> {
             if ((newItemList = createNewItemList()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                 myForm.setKeepPos(new KeepInSameScreenPosition(newItemList, this, -1)); //if editing the new task in separate screen, 
-                myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
+                myForm.previousValues.put(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
                 new ScreenItemListProperties(newItemList, (MyForm) getComponentForm(), () -> {
                     insertNewItemListAndSaveChanges(newItemList);
-                    myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
+                    myForm.previousValues.remove(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
                     closePinchContainer(true);
+                    DAO.getInstance().saveToParseNow((ParseObject) newItemList); //save here, *after* closing pinch so changeEvent triggers correct refresh
 //                    if(false)myForm.refreshAfterEdit();
                 }).show();
             } else {
@@ -205,34 +213,35 @@ public class PinchInsertItemListContainer extends PinchInsertContainer {
 //        }
 //</editor-fold>
         itemOrItemListForNewItemLists.addToList(newItemList, refItemList, !insertBeforeRefElement); //add after item
-        ASSERT.that(myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT) == null,
-                "old value left for SAVE_LOCALLY_INSERT_BEFORE_REF_ELT=" + myForm.previousValues.get(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT));
+        ASSERT.that(myForm.previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT) == null,
+                "old value left for SAVE_LOCALLY_INSERT_BEFORE_REF_ELT=" + myForm.previousValues.get(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT));
 //        DAO.getInstance().saveNew((ParseObject)newItemList, () -> myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP()));
 //        DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewItemLists,true);
 //        DAO.getInstance().saveNew((ParseObject) newItemList);
 //        DAO.getInstance().saveNew((ParseObject) itemOrItemListForNewItemLists);
 //        DAO.getInstance().saveNewTriggerUpdate();
-        DAO.getInstance().saveToParseNow((ParseObject) newItemList);
+//        DAO.getInstance().saveToParseNow((ParseObject) newItemList);
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY, newItemList.getObjectIdP());
-        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY, newItemList.getGuid());
+        myForm.previousValues.put(SAVE_LOCALLY_REF_ELT_GUID_KEY, newItemList.getGuid());
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item
-        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
-        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
+        myForm.previousValues.remove(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
+        myForm.previousValues.remove(SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
     }
 
 //    public void closePinchCont(boolean newListInserted) {
-    public void closePinchContainer(boolean stopAddingInlineContainers) {
+    public void closePinchContainer(boolean stopAddingInlineContainersXXX) {
         //UI: close the text field
+        stopAddingInlineContainersXXX=true;
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParentN(this);
-        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
-        if (true || stopAddingInlineContainers) {
+        myForm.previousValues.remove(SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
+        if (true || stopAddingInlineContainersXXX) {
 //            if(false)
             myForm.setPinchInsertContainer(null); //remove this as inlineContainer
 //            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
-            myForm.previousValues.removePinchInsertKeys(); //delete the marker on exit
+            removePinchInsertKeys(myForm.previousValues); //delete the marker on exit
 //            ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
         }
-        if (parent != null && stopAddingInlineContainers) { //only animate if container was closed (otherwise slow update will mean 
+        if (parent != null && stopAddingInlineContainersXXX) { //only animate if container was closed (otherwise slow update will mean 
             parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT); //parent of parent since pinchcontainer is kept inside a variable height container
         }
     }
@@ -242,22 +251,21 @@ public class PinchInsertItemListContainer extends PinchInsertContainer {
      *
      * @param f
      */
-    public void setTextFieldEditableOnShow(Form f) {
-        if (textEntryField != null) {
-            if (false) {
-                textEntryField.requestFocus();
-            } else {
-                textEntryField.startEditingAsync();
-            }
-        }
-    }
+//    public void setTextFieldEditableOnShowXXX(Form f) {
+//        if (textEntryField != null) {
+//            if (false) {
+//                textEntryField.requestFocus();
+//            } else {
+//                textEntryField.startEditingAsync();
+//            }
+//        }
+//    }
 
-    @Override
-    public PinchInsertContainer make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
-        //no big need to create multiple categories in a row
-        return null;
-    }
-
+//    @Override
+//    public PinchInsertContainer make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
+//        //no big need to create multiple categories in a row
+//        return null;
+//    }
     @Override
     public TextArea getTextArea() {
         return textEntryField;

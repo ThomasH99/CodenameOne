@@ -90,6 +90,7 @@ public class ScreenCategoryPicker extends MyForm {
 //        setScrollableY(true); //disable scrolling of form, necessary to let lists handle their own scrolling 
 //        addSearchToTitle();
 //        setToolbar(new Toolbar());
+        previousValues = new SaveEditedValuesLocally(this, getUniqueFormId(), true);
         addCommandsToToolbar(getToolbar());
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) getToolbar().addSearchCommand((e) -> {
@@ -202,7 +203,9 @@ public class ScreenCategoryPicker extends MyForm {
 //        toolbar.addSearchCommand(makeSearchFunctionSimple(listOfAllCategories, () -> getContentPane()), MyPrefs.defaultIconSizeInMM.getFloat());
 //        getToolbar().addCommandToRightBar(new MySearchCommand(getContentPane(), makeSearchFunctionSimple(listOfAllCategories)));
 //        toolbar.addCommandToRightBar(new MySearchCommand(getContentPane(), makeSearchFunctionSimple(listOfAllCategories)));
-        setSearchCmd(new MySearchCommand(this, makeSearchFunctionSimple(listOfAllCategories)));
+//        setSearchCmd(new MySearchCommand(this, makeSearchFunctionSimple(listOfAllCategories)));
+//        setSearchCmd(new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(listOfAllCategories)));
+        setSearchCmd(new MySearchCommand(this, listOfAllCategories));
         toolbar.addCommandToRightBar(getSearchCmd());
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -244,7 +247,6 @@ public class ScreenCategoryPicker extends MyForm {
             toolbar.addCommandToOverflowMenu(makeCancelCommand());
 
         }
-
 
     }
 

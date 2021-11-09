@@ -63,9 +63,9 @@ public class ScreenLogin extends MyForm {
 //    private final static String welcome3 = "Master priorities. Master time. \nTime-saving features like templates, copy-paste, multiple selections, ...";
 //    private final static String welcome4 = "Time-saving features like templates, copy-paste, multiple selections, ...";
     private final String FORGOT_PASSWORD = "Forgot password";
-    NTextField email;
+    TextField email;
 
-    NTextField password;
+    TextField password;
     private boolean test;
 
     public ScreenLogin(MyForm previousForm, boolean forTesting) {
@@ -341,10 +341,10 @@ public class ScreenLogin extends MyForm {
 
         getContentPane().setLayout(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_CENTER));
 //        makeContainerBoxY();
-        container = new Container(BoxLayout.y());
-        container.setScrollableY(false);
+        mainContentContainer = new Container(BoxLayout.y());
+        mainContentContainer.setScrollableY(false);
 //        container.setScrollableY(true);
-        getContentPane().addComponent(BorderLayout.SOUTH, container);
+        getContentPane().addComponent(BorderLayout.SOUTH, mainContentContainer);
 
         //TODO intro quiz: you tired of running into limitations in (miss features) in other ToDO apps, your tasks tend to pile up endlessly?, it is important for to be fully control/appear professional?
 //        super("Welcome to TodoCatalyst", BoxLayout.y());
@@ -363,8 +363,8 @@ public class ScreenLogin extends MyForm {
 // blog post on native controls: https://www.codenameone.com/blog/native-controls.html        
 //        getToolbar().setUIID("Container");
 //        getToolbar().hideToolbar();
-//        email = new TextField("", "Email", 20, TextArea.EMAILADDR);
-        NTextField email = new NTextField(TextField.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
+        email = new TextField("", "Email", 20, TextArea.EMAILADDR);
+//        NTextField email = new NTextField(TextField.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
 //         email = new NTextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
         email.setWidth(20);
 //        TextField email = new TextField(TextArea.USERNAME); //does USERNAME remember login (where EMAILADDR doesn't seem to)?
@@ -372,9 +372,9 @@ public class ScreenLogin extends MyForm {
             email.setText(MyPrefs.loginEmail.getString());
         }
 
-//        password = new TextField("", "Password", 20, TextArea.PASSWORD);
+        password = new TextField("", "Password", 20, TextArea.PASSWORD);
 //        password = new NTextField(TextArea.PASSWORD);
-        password = new NTextField(TextField.PASSWORD);
+//        password = new NTextField(TextField.PASSWORD);
         password.setWidth(20);
 //        password.setHint("Password");
 //        password.addDataChangedListener((type, index) -> {
@@ -398,7 +398,8 @@ public class ScreenLogin extends MyForm {
 //            password.setUIID("Password" + passWordStrength);
 //            password.repaint();
 //        });
-        password.addChangeListener(passwdStrengthActionListener);
+//        password.addChangeListener(passwdStrengthActionListener);
+        password.addActionListener(passwdStrengthActionListener);
         password.setHidden(true); //hide by default
 //        NTextField passwordNative = new NTextField(TextArea.PASSWORD); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
 //        TextComponentPassword password = new TextComponentPassword(); //https://www.codenameone.com/blog/native-controls.html,         new NTextField(TextField.PASSWORD)
@@ -439,19 +440,19 @@ public class ScreenLogin extends MyForm {
         }
 //        addComponent(backToSignupSignIn);
 
-        container.addComponent(signUp);
-        container.addComponent(email);
-        container.addComponent(connect);
-        container.addComponent(createAccount);
-        container.addComponent(createAccountWithRandomPassword);
-        container.addComponent(password);
-        container.addComponent(createAccountHelp);
-        container.addComponent(createAccountLater);
-        container.addComponent(createAccountLaterHelp);
+        mainContentContainer.addComponent(signUp);
+        mainContentContainer.addComponent(email);
+        mainContentContainer.addComponent(connect);
+        mainContentContainer.addComponent(createAccount);
+        mainContentContainer.addComponent(createAccountWithRandomPassword);
+        mainContentContainer.addComponent(password);
+        mainContentContainer.addComponent(createAccountHelp);
+        mainContentContainer.addComponent(createAccountLater);
+        mainContentContainer.addComponent(createAccountLaterHelp);
         getContentPane().addComponent(BorderLayout.NORTH, BoxLayout.encloseXRight(login));
-        container.addComponent(forgottenPassword);
+        mainContentContainer.addComponent(forgottenPassword);
 
-        container.addComponent(backToSignupSignIn);
+        mainContentContainer.addComponent(backToSignupSignIn);
 
         //hide everything except the two first buttons to chose Signin or SIgnUp
         email.setHidden(true);
@@ -590,7 +591,7 @@ public class ScreenLogin extends MyForm {
 //                new Dialog("Log in unsuccesful", errorMsg, "OK", null);
             }
 //            ScreenLogin.this.getContentPane().animateLayout(ANIMATION_TIME_DEFAULT);
-            container.animateLayout(ANIMATION_TIME_DEFAULT);
+            mainContentContainer.animateLayout(ANIMATION_TIME_DEFAULT);
         };
 //        connect.setCommand(Command.create("Connect", Icons.iconPerson, (ev) -> { //Start/login**
         connect.setCommand(Command.createMaterial("Log in", Icons.iconPerson, logInActionListener));

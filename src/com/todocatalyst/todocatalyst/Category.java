@@ -920,10 +920,11 @@ public class Category<E extends ItemAndListCommonInterface> extends ItemList imp
     public boolean addItemToCategory(Item item, Item refItem, boolean addCategoryToItem, boolean insertAfterOrEndOfList) {
         if (item != null) {
             int insertIndex;
+            List listFull=getListFull();
             if (refItem != null) {
-                insertIndex = getListFull().indexOf(refItem) + (insertAfterOrEndOfList ? 1 : 0);
+                insertIndex = listFull.indexOf(refItem) + (insertAfterOrEndOfList ? 1 : 0);
             } else {
-                insertIndex = insertAfterOrEndOfList ? getListFull().size() : 0;
+                insertIndex = insertAfterOrEndOfList ? listFull.size() : 0;
             }
 //            addItemToCategory(item, insertIndex,addCategoryToItem);
 //            addItemAtIndex(item, insertIndex);

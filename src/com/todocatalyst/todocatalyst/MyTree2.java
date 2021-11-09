@@ -491,7 +491,10 @@ public class MyTree2 extends ContainerScrollY {
         }
         //else create new container:
         ContainerScrollY dest = new ContainerScrollY(new BoxLayout(BoxLayout.Y_AXIS));
-        dest.setName("ExpandedSubtasks");
+        if (Config.TEST) {
+            MyDragAndDropSwipeableContainer myDD = MyDragAndDropSwipeableContainer.findParentMyDDCont(parent);
+            dest.setName("ExpandedSubtasks of " + (myDD instanceof MyDragAndDropSwipeableContainer ? myDD.getDragAndDropObject().toString() : ""));
+        }
         dest.setUIID("ExpandedList");
         parent.addComponent(BorderLayout.CENTER, dest);
         return dest;
@@ -1537,10 +1540,16 @@ public class MyTree2 extends ContainerScrollY {
 //</editor-fold>
                         TodaySortOrder sortBy = item.getTodaySortOrder();
                         switch (sortBy) {
+                            //UI: for now, don't split tasks that are due today into groups based on Created/Ongoging/Waiting status (should be visible enough from task symbol?!)
+                            //NB! the decision to split is in Item.getTodaySortOrder() based on a setting
                             case DUE_TODAY_CREATED:
-                            case DUE_TODAY_ONGOING:
-                            case DUE_TODAY_WAITING:
                                 newStr = Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDate());
+                                break;
+                            case DUE_TODAY_ONGOING:
+                                newStr = Item.DUE_DATE + " " +ItemStatus.ONGOING.getName()+" "+ MyDate.formatDateNew(item.getDueDate());
+                                break;
+                            case DUE_TODAY_WAITING:
+                                newStr = Item.DUE_DATE + " " +ItemStatus.WAITING.getName()+" "+ MyDate.formatDateNew(item.getDueDate());
                                 break;
                             case WAITING_TODAY:
                                 newStr = Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitUntilDate());
@@ -1549,6 +1558,22 @@ public class MyTree2 extends ContainerScrollY {
 //                            case STARTING_TODAY_ONGOING:
 //                            case STARTING_TODAY_WAITING:
                                 newStr = Item.START_BY_TIME + " " + MyDate.formatDateNew(item.getStartByDateD());
+                                break;
+                            case STARTING_TODAY_WORKSLOT: //SHOULD NEVER BE USED, only else below for WorkSlot!
+                                ASSERT.that(false,"should never happen");
+                                newStr = WorkSlot.WORKSLOT + " " + MyDate.formatDateNew(item.getStartByDateD());
+                                break;
+                            case OVERDUE_TODAY:
+                                newStr = Item.OVERDUE + " " + MyDate.formatDateNew(item.getDueDate());
+                                break;
+                            case ALARM_TODAY:
+                                newStr = Item.ALARM_DATE + " " + MyDate.formatDateNew(item.getAlarmDate());
+                                break;
+                            case WAITING_ALARM:
+                                newStr = Item.WAITING_ALARM_DATE + " " + MyDate.formatDateNew(item.getWaitingAlarmDate());
+                                break;
+                            default:
+                                newStr = "Other";
                                 break;
                         }
                         break;
@@ -1575,8 +1600,8 @@ public class MyTree2 extends ContainerScrollY {
             } else if (current instanceof WorkSlot) {
                 WorkSlot workSlot = (WorkSlot) current;
                 switch (parseId) {
-                    case WorkSlot.PARSE_START_TIME:
-                        newStr = getDiffStr(previousStickyStr, WorkSlot.START_TIME + " " + MyDate.formatDateNew(workSlot.getStartAdjusted(MyDate.currentTimeMillis()))); //UI: use adjusted, so a workslot stretching over midnight will get the right date after midnignt
+                    case FilterSortDef.FILTER_SORT_TODAY_VIEW:
+                        newStr = getDiffStr(previousStickyStr, WorkSlot.WORKSLOT + " " + WorkSlot.START_TIME + " " + MyDate.formatDateNew(workSlot.getStartAdjusted(MyDate.currentTimeMillis()))); //UI: use adjusted, so a workslot stretching over midnight will get the right date after midnignt
                         break;
                 }
             }

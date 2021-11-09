@@ -45,10 +45,10 @@ public class ScreenSettings extends ScreenSettingsCommon {
         });
         setUniqueFormId("ScreenSettings");
     }
-    
+
     protected static Component layoutN(String fieldLabelTxt, Button editSetting, String help) { //normal edit field with [>]e
         editSetting.setUIID("SettingMenu");
-        Button editFieldButton = new Button("",Icons.iconEdit,"IconEdit");
+        Button editFieldButton = new Button("", Icons.iconEdit, "IconEdit");
 //        Button editFieldButton = new Button("","IconEdit");
         editFieldButton.setMaterialIcon(Icons.iconEdit);
         Container cont = BorderLayout.centerEastWest(null, editFieldButton, editSetting);
@@ -56,7 +56,6 @@ public class ScreenSettings extends ScreenSettingsCommon {
         cont.setLeadComponent(editSetting);
         return cont;
     }
-    
 
     /**
      * This method shows the main user interface of the app
@@ -66,6 +65,17 @@ public class ScreenSettings extends ScreenSettingsCommon {
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     @Override
     protected void buildContentPane(Container content) {
+
+//                    toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Repair", ScreenRepair.SCREEN_TITLE, Icons.iconRepair, (e) -> {
+////                new ScreenListOfCategories("Categories", new ItemList(DAO.getInstance().getAllCategories()), ScreenMain.this, (i)->{}).show();
+//                new ScreenRepair(ScreenMain.this).show();
+//            }
+//            ));
+        if (MyPrefs.productionView.getBoolean()) {
+            content.add(layoutN("", new Button(MyReplayCommand.createMaterial("Repair", Icons.iconRepair, (e) -> {
+                new ScreenRepair(this).show();
+            })), "**"));
+        }
 
         content.add(layoutN("", new Button(MyReplayCommand.createMaterial("Global Settings", Icons.iconSettings, (e) -> {
             new ScreenGlobalSettings(this).show();
@@ -79,7 +89,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
             new ScreenSettingsToday(this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("Tasks", Icons.iconMainAllTasksCust, Icons.myIconFont, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create("Task settings", Icons.iconMainAllTasksCust, Icons.myIconFont, (e) -> {
             new ScreenSettingsItem(null, this, null).show();
         })), "**"));
 
@@ -111,7 +121,7 @@ public class ScreenSettings extends ScreenSettingsCommon {
             new ScreenSettingsRepeatRules(this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create(WorkSlot.WORKSLOT+" settings", Icons.iconMainWorkSlots, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(WorkSlot.WORKSLOT + " settings", Icons.iconMainWorkSlots, (e) -> {
             new ScreenSettingsWorkSlot(this, null).show();
         })), "**"));
 

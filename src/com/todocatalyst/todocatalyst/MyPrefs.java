@@ -94,10 +94,10 @@ public class MyPrefs {
 
     //DRAG AND DROP
     static PrefEntry dragDropAsSubtaskEnabled
-            = new PrefEntry("Drag and drop to right edge of screen inserts as subtask", "dragDropAsSubtaskEnabled", prod ? false : true, ""); 
+            = new PrefEntry("Drag and drop to right edge of screen inserts as subtask", "dragDropAsSubtaskEnabled", prod ? false : true, "");
 
     static PrefEntry dragDropAsSupertaskEnabled
-            = new PrefEntry("Drag and drop to left edge of screen inserts tasks at level above", "dragDropAsSupertaskEnabled", prod ? false : true, ""); 
+            = new PrefEntry("Drag and drop to left edge of screen inserts tasks at level above", "dragDropAsSupertaskEnabled", prod ? false : true, "");
 
 //    static PrefEntry dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask
     static PrefEntry dropZoneWidthInMillimetersForDroppingAsSubtaskOrSuperTask
@@ -105,7 +105,10 @@ public class MyPrefs {
                     "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", prod ? 5 : 10, "**");
     static PrefEntry simulatedPinchZoneWidth
             = new PrefEntry("Approximate width in millimeters of center screen zone where dragging will simulate a two finger pinch",
-                    "simulatedPinchZoneWidth", prod ? 8 : 10, "**");
+                    "simulatedPinchZoneWidth",  8, "**");
+    static PrefEntry simulatedPinchRightMargin
+            = new PrefEntry("Approximate width in millimeters of center screen zone where dragging will simulate a two finger pinch",
+                    "simulatedPinchRightMargin",  0 , "**");
 
 //    static PrefEntry dragDropLeftDropZoneWidth
 //            = new PrefEntry("Width of the left-hand drop zone (%)", "dragDropLeftDropZoneWidth", 10, ""); 
@@ -114,7 +117,7 @@ public class MyPrefs {
 //            = new PrefEntry("Width of the right-hand drop zone (%)", "dragDropRightDropZoneWidth", 10, ""); 
     //Edit ITEM screen - Screenitem2
     static PrefEntry itemEditEnableSwipeBetweenTabs
-            = new PrefEntry("Enable swiping between task details", "itemEditEnableSwipeBetweenTabs", prod ? true : true, ""); 
+            = new PrefEntry("Enable swiping between task details", "itemEditEnableSwipeBetweenTabs", prod ? true : true, "");
 
     //TIMER - ScreenTimer6
     static PrefEntry timerAutomaticallyStartTimer
@@ -149,7 +152,7 @@ public class MyPrefs {
 
     static PrefEntry timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds
             = new PrefEntry("Minimum timer threshold (seconds)", "timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds", (int) (prod ? 15 : 5), "Tasks will not be marked ongoing and the time will not be saved until after this number seconds. Useful to avoid that skipping a task in Timer marks it ongoing"); //, "Reminder vibration interval when Timer is running");
-    
+
     static PrefEntry timerMaxDurationMillis
             = new PrefEntry("Maximum time for the Timer (hh:mm)", "timerMaxDurationMillis", (int) (prod ? 99 * MyDate.HOUR_IN_MILISECONDS + 59 * MyDate.MINUTE_IN_MILLISECONDS : 1 * MyDate.HOUR_IN_MILISECONDS), "Tasks will not be marked ongoing and the time will not be saved until after this number seconds. Useful to avoid that skipping a task in Timer marks it ongoing"); //, "Reminder vibration interval when Timer is running");
 
@@ -222,33 +225,32 @@ public class MyPrefs {
                     prod ? false : false, "**");
     static PrefEntry timerEnableRestartOnLists
             = new PrefEntry("Enable Timer to restart over on a timed list, for example if the previously timed task is no longer in the list",
-                    "enableTimerToRestartOnLists", prod ? false : false,                    "**");
+                    "enableTimerToRestartOnLists", prod ? false : false, "**");
     static PrefEntry timerAskBeforeRestartingOnList
             = new PrefEntry("Ask before Timer wrapping around to start of timed list",
-                    "timerAskBeforeRestartingOnList", prod ? false : false,                    "**");
+                    "timerAskBeforeRestartingOnList", prod ? false : false, "**");
     static PrefEntry timerAskBeforeStartingOnNewElement
             = new PrefEntry("Ask before starting Timer starts on new task or list always If Possible to start **Always show new timers in current screenshow",
                     "timerAskBeforeStartingOnNewElement", prod ? true : true, "**");
     static PrefEntry timerMayPauseAlreadyRunningTimer
             = new PrefEntry("Starting Timer on a new task or list will pause an already running timer", "timerMayPauseAlreadyRunningTimer", prod ? true : true,
                     "**");
-    static PrefEntry timerAddQuotationMarksToSourceHierarchy 
+    static PrefEntry timerAddQuotationMarksToSourceHierarchy
             = new PrefEntry("Add quotation marks when showing the hierarchy of the timed tasks",
                     "timerAddQuotationMarksToSourceHierarchy", prod ? true : true, "**");
-    static PrefEntry timerSwipeStartOnlyTimesSelectedTask 
+    static PrefEntry timerSwipeStartOnlyTimesSelectedTask
             = new PrefEntry("Swipe-starting the Timer only times the selected task (does not continue for following tasks in list)",
                     "timerSwipeStartOnlyTimesSelectedTask", prod ? false : true, "**");
-    static PrefEntry timerSetInterruptedTaskEvenForPausedTimer 
+    static PrefEntry timerSetInterruptedTaskEvenForPausedTimer
             = new PrefEntry("**Mark a task as interrupted even if timer was paused", //TODO: improve description if made available to users
                     "timerSetInterruptedTaskEvenForPausedTimer", prod ? false : true, "**");
-    static PrefEntry timerAddNewTaskToTimedListInsteadOfTimedProject 
-            = new PrefEntry("Add new tasks in Timer to timed list/category instead of timed project", 
+    static PrefEntry timerAddNewTaskToTimedListInsteadOfTimedProject
+            = new PrefEntry("Add new tasks in Timer to timed list/category instead of timed project",
                     "timerAddNewTaskToTimedListInsteadOfTimedProject", prod ? false : false, "**");
-    static PrefEntry timerShowInterruptedTimerListExpanded 
-            = new PrefEntry("**", 
+    static PrefEntry timerShowInterruptedTimerListExpanded
+            = new PrefEntry("**",
                     "timerShowInterruptedTimerListExpanded", prod ? false : false, "**");
 
-    
     static PrefEntry hideIconsInEditTaskScreen //also used for SCreenWorkSlot!
             = new PrefEntry("Hide the icons when editing to save screen space",
                     "hideIconsInEditTaskScreen", prod ? false : false, "Get a cleaner or more space-efficient look");
@@ -281,9 +283,17 @@ public class MyPrefs {
             = new PrefEntry("Enable Reminders on this device", "alarmsActivatedOnThisDevice", prod ? true : true, "**"); //alarms activated by default
 
     static PrefEntry alarmSoundFile
-            = new PrefEntry("**", "alarmSoundFile", "notification_sound_Cuckoo_bird_sound.mp3", "**");
+            //            = new PrefEntry("**", "alarmSoundFile", "notification_sound_Cuckoo_bird_sound.mp3", "**");
+            //            = new PrefEntry("**", "alarmSoundFile", "notification_sound_bbm.mp3", "**");
+            = new PrefEntry("**", "alarmSoundFile", "bbm_reminder_active.mp3", "**");
+    static PrefEntry alarmSoundFileLocalNotif
+            //            = new PrefEntry("**", "alarmSoundFile", "notification_sound_Cuckoo_bird_sound.mp3", "**");
+            //            = new PrefEntry("**", "alarmSoundFile", "c.mp3", "**");
+            = new PrefEntry("**", "alarmSoundFileLocalNotif", "notification_sound_bbm.mp3", "**");
     static PrefEntry alarmPlayBuiltinAlarmSound
             = new PrefEntry("Use built in alarm sound", "alarmPlayBuiltinAlarmSound", prod ? true : true, "When adjusting the snooze time of a task manually, the value is kept as default for other tasks, making it easy to snooze several tasks with the same duration. When not set, the Picker is initialized with the default value"); //alarms activated by default
+    static PrefEntry alarmSoundActivated
+            = new PrefEntry("Reminder sound enabled", "alarmSoundActivated", prod ? true : true, "**"); //alarms activated by default
 
     static PrefEntry alarmIntervalBetweenAlarmsRepeatsMillisInMinutes
             = new PrefEntry("Minutes between reminder notifications", "alarmIntervalBetweenAlarmsRepeatsMillisInMinutes", prod ? 5 : 1, "Defines the minutes between the repeats of a reminder. Chose 0 to not repeat."); //alarms activated by default
@@ -407,6 +417,8 @@ public class MyPrefs {
                     prod ? 1 : 3, "Allows you to immediately make edits to the just created template"); //"helpful to easily make small adjustments
     static PrefEntry addTemplateTaskTextToEndOfExistingTaskText = new PrefEntry("Add template task text when inserting a template", "addTemplateTaskTextToEndOfExistingTaskText",
             prod ? true : true, "**"); //"helpful to easily make small adjustments
+    static PrefEntry addTemplateCommentTextToEndOfExistingTaskComment = new PrefEntry("Add template task text when inserting a template", "addTemplateCommentTextToEndOfExistingTaskComment",
+            prod ? true : true, "**"); //"helpful to easily make small adjustments
     static PrefEntry useActualAsEstimateForTemplatesOrCopies
             = new PrefEntry(Format.f("Use a non-zero {0 actual} as {1 estimate} for task/project copies or Templates", Item.EFFORT_ACTUAL, Item.EFFORT_ESTIMATE),
                     "useActualAsEstimateForTemplatesOrCopies",
@@ -420,6 +432,10 @@ public class MyPrefs {
             = new PrefEntry("Default number of days ahead in time for Due dates (0 disables)", //"Don't hide Completed tasks the day they were completed
                     "itemDueDateDefaultDaysAheadInTime",
                     prod ? 0 : 7, "**");
+
+    static PrefEntry itemDueDateConfirmEditDefaultDueDate
+            = new PrefEntry("Show a dialog to confirm and edit the default due date for template instances",
+                    "itemDueDateConfirmEditDefaultDueDate", true, "**");
 
     static PrefEntry itemDefaultAlarmTimeBeforeDueDateInMinutes //TODO!!! No, only ask if overwriting an alreadyd defined value!
             = new PrefEntry("Default for how long before the Due date the alarm is set (", //"Don't hide Completed tasks the day they were completed
@@ -529,9 +545,11 @@ public class MyPrefs {
     //INTERNAL / TECHNICAL / CACHE
     static PrefEntry backgroundFetchIntervalInSeconds = new PrefEntry("**", "backgroundFetchIntervalInSeconds",
             1 * MyDate.HOUR_IN_MILISECONDS / 1000, "interval for updating eg local notifications and badge count when app is in background**");
+    static PrefEntry badgeCountShowsNbLeaftasks = new PrefEntry(Format.f("Show number of leaf tasks and tasks in {0}",WorkSlot.WORKSLOT), 
+            "badgeCountShowsNbLeaftasks", true, "interval for updating eg local notifications and badge count when app is in background**");
 
-    static PrefEntry cacheDynamicSize = new PrefEntry("**", "cacheDynamicSize", 10000, "number of tasks, lists, categories etc cached**");
-    static PrefEntry cacheDynamicSizeWorkSlots = new PrefEntry("**", "cacheDynamicSizeWorkSlots", 10000, "number of WorkSlots cached**");
+    static PrefEntry cacheDynamicSize = new PrefEntry("**", "cacheDynamicSize", 100000, "number of tasks, lists, categories etc cached**");
+    static PrefEntry cacheDynamicSizeWorkSlots = new PrefEntry("**", "cacheDynamicSizeWorkSlots", 100000, "number of WorkSlots cached**");
 
     static PrefEntry cacheLocalStorageSize
             = new PrefEntry("**", "cacheLocalStorageSize", 10000, "deactivated if 0** need to implement Externalizable before this will work!!");
@@ -615,6 +633,11 @@ public class MyPrefs {
             = new PrefEntry("Enable pinch insert in lists", "pinchInsertEnabled", prod ? true : true, "**");
     static PrefEntry pinchInsertActivateEditing
             = new PrefEntry("Automatically start editing new task after pinch insert ", "pinchInsertActivateEditing", prod ? true : true, "**");
+    static PrefEntry pinchShowPinchContInEmptyList
+            = new PrefEntry("Always start with a task insert in empty lists", "pinchShowPinchContInEmptyList", prod ? true : true, "**");
+    static PrefEntry pinchPercentHeightToStick
+            = new PrefEntry("Pinch out a new PinchInsert task to at least this % of full height to insert", "pinchPercentHeightToStick", 50, "**");
+
     static PrefEntry screenEnableDisplayRotationAwayFromPortrait
             = new PrefEntry("Enable screen rotation to landscape", "screenEnableDisplayRotation", prod ? false : true,
                     "Rotation to landscape mode is disabled by default, setting this option enables it");
@@ -630,7 +653,7 @@ public class MyPrefs {
             = new PrefEntry("Cache dynamic lists (pull to refresh) - NOT supported by app yet", "cacheDynamicLists", prod ? false : false, "**");
     //TESTING settings
     static PrefEntry testPickersOnDevice
-            = new PrefEntry("Activate different pickers in ScreenItem2 to test pickers on iOS", "testPickersOnDevice", prod ? false : true, "**");
+            = new PrefEntry("Activate different pickers in ScreenItem2 to test pickers on iOS", "testPickersOnDevice", prod ? false : false, "**");
     static PrefEntry productionView
             = new PrefEntry("Show production view (TEST=FALSE)", "productionView", prod ? false : false, "**");
 
@@ -646,6 +669,8 @@ public class MyPrefs {
     static PrefEntry deleteLocalStorageIfRestartedBeforeSeconds
             = new PrefEntry("Delete local copy of data if app is within this many seconds", "deleteLocalStorageIfRestartedBeforeSeconds",
                     prod ? 8 : 15, "**");
+    static PrefEntry pinchReuseTextFromPinchedInContainer
+            = new PrefEntry("When PinchInserting in a new position, use text from current PinchInsert test", "pinchReuseTextFromPinchedInContainer", prod ? true : true, "**");
 
     //SECURITY / ENCRYPTION - disable in code for now
     static PrefEntry encryptTaskTextAndComments

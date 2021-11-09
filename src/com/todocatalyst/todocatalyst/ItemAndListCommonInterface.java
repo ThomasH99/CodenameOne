@@ -1316,6 +1316,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         }
         return filterSortDef;
     }
+    
+    default public boolean isSortOn() {
+        return getFilterSortDef().isSortOn();
+    }
 
     default public Iterator iterator() {
         return new Iterator() {
@@ -1570,6 +1574,10 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     static String toIdString(Object elt) {
         if (elt instanceof ItemAndListCommonInterface) {
             return ((ItemAndListCommonInterface) elt).getObjectIdP() + "/" + ((ItemAndListCommonInterface) elt).getGuid();
+        }if (elt instanceof ParseObject) {
+            return ((ParseObject) elt).getObjectIdP() + "/" + ((ParseObject) elt).getGuid();
+        }if (elt instanceof FilterSortDef) {
+            return ((FilterSortDef) elt).getObjectIdP() + "/" + ((FilterSortDef) elt).getGuid();
         } else if (elt == null) {
             return "<null>";
         } else {
@@ -1996,10 +2004,32 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return typeStr;
     }
 
+     /*
+     * return the task info on which to sort the task in the Today view.
+     * If multiple aspects of tasks mean it should appear today (e.g. both Due, WaitingReminder and in WorkSlot"), 
+    show the task under the first listed aspect (considered the main reason to show it in Today).
+     * Order:
+     * OVERDUE (due before today) -> "Overdue"
+     * DUE today AND Ongoing (finish already started tasks before starting new ones) -> "Due today (Ongoing**)"
+     * DUE today -> "Due today"
+     * DUE today but Waiting -> "Due today (Waiting)"
+     * WAITING until today "Waiting until today"
+     * WAITING Alarm -> "Waiting reminder today"
+     * ALARMS -> "Reminder today"
+     * STARTING today AND Ongoing -> "Starting today (Ongoing)"
+     * STARTING today -> "Starting today"
+     * In workslot -> "In time block today"
+     * @return 
+     */
     default public TodaySortOrder getTodaySortOrder() {
         return TodaySortOrder.TODAY_OTHER;
     }
 
+    /**
+     * return all dates that may get make it appear in Today
+     *
+     * @return
+     */
     default public Date[] getTodayDates() {
         ASSERT.that(false, "ItemAndListCommonInterface.getTodayDates() should never get called");
         return null; //new Date[0]; //may get called from e.g. workslot

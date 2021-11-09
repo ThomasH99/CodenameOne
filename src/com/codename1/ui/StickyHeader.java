@@ -378,4 +378,8 @@ public class StickyHeader extends Button implements ScrollListener {
         return sticky;
     }
 
+    public boolean isCollapsed() {
+        return hidden;
+    }
+    
 }

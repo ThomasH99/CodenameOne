@@ -25,6 +25,7 @@ public enum TodaySortOrder {
     //        STARTING_TODAY_ONGOING(35, "Starting today (Ongoing)"),
     //        STARTING_TODAY_WAITING(40, "Starting today (Waiting)"),
     STARTING_TODAY_CREATED(45, "Starting today"),
+    STARTING_TODAY_WORKSLOT(55, WorkSlot.WORKSLOT),
     TODAY_OTHER(99, "Other");
     int sortOrder;
     String displayText;

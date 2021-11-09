@@ -121,7 +121,7 @@ public class AlarmHandler {
         n.setId(notificationId);
         n.setAlertTitle(titleText);
         n.setAlertBody(bodyText);
-        n.setAlertSound("/" + MyPrefs.alarmSoundFile.getString());
+        n.setAlertSound("/" + MyPrefs.alarmSoundFileLocalNotif.getString());
         Display.getInstance().scheduleLocalNotification(n, alarmDate.getTime(), LocalNotification.REPEAT_NONE);
     }
 
@@ -170,7 +170,8 @@ public class AlarmHandler {
                 notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecordN());
             }
             refreshInAppTimerAndSaveNotificationList();
-        }
+        } else 
+                    Log.p("updateLocalNotificationsOnBackgroundFetch(): DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS) returned empty list!");
     }
 
     /**
@@ -380,17 +381,19 @@ public class AlarmHandler {
     public void snoozeAlarm(ExpiredAlarm expiredAlarm, Date snoozeExpireTime) {
 //        AlarmType type = AlarmType.getTypeContainedInStr(notificationId);
 //        String objId = AlarmType.getObjectIdStrWithoutTypeStr(notificationId, type);
-        Item item = DAO.getInstance().fetchItem(expiredAlarm.guid);
+        Item item = DAO.getInstance().fetchItemN(expiredAlarm.guid);
         expiredAlarms.remove(expiredAlarm);
         expiredAlarmSave();
+        item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type))); //Update *before* creating reminder to get right snooze time
         notificationList.removeAlarmAndRepeatAlarm(expiredAlarm.guid, expiredAlarm.type); //on snooze, remove any still active alarms of the same type as the snoozed one
 //        notificationList.snoozeAlarm(notificationId, snoozeExpireTime, item.makeNotificationTitleText(type), item.makeNotificationBodyText(type));
-        notificationList.addAlarmAndRepeat(expiredAlarm.guid, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type), item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
+        notificationList.addAlarmAndRepeat(expiredAlarm.guid, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type),
+                item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
 //        notificationList.save();
         refreshInAppTimerAndSaveNotificationList();
         //save snooze time
 //        item.setSnoozeDate(snoozeExpireTime);
-        item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type)));
+//        item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type)));
 //        DAO.getInstance().saveNew(item, true);
 //        DAO.getInstance().saveNew(item);
 //        DAO.getInstance().saveItem3(item);xxx;
@@ -464,25 +467,26 @@ public class AlarmHandler {
 
     private void cancelExpiredAlarmsOnItemUpdate(Item item) {
 //        if (item.getObjectIdP() != null) { //can't have any alarms for an not yet saved item
-            long now = MyDate.currentTimeMillis();
-            boolean normalAlarmUpdatedToFuture = item.getAlarmDate().getTime() > now;
-            boolean waitingAlarmUpdatedToFuture = item.getWaitingAlarmDate().getTime() > now;
+        long now = MyDate.currentTimeMillis();
+        boolean normalAlarmUpdatedToFuture = item.getAlarmDate().getTime() > now;
+        boolean waitingAlarmUpdatedToFuture = item.getWaitingAlarmDate().getTime() > now;
 //        AlarmType normalAlarmUpdated = item.getAlarmDate().getTime()>now;
 //        boolean waitingAlarmUpdated = item.getWaitingAlarmDate().getTime()>now;
-            Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
-            while (it.hasNext()) {
-                ExpiredAlarm expiredAlarm = it.next();
+        Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
+        while (it.hasNext()) {
+            ExpiredAlarm expiredAlarm = it.next();
 //                if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
-                if (item.getGuid().equals(expiredAlarm.guid)) {
-                    if (((expiredAlarm.type == AlarmType.notification || expiredAlarm.type == AlarmType.snoozedNotif) && normalAlarmUpdatedToFuture)
-                            || ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.snoozedWaiting) && waitingAlarmUpdatedToFuture)) {
-                        it.remove();
-                    }
+            if (item.getGuid().equals(expiredAlarm.guid)) {
+                if (((expiredAlarm.type == AlarmType.notification || expiredAlarm.type == AlarmType.snoozedNotif) && normalAlarmUpdatedToFuture)
+                        || ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.snoozedWaiting) && waitingAlarmUpdatedToFuture)) {
+                    it.remove();
                 }
             }
-            expiredAlarmSave();
+        }
+        expiredAlarmSave();
 //        }
     }
+//<editor-fold defaultstate="collapsed" desc="comment">
 
     /**
      * eg when an Item is Done/Cancelled
@@ -507,7 +511,7 @@ public class AlarmHandler {
 //        }
 //        expiredAlarmSave();
 //    }
-
+//</editor-fold>
     /**
      * called by inApp timer or from local notification when an alarm expires
      *
@@ -715,6 +719,7 @@ public class AlarmHandler {
     public List<ExpiredAlarm> getExpiredAlarms() {
         return expiredAlarms;
     }
+
     public ItemList getExpiredAlarmsItemList() {
         return new ItemList(getExpiredAlarms()); //need a copy of the list to avoid java.util.ConcurrentModificationException in CancellAll/SnoozeAll loops below
 
@@ -785,14 +790,15 @@ public class AlarmHandler {
         }
     }
 
-    private void playAlarm() {
-        if (MyPrefs.alarmPlayBuiltinAlarmSound.getBoolean()) {
+     void playAlarm() {
+        if (false && MyPrefs.alarmPlayBuiltinAlarmSound.getBoolean()) {
             Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM); //work-around but sound doesn't seem to work on iOS, nor on simulator
         } else {
             // https://www.codenameone.com/manual/files-storage-networking.html#_file_system
             // CN1 doc: https://www.codenameone.com/javadoc/com/codename1/media/Media.html
             // https://www.codenameone.com/blog/open-file-rendering.html
             // https://www.codenameone.com/manual/components.html#sharebutton-section
+            // https://stackoverflow.com/questions/48076190/codename-one-play-a-sound
             FileSystemStorage fs = FileSystemStorage.getInstance();
             String soundDir = fs.getAppHomePath(); // + "recordings/"; on simulator="file://home/" 
 //        fs.mkdir(soundDir);
@@ -801,13 +807,20 @@ public class AlarmHandler {
 //            Media m = MediaManager.createMedia(soundDir + "/" + MyPrefs.getString(MyPrefs.alarmSoundFile), false);
 //            Media m = MediaManager.createMedia("file://" + "/" + MyPrefs.getString(MyPrefs.alarmSoundFile), false);
 //            Media m = MediaManager.createMedia( MyPrefs.getString(MyPrefs.alarmSoundFile), false);
-                Media m = MediaManager.createMedia(soundDir + MyPrefs.getString(MyPrefs.alarmSoundFile), false); //in SImulator: put mp3 file in .cn1!
+//                Media m = MediaManager.createMedia(soundDir + MyPrefs.getString(MyPrefs.alarmSoundFile), false); //in SImulator: put mp3 file in .cn1!
+                //https://stackoverflow.com/questions/48076190/codename-one-play-a-sound
+//                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/notification_sound_bell.mp3")), "audio/mpeg");
+//                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/"+MyPrefs.alarmSoundFile)), "audio/mpeg"); //doesn't work in static
+//                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/notification_sound_bell.mp3")), "audio/mpeg");
+                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(),"/" + MyPrefs.getString(MyPrefs.alarmSoundFile))), "audio/mpeg"); //in SImulator: put mp3 file in .cn1!
+        
                 m.play();
             } catch (Exception err) {
-                if (false) {
+                if (true) {
                     Log.e(err);
                 }
-                Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_INFO);
+//                Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_INFO);
+                Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
             }
         }
     }

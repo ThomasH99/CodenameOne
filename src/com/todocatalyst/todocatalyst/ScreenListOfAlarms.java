@@ -34,7 +34,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
-import javafx.scene.effect.DisplacementMap;
+//import javafx.scene.effect.DisplacementMap;
 
 /**
  * The list to be edited is passed to this screen, which edits it directly (add
@@ -561,7 +561,7 @@ public class ScreenListOfAlarms extends MyForm {
                 for (ExpiredAlarm notif : expiredAlarms) {
 //            ExpiredAlarm notif = expiredAlarms.get(i);
                     if (notif.alarmTime.getTime() <= now) {
-                        Item item = DAO.getInstance().fetchItem(notif.guid);
+                        Item item = DAO.getInstance().fetchItemN(notif.guid);
                         expiredFiltered.add(notif);
                     }
                 }
@@ -587,7 +587,7 @@ public class ScreenListOfAlarms extends MyForm {
 //                protected Component createNode(Object node, int depth, ItemAndListCommonInterface itemOrItemList) {
                 protected Component createNode(Object node, int depth, Object itemOrItemList) {
                     ExpiredAlarm notif = (ExpiredAlarm) node;
-                    Item item = DAO.getInstance().fetchItem(notif.guid);
+                    Item item = DAO.getInstance().fetchItemN(notif.guid);
                     showDetails.add(item); //hack to always show alarmTime even if normally hidden in details
                     Component cmp = buildItemAlarmContainer(ScreenListOfAlarms.this, item, notif, expiredAlarms, () -> refreshAfterEdit(),
                             keepPos, previousForm, expandedObjects);

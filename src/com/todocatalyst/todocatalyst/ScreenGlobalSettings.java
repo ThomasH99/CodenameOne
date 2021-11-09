@@ -64,6 +64,10 @@ public class ScreenGlobalSettings extends ScreenSettingsCommon {
 //            content.add(layout("Account email", new SpanLabel(ParseUser.getCurrent().getEmail(), "Button"), true));
 //            ;
 //        }
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.alarmSoundActivated));
+
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.badgeCountShowsNbLeaftasks));
+
         if (!Config.PRODUCTION_RELEASE) { //keep visible even if TEST is set to false
             content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.productionView, () -> Config.TEST = !MyPrefs.productionView.getBoolean()));
             content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.fingerTracking));
@@ -107,6 +111,7 @@ public class ScreenGlobalSettings extends ScreenSettingsCommon {
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.showSourceItemInEditScreens));
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.pinchInsertEnabled));
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.pinchInsertActivateEditing));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.pinchShowPinchContInEmptyList));
         content.add(makeSpacer());
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.enableShowingSystemInfo));
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.showObjectIdsInEditScreens));

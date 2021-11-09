@@ -214,7 +214,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         if (false && Config.TEST) {
             ASSERT.that(value != null, "SaveEditedValuesLocally: put key=\"" + key + "\" with null value - missing objectIdP??");
         }
-        if (true || previousValues != null) { //should never bu null, or error if so
+        if (previousValues != null) { //should never bu null, or error if so
             Object previousValue;
             if (value == null) {
                 previousValue = previousValues.remove(key); // value.toString());
@@ -224,6 +224,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
             saveFile();
             return previousValue;
         } else {
+            ASSERT.that("previousValues null here, for screen=" + myForm + "; (key,value)=(" + key + ", " + value + ")");
             return null;
         }
     }
@@ -289,14 +290,6 @@ public class SaveEditedValuesLocally {//extends HashMap {
         } else {
             return null;
         }
-    }
-
-    public void removePinchInsertKeys() {
-        remove(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY); //delete the marker on exit
-        remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //delete the marker on exit
-        remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_AS_SUBTASK); //delete the marker on exit
-        remove(MyForm.SAVE_LOCALLY_REF_ELT_PARSE_CLASS); //delete the marker on exit
-        remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //delete the marker on exit
     }
 
     public boolean containsKey(Object key) {
@@ -608,7 +601,7 @@ public class SaveEditedValuesLocally {//extends HashMap {
         put("Element", element);
     }
 
-    public ParseObject getElementToSaveLocally() {
+    public ParseObject getElementSavedLocally() {
         return (ParseObject) get("Element");
     }
 

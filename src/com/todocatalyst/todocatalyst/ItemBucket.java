@@ -416,7 +416,7 @@ public class ItemBucket<E> extends ItemList {//implements ItemAndListCommonInter
     public List getWorkSlotsFromParseN() {
         if (level == 0) { //I'm the top-level bucket
             if (cachedWorkSlots == null) { //cache to avoid fetching workslots from DAO each time a sub-bucket needs this
-                cachedWorkSlots = DAO.getInstance().getWorkSlots(getStartTime(), getEndTime());
+                cachedWorkSlots = DAO.getInstance().getWorkSlotsAsItemList(getStartTime(), getEndTime(),false);
             }
             return cachedWorkSlots;
         } else if (hashValue instanceof ItemList) {

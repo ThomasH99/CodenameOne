@@ -18,6 +18,7 @@ import static com.todocatalyst.todocatalyst.AlarmType.notification;
 import static com.todocatalyst.todocatalyst.AlarmType.waiting;
 import com.todocatalyst.todocatalyst.MyDate;
 import static com.todocatalyst.todocatalyst.MyForm.getListAsCommaSeparatedString;
+import static com.todocatalyst.todocatalyst.MyForm.showDialogSetDueDateN;
 import com.todocatalyst.todocatalyst.MyPrefs;
 import static com.todocatalyst.todocatalyst.MyUtil.removeTrailingPrecedingSpacesNewLinesEtc;
 //import com.todocatalyst.todocatalyst.MyTree.MyTreeModel;
@@ -99,18 +100,52 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue()); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
     }
 
-    public Item(boolean setDefaultRemainingIfActivated) {
+    /**
+     * use this to ensure all created instances get (exactly) the same
+     * editedtime
+     *
+     * @param setDefaultRemainingIfActivated
+     * @param editedDate
+     */
+    public Item(boolean setDefaultRemainingIfActivated, Date editedDate) {
         this();
+        if (editedDate != null && editedDate.getTime() != 0) {
+            setEditedDate(editedDate); //UI: always make the creation of a task an 'edit' event
+        }
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue());
 //        if (!setDefaultRemainingIfActivated && getRemainingForTaskItself() != 0) { //set in
 ////            setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
 //            setRemainingForTaskItself(0);
 //        }
+//</editor-fold>
         if (setDefaultRemainingIfActivated) {
             setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
         }
     }
 
+    public Item(boolean setDefaultRemainingIfActivated, boolean setEditedDate) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        this();
+//        if (setEditedDate) {
+//            setEditedDateToNow(); //UI: always make the creation of a task an 'edit' event
+//        }//        setRemainingForProjectTaskItselfInParse(getRemainingDefaultValue());
+////        if (!setDefaultRemainingIfActivated && getRemainingForTaskItself() != 0) { //set in
+//////            setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
+////            setRemainingForTaskItself(0);
+////        }
+//        if (setDefaultRemainingIfActivated) {
+//            setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
+//        }
+//</editor-fold>
+        this(setDefaultRemainingIfActivated, new MyDate());
+    }
+
+    public Item(boolean setDefaultRemainingIfActivated) {
+        this(setDefaultRemainingIfActivated, true);
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public Item(List<Item> subtasks) {
 //        this();
 //        setList(subtasks);
@@ -123,14 +158,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        this();
 //        updateValuesInheritedFromOwner(owner);
 //    }
+//</editor-fold>
     public Item(String text) {
-        this();
+        this(true, true);
         setText(text);
 //        setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
     }
 
     public Item(boolean setDefaultRemainingIfActivated, String text) {
-        this(setDefaultRemainingIfActivated);
+        this(setDefaultRemainingIfActivated, true);
         setText(text);
 //        setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
     }
@@ -146,7 +182,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public Item(String text, boolean interpretTextValues) {
-        this();
+        this(true, true);
         if (interpretTextValues) {
 //            setText(parseTaskTextForProperties(this, text));
             parseTaskTextAndSetAllProperties(text);
@@ -166,7 +202,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     public Item(String taskText, int remainingEffortInMinutes, Date dueDate) {
 //        this(taskText, remainingEffortInMinutes, dueDate, false);
-        this();
+        this(true, true);
         setText(taskText);
         Item.this.setRemainingForTaskItself(((long) remainingEffortInMinutes) * MyDate.MINUTE_IN_MILLISECONDS, true);
         setDueDate(dueDate);
@@ -972,8 +1008,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String CHALLENGE = "Difficulty"; //"Challenge";
     final static String CHALLENGE_HELP = "Indicates how difficult or challenging the task is and what level of mental energu it requires"; //"Challenge";
     final static String BELONGS_TO = "In List/Project"; //"Owner List/Project" "Belongs to";
-    final static String BELONGS_TO_PROJECT = "For Project"; //"Owner List/Project" "Belongs to";
-    final static String BELONGS_TO_LIST = "For List"; //"Owner List/Project" "Belongs to";
+    final static String BELONGS_TO_LIST = "In List"; //"Owner List/Project" "Belongs to";
+    final static String BELONGS_TO_PROJECT = "In Project"; //"For Project"/"Owner List/Project" "Belongs to";
     final static String BELONGS_TO_CATEGORY = "For Category"; //"Owner List/Project" "Belongs to";
     final static String BELONGS_TO_HELP = "Indicates the List or Project this task belongs to. Change to move the task to another List or Project or delete to move to Inbox";
     final static String DEPENDS_ON = "Depends on";
@@ -1006,6 +1042,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String SHOW_TOTAL_HELP = "**";
     final static String SHOW_WORK_TIME_TEXT = Format.f("Show sum of {0 estimate}", Item.WORKTIME);//"Show sum of defined work time for the list";
     final static String SHOW_WORK_TIME_HELP = "**";
+    final static String OVERDUE = "Overdue";
 
     final static int ITEM_CHANGED_ALARM_DATE = 0;
 
@@ -1062,8 +1099,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_SOURCE = "source"; //for an interrupt task: which task was interrupted (taken from Timer)
     final static String PARSE_NEXTCOMING_ALARM = "nextAlarm"; //first-coming/next-coming alarm (to allow easy search in Parse)
     final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
-    final static String PARSE_SNOOZE_DATE = "snoozeDate"; //date until which the 
-    final static String PARSE_SNOOZED_TYPE = "snoozeType"; //date until which the 
+    final static String PARSE_SNOOZE_DATE = "snoozeDate"; //date until which the alarm is snoozed
+    final static String PARSE_SNOOZED_TYPE = "snoozeType"; //type of snooze: **
     final static String PARSE_FILTER_SORT_DEF = "filterSort";
     final static String PARSE_WORKSLOTS = "workslots";
     final static String PARSE_RESTART_TIMER = "restartTimer"; //should the Timer be re-started from first element if the currently timed is no longer in the list?
@@ -1556,6 +1593,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         ItemAndListCommonInterface oldOwner = getOwner();
         if (Config.TEST) {// && !(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null))) {
+            ASSERT.that((newOwner instanceof ItemList && !(newOwner instanceof Category)) || (newOwner instanceof Item), () -> "Setting owner that is neither Item/ItemList, owner=" + newOwner + "; for Item=" + this);
+            ASSERT.that(!(newOwner instanceof ItemList) || !((ItemList) newOwner).isNoSave(), () -> "Setting owner that is noSave, owner=" + newOwner + "; for Item=" + this);
             if (false) {
                 Log.p("Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + newOwner);
             } else {
@@ -1787,7 +1826,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
          * creating an item by copying from a template (anything to leave out
          * here?)
          */
-        , COPY_FROM_TEMPLATE_TO_INSTANCE;
+        , COPY_FROM_TEMPLATE_TO_INSTANCE_XXX;
     }
 
     /**
@@ -1880,7 +1919,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
          * copy for Repeat Instances
          */
         boolean defToRepeatInst = (copyFieldDefinition == CopyMode.COPY_TO_REPEAT_INSTANCE);
-        boolean defToTemplInst = (copyFieldDefinition == CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE);
+        boolean defToTemplInst = (copyFieldDefinition == CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE_XXX);
+        ASSERT.that(!defToTemplInst, "the option " + CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE_XXX + " should not be used anymore");
         /**
          * copy for Templates
          */
@@ -2284,37 +2324,47 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 
     public boolean hasDatesDependingOnDue() {
+//        boolean templFieldsDependOnDue = getDueDate().getTime() != 0 || getAlarmDate().getTime() != 0 || getStartByDateD().getTime() != 0
         boolean templFieldsDependOnDue = getAlarmDate().getTime() != 0 || getStartByDateD().getTime() != 0
                 || getExpiresOnDate().getTime() != 0 || getHideUntilDateD().getTime() != 0;
         return templFieldsDependOnDue;
     }
 
     /**
-     * update the Item's relative dates to have the same time between the new
-     * due date as they had to the old due date
+     * return the due date to use as a reference for subtasks, it is either this
+     * Item's due date or it will iterate up the project hierarchy and return
+     * the first due date found, or a 0 date if none found
+     *
+     * @return
+     */
+    public Date getDueDateReference() {
+        if (getDueDate().getTime() != 0) {
+            return getDueDate();
+        } else {
+            if (getOwnerItem() != null) {
+                if (getOwnerItem().getDueDateReference().getTime() != 0) {
+                    return getOwnerItem().getDueDateReference(); //recurse up the hierarchy
+                }
+            }
+        }
+        return new MyDate(0);
+    }
+
+    /**
+     * update the Item's already existing (only) relative dates by adding delta
+     * milliseconds to them
      *
      * @param newDueDateTime - if null or 0, remove/reset all dates: due, alarm,
      * hideUntil,StartBy, expiresOn
      */
-    public void updateRelativeDates(Date newDueDateTime) {
-        long delta;
-        if (newDueDateTime == null || newDueDateTime.getTime() == 0) {
-            delta = 0;
-        } else {
-            ASSERT.that(newDueDateTime.getTime() != 0);
-            Date oldDueDate = getDueDate();
-            long newDueDate = newDueDateTime.getTime();
-            delta = 0;
-//        if (oldDueDate != 0 && newDueDate != 0) {
-            if (oldDueDate.getTime() != 0) {
-                delta = newDueDate - oldDueDate.getTime();
-            }
-        }
+    public void updateRelativeDates(long delta) {
+//        Date oldDueDate = getDueDate();
+//        ASSERT.that(oldDueDate.getTime() != 0);
+        ASSERT.that(delta > 0, "normally delta should be positive (a later date than template), delta=" + delta);
 
         if (delta != 0) { //only do updates if new due date is different from old one
-
-            setDueDate(newDueDateTime);
-
+//            Date newDueDate = new MyDate(oldDueDate.getTime() + delta);
+//            setDueDate(newDueDate);xxx;
             //TODO!!!!: what if no DueDate is set, but only an alarmDate or showFromDate? Can this happen (what would the repeatReference date then be?)
             if (getAlarmDate().getTime() != 0) { //only update if a value was defined for the referenceItem
 //                setAlarmDate(newDueDate - (oldDueDate - getAlarmDate()));
@@ -2332,6 +2382,93 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setExpiresOnDate(newDueDate - (oldDueDate - getExpiresOnDate()));
                 setExpiresOnDate(getExpiresOnDate().getTime() + delta);
             }
+        }
+    }
+
+    /**
+     * set the item's dates (if not already set) to the template's dates (if
+     * defined) + delta
+     *
+     * @param delta
+     * @param templateOrg
+     */
+    public void setRelativeDates(long delta, Item templateOrg) {
+//        Date oldDueDate = getDueDate();
+//        ASSERT.that(oldDueDate.getTime() != 0);
+        ASSERT.that(delta > 0, "normally delta should be positive (a later date than template), delta=" + delta);
+
+        if (delta != 0) { //only do updates if new due date is different from old one
+//            Date newDueDate = new MyDate(oldDueDate.getTime() + delta);
+//            setDueDate(newDueDate);xxx;
+
+            //TODO!!!!: what if no DueDate is set, but only an alarmDate or showFromDate? Can this happen (what would the repeatReference date then be?)
+            if (getAlarmDate().getTime() == 0 && templateOrg.getAlarmDate().getTime() != 0) { //only update if a value was defined for the referenceItem
+//                setAlarmDate(newDueDate - (oldDueDate - getAlarmDate()));
+                setAlarmDate(new MyDate(templateOrg.getAlarmDate().getTime() + delta));
+            }
+            if (getHideUntilDateD().getTime() == 0 && templateOrg.getHideUntilDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
+//                setHideUntilDate(new Date(newDueDate - (oldDueDate - getHideUntilDateD().getTime())));
+                setHideUntilDate(new MyDate(templateOrg.getHideUntilDateD().getTime() + delta));
+            }
+            if (getStartByDateD().getTime() == 0 && templateOrg.getStartByDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
+//                setStartByDate(newDueDate - (oldDueDate - getStartByDate()));
+                setStartByDate(templateOrg.getStartByDateD().getTime() + delta);
+            }
+            if (getExpiresOnDate().getTime() == 0 && templateOrg.getExpiresOnDate().getTime() != 0) { //only update if a value was defined for the referenceItem
+//                setExpiresOnDate(newDueDate - (oldDueDate - getExpiresOnDate()));
+                setExpiresOnDate(templateOrg.getExpiresOnDate().getTime() + delta);
+            }
+        }
+    }
+
+    @Override
+    public void updateRelativeDates(Date newDueDateTime) {
+//        updateRelativeDates(newDueDateTime, getDueDate());
+        if (newDueDateTime.getTime() != 0 && getDueDate().getTime() != 0) { //both old and new due date are !=0 so we'll have a delta (which could potentially be zero)
+            long delta = newDueDateTime.getTime() - getDueDate().getTime();
+            updateRelativeDates(delta);
+        }
+    }
+
+    public void updateRelativeDatesXXX(Date newReferenceDate, Date oldReferenceDueDate) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        long delta;
+//        if (newDueDateTime == null || newDueDateTime.getTime() == 0) {
+////            delta = 0;
+//            return;
+//        } else {
+//            ASSERT.that(newDueDateTime.getTime() != 0);
+//            Date oldDueDate = getDueDate();
+//            long newDueDate = newDueDateTime.getTime();
+//            delta = 0;
+//        if (oldDueDate != 0 && newDueDate != 0) {
+//</editor-fold>
+        if (newReferenceDate.getTime() != 0 && oldReferenceDueDate.getTime() != 0) { //both old and new due date are !=0 so we'll have a delta (which could potentially be zero)
+            long delta = newReferenceDate.getTime() - oldReferenceDueDate.getTime();
+//<editor-fold defaultstate="collapsed" desc="comment">
+//only do updates if new due date is different from old one
+
+//                setDueDate(newDueDateTime);
+//
+//                //TODO!!!!: what if no DueDate is set, but only an alarmDate or showFromDate? Can this happen (what would the repeatReference date then be?)
+//                if (getAlarmDate().getTime() != 0) { //only update if a value was defined for the referenceItem
+////                setAlarmDate(newDueDate - (oldDueDate - getAlarmDate()));
+//                    setAlarmDate(new MyDate(getAlarmDate().getTime() + delta));
+//                }
+//                if (getHideUntilDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
+////                setHideUntilDate(new Date(newDueDate - (oldDueDate - getHideUntilDateD().getTime())));
+//                    setHideUntilDate(new MyDate(getHideUntilDateD().getTime() + delta));
+//                }
+//                if (getStartByDateD().getTime() != 0) { //only update if a value was defined for the referenceItem
+////                setStartByDate(newDueDate - (oldDueDate - getStartByDate()));
+//                    setStartByDate(getStartByDateD().getTime() + delta);
+//                }
+//                if (getExpiresOnDate().getTime() != 0) { //only update if a value was defined for the referenceItem
+////                setExpiresOnDate(newDueDate - (oldDueDate - getExpiresOnDate()));
+//                    setExpiresOnDate(getExpiresOnDate().getTime() + delta);
+//                }
+//</editor-fold>
+            updateRelativeDates(delta);
         }
     }
 
@@ -2861,7 +2998,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                            + ", should be=" + this.toString(false));
 //                }
 //            }
-                if (Config.REPAIR) {
+                if (false && Config.REPAIR) { //NB code below leads to infinite loop of fetching... (not sure how to fix so disabling for now)
                     for (Item i : (List<Item>) cachedList) {
                         if (i.getOwnerItem() == null) {
                             ASSERT.that(false, () -> "FIXED - subtask with NULL owner, item=" + i + "; owner=\"" + this.getText() + "\" [" + this.getObjectIdP() + "/" + this.getGuid() + "]");
@@ -2897,6 +3034,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      *
      * @return
      */
+    @Override
     public FilterSortDef getDefaultFilterSortDef() {
         FilterSortDef filter = new FilterSortDef();
         if (false) {
@@ -2973,7 +3111,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         ASSERT.that(itemOrListToAdd.getOwner() == null || this == itemOrListToAdd.getOwner(), "subItemOrList owner not null when adding to list, SUBTASK=" + itemOrListToAdd + ", OLD OWNER=" + itemOrListToAdd.getOwner() + ", NEW OWNER=" + this);
         ItemAndListCommonInterface oldOwner = itemOrListToAdd.getOwner();
         setList(listFull);
-        if (addAsOwner && !isNoSave()) {
+        if (addAsOwner && !Objects.equals(oldOwner, this) && !isNoSave()) {
             itemOrListToAdd.setOwner(this);
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -9306,7 +9444,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * returns the first startedOn date for all subtasks, or 0 if no subtask has
      * a startedOn date, or null if no subtasks
      *
-     * @return the latest date of any completed subtasks (even if not all are completed)
+     * @return the latest date of any completed subtasks (even if not all are
+     * completed)
      */
     private Date getLastCompletedOnDateFromSubtasksN() {
 //            Date startedOn = new Date(MyDate.MIN_DATE);
@@ -9370,7 +9509,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    }
 
     public void setCompletedDate(Date completedDate) {
-        setCompletedDate(completedDate, false, false);
+        setCompletedDate(completedDate, false, true);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -9990,7 +10129,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 + (getCompletedDate().getTime() != 0 ? " Done" + MyDate.formatDateSmart(getCompletedDate()) : "")
                 + (getDueDate().getTime() != 0 ? " Due" + MyDate.formatDateSmart(getDueDate()) : "")
                 + (isDone() ? " [DONE]" : (getRemainingTotal() > 0 ? " " + MyDate.formatDurationShort(getRemainingTotal()) : ""))
-                + (showSubtasks ? (getListFull().size() == 0 ? "" : (" subtasks(" + getListFull().size() + ")=*{" + getListAsCommaSeparatedString(getListFull(), true) + "}*")) : "");
+//                + (showSubtasks ? (getListFull().size() == 0 ? "" : (" subtasks(" + getListFull().size() + ")=*{" + getListAsCommaSeparatedString(getListFull(), true) + "}*")) : "")
+                ;
     }
 
     /**
@@ -10321,9 +10461,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
 //        AlarmHandler.getInstance().updateOnItemChange(this);
         if (getOwner() == null && !isTemplate()) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
+            ASSERT.that("possible to avoid setting owner here in onSave()??, item=" + this);
             Inbox.getInstance().addToList(this);
 //            super.save(); //in case item was not saved earlier, must save and get the objectId before saving the Inbox
-            DAO.getInstance().saveNew((ParseObject) Inbox.getInstance()); //no trigger, will be saved together with new item
+            if (false) { //tasks' owner should get saved automatically in DAO if dirty
+                DAO.getInstance().saveNew((ParseObject) Inbox.getInstance()); //no trigger, will be saved together with new item
+            }
         }
 
         if (isDirty()) { //if anything has changed
@@ -10697,7 +10840,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        long startOfTomorrow = startOfToday + MyDate.DAY_IN_MILLISECONDS;
 //        long dueTime = getDueDate().getTime();
 //        if (dueTime >= startOfToday && dueTime < startOfTomorrow) {
-        if (getDueDate().getTime() < MyDate.getStartOfToday().getTime()) { //NB. The length of the overdue time interval is decided when creating the list of tasks for Today
+//        if (getDueDate().getTime() < MyDate.getStartOfToday().getTime()) { //NB. The length of the overdue time interval is decided when creating the list of tasks for Today
+        if (getDueDate().getTime() != 0
+                && getDueDate().getTime() < MyDate.getStartOfToday().getTime()
+                && getDueDate().getTime() >= MyDate.getStartOfToday().getTime() - MyPrefs.todayViewIncludeOverdueFromThisManyPastDays.getInt() * MyDate.DAY_IN_MILLISECONDS) { //NB. The length of the overdue time interval is decided when creating the list of tasks for Today
             return TodaySortOrder.OVERDUE_TODAY;
         } else if (MyDate.isToday(getDueDate())) {
             if (MyPrefs.todayViewShowDueTodayByTaskStatus.getBoolean()) {
@@ -11005,7 +11151,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
 
-        if (alarmType.isSnooze() && MyPrefs.alarmShowSnoozeUntilTimeAtEndOfNotificationText.getBoolean() && getSnoozeAlarmRecordN().alarmTime.getTime() != 0) {
+        if (alarmType.isSnooze() && MyPrefs.alarmShowSnoozeUntilTimeAtEndOfNotificationText.getBoolean()
+                && getSnoozeAlarmRecordN() != null && getSnoozeAlarmRecordN().alarmTime.getTime() != 0) {
             s += (s.isEmpty() ? "" : "\n") + Item.SNOOZED_TILL + ": " + MyDate.formatDateTimeNew(getSnoozeAlarmRecordN().alarmTime.getTime());
         }
 
@@ -12850,7 +12997,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public String getDebugTextInfo(boolean getInfo) {
         Item item = this;
         if (getInfo) {
-            return (item.getObjectIdP() == null ? "-ID" : "")
+            return (item.getObjectIdP() == null ? "-OBJID" : "")
                     + (item.getOwner() == null ? "-OWN" : "")
                     + (item.getRepeatRuleN() == null ? "" : (item.getRepeatRuleN().getListOfUndoneInstances().contains(item)
                     ? "*" : (item.getRepeatRuleN().getListOfDoneInstances().contains(item) ? "(*-)" : "(*?!!)")))
@@ -12868,11 +13015,6 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
     }
 
-    /**
-     * return all dates that may get make it appear in Today
-     *
-     * @return
-     */
     @Override
     public Date[] getTodayDates() {
         return new Date[]{getDueDate(), getStartByDateD(), getAlarmDate(), getWaitUntilDate(), getWaitingAlarmDate()};
@@ -12942,17 +13084,16 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public EventDispatcher getActionListeners() {
         return listeners;
     }
-    
+
     @Override
-    public void update(ActionEvent evt){
-        
+    public void update(ActionEvent evt) {
+
     }
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        
+
 //        ItemAndListCommonInterface.super.fireActionEvent(evt);
-        
         Object actionSource = evt.getSource();
         int keyEvent = evt.getKeyEvent(); //use the keyEvent to carry the actual event
         if (actionSource instanceof Item && getListFull().contains(actionSource) || keyEvent == DataChangedListener.REMOVED) { //keyEvent == DataChangedListener.REMOVED in case the firing subtask was deleted
@@ -12960,9 +13101,230 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 //        ((ItemAndListCommonInterface)this).fireActionEvent(evt);
         ItemAndListCommonInterface.super.fireEvent(evt);
-        
+
     }
 
+    /**
+     * insert a (copy of) the template into this task: copy template fields to
+     * non-defined fields, potentially add template task text and comment text,
+     * add categories, add subtasks (with relative due etc dates). When
+     * inserting subtasks, the values they may inherit take precedence over
+     * their own values (inherited values are set first)
+     *
+     * @param templateOrg the template to insert, NB! if templateCopy is a
+     * project, the top-level task is only used to set the values (incl.
+     * categories) of the itemOrg and
+     */
+//    public void insertTemplate(final Item templateOrg, boolean addTaskAndCommentText) {
+    public void insertTemplate(final Item templateOrg) {
+        insertTemplate(templateOrg, new MyDate());
+    }
+
+    public void insertTemplate(final Item templateOrg, Date editedDate) {
+//        Item itemOrg=this;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            if (true) {
+//                setTemplateInstanceRelativeDates(itemOrg, templateOrg);
+//            } else if (templateOrg.getDueDate().getTime() != 0) {
+//
+//                boolean templFieldsDependOnDue = templateOrg.getAlarmDate().getTime() != 0 || templateOrg.getStartByDateD().getTime() != 0
+//                        || templateOrg.getExpiresOnDate().getTime() != 0 || templateOrg.getHideUntilDateD().getTime() != 0;
+//                if (templFieldsDependOnDue) { //only if there are any fields in the template that depend on due date:
+//                    Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //TODO setting to pich a f
+////                if (dueDate.getDate().getTime() == 0) {
+//                    if (itemOrg.getDueDate().getTime() == 0) {
+////                Dialog.show(SUBTASK_KEY, this, cmds);
+//                        newDueDate = showDialogSetDueDateN(newDueDate);
+//                        if (newDueDate.getTime() != 0) {
+//                            itemOrg.setDueDate(newDueDate); //if new date entered, save it!
+//                        }//                assert false;
+//                    } else {
+////                    newDueDate.setTime(dueDate.getDate().getTime());
+//                        newDueDate = itemOrg.getDueDate();
+//                    }
+//                    if (newDueDate.getTime() != 0) { //if we now have a dueDate, set the relative fields
+//                        //MOST FIELDS are only set if not defined (or if user deleted the value in the input field (Pickers etc)
+//                        if (false && dueDate.getDate().getTime() == 0) { //NB. Due date NEVER set based on due date in template
+//                            //TODO: make a setting for how far ahead a default due date should be set
+//                            dueDate.setDate(templateOrg.getDueDate());
+//                        }
+//                        long templDueDateAdj = newDueDate.getTime() - templateOrg.getDueDate().getTime(); //newDueDate-oldDueDate determine how much all depending fields should be moved ahead
+//                        //CERTAIN DATES are set RELATIVE to the DUE DATE:
+//                        if (true || templDueDateAdj != 0) { //NB. difference could be zero if same due date as
+//                            if (itemOrg.getAlarmDate().getTime() == 0 && templateOrg.getAlarmDate().getTime() != 0) {
+//                                itemOrg.setAlarmDate(new MyDate(templateOrg.getAlarmDate().getTime() + templDueDateAdj));
+//                            }
+//                            if (itemOrg.getStartByDateD().getTime() == 0 && templateOrg.getStartByDateD().getTime() != 0) {
+//                                itemOrg.setStartByDate(new MyDate(templateOrg.getStartByDateD().getTime() + templDueDateAdj));
+//                            }
+//                            if (itemOrg.getExpiresOnDate().getTime() == 0 && templateOrg.getExpiresOnDate().getTime() != 0) {
+//                                itemOrg.setExpiresOnDate(new MyDate(templateOrg.getExpiresOnDate().getTime() + templDueDateAdj));
+//                            }
+//                            if (itemOrg.getHideUntilDateD().getTime() == 0 && templateOrg.getHideUntilDateD().getTime() != 0) {
+//                                itemOrg.setHideUntilDate(new MyDate(templateOrg.getHideUntilDateD().getTime() + templDueDateAdj));
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//</editor-fold>
+        //if the user has not yet set a due date and the template has fields depending on due date, ask for a due date
+        if (templateOrg.getDueDate().getTime() != 0 && getDueDate().getTime() == 0) { //only if there are a due date and no due date set yet (eg by inheritance)
+
+            Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //default due date
+            if (MyPrefs.itemDueDateConfirmEditDefaultDueDate.getBoolean()) {
+                newDueDate = showDialogSetDueDateN(newDueDate); //ask to confirm
+            }
+//            setDueDate(templateOrg.getDueDate());
+            setDueDate(newDueDate);
+        }
+
+        if (templateOrg.getDueDateReference().getTime() != 0 && templateOrg.hasDatesDependingOnDue()) { //only if there are any fields in the template that depend on due date:
+//            Date newDueDate;
+//            if (getDueDate().getTime() != 0) {
+//            if (getDueDateReference().getTime() != 0) {
+//            updateRelativeDates(getDueDateReference(), templateOrg.getDueDateReference());
+            setRelativeDates(getDueDateReference().getTime() - templateOrg.getDueDateReference().getTime(), templateOrg);
+//            } else {
+////                newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //default due date
+////                newDueDate = showDialogSetDueDateN(newDueDate);
+//                if (newDueDate != null && newDueDate.getTime() != 0) {
+//                    setDueDate(newDueDate); //if new date entered, save it!
+//                    updateRelativeDates(newDueDate);
+//                }
+//            }
+        }
+
+        if (!isStarred() && templateOrg.isStarred()) {
+            setStarred(true);
+        }
+
+        if (getPriority() == 0 && templateOrg.getPriority() > 0) {
+            setPriority(templateOrg.getPriority());//NB. We store the actual value of Priority locally and adjust when setting the picker
+        }
+
+        if (getImportanceN() == null && templateOrg.getImportanceN() != null) {
+            setImportance(templateOrg.getImportanceN());
+        }
+        if (getUrgencyN() == null && templateOrg.getUrgencyN() != null) {
+            setUrgency(templateOrg.getUrgencyN());
+        }
+        if (getChallengeN() == null && templateOrg.getChallengeN() != null) {
+            setChallenge(templateOrg.getChallengeN());
+        }
+        if (getDreadFunValueN() == null && templateOrg.getDreadFunValueN() != null) {
+            setDreadFunValue(templateOrg.getDreadFunValueN());
+        }
+
+        if (getEarnedValue() == 0 && templateOrg.getEarnedValue() > 0) {
+            setEarnedValue(templateOrg.getEarnedValue());
+        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    if (false && !templateOrg.isProject() && ((remainingEffort.getDuration() == 0 || Item.isRemainingDefaultValue(remainingEffort.getDuration()))) && templateOrg.getRemainingTotal() > 0) { //UI: adding a template will overwrite the default Remaining
+////            remainingEffort.setDuration(template.getRemaining());
+//        previousValues.put(Item.PARSE_REMAINING_EFFORT_TOTAL, templateOrg.getRemainingTotal());
+//    }
+//</editor-fold>
+        //if template has a task-level estimate and itemOrg has none, or only default value, then use template's estimate
+        if (templateOrg.getEstimateForTask() > 0 && ((getEstimateForTask() == 0 || Item.isRemainingDefaultValue(getEstimateForTask())))) {
+            setEstimateForTask(templateOrg.getEstimateForTask(), true); //true: also set Remaining
+        }
+        //SOME FIELDS DO NOT HAVE A SIMPLE INPUT FIELD EDITOR
+        //RepeatRule
+        if (getRepeatRuleN() == null && templateOrg.getRepeatRuleN() != null) {
+            setRepeatRule(templateOrg.getRepeatRuleN().cloneMe()); //Must insert a *copy* of RR!
+        }
+
+        //SPECIAL CASES
+//        if ((getText().isEmpty() || MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()) && !templateOrg.getText().isEmpty()) {
+//            setText(getText().isEmpty()
+//                    ? templateOrg.getText()
+//                    : getText() + " " + templateOrg.getText()); //UI: add template's comment to the end(?!) of the comment, with a space
+//        }
+        if (getText().isEmpty()) {
+            setText(templateOrg.getText());
+        } else if (MyPrefs.addTemplateTaskTextToEndOfExistingTaskText.getBoolean()) {
+            setText(getText() + (!templateOrg.getText().isEmpty() ? " " + templateOrg.getText() : "")); //UI: add template's comment to the end(?!) of the comment, with a space
+        }
+        //Template Comments are ??
+//        comment.setText(comment.getText().length() > 0 ? comment.getText() + "\n" + template.getComment() : template.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
+//        setComment(getComment().isEmpty() ? templateOrg.getComment()
+//                : getComment() + "\n" + templateOrg.getComment()); //UI: add template's comment to the end(?!) of the comment, with a newline
+        if (getComment().isEmpty()) {
+            setComment(templateOrg.getComment());
+        } else if (MyPrefs.addTemplateCommentTextToEndOfExistingTaskComment.getBoolean()) {
+            setComment(getComment() + (!templateOrg.getComment().isEmpty() ? "\n" + templateOrg.getComment() : "")); //UI: add template's comment to the end(?!) of the comment, with a space
+        }
+
+        //Templates Categories are merged (only new categories in template are added - no duplicates!)
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            for (Category c : templateOrg.getCategories()) {
+//                c.removeItemFromCategory(templateOrg, true); //doesn't matter if categories are removed from templateCopy since it's never used
+//            }
+//        }
+//</editor-fold>
+        addCategories(templateOrg.getCategories());
+//                         
+        //Template Subtasks are merged
+//        List<Item> templateSubtasks = templateCopy.getListFull();
+//        List<ParseObject> newTemplSubtaskList = new ArrayList<>();
+
+//        for (Item templateSubtaskCopy : (List<Item>) templateOrg.getListFull()) { //full list, filter has no meaning for a template
+//            //optimization: adding many subtasks individually will update inhiertance etc multiple times
+////            templateSubtaskCopy.setOwner(null); //remove old owner (top-level template)
+//            Item newTemplSubtask = templateSubtaskCopy.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+////            newTemplSubtask.setRel
+//            addToList(newTemplSubtask); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+//            newTemplSubtaskList.add(newTemplSubtask);
+//        }
+        for (Item templateSubtaskOrg : (List<Item>) templateOrg.getListFull()) { //full list, filter has no meaning for a template
+            //optimization: adding many subtasks individually will update inhiertance etc multiple times
+//            templateSubtaskCopy.setOwner(null); //remove old owner (top-level template)
+            Item newTemplSubtask = new Item(false, editedDate); //false,true: don't set default Remaining, but do set Edited date
+//            newTemplSubtask.setRel
+            addToList(newTemplSubtask, true); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!), true: force adding to end to keep same order of subtasks as template
+            newTemplSubtask.insertTemplate(templateSubtaskOrg, editedDate); //update new instance to template values and create and insert copies of subtasks (recursively). This will do a copy 'depth-first' subtask hierarcy by subtask hierarcy
+//                    templateSubtaskOrg.copyloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+//            newTemplSubtaskList.add(newTemplSubtask);
+        }
+//        if (false && MyPrefs.backgroundSave.getBoolean()) { //false: now done at level above (from where this method is called)
+//            DAO.getInstance().saveToParseNow(newTemplSubtaskList);
+//        }
+
+        //SOME fields are NOT AFFECTED by a template:
+        //Actual effort
+        //Owner
+        //CreatedOn
+        //Wait until
+        //Waiting reminder
+        //Waiting since date
+    }
+
+    /**
+     *
+     * @return
+     */
+    public Item createAndInsertTemplateCopy(ItemAndListCommonInterface newOwner) {
+        return createAndInsertTemplateCopy(newOwner, new MyDate());
+    }
+
+    public Item createAndInsertTemplateCopy(ItemAndListCommonInterface newOwner, Date editedDate) {
+        ASSERT.that(isTemplate(), () -> "trying to create a template copy from a non-template = " + this);
+        Item templateCopy = new Item(false, true);
+        newOwner.addToList(templateCopy);
+        templateCopy.insertTemplate(this, editedDate);
+        return templateCopy;
+    }
+
+//    static public Item createTemplateCopy(List<Item> templates) {
+//        ASSERT.that(isTemplate(), () -> "trying to create a template copy from a non-template = " + this);
+//        Item templateCopy = new Item(false, true);
+//        templateCopy.insertTemplate(this);
+//        return templateCopy;
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public Date getFinishTime(ItemAndListCommonInterface subtask) {

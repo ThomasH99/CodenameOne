@@ -80,31 +80,37 @@ public class MyCheckBox extends Button {
     }
 
     public MyCheckBox(Item item) {//, IsItemOngoing itemOngoing) {
-        this(item != null ? item.getStatus() : ItemStatus.CREATED, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), (oldStatus, newStatus) -> {
+        this(item, false);
+    }
+    public MyCheckBox(Item item, boolean makeInactive) {//, IsItemOngoing itemOngoing) {
+        this(item != null ? item.getStatus() : ItemStatus.CREATED, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), 
+                (oldStatus, newStatus) -> {
             if (item != null
                     && newStatus != oldStatus
                     && item.setStatus(newStatus)) {
+                item.setEditedDateToNow();
                 DAO.getInstance().saveToParseNow(item); //save (and trigger change event)
                 return true;
             };
             return false;
-        }, null, null, null, false);
+//        }, null, null, null, false);
+        }, null, null, null, makeInactive);
     }
 
-    public MyCheckBox(ItemStatus itemStatus, boolean makeInactive) {//, IsItemOngoing itemOngoing) {
-        this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null, makeInactive);
-    }
+//    public MyCheckBox(ItemStatus itemStatus, boolean makeInactive) {//, IsItemOngoing itemOngoing) {
+//        this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null, makeInactive);
+//    }
 
 //    public MyCheckBox(Item item, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler) {
 //    public MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, IsItemOngoing itemOngoingXXX) {
 //        this(initialItemStatus, activateFullMenuOnSingleClick, statusChangeHandler, itemOngoingXXX, null, null, null);
 //    }
-    public MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, //IsItemOngoing itemOngoing,
+    private MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, //IsItemOngoing itemOngoing,
             String singleIconStyleUIID, String popupIconStyleUIID, String groupStyleUIID) {
         this(initialItemStatus, activateFullMenuOnSingleClick, statusChangeHandler, singleIconStyleUIID, popupIconStyleUIID, groupStyleUIID, false);
     }
 
-    public MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, //IsItemOngoing itemOngoing,
+    private MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, //IsItemOngoing itemOngoing,
             String singleIconStyleUIID, String popupIconStyleUIID, String groupStyleUIID, boolean makeInactive) {
         super();
         inactive = makeInactive;

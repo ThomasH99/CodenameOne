@@ -450,6 +450,7 @@ public class ScreenListOfItems extends MyForm {
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListFct.getUpdatedItemList()));
 //        super(title, previousForm, () -> updateItemListOnDone.update(itemListOrg));
         super(screenType == null ? (title != null ? title : itemListFct.getUpdatedItemList().getText()) : screenType.getTitle(), previousForm, null, screenType == null ? MyForm.SCREEN_TASK_LIST_HELP : screenType.getHelpText());
+        setUniqueFormId("ScreenListOfItems");
         configureWithScreenType(screenType);
 //        if (textIfListEmpty != null) {
 //            setTextToShowIfEmptyList(textIfListEmpty);
@@ -486,8 +487,14 @@ public class ScreenListOfItems extends MyForm {
         getItemListFct = itemListFct;
         itemListOrItemOrg = getItemListFct.getUpdatedItemList(); //TODO!!!! Optimization: double call - also called in refreshAfterEdit first time screen is shown!!! But needed before below call to SaveEditedValuesLocally!
 
-        itemListOrItemOrg.addActionListener((e)
-                -> refreshAfterEdit()); //always simply update the 
+        ActionListener refreshListener = (e) -> {
+            if (isIgnoreNextActionEvent()) {
+                setIgnoreNextActionEvent(false);
+            } else {
+                refreshAfterEdit();
+            }
+        };
+        itemListOrItemOrg.addActionListener(refreshListener); //always simply update the 
 
 //        initLocalSaveOfEditedValues(getUniqueFormId() + itemListOrg.getObjectIdP());
 //        previousValues = new SaveEditedValuesLocally(getUniqueFormId() + itemListOrg.getObjectIdP());
@@ -502,7 +509,10 @@ public class ScreenListOfItems extends MyForm {
             //always save edited element on exit
 //            DAO.getInstance().saveNew((ParseObject) itemListOrItemOrg);
 //            DAO.getInstance().saveNewTriggerUpdate();
-            DAO.getInstance().saveToParseNow((ParseObject) itemListOrItemOrg);
+            if (!itemListOrItemOrg.isNoSave()) { //don't save temporary lists like list of workslots
+                DAO.getInstance().saveToParseNow((ParseObject) itemListOrItemOrg);
+            }
+            itemListOrItemOrg.removeActionListener(refreshListener); //remove listener again when exiting screen
             if (false) {
                 refreshAfterEdit(); //NO point in refreshing this screen when done??!
             }
@@ -539,7 +549,7 @@ public class ScreenListOfItems extends MyForm {
 //                + (itemListOrg.getObjectIdP() != null ? itemListOrg.getObjectIdP() : "$NewItem$"), true); //use text for unsaved lists like Log/Diary
         previousValues = new SaveEditedValuesLocally(this, getUniqueFormId() + "-"
                 //                + (itemListOrItemOrg.getObjectIdP() != null ? itemListOrItemOrg.getObjectIdP() : "$NewItem$"), true); //use text for unsaved lists like Log/Diary
-                + itemListOrItemOrg.getGuid(), true); //use text for unsaved lists like Log/Diary
+                + (itemListOrItemOrg.isNoSave() ? itemListOrItemOrg.getSystemName() : itemListOrItemOrg.getGuid()), true); //use text for unsaved lists like Log/Diary
         String expandedObjectsFileName = makeUniqueIdForExpandedObjects(itemListOrItemOrg, "$NoListName");
 //        String expandedObjectsFileName = itemListOrg.isNoSave() ? "" : (getUniqueFormId() + (itemListOrg.getObjectIdP() == null ? getTitle() : itemListOrg.getObjectIdP()));
         if (expandedObjectsFileName != null) {
@@ -671,6 +681,12 @@ public class ScreenListOfItems extends MyForm {
     }
 
     @Override
+    protected ItemAndListCommonInterface getTopLevelList() {
+        return itemListOrItemOrg; //should always be up-to-date when eg called from PinchContainer
+//        return getItemListFct.getUpdatedItemList(); //safer to get this function //optimize
+    }
+
+    @Override
     public boolean isPinchInsertEnabled(ItemAndListCommonInterface refElt, boolean insertBeforeRefElt) {
         boolean isPinchEnabled = refElt instanceof Item && isPinchInsertEnabled();
         return isPinchEnabled;
@@ -743,10 +759,10 @@ public class ScreenListOfItems extends MyForm {
 //        if (false && newContentContainer instanceof MyTree2) {
 //            setPinchInsertContainer(((MyTree2) newContentContainer).getInlineInsertField()); //save for next update
 //        }
-        if (container != null && container.getParent() != null) {
-            container.remove();
+        if (mainContentContainer != null && mainContentContainer.getParent() != null) {
+            mainContentContainer.remove();
         }
-        container = buildContentPaneForListOfItems(itemListOrItemOrg);
+        mainContentContainer = buildContentPaneForListOfItems(itemListOrItemOrg);
 //        if (false && newContentContainer instanceof MyTree2) {
 //            setPinchInsertContainer(((MyTree2) newContentContainer).getInlineInsertField()); //save for next update
 //        }
@@ -754,7 +770,7 @@ public class ScreenListOfItems extends MyForm {
 //            setStartEditingAsyncTextArea(getInlineInsertContainer().getTextArea()); //set to ensure it starts up in edit-model
 //        getContentPane().add(MyBorderLayout.CENTER, contentContainer); //NB!!! this doesn't actually replace the old contentPane immediately (in the below calls!!!) meaning recreateInlineInsertContainerIfNeeded() doesn't work
 //        addToContentContainer(contentContainer);
-        getContentPane().add(BorderLayout.CENTER, container);
+        getContentPane().add(BorderLayout.CENTER, mainContentContainer);
 //        if (false && newContentContainer != null) {
 //            ContainerScrollY scrollable = findScrollableContYChild(newContentContainer);
 //            if (false && scrollable != null) {
@@ -767,18 +783,20 @@ public class ScreenListOfItems extends MyForm {
 //                previousValues.setListenToYScrollComponent(scrollable);
 //            }
 //        }
-        previousValues.setListenToYScrollComponent(container); //ensure we listen to scroll on new content container
+        previousValues.setListenToYScrollComponent(mainContentContainer); //ensure we listen to scroll on new content container
 
-        setTitleAnimation(container); //MUST do this here since we create a new container on each refresh
+        setTitleAnimation(mainContentContainer); //MUST do this here since we create a new container on each refresh
 
 //        if (searchListener != null && getToolbar().getTitleComponent() instanceof TextField) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
 //        if (mySearchCommand != null && mySearchCommand.searchCont != null && !mySearchCommand.searchCont.isHidden()) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
-        if (getSearchCmd() != null && getSearchCmd().searchCont != null && !getSearchCmd().searchCont.isHidden()) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
-            searchListener.actionPerformed(null); //refresh search, eg when returning to screen
+//        if (getSearchCmd() != null && getSearchCmd().searchCont != null && !getSearchCmd().searchCont.isHidden()) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
+        if (getSearchCmd() != null && previousValues.containsKey(MySearchCommand.SEARCH_FIELD_VISIBLE_KEY)) { //only call if search bar is activated! NB. instanceof test is highly implementation dependent, replace with a check on isSearchActive()
+//            searchListener.actionPerformed(null); //refresh search, eg when returning to screen
+            getSearchCmd().actionPerformed(null);
         }
 
         if (false) { //TODO!!! re-activate (currently clashes with drag&drop: when trying to drag an element at the top of the list, it also activates pullToRefresh) -> consume the dragged event?!
-            container.addPullToRefresh(() -> {
+            mainContentContainer.addPullToRefresh(() -> {
                 Log.p("Pull to refresh... DEACTIVATED");
                 DAO.getInstance().removeFromCache((ParseObject) itemListOrItemOrg);
                 //refresh worktime
@@ -842,11 +860,11 @@ public class ScreenListOfItems extends MyForm {
         //check that is not already an insertContainer active earlier
         if (true || getPinchInsertContainer() == null) {
 //            ASSERT.that(getInlineInsertContainer() == null, "should never have the case"); //YES, happens on exit from an inlineinsertcontainer
-            recreateInlineInsertContainerAndReplayCmdIfNeeded();
+//            recreateInlineInsertContainerAndReplayCmdIfNeeded(); //moved to MyForm.refreshAfterEdit()
         }
 
-        if (false && container != null) {
-            ContainerScrollY scrollable = findScrollableContYChild(container);
+        if (false && mainContentContainer != null) {
+            ContainerScrollY scrollable = findScrollableContYChild(mainContentContainer);
             if (false && scrollable != null) {
                 scrollable.setScrollVisible(true);
             }
@@ -869,6 +887,10 @@ public class ScreenListOfItems extends MyForm {
 //        addShowListener(startAsyncListener); //do *after* show (will this make the async editing work?!)
 //        setTitleAnimation(scrollableContainer); //do this here instead of above - possibly creating clash in ainmation of CN1
 //</editor-fold>
+    }
+
+    private boolean isWorkSlotList(ItemAndListCommonInterface itemListOrItemOrg) {
+        return itemListOrItemOrg.getSystemName() != null && itemListOrItemOrg.getSystemName().equals(WorkSlot.CLASS_NAME);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -905,8 +927,10 @@ public class ScreenListOfItems extends MyForm {
 //        setupList();
 //    }
 //</editor-fold>
+    @Override
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
+        boolean workTimeScr = isWorkSlotList(itemListOrItemOrg);
         if (false) { //works, but overlaps with SmallTimer AND with last element in long list (need to enable white space after the list is scrolled up)
             FloatingActionButton fab = FloatingActionButton.createFAB(FontImage.MATERIAL_ADD);
             FloatingActionButton subfabStartTimer = fab.createSubFAB(Icons.iconTimerLaunch, "");
@@ -924,12 +948,13 @@ public class ScreenListOfItems extends MyForm {
             }
         }
 
-        searchListener = makeSearchFunctionUpperLowerStickyHeaders(itemListOrItemOrg);
+//        searchListener = makeSearchFunctionUpperLowerStickyHeaders(itemListOrItemOrg);
 //        getToolbar().addSearchCommand(searchListener, MyPrefs.defaultIconSizeInMM.getFloat());
 //        mySearchBar = new MySearchBar(getToolbar(), searchListener);
 //        mySearchCommand = new MySearchCommand(getContentPane(), searchListener);
 //        toolbar.addCommandToRightBar(mySearchCommand);
-        setSearchCmd(new MySearchCommand(this, searchListener));
+//        setSearchCmd(new MySearchCommand(this, searchListener));
+        setSearchCmd(new MySearchCommand(this, itemListOrItemOrg));
         toolbar.addCommandToRightBar(getSearchCmd());
 
         //BACK
@@ -941,7 +966,7 @@ public class ScreenListOfItems extends MyForm {
 
         //NEW ITEM
 //        Command newCmd = new Command("OldCmd", Icons.iconNewToolbarStyle) {
-        if (!optionNoNewButton && getScreenType() != ScreenType.INBOX) { //don't show AddNew 
+        if (!optionNoNewButton && getScreenType() != ScreenType.INBOX && !workTimeScr) { //don't show AddNew 
 //            if (itemListOrg.isNoSave()) {
 //            toolbar.addCommandToRightBar(makeCommandNewItemSaveToInbox());
 
@@ -1030,7 +1055,7 @@ public class ScreenListOfItems extends MyForm {
 
         //TIMER
 //        toolbar.addCommandToLeftBar(makeTimerCommand(itemList)); //use filtered/sorted ItemList for Timer //NO: doesn't work when itemList is updated
-        if (!optionTemplateEditMode && !optionNoTimer && itemListOrItemOrg != ItemListList.getInstance()) { //don't startTimer on ListOfLists (makes eg select source mal-fonction)
+        if (!optionTemplateEditMode && !optionNoTimer && itemListOrItemOrg != ItemListList.getInstance() && !workTimeScr) { //don't startTimer on ListOfLists (makes eg select source mal-fonction)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            toolbar.addCommandToLeftBar(MyReplayCommand.create("ScreenTimer", "", Icons.iconTimerSymbolToolbarStyle, (e) -> {
 //            toolbar.addCommandToLeftBar(MyReplayCommand.createKeep(TimerStack.TIMER_REPLAY, "", FontImage.createMaterial(FontImage.MATERIAL_TIMER, UIManager.getInstance().getComponentStyle("TitleCommand")), (e) -> {
@@ -1077,7 +1102,7 @@ public class ScreenListOfItems extends MyForm {
         }
 
 //        if (optionTemplateEditMode || (itemListOrItemOrg instanceof Item && ((Item) itemListOrItemOrg).isTemplate())) {
-        if (optionTemplateEditMode) {
+        if (optionTemplateEditMode && !workTimeScr) {
             if (true) {
                 //Create a new template manually in screen with list of Template
                 Command newCmd = MyReplayCommand.createKeep("CreateNewTemplate", "Add template", Icons.iconNew, (e) -> {
@@ -1145,7 +1170,7 @@ public class ScreenListOfItems extends MyForm {
 
         //NEW ITEM from TEMPLATE
         //TODO!!! create template by longpress on (+)
-        if (!optionTemplateEditMode) {
+        if (!optionTemplateEditMode && !workTimeScr) {
 //            toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewFromTemplate", "Add from template", Icons.iconAddFromTemplate, (e) -> {
 
             if (!optionNoNewFromTemplate && !optionNoneEditableList) { //UI: KEEP for templates to allow inserting another template as a sub-hierarcy under a template
@@ -1215,23 +1240,31 @@ public class ScreenListOfItems extends MyForm {
                             new ScreenObjectPicker2(SCREEN_TEMPLATE_PICKER, TemplateList.getInstance(), Icons.iconMainTemplates, null,
                                     selectedTemplates, ScreenListOfItems.this, () -> {
                                         for (Item selectedTemplate : (List<Item>) selectedTemplates) { //UI: can select multiple templates to insert at once
-                                            Item templateCopy = selectedTemplate.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE);
-                                            if (itemListOrItemOrg instanceof Item && ((Item) itemListOrItemOrg).isDueDateInheritanceOn() && ((Item) itemListOrItemOrg).getDueDate().getTime() != 0) {
-                                                templateCopy.updateRelativeDates(((Item) itemListOrItemOrg).getDueDate());
-                                            } else { //UI: for ItemLists, Categories, Items w/o inherited due date, offer user to pick a date
-                                                Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //default due date
-                                                String optionalText = "";
-                                                if (selectedTemplates.size() > 1) {
-                                                    optionalText = "Template \"" + templateCopy.getText() + "\" ";
-                                                }
-                                                newDueDate = showDialogSetDueDateN(newDueDate, optionalText);
-                                                if (newDueDate != null && newDueDate.getTime() != 0) {
-                                                    templateCopy.setDueDate(newDueDate); //if new date entered, save it!
-                                                    templateCopy.updateRelativeDates(newDueDate);
-                                                }
-                                            }
-                                            itemListOrItemOrg.addToList(templateCopy); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
-                                            DAO.getInstance().saveToParseNow(templateCopy); //save new subtasks (will be deleted again if Cancel
+//                                            Item templateCopy = selectedTemplate.cloneMe(Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE_XXXxxx);
+                                            Date now = new MyDate();
+//                                            Item templateCopy = selectedTemplate.createAndInsertTemplateCopy(itemListOrItemOrg, now);
+                                            selectedTemplate.createAndInsertTemplateCopy(itemListOrItemOrg, now);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//                                            if (false) {
+//                                                if (itemListOrItemOrg instanceof Item && ((Item) itemListOrItemOrg).isDueDateInheritanceOn() && ((Item) itemListOrItemOrg).getDueDate().getTime() != 0) {
+//                                                    templateCopy.updateRelativeDates(((Item) itemListOrItemOrg).getDueDate());
+//                                                } else { //UI: for ItemLists, Categories, Items w/o inherited due date, offer user to pick a date
+//                                                    Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //default due date
+//                                                    String optionalText = "";
+//                                                    if (selectedTemplates.size() > 1) {
+//                                                        optionalText = "Template \"" + templateCopy.getText() + "\" ";
+//                                                    }
+//                                                    newDueDate = showDialogSetDueDateN(newDueDate, optionalText);
+//                                                    if (newDueDate != null && newDueDate.getTime() != 0) {
+//                                                        templateCopy.setDueDate(newDueDate); //if new date entered, save it!
+//                                                        templateCopy.updateRelativeDates(newDueDate);
+//                                                    }
+//                                                }
+//                                                itemListOrItemOrg.addToList(templateCopy); //add itemOrg as owner (and update inherited values -> they will be updated to Picker values on exit or if editing subtasks!)
+//                                            }
+//</editor-fold>
+//                                            DAO.getInstance().saveToParseNow(templateCopy); //save new subtasks (will be deleted again if Cancel
+                                            DAO.getInstance().saveToParseNow((ParseObject) itemListOrItemOrg); //save all added template copies
                                         }
                                     }, (obj) -> {
                                         if (obj instanceof Item) {
@@ -1335,7 +1368,7 @@ public class ScreenListOfItems extends MyForm {
                 }).show();
             }
             ));
-        } else if (!optionTemplateEditMode && !optionNoEditListProperties && itemListOrItemOrg instanceof ItemList) {
+        } else if (!optionTemplateEditMode && !optionNoEditListProperties && !workTimeScr && itemListOrItemOrg instanceof ItemList) {
             String txt = itemListOrItemOrg instanceof Category ? "Category Properties" : "List properties";
             toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditCatListProps", txt, Icons.iconEditProperties, (e) -> {
 //                ItemList itemList = new ItemList();
@@ -1364,7 +1397,7 @@ public class ScreenListOfItems extends MyForm {
         }
 
         //EDIT WORKSLOTS
-        if (!optionTemplateEditMode && !optionNoWorkTime) {
+        if (!optionTemplateEditMode && !optionNoWorkTime && !workTimeScr) {
             toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("EditWorkTime", "Work time", Icons.iconWorkSlot, (e) -> {
                 setKeepPos(new KeepInSameScreenPosition());
 //                new ScreenListOfWorkSlots(itemListOrg.getText(), itemListOrg.getWorkSlotListN(),
@@ -1383,27 +1416,30 @@ public class ScreenListOfItems extends MyForm {
         }
 
         //SHOW DETAILS
-        toolbar.addCommandToOverflowMenu(new CommandTracked("Show task details NOT SHOWN", Icons.iconCmdShowTaskDetails, "ShowAllTaskDetails") {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
+        if (!workTimeScr) {
+            toolbar.addCommandToOverflowMenu(new CommandTracked("Show task details NOT SHOWN", Icons.iconCmdShowTaskDetails, "ShowAllTaskDetails") {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
 //                showDetailsForAllTasks = !showDetailsForAllTasks;
-                MyPrefs.flipBoolean(MyPrefs.showDetailsForAllTasks);
+                    MyPrefs.flipBoolean(MyPrefs.showDetailsForAllTasks);
 //                setupList(); //TODO optimize the application of a filter?
-                //TODO!!!! scroll to 'same' place in list after expansion, e.g. keep top-most visible item before expand visible in same place, use Container.getClosestComponentTo(x, y) with upper-left-most position of contentPane?! c.getVisibleBounds(), c.getComponentAt(x,y)?
-                if (true) {
-                    refreshAfterEdit(); //TODO optimize the application of a filter?
-                }                //TODO!!! animate each detail container (e.g. make visible for each task and animate)
-            }
+                    //TODO!!!! scroll to 'same' place in list after expansion, e.g. keep top-most visible item before expand visible in same place, use Container.getClosestComponentTo(x, y) with upper-left-most position of contentPane?! c.getVisibleBounds(), c.getComponentAt(x,y)?
+                    if (true) {
+                        refreshAfterEdit(); //TODO optimize the application of a filter?
+                    }                //TODO!!! animate each detail container (e.g. make visible for each task and animate)
+                }
 
-            @Override
-            public String getCommandName() {
+                @Override
+                public String getCommandName() {
 //                return "Task details " + (MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) ? "OFF" : "ON"); //if its already on, show OFF
-                return MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) ? "Hide task details" : "Show task details"; //if its already on, show OFF
+//                    return MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) ? "Hide task details" : "Show task details"; //if its already on, show OFF
+                    return MyPrefs.getBoolean(MyPrefs.showDetailsForAllTasks) ? "Hide details" : "Show details"; //if its already on, show OFF
+                }
             }
+            );
         }
-        );
 
-        if (!optionTemplateEditMode && !optionUnmodifiableFilter) {// && itemListOrg.getFilterSortDefN() != null) { //UI: !=null: must define filter before sorting can be turned on/off
+        if (!optionTemplateEditMode && !optionUnmodifiableFilter && !workTimeScr) {// && itemListOrg.getFilterSortDefN() != null) { //UI: !=null: must define filter before sorting can be turned on/off
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Filter/Sort settings", "Edit filter", Icons.iconFilterSettings, (e) -> {
 //                FilterSortDef filterSortDef = itemListOrg.getFilterSortDef() == null ? new FilterSortDef() : itemListOrg.getFilterSortDef();
@@ -1526,7 +1562,7 @@ public class ScreenListOfItems extends MyForm {
         }
 
         //SELECTION MODE
-        if (!optionTemplateEditMode && !optionNoMultipleSelectionMode) {
+        if (!optionTemplateEditMode && !optionNoMultipleSelectionMode && !workTimeScr) {
 
             Command cmdInvertSelection = new CommandTracked("Invert selection", Icons.iconInvertSelection) {
                 @Override
@@ -1836,10 +1872,14 @@ public class ScreenListOfItems extends MyForm {
                 if (true) { //temporarily disabled until next release
                     //                toolbar.addCommandToOverflowMenu(MyReplayCommand.create("SelectionModeOnOff", "Selection ON", Icons.iconSelectedLabelStyle, (e) -> {
 //                    toolbar.addCommandToOverflowMenu(CommandTracked.create("Select", Icons.iconSelected, (e) -> {
-                    selectCmd = CommandTracked.create("Select", Icons.iconSelectAllCust, Icons.myIconFont, (e) -> {
-                        Button selectButton = toolbar.findCommandComponent(selectCmd);
-                        if (selectButton != null) {
-                            selectButton.setText(isSelectionMode() ? "Select" : "Exit Select");
+//                    selectCmd = CommandTracked.create("Select", Icons.iconSelectAllCust, Icons.myIconFont, (e) -> {
+//                    selectCmd = CommandTracked.create("SelectNotShown", Icons.iconSelectAllCust, Icons.myIconFont, (e) -> {
+                    selectCmd = new CommandTracked("SelectNotShown", Icons.iconSelectAllCust, Icons.myIconFont, (e) -> {
+                        if (false) {
+                            Button selectButton = toolbar.findCommandComponent(selectCmd);
+                            if (selectButton != null) {
+                                selectButton.setText(isSelectionMode() ? "Select" : "Exit Select");
+                            }
                         }
                         if (!isSelectionMode()) {
 //                    isSelectionMode() = true;
@@ -1907,7 +1947,13 @@ public class ScreenListOfItems extends MyForm {
                             refreshAfterEdit();
                         }
 //                }, true));
-                    }, "SelectionOnOff");
+                    }, "SelectionOnOff") {
+                        @Override
+                        public String getCommandName() {
+                            return isSelectionMode() ? "Exit Select" : "Select";
+                        }
+
+                    };
                     toolbar.addCommandToOverflowMenu(selectCmd);
                 }
             }
@@ -1950,26 +1996,26 @@ public class ScreenListOfItems extends MyForm {
                     }));
                 }
             }
+        }
 
 //        toolbar.addCommandToOverflowMenu(CommandTracked.create("Help", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-            toolbar.addCommandToOverflowMenu(CommandTracked.create("Support", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+        toolbar.addCommandToOverflowMenu(CommandTracked.create("Help & Support", Icons.iconHelp, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+            showPreviousScreen(true);
+        }, "Help"));
+
+        if (false) {
+            toolbar.addCommandToOverflowMenu(CommandTracked.create("Report issue", Icons.iconReportIssue, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
                 showPreviousScreen(true);
-            }, "Help"));
+            }, "ReportIssue"));
+        }
 
-            if (false) {
-                toolbar.addCommandToOverflowMenu(CommandTracked.create("Report issue", Icons.iconReportIssue, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-                    showPreviousScreen(true);
-                }, "ReportIssue"));
-            }
-
-            //CANCEL - not relevant, all edits are done immediately so not possible to cancel
-            if (false) {//doesn't make sense for a list!
-                toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
-                    showPreviousScreen(true);
-                }, "Cancel"));
-            } else {
-                toolbar.addCommandToOverflowMenu(makeCancelCommand());
-            }
+        //CANCEL - not relevant, all edits are done immediately so not possible to cancel
+        if (false) {//doesn't make sense for a list!
+            toolbar.addCommandToOverflowMenu(CommandTracked.create("Cancel", Icons.iconCancel, (e) -> { //UI: most natural place to delete a list/category is where you see all the items in it!
+                showPreviousScreen(true);
+            }, "Cancel"));
+        } else {
+            toolbar.addCommandToOverflowMenu(makeCancelCommand());
         }
 
         if (Config.TEST && itemListOrItemOrg instanceof ItemList) {
@@ -2282,11 +2328,9 @@ public class ScreenListOfItems extends MyForm {
         return !optionDisableDragAndDrop && !isSortOn(); //
     }
 
-    public ItemAndListCommonInterface getDisplayedElement() {
-        return itemListOrItemOrg;
-
-    }
-
+//    public ItemAndListCommonInterface getDisplayedElement() {
+//        return itemListOrItemOrg;
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    Component makeNewInsertNewTaskContainerXXX(Item item, ItemList itemList) {
 //        if (lastInsertNewTaskContainer != null && item == lastInsertNewTaskContainer.newItem) {
@@ -2502,7 +2546,7 @@ public class ScreenListOfItems extends MyForm {
 //        SwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(swipeActionContainer, buttonSwipeContainer, contWithAddNewTaskCont) {
 //</editor-fold>
 //        SwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(swipeActionContainer, buttonSwipeContainer, mainCont) {
-        MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(buttonSwipeRightContainer, buttonSwipeLeftContainer, mainCont) {
+        MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(buttonSwipeRightContainer, buttonSwipeLeftContainer, mainCont, ownerItemOrItemListOrCategory) {
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            @Override
@@ -2717,7 +2761,8 @@ public class ScreenListOfItems extends MyForm {
 //        WorkSlotList wSlotsN = item.getWorkSlotListN();
         MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(
                 item.getText()
-                + item.getDebugTextInfo(Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()),
+                + (Config.TEST ? (item.getDebugTextInfo(Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean())
+                        + ("/" + item.getGuid()) + (item.getObjectIdP() == null ? "!!" : "")) : ""),
                 //                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getObjectIdP() == null ? "-ID" : "")
                 //                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getOwner() == null ? "-OWN" : "")
                 //                + ((((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getRepeatRuleN() == null)) ? ""
@@ -2877,14 +2922,15 @@ public class ScreenListOfItems extends MyForm {
 //        if (item.isTemplate()) {
 //            west.add(new Label(Icons.iconTemplateStatusSymbolLabelStyle)); //NO, not nice with this symbol
 //        } else 
-        MyCheckBox status = new MyCheckBox(item.getStatus(), item.isTemplate());
+//        MyCheckBox status = new MyCheckBox(item.getStatus(), item.isTemplate());
+        MyCheckBox status = new MyCheckBox(item, item.isTemplate());
 //        if (myForm instanceof ScreenListOfItems && ((ScreenListOfItems) myForm).projectEditMode) {
 //            //TODO!!!! mark this task selected (and others unselected), or unselected if already selected
 //            //store the task somewhere to can be used to add subtasks to or sibling tasks after
 //            status = null;
 //        } else {
 //            status = new MyCheckBox(item.getStatus(), (oldStatus, newStatus) -> {
-        if (!item.isTemplate()) {
+        if (false && !item.isTemplate()) { //NOW done in MyCheckBox (since refreshAfterEdit is handled via change events
             if (false) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                status.setStatusChangeHandler((oldStatus, newStatus) -> {
@@ -2938,6 +2984,7 @@ public class ScreenListOfItems extends MyForm {
             } else {
                 status.setStatusChangeHandler((oldStatus, newStatus) -> {
                     item.setStatus(newStatus);
+//                    item.setEditedDateToNow(); //no, done in MyCheckBox
                     myForm.refreshAfterEdit(); //refresh after save as it may update sub/supertasks etc
                     DAO.getInstance().saveToParseNow(item);
                     return true;
@@ -3923,10 +3970,12 @@ refreshAfterEdit();
         //UPDATE DUE DATE
 //        if (!item.isTemplate() && !isDone && myForm.getTitle()!=null&& (myForm.getTitle().equals(MyForm.SCREEN_TODAY_TITLE) || myForm.getTitle().equals(MyForm.SCREEN_OVERDUE_TITLE))) { //UI: only show in Today view
 //</editor-fold>
+        Button setDueDateToToday = null;
         if (!item.isTemplate() && !isDone && (myForm.getScreenType() == ScreenType.TODAY || myForm.getScreenType() == ScreenType.OVERDUE)) { //UI: only show in Today view
 //            setDueDateToToday = new Button(null, Icons.iconSetDueDateToToday());
 //            final Button setDueDateToToday = new Button("Set date");
-            final Button setDueDateToToday = makeSwipeButton("Set date", "SwipeButtonSetDueToToday", Icons.iconSetDueDateToTodayMaterial, null, (e) -> {
+//            final Button setDueDateToToday = makeSwipeButton("Set date", "SwipeButtonSetDueToToday", Icons.iconSetDueDateToTodayMaterial, null, (e) -> {
+            setDueDateToToday = makeSwipeButton("Set date", "SwipeButtonSetDueToToday", Icons.iconSetDueDateToTodayMaterial, null, (e) -> {
 //                myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont)); //NB keeping the position of item doesn't make sense since this command can make it disappear (e.g. in Overdue screen)
 //                myForm.setKeepPos(new KeepInSameScreenPosition(swipCont)); //ASSERT since swipCont not ScrollableY
                 myForm.setKeepPos(new KeepInSameScreenPosition()); //try to keep same scroll position as before 
@@ -3955,11 +4004,12 @@ refreshAfterEdit();
 //            setDueDateToToday.setUIID("SwipeButtonSetDueToToday");
             buttonSwipeLeftContainer.add(setDueDateToToday);
         }
-
+        Button setFutureDueToToday = null;
         //Move next-coming items to Today view (up the Due Date)
         if (myForm.getScreenType() == ScreenType.NEXT) { //UI: only show in NEXT view
 //            final Button setFutureDueToToday = new Button("Due today");
-            final Button setFutureDueToToday = makeSwipeButton("Due today", "SwipeButtonSetFutureDueToToday", Icons.iconSetDueDateToTodayMaterial, null, (e) -> {
+//            final Button setFutureDueToToday = makeSwipeButton("Due today", "SwipeButtonSetFutureDueToToday", Icons.iconSetDueDateToTodayMaterial, null, (e) -> {
+            setFutureDueToToday = makeSwipeButton("Due today", "SwipeButtonSetFutureDueToToday", Icons.iconSetDueDateToTodayMaterial, null, (e) -> {
                 myForm.setKeepPos(new KeepInSameScreenPosition()); //try to keep same scroll position as before 
                 //TODO: add test to ensure dueDate is actually in the future - shouldn't be needed for tasks in Next
                 item.setDueDate(MyDate.setDateToTodayKeepTime(item.getDueDate())); //UI: if due is NOT already today, then set due day to today
@@ -3982,43 +4032,23 @@ refreshAfterEdit();
 //        bottomLeft.add(new Button(Icons.get().iconTimerSymbolLabelStyle)); //Start Timer on this
 //            if (!item.isTemplate() && !item.isDone()) {
 //</editor-fold>
-//        if (true || myFormScreenListOfItems == null || !myFormScreenListOfItems.projectEditMode) {
-        if (!item.isTemplate()) { //add Timer swipe-button
-//                    buttonSwipeContainer.add(new Button(new Command(null, Icons.iconTimerSymbolToolbarStyle) {
-//            Button startTimer = new Button(MyReplayCommand.create("StartTimer-" + item.getObjectIdP(), null, Icons.iconTimerSymbolToolbarStyle, (ev) -> {
-//            Button startTimer = new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconTimerSymbolToolbarStyle(), (ev) -> {
-            //NO replay on starting timer (started timers will be saved and restarted automatically without relying on replay commands)
-//            Button startTimer = new Button(Command.create(null, Icons.iconTimerSymbolToolbarStyle(), (ev) -> {
-            Button startTimer = makeTimerSwipeButton(swipCont, item, ownerItemOrItemListOrCategory, "SwipeTimerOnListInScreenListOfItemLists");
-//<editor-fold defaultstate="collapsed" desc="comment">
-//            Button startTimer = new Button(Command.create(null, null, (ev) -> {
-//                        @Override
-//                        public void actionPerformed(ActionEvent evt) {
-//                ScreenTimerNew.getInstance().startTimerOnItemList(itemListFilteredSorted, ScreenListOfItems.this);
-//                        ((MyForm) mainCont.getComponentForm()).setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-//            if (false) {
-//                startTimer.setCommand(Command.create(null, null, (ev) -> {
-////                   myForm.setKeepPos(new KeepInSameScreenPosition(item, swipCont));
-////                ScreenTimer2.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm(), true);
-////                TimerStack.getInstance().startTimerOnItem(item, (MyForm) swipCont.getComponentForm());//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
-//                    TimerStack2.getInstance().startTimerOnItem(item, myForm);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
-////                        }
-//                    swipCont.close(); //close before save
-//                }));
-//            }
-//            startTimer.setMaterialIcon(Icons.iconLaunchTimer);
-//            startTimer.setUIID("SwipeButtonTimer");
-//            startTimer.setGap(0);
-//</editor-fold>
-            buttonSwipeLeftContainer.add(startTimer);
-        }
         if (item.isTemplate()) { // item.isTemplate() => //add instantiate&edit Template swipe-button
 //            Button newFromTemplate = new Button(MyReplayCommand.create("NewItemFromTemplate", null, Icons.iconNewItemFromTemplate, (e) -> {
+            Button startTimerOnTemplateInstance = makeSwipeButton("Timer", "SwipeButtonStartTimerOnNewTemplateInstance", Icons.iconTimerLaunch, null, null,
+                    MyReplayCommand.create("NewItemFromTemplate", null, null, (e) -> {
+                        Item newTemplateInstantiation = item.createAndInsertTemplateCopy(Inbox.getInstance()); //UI: always add created instances to Inbox
+                        TimerStack2.getInstance().startTimerAndSave(newTemplateInstantiation,
+                                Inbox.getInstance(), myForm, false, true);//true == start timer even on invalid timer items, forceTimerStartOnLeafTasksWithAnyStatus
+                        swipCont.close(); //close before save 
+                    }));
+            buttonSwipeLeftContainer.add(startTimerOnTemplateInstance);
+
             Button newFromTemplate = makeSwipeButton("+Task", "SwipeButtonNewFromTemplate", Icons.iconNewItemFromTemplate, null, null,
                     MyReplayCommand.create("NewItemFromTemplate", null, null, (e) -> {
-                        Item newTemplateInstantiation = new Item(false);
-//                item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK);
-                        item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE); //before Item.CopyMode.COPY_TO_COPY_PASTE??
+//                        Item newTemplateInstantiation = new Item(false);
+////                item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE_TO_TASK);
+//                        item.copyMeInto(newTemplateInstantiation, Item.CopyMode.COPY_FROM_TEMPLATE_TO_INSTANCE_XXXxxx); //before Item.CopyMode.COPY_TO_COPY_PASTE??
+                        Item newTemplateInstantiation = item.createAndInsertTemplateCopy(Inbox.getInstance()); //UI: always add created instances to Inbox
                         new ScreenItem2(newTemplateInstantiation, (MyForm) swipCont.getComponentForm(), () -> {
 //                    DAO.getInstance().saveNew(newTemplateInstantiation, true); //must save item since adding it to itemListOrg changes its owner, saved to 'inbox'
 //                    DAO.getInstance().saveNew(newTemplateInstantiation); //must save item since adding it to itemListOrg changes its owner, saved to 'inbox'
@@ -4033,25 +4063,64 @@ refreshAfterEdit();
 //                    newFromTemplate.setUIID("SwipeButton");
 //            newFromTemplate.setUIID("SwipeButtonNewFromTemplate");
             buttonSwipeLeftContainer.add(newFromTemplate);
+
+            setSameWidth(startTimerOnTemplateInstance, newFromTemplate);
 //            }
         }
 
+        Button stopTimer = null;
+        Button startTimer = null;
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (true || myFormScreenListOfItems == null || !myFormScreenListOfItems.projectEditMode) {
+//        if (!item.isTemplate()) { //add Timer swipe-button
+////                    buttonSwipeContainer.add(new Button(new Command(null, Icons.iconTimerSymbolToolbarStyle) {
+////            Button startTimer = new Button(MyReplayCommand.create("StartTimer-" + item.getObjectIdP(), null, Icons.iconTimerSymbolToolbarStyle, (ev) -> {
+////            Button startTimer = new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconTimerSymbolToolbarStyle(), (ev) -> {
+//            //NO replay on starting timer (started timers will be saved and restarted automatically without relying on replay commands)
+////            Button startTimer = new Button(Command.create(null, Icons.iconTimerSymbolToolbarStyle(), (ev) -> {
+//            if (item == TimerStack2.getInstance().getCurrentlyTimedItemN()) {
+////                itemLabel.setMaterialIcon(Icons.iconTimerQuitTimer);
+//                stopTimer = makeTimerStopSwipeButton(swipCont, item, ownerItemOrItemListOrCategory, "SwipeTimerOnListInScreenListOfItemLists");
+//                buttonSwipeLeftContainer.add(stopTimer);
+//            } else {
+////                Button startTimer = makeTimerSwipeButton(swipCont, item, ownerItemOrItemListOrCategory, "SwipeTimerOnListInScreenListOfItemLists");
+//                 startTimer = makeTimerSwipeButton(swipCont, item, ownerItemOrItemListOrCategory, "SwipeTimerOnListInScreenListOfItemLists");
+//                buttonSwipeLeftContainer.add(startTimer);
+//            }
+//        }
+//</editor-fold>
         if (true || !((ScreenListOfItems) myForm).projectEditMode) {
             //STARRED
             //        final Button starredSwipeableButton = new Button("Star");
 //        starredSwipeableButton.setMaterialIcon(item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselected);
 //        starredSwipeableButton.setGap(0);
+//Button starredSwipeableButton=null;
+            if (!item.isTemplate()) {
+                //                    buttonSwipeContainer.add(new Button(new Command(null, Icons.iconTimerSymbolToolbarStyle) {
+//            Button startTimer = new Button(MyReplayCommand.create("StartTimer-" + item.getObjectIdP(), null, Icons.iconTimerSymbolToolbarStyle, (ev) -> {
+//            Button startTimer = new Button(MyReplayCommand.create(TimerStack.TIMER_REPLAY, null, Icons.iconTimerSymbolToolbarStyle(), (ev) -> {
+                //NO replay on starting timer (started timers will be saved and restarted automatically without relying on replay commands)
+//            Button startTimer = new Button(Command.create(null, Icons.iconTimerSymbolToolbarStyle(), (ev) -> {
+                if (item == TimerStack2.getInstance().getCurrentlyTimedItemN()) {
+//                itemLabel.setMaterialIcon(Icons.iconTimerQuitTimer);
+                    stopTimer = makeTimerStopSwipeButton(swipCont, item, ownerItemOrItemListOrCategory, "SwipeTimerOnListInScreenListOfItemLists");
+                    buttonSwipeLeftContainer.add(stopTimer);
+                } else {
+                    startTimer = makeTimerSwipeButton(swipCont, item, ownerItemOrItemListOrCategory, "SwipeTimerOnListInScreenListOfItemLists");
+                    buttonSwipeLeftContainer.add(startTimer);
+                }
 
-            if (!item.isTemplate() && !isDone) {
-                final Button starredSwipeableButton = makeSwipeButton("Star", "", item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselected, null);
+                if (!isDone) {
+//                    final Button starredSwipeableButton = makeSwipeButton("Star", "", item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselected, null);
+                    Button starredSwipeableButton = makeSwipeButton("Star", "", item.isStarred() ? Icons.iconStarSelected : Icons.iconStarUnselected, null);
 //            Button starredSwipeable = new Button(null, item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
-                starredSwipeableButton.addActionListener((e) -> {
-                    item.setStarred(!item.isStarred()); //flip the starred value
-                    starredSwipeableButton.setUIID(item.isStarred() ? "SwipeButtonStarActive" : "SwipeButtonStarInactive");
-                    itemLabel.setTextUIID((item.isStarred() ? "ListOfItemsTextStarred" : "ListOfItemsText"));
-                    item.setEditedDateToNow();
+                    starredSwipeableButton.addActionListener((e) -> {
+                        item.setStarred(!item.isStarred()); //flip the starred value
+                        starredSwipeableButton.setUIID(item.isStarred() ? "SwipeButtonStarActive" : "SwipeButtonStarInactive");
+                        itemLabel.setTextUIID((item.isStarred() ? "ListOfItemsTextStarred" : "ListOfItemsText"));
+                        item.setEditedDateToNow();
 
-                    //update the starred button
+                        //update the starred button
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                    starButton.setIcon(item.isStarred() ? Icons.iconStarSelectedLabelStyle : Icons.iconStarUnselectedLabelStyle);
 //                    if (false) {
@@ -4065,18 +4134,24 @@ refreshAfterEdit();
 ////            starredSwipeable.repaint();
 //                    }
 //</editor-fold>
-                    swipCont.close(); //close before save 
+                        swipCont.close(); //close before save 
 //                        myForm.revalidate();
-                    swipCont.revalidate(); //really necessary?!
+                        swipCont.revalidate(); //really necessary?!
 //                    DAO.getInstance().saveNew(item, true);
 //                    DAO.getInstance().saveNew(item);
 //                    DAO.getInstance().saveNewTriggerUpdate();
-                    DAO.getInstance().saveToParseNow(item);
-                    myForm.refreshAfterEdit(); //update inherited values
-                });
-                starredSwipeableButton.setUIID(item.isStarred() ? "SwipeButtonStarActive" : "SwipeButtonStarInactive");
+                        DAO.getInstance().saveToParseNow(item);
+                        myForm.refreshAfterEdit(); //update inherited values
+                    });
+                    starredSwipeableButton.setUIID(item.isStarred() ? "SwipeButtonStarActive" : "SwipeButtonStarInactive");
 //                starredSwipeableButton.setGap(0);
-                buttonSwipeLeftContainer.add(starredSwipeableButton);
+                    buttonSwipeLeftContainer.add(starredSwipeableButton);
+                    if (startTimer != null) {
+                        setSameWidth(startTimer, starredSwipeableButton);
+                    } else if (stopTimer != null) {
+                        setSameWidth(stopTimer, starredSwipeableButton);
+                    }
+                }
             }
         }
 
@@ -4087,7 +4162,7 @@ refreshAfterEdit();
 
         //UI: disable swipeInsertButtons for systemLists (auto-generated)
 //        if (myForm.isPinchInsertEnabled() && !(ownerItemOrItemListOrCategory instanceof ItemList && !((ItemList) ownerItemOrItemListOrCategory).isSystemList())) {//|| !((ScreenListOfItems) myForm).projectEditMode) {
-        if (myForm.isPinchInsertEnabled() ) {//|| !((ScreenListOfItems) myForm).projectEditMode) {
+        if (myForm.isPinchInsertEnabled()) {//|| !((ScreenListOfItems) myForm).projectEditMode) {
 //            Button insertInlineContBelow = new Button(MyReplayCommand.create("NewItemSwipeInsertBelow", null, Icons.iconInsertTaskBelow, (e) -> {
 //            Button insertInlineContBelow = new Button(MyReplayCommand.create("SwipeInsertBelow-" + item.getObjectIdP(), null, Icons.iconInsertTaskBelow, (e) -> {
 //            Button insertInlineContAbove = new Button(MyReplayCommand.create("NewItemSwipeInsertAbove", null, Icons.iconInsertTaskAbove, (e) -> {
@@ -4097,7 +4172,11 @@ refreshAfterEdit();
                     MyReplayCommand.create("SwipeInsertAbove-" + item.getReplayId(), null,
                             null, //Icons.iconInsertTaskAboveMy,
                             (e) -> {
-                                ((MyForm) swipCont.getComponentForm()).createAndAddPinchInsertContainer(swipCont, item, true);
+//                                ((MyForm) swipCont.getComponentForm()).createAndAddPinchInsertContainer(swipCont, item, true);
+//                                PinchInsertContainer.createAndAddPinchInsertContainer(((MyForm) swipCont.getComponentForm()), swipCont, item, true);
+                                MyForm myForm2 = ((MyForm) swipCont.getComponentForm());
+//                                myForm2.newPinchContainer = PinchInsertContainer.createAndAddPinchInsertContainer(myForm2, item.getGuid(), Item.CLASS_NAME, swipCont, true);
+                                myForm2.currentPinchContainer = PinchInsertContainer.createAndAddPinchInsertContainer(myForm2, item.getGuid(), Item.CLASS_NAME, swipCont, true);
                                 swipCont.close();
                                 swipCont.revalidate(); //really necessary?!
                             }));
@@ -4109,7 +4188,10 @@ refreshAfterEdit();
                     MyReplayCommand.create("SwipeInsertBelow-" + item.getReplayId(), null,
                             null, //Icons.iconInsertTaskBelowMy,
                             (e) -> {
-                                ((MyForm) swipCont.getComponentForm()).createAndAddPinchInsertContainer(swipCont, item, false);
+//                                PinchInsertContainer.createAndAddPinchInsertContainer(((MyForm) swipCont.getComponentForm()), swipCont, item, false);
+                                MyForm myForm2 = ((MyForm) swipCont.getComponentForm());
+//                                myForm2.newPinchContainer = PinchInsertContainer.createAndAddPinchInsertContainer(myForm2, item.getGuid(), Item.CLASS_NAME, swipCont, false);
+                                myForm2.currentPinchContainer = PinchInsertContainer.createAndAddPinchInsertContainer(myForm2, item.getGuid(), Item.CLASS_NAME, swipCont, false);
                                 swipCont.close();
                                 swipCont.revalidate(); //really necessary?!
                             }));
@@ -4117,6 +4199,7 @@ refreshAfterEdit();
 //            insertInlineContBelow.setUIID("SwipeButtonInsertBelow");
 //            insertInlineContBelow.setGap(0);
             buttonSwipeRightContainer.add(insertInlineContBelow);
+            setSameWidth(insertInlineContAbove, insertInlineContBelow);
         }
 
 //        }
@@ -5311,15 +5394,36 @@ refreshAfterEdit();
         } else {
             if (getTextToShowIfEmptyList() != null) {
 //                return Container.encloseIn(BoxLayout.y(), new Label(getShowIfEmptyList()));
-                return BorderLayout.centerCenter(new SpanLabel(getTextToShowIfEmptyList()));
+                return new ContainerScrollY().add(BorderLayout.centerCenter(new SpanLabel(getTextToShowIfEmptyList())));
 //            return new InsertNewTaskContainer(null, listOfItems, ScreenListOfItems.this);
 //            return new InlineInsertNewElementContainer(this, null, listOfItems);
             } else if (listOfItems instanceof Category) {
-                setPinchInsertContainer(new PinchInsertItemContainer(this, null, null, (Category) listOfItems, false)); //UI: in an empty list you can insert a new task via the inlineInsert container
-                return (Container) getPinchInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
+//                PinchInsertContainer pinch = PinchInsertContainer.recreateInlineInsertContainerN(this, (Category) listOfItems);
+//                if (pinch == null) {
+//                    pinch = new PinchInsertItemContainer(this, "", Inbox.getInstance(), (Category) listOfItems, false); //UI: in an empty list you can insert a new task via the inlineInsert container
+//                }
+                if (previousValues.get(PinchInsertContainer.SAVE_LOCALLY_REF_ELT_GUID_KEY) == null) {
+                    PinchInsertContainer pinch = new PinchInsertItemContainer(this, "", Inbox.getInstance(), (Category) listOfItems, false); //UI: in an empty list you can insert a new task via the inlineInsert container
+                    setPinchInsertContainer(pinch); //UI: in an empty list you can insert a new task via the inlineInsert container
+//                return (Container) getPinchInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
+                    return new ContainerScrollY().add(pinch); //UI: in an empty list you can insert a new task via the inlineInsert container
+                } else {
+                    return new ContainerScrollY(); //UI: in an empty list you can insert a new task via the inlineInsert container
+                }
             } else {
-                setPinchInsertContainer(new PinchInsertItemContainer(this, null, listOfItems, null, false)); //UI: in an empty list you can insert a new task via the inlineInsert container
-                return (Container) getPinchInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
+//                PinchInsertContainer pinch = PinchInsertContainer.recreateInlineInsertContainerN(this, null);
+//                if (pinch == null) {
+//                    pinch = new PinchInsertItemContainer(this, "", listOfItems, null, false);
+//                }
+                if (MyPrefs.pinchShowPinchContInEmptyList.getBoolean() && previousValues.get(PinchInsertContainer.SAVE_LOCALLY_REF_ELT_GUID_KEY) == null) {
+                    ASSERT.that(listOfItems != null, "error - listofItems==null");
+                    PinchInsertContainer pinch = new PinchInsertItemContainer(this, "", listOfItems, null, false);
+                    setPinchInsertContainer(pinch); //UI: in an empty list you can insert a new task via the inlineInsert container
+//                return (Container) getPinchInsertContainer(); //UI: in an empty list you can insert a new task via the inlineInsert container
+                    return new ContainerScrollY().add(pinch); //UI: in an empty list you can insert a new task via the inlineInsert container
+                } else {
+                    return new ContainerScrollY(); //UI: in an empty list you can insert a new task via the inlineInsert container
+                }
             }
         }
 

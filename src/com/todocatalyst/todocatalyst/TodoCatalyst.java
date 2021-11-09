@@ -35,6 +35,7 @@ import com.parse4cn1.util.Logger;
 import com.parse4cn1.util.ParseRegistry;
 import static com.todocatalyst.todocatalyst.ScreenLogin.setDefaultACL;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
@@ -611,6 +612,21 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 
         Toolbar.setGlobalToolbar(true); //needed, otherwise toolbar null in other screens
 
+//        InputStream alarmSound = new InputStream();
+//        InputStream alarmSound = new DataInputStream();
+//        if (false) {
+//            if (Config.TEST) {
+//                Log.p("Default sound setting, enabled=" + Display.getInstance().isBuiltinSoundsEnabled());
+//            }
+//            Display.getInstance().setBuiltinSoundsEnabled(MyPrefs.alarmSoundActivated.getBoolean());
+//            try {
+//                InputStream alarmSound;
+//                alarmSound = CN.createStorageInputStream(MyPrefs.alarmSoundFile.getString());
+//                Display.getInstance().installBuiltinSound(Display.SOUND_TYPE_ALARM, alarmSound);
+//            } catch (IOException ex) {
+//                Log.p("error in installing buildinsound");
+//            }
+//        }
 //        Log.getInstance();
 //<editor-fold defaultstate="collapsed" desc="** bindCrashProtection **">
         if (false) {
@@ -1208,10 +1224,13 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //            int badgeCount = DAO.getInstance().getBadgeCount(true, true);
             int badgeCount = DAO.getInstance().getBadgeCount();
             if (Config.TEST) {
-                Log.p("Time for query to get badgeCount = " + (MyDate.currentTimeMillis() - t1) + "ms");
+                Log.p("performBackgroundFetch-refreshBadgeCount() - Time for query to get badgeCount = " + (MyDate.currentTimeMillis() - t1) + "ms");
             }
             Display.getInstance().setBadgeNumber(badgeCount);
 //            Display.getInstance().setBadgeNumber(99);
+        } else {
+            if (Config.TEST)
+            Log.p("performBackgroundFetch-refreshBadgeCount() - Display.getInstance().isBadgingSupported()=" + Display.getInstance().isBadgingSupported() + "; Display.getInstance().isSimulator()=" + Display.getInstance().isSimulator());
         }
     }
 
@@ -1294,9 +1313,12 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 
     private void updateBadgeCountAtStartOfNewDay() {
         Date lastBadgeUpdate = (Date) Storage.getInstance().readObject(LAST_BADGE_UPDATE_TIME_FILENAME);
+        Log.p("performBackgroundFetch-updateBadgeCountAtStartOfNewDay() - lastBadgeUpdate=" + MyDate.formatDateTimeNew(lastBadgeUpdate));
+
         Date now = new MyDate();
         if (lastBadgeUpdate == null || MyDate.getStartOfDay(now).getTime() > MyDate.getStartOfDay(lastBadgeUpdate).getTime()) {
             Storage.getInstance().writeObject(LAST_BADGE_UPDATE_TIME_FILENAME, now);
+            Log.p("performBackgroundFetch-refreshBadgeCount()" + MyDate.formatDateTimeNew(lastBadgeUpdate));
             refreshBadgeCount();
         }
     }
@@ -1328,7 +1350,7 @@ Consider situations: phone's been off for some time (days/weeks); change of time
          */
 
         long t1 = System.currentTimeMillis();
-        Log.p("performBackgroundFetch called, time=" + new Date() + ", deadline=" + MyDate.formatDuration(deadline) + ", date(deadline)="
+        Log.p("performBackgroundFetch called, time=" + MyDate.formatDateTimeNew(new Date()) + ", deadline=" + MyDate.formatDuration(deadline) + ", date(deadline)="
                 + new MyDate(deadline) + "; deadline value=" + deadline + "ms; deadline-now=" + (deadline - System.currentTimeMillis()));
         Log.p("Calling AlarmHandler.updateLocalNotificationsOnBackgroundFetch() from backgroundFetch");
         AlarmHandler.getInstance().updateLocalNotificationsOnBackgroundFetch();
@@ -1336,9 +1358,10 @@ Consider situations: phone's been off for some time (days/weeks); change of time
         onComplete.onSucess(Boolean.TRUE);
 //        Log.p("performBackgroundFetch finished=");
 
+        Log.p("performBackgroundFetch calling updateBadgeCountAtStartOfNewDay()");
         updateBadgeCountAtStartOfNewDay();
 
-        Log.p("performBackgroundFetch finished, time=" + new Date() + "; duration in ms=" + (System.currentTimeMillis() - t1));
+        Log.p("performBackgroundFetch finished, time=" + MyDate.formatDateTimeNew(new Date()) + "; duration in ms=" + (System.currentTimeMillis() - t1));
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 

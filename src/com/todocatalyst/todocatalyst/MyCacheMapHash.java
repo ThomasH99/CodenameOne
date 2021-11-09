@@ -56,6 +56,11 @@ public class MyCacheMapHash {
     private boolean alwaysStore;
     private int storageKey = -1;
     private final static String CACHE_ID = "$CACHE$";
+    private String name;
+
+    public String toString() {
+        return name + " siz=" + memoryCache.size() + " prefix=" + cachePrefix + " id=" + cacheId;
+    }
 
 //    private Hashtable getStorageCacheContent() {
 //        if (storageCacheContentVec == null) {
@@ -76,9 +81,15 @@ public class MyCacheMapHash {
      *
      * @param prefix string to prepend to the cache entries in storage
      */
-    public MyCacheMapHash(String prefix) {
+    public MyCacheMapHash(String name, String prefix) {
 //        this.cachePrefix = prefix;
         setCachePrefix(prefix);
+        this.name = name;
+    }
+
+    public MyCacheMapHash(String prefix) {
+//        this.cachePrefix = prefix;
+        this(prefix, null);
     }
 
     /**
@@ -146,12 +157,14 @@ public class MyCacheMapHash {
 //            }
 //            Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value); //MUST always save to persist changes on device between app activations
 //</editor-fold>
-        if (Config.TEST) {
+        if (false && Config.TEST) {
             ASSERT.that(key != null, () -> "key==null for value=" + value);
             ASSERT.that(value != null, () -> "value==null for key=" + key);
             Object oldVal = memoryCache.get(key);
 //            ASSERT.that(oldVal == null || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key
-            ASSERT.that(oldVal == null || oldVal == value || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key //oldVal.equals(value) since value may be a String (named object)
+//            ASSERT.that(oldVal == null || oldVal == value || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key //oldVal.equals(value) since value may be a String (named object)
+            ASSERT.that(oldVal == null || oldVal == value || (oldVal instanceof String && oldVal.equals(value)),
+                    () -> "Cache key already points to a different object. Key=" + key //oldVal.equals(value) since value may be a String (named object)
                     + ", OLD= \"" + ItemAndListCommonInterface.toIdString(oldVal) + "\", NEW= \"" + ItemAndListCommonInterface.toIdString(value) + "\"");
 //            ASSERT.that(oldVal == null || oldVal == value, 
 //                    () -> "Cache key already points to a different object. Key=" + key ); //NB avoid object.toString since may create infinite loop
@@ -166,7 +179,10 @@ public class MyCacheMapHash {
             }
         } else {
             Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
-            memoryCache.put(key, value);
+            Object oldVal = memoryCache.put(key, value);
+            ASSERT.that(oldVal == null || oldVal == value || (oldVal instanceof String && oldVal.equals(value)),
+                    () -> "Cache key already pointed to a different object. Key=" + key //oldVal.equals(value) since value may be a String (named object)
+                    + ", OLD= \"" + ItemAndListCommonInterface.toIdString(oldVal) + "\", NEW= \"" + ItemAndListCommonInterface.toIdString(value) + "\"");
         }
     }
 
@@ -176,6 +192,16 @@ public class MyCacheMapHash {
      * @param key key object
      * @return value from a previous put or null
      */
+    public synchronized Object getNoPut(Object key) {
+        Object val = null;
+        val = memoryCache.get(key);
+        if (val == null) {
+//                val = Storage.getInstance().readObject(CACHE_ID + cachePrefix + key.toString());
+            val = Storage.getInstance().readObject(cacheId + key.toString());
+        }
+        return val;
+    }
+
     synchronized public Object get(Object key) {
         Object val = null;
 //        synchronized (LOCK) {
@@ -235,7 +261,7 @@ public class MyCacheMapHash {
 //</editor-fold>
     }
 
-    synchronized public Object getFromLocalStorage(Object key) {
+    synchronized public Object getFromLocalStorageXXX(Object key) {
         Object val = null;
         val = Storage.getInstance().readObject(cacheId + key.toString());
         if (val != null) {

@@ -319,17 +319,17 @@ public class EditFieldContainer extends Container {
             fieldLabel = makeFieldLabel(settingId, fieldLabelTxt, helpText, wrapText, materialIcon, iconFont);
             if (helpText != null && !helpText.isEmpty()) {
                 Component helpTxt = new SpanLabel(helpText, "FieldHelpText");
-                ActionListener al;
+                ActionListener showHelpListner;
                 if (settingId == null) {
                     helpTxt.setHidden(true); //if no setting available, hide by default
-                    al = (e) -> {
+                    showHelpListner = (e) -> {
                         helpTxt.setHidden(!helpTxt.isHidden());
                         helpTxt.getParent().getParent().animateLayout(MyForm.ANIMATION_TIME_FAST);
                     };
                 } else {
                     String helpSettingId = settingId + "ShowHelp";
                     helpTxt.setHidden(!MyPrefs.getBoolean(helpSettingId));
-                    al = (e) -> {
+                    showHelpListner = (e) -> {
 //                        MyPrefs.setBoolean(helpSettingId, !MyPrefs.getBoolean(helpSettingId)); //flip
                         MyPrefs.flipBoolean(helpSettingId); //flip
                         helpTxt.setHidden(!MyPrefs.getBoolean(helpSettingId));
@@ -337,9 +337,9 @@ public class EditFieldContainer extends Container {
                     };
                 }
                 if (MyPrefs.helpShowHelpOnLongPress.getBoolean()) {
-                    fieldLabel.addLongPressListener(al);
+                    fieldLabel.addLongPressListener(showHelpListner);
                 } else {
-                    fieldLabel.addActionListener(al);
+                    fieldLabel.addActionListener(showHelpListner);
                 }
                 add(MyBorderLayout.SOUTH, helpTxt);
             }
@@ -376,15 +376,15 @@ public class EditFieldContainer extends Container {
                     swipeDeleteFieldButton.setName("FieldContClearBut-" + fieldLabelTxt);
                     swipeCont = new SwipeableContainer(null, swipeDeleteFieldButton, visibleField);
                     swipeCont.setName("FieldContSwipeable-" + fieldLabelTxt);
-                    ActionListener l = (ev) -> {
+                    ActionListener swipeClearListener = (ev) -> {
                         swipeClearFct.clearFieldValue();
                         revalidate();//in Swipeable constructor, top component is added after non-null swipe components so should be index 1 //repaint before closing
                         swipeCont.close();
                     };
                     if (false) { //deactivate since bad UI, better to show the clear command and leave it to the user to clear
-                        swipeCont.addSwipeOpenListener(l);
+                        swipeCont.addSwipeOpenListener(swipeClearListener);
                     }
-                    swipeDeleteFieldButton.setCommand(Command.createMaterial("", Icons.iconCloseCircle, l));
+                    swipeDeleteFieldButton.setCommand(Command.createMaterial("", Icons.iconCloseCircle, swipeClearListener));
                     visibleField = swipeCont;
                 }
             }

@@ -80,7 +80,8 @@ public class ScreenStatistics2 extends MyForm {
             getToolbar().removeCommand(getSearchCmd());
         }
 //        mySearchCmd = new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(itemListStats));
-        setSearchCmd(new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(itemListStats)));
+//        setSearchCmd(new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(itemListStats)));
+        setSearchCmd(new MySearchCommand(this, itemListStats));
         getToolbar().addCommandToRightBar(getSearchCmd());
 
 //        revalidate();

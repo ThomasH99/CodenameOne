@@ -24,7 +24,7 @@ import java.util.List;
  *
  * @author Thomas
  */
-public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
+public class PinchInsertWorkSlotContainer extends PinchInsertContainer {
 
 //    private Container oldNewTaskCont=null;
     private MyTextField2 textEntryField;
@@ -72,15 +72,18 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
 //        this(myForm, new ItemList(), refWorkSlot2, insertBeforeRefElement);
 //    }
 //    public InlineInsertNewWorkSlotContainer(MyForm myForm, ItemList itemList2, ItemAndListCommonInterface itemOrItemListForNewTasks2, boolean insertBeforeRefElement) {
-    public PinchInsertWorkSlotContainer(MyForm form, WorkSlot refWorkSlot2N, ItemAndListCommonInterface workSlotListOwner, boolean insertBeforeRefElement) {
+//    public PinchInsertWorkSlotContainer(MyForm form, WorkSlot refWorkSlot2N, ItemAndListCommonInterface workSlotListOwner, boolean insertBeforeRefElement) {
+    public PinchInsertWorkSlotContainer(MyForm form, WorkSlot refWorkSlot2N, boolean insertBeforeRefElement) {
+        super();
         this.myForm = form;
 //        this.workSlotList = workSlotList2;
 //        ASSERT.that(refWorkSlot2N != null, "why itemOrItemListForNewTasks2==null here?");
-        if (workSlotListOwner != null) {
-            this.workSlotListOwner = workSlotListOwner;
-        } else if (refWorkSlot2N != null) {
-            this.workSlotListOwner = refWorkSlot2N.getOwner();
-        }
+//        if (workSlotListOwner != null) {
+//            this.workSlotListOwner = workSlotListOwner;
+//        } else if (refWorkSlot2N != null) {
+//            this.workSlotListOwner = refWorkSlot2N.getOwner();
+//        }
+        this.workSlotListOwner = refWorkSlot2N.getOwner();
 //        WorkSlotList workSlotList = workSlotListOwner.getWorkSlotListN();
         this.refWorkSlotN = refWorkSlot2N;
         this.insertBeforeRefElement = insertBeforeRefElement;
@@ -104,18 +107,18 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
                 if (newWorkSlot != null) {
                     this.myForm.setKeepPos(new KeepInSameScreenPosition(newWorkSlot, this, 0)); //if editing the new task in separate screen. -1: keep newItem in same pos as container just before insertTaskCont (means new items will scroll up while insertTaskCont stays in place)
                     lastCreatedWorkSlot = continueAddingNewWorkSlots ? newWorkSlot : null; //store new task for use when recreating next insert container
-
                 }
                 insertNewAndSaveChanges(newWorkSlot);
                 closePinchContainer(true); //MUST do *after* insertNewItemListAndSaveChanges() to remove the locally stored values correctly(??!)
-                this.myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
+//                this.myForm.refreshAfterEdit(); //need to store form before possibly removing the insertNew in closeInsertNewTaskContainer
+                DAO.getInstance().saveToParseNow(newWorkSlot); //save here, *after* closing pinch so changeEvent triggers correct refresh
             }
         });
 
-        if (myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
-            textEntryField.setText((String) myForm.previousValues.get(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT));
+        if (myForm.previousValues.get(SAVE_LOCALLY_INLINE_INSERT_TEXT) != null) {
+            textEntryField.setText((String) myForm.previousValues.get(SAVE_LOCALLY_INLINE_INSERT_TEXT));
         }
-        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
+        AutoSaveTimer descriptionSaveTimer = new AutoSaveTimer(myForm, textEntryField, SAVE_LOCALLY_INLINE_INSERT_TEXT); //normal that this appear as non-used! Activate *after* setting textField to save initial value
 
         cont.add(BorderLayout.CENTER, textEntryField);
 
@@ -136,15 +139,15 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
         }
 
 //        editNewCmd = CommandTracked.create(null, Icons.iconEditSymbolLabelStyle, (ev) -> {
-        editNewCmd = MyReplayCommand.create("InlineEditWorkSlot","", Icons.iconEdit, (ev) -> {
+        editNewCmd = MyReplayCommand.create("InlineEditWorkSlot", "", Icons.iconEdit, (ev) -> {
             if ((newWorkSlot = createNewWorkSlot()) != null) { //if new task successfully inserted... //TODO!!!! create even if no text was entered into field
                 lastCreatedWorkSlot = null; //reset value (in case ScreenItem does a Cancel meaning no more inserts)
                 this.myForm.setKeepPos(new KeepInSameScreenPosition(newWorkSlot, this, -1)); //if editing the new task in separate screen,
-                myForm.previousValues.put(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
+                myForm.previousValues.put(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE, true); //marker to indicate that the inlineinsert container launched edit of the task
                 new ScreenWorkSlot(newWorkSlot, workSlotListOwner, (MyForm) getComponentForm(), () -> {
                     insertNewAndSaveChanges(newWorkSlot);
                     lastCreatedWorkSlot = continueAddingNewWorkSlots ? newWorkSlot : null; //ensures that MyTree2 will create a new insertContainer after newTask
-                    myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
+                    myForm.previousValues.remove(SAVE_LOCALLY_INLINE_FULLSCREEN_EDIT_ACTIVE); //marker to indicate that the inlineinsert container launched edit of the task
                     closePinchContainer(true);
 //                    if(false)this.myForm.refreshAfterEdit();
                 }).show();
@@ -165,6 +168,32 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
 //        taskTextEntryField2.requestFocus(); //enter edit mode??
     }
 
+    
+// CODE FOR SMARTER PINCHINSERT of workslot: insert into createNewWorkSlot()
+//        List<WorkSlot> workslots = workSlotListOwner.getListFull();
+//        int idx = workslots.indexOf(refWorkSlotN);
+//        if (insertBeforeRefElement){
+//            if( idx > 0 && idx < workslots.size()) {
+//            WorkSlot prevWorkSlot = workslots.get(idx - 1);
+//            if (prevWorkSlot.getEndTime() >= refWorkSlotN.getStartTime()) { //should be == but use >= in case there is an overlap created in some way
+//                return null; //no free time between the two workslots
+//            } else {
+//                newWorkSlot.setEndTime(new MyDate(refWorkSlotN.getStartTimeD().getTime() - newWorkSlot.getDurationInMillis()),false); //UI: set pinchInserted workslot to start 'duration' before the startTime of the next workslot
+//                newWorkSlot.setEndTime(new MyDate(Math.min(newWorkSlot.getEndTime(), refWorkSlotN.getStartTime())), false);
+//            }
+//            }else {
+//                xxx;
+//            }
+//        } else if (idx >= 0 && idx < workslots.size() - 1) {
+//            WorkSlot nextWorkSlot = workslots.get(idx + 1);
+//            if (refWorkSlotN.getEndTime() == nextWorkSlot.getStartTime()) {
+//                return null; //no free time between the two workslots
+//            } else {
+//                newWorkSlot.setStartTime(new MyDate(refWorkSlotN.getStartTimeD().getTime() - newWorkSlot.getDurationInMillis())); //UI: set pinchInserted workslot to start 'duration' before the startTime of the next workslot
+//                newWorkSlot.setEndTime(new MyDate(Math.min(newWorkSlot.getEndTime(), refWorkSlotN.getStartTime())), false);
+//            }
+//        }
+    
     /**
      *
      * @return true if a task was created
@@ -174,6 +203,7 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
 //    }
 //
 //    private WorkSlot createNewWorkSlot(boolean createEvenIfNoTextInField) {
+
         String text = textEntryField.getText();
         WorkSlot newWorkSlot = new WorkSlot(); //true: interpret textual values
         newWorkSlot.setText(text); //will interpret a textual duration like "5m" as 5 minutes
@@ -196,7 +226,7 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
             if (refIndex >= 0 && refIndex + 1 < workslots.size()) {
                 WorkSlot nextWorkSlot = (WorkSlot) workslots.get(refIndex + 1);
                 if (newWorkSlot.getStartTime() > nextWorkSlot.getEndTime()) {
-                    newWorkSlot.setEndTime(nextWorkSlot.getStartTimeD(),false); //UI: reduce a pinchinserted workslot overlapping with the next one, to end when the next one starts
+                    newWorkSlot.setEndTime(nextWorkSlot.getStartTimeD(), false); //UI: reduce a pinchinserted workslot overlapping with the next one, to end when the next one starts
                 }
             }
         }
@@ -236,12 +266,12 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
 //        DAO.getInstance().saveNew(newWorkSlot);
 //        DAO.getInstance().saveNew((ParseObject) workSlotListOwner);
 //        DAO.getInstance().saveNewTriggerUpdate();
-        DAO.getInstance().saveToParseNow(newWorkSlot);
+//        DAO.getInstance().saveToParseNow(newWorkSlot); 
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY, newWorkSlot.getObjectIdP());
-        myForm.previousValues.put(MyForm.SAVE_LOCALLY_REF_ELT_GUID_KEY, newWorkSlot.getGuid());
+        myForm.previousValues.put(SAVE_LOCALLY_REF_ELT_GUID_KEY, newWorkSlot.getGuid());
 //        myForm.previousValues.put(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT,false); //always insert *after* just created inline item
-        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
-        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
+        myForm.previousValues.remove(SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
+        myForm.previousValues.remove(SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
 //        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INSERT_BEFORE_REF_ELT); //always insert *after* just created inline item
     }
 
@@ -249,18 +279,22 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
     public void closePinchContainer(boolean stopAddingInlineContainers) {
 //        closeInsertNewWorkSlotContainer(null);
         Container parent = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParentN(this);
-        myForm.previousValues.remove(MyForm.SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
+        myForm.previousValues.remove(SAVE_LOCALLY_INLINE_INSERT_TEXT); //clean up any locally saved text in the inline container
         if (stopAddingInlineContainers) {
 //            if(false)
-                myForm.setPinchInsertContainer(null); //remove this as inlineContainer
+            myForm.setPinchInsertContainer(null); //remove this as inlineContainer
 //            myForm.previousValues.remove(MyForm.SAVE_LOCALLY_REF_ELT_OBJID_KEY); //delete the marker on exit
-            myForm.previousValues.removePinchInsertKeys(); //delete the marker on exit
-            
-            if(false)ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
+            removePinchInsertKeys(myForm.previousValues); //delete the marker on exit
+
+            if (false) {
+                ReplayLog.getInstance().popCmd(); //pop the replay command added when InlineInsert container was activated
+            }
         }
         if (parent != null) {
             parent.animateLayout(MyForm.ANIMATION_TIME_DEFAULT);
         }
+//        myForm.revalidateLater();
+        myForm.refreshAfterEdit();
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void closeInsertNewWorkSlotContainer(MyForm f) {
@@ -293,14 +327,13 @@ public class PinchInsertWorkSlotContainer extends PinchInsertContainer  {
 //        }
 //    }
 //</editor-fold>
-    @Override
-    public PinchInsertContainer make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
-        if (element == lastCreatedWorkSlot && element instanceof WorkSlot) {
-            return new PinchInsertWorkSlotContainer(myForm, (WorkSlot) lastCreatedWorkSlot, workSlotListOwner, false); //element == lastCreatedWorkSlot, so both are the previously created (now reference) element
-        }
-        return null;
-    }
-
+//    @Override
+//    public PinchInsertContainer make(ItemAndListCommonInterface element, ItemAndListCommonInterface targetList, Category category) {
+//        if (element == lastCreatedWorkSlot && element instanceof WorkSlot) {
+//            return new PinchInsertWorkSlotContainer(myForm, (WorkSlot) lastCreatedWorkSlot, workSlotListOwner, false); //element == lastCreatedWorkSlot, so both are the previously created (now reference) element
+//        }
+//        return null;
+//    }
     @Override
     public TextArea getTextArea() {
         return textEntryField;

@@ -112,9 +112,9 @@ makeContainerBoxY();
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
 //        getContentPane().removeAll();
-        container.removeAll();
+        mainContentContainer.removeAll();
 //        buildContentPane(getContentPane());
-        buildContentPane(container);
+        buildContentPane(mainContentContainer);
 //        restoreKeepPos();
         super.refreshAfterEdit();
     }

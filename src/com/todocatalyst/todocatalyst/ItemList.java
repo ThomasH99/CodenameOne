@@ -12,6 +12,7 @@ import com.codename1.ui.tree.TreeModel;
 import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
+import static com.todocatalyst.todocatalyst.DAO.SYSTEM_LIST_TODAY;
 //import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
 import static com.todocatalyst.todocatalyst.Item.PARSE_RESTART_TIMER;
 //import static com.todocatalyst.todocatalyst.Item.PARSE_WORKSLOTS;
@@ -1158,7 +1159,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            list = filteredSortedList;
 //        }
 //</editor-fold>
-        if (filterSortDef != null) { //no buffer for (see code above for buffer version)
+        if (getSystemName().equals(SYSTEM_LIST_TODAY)) {
+            return (List<E>) filterSortDef.filterAndSortItemList(list,
+                    (Comparator<ItemAndListCommonInterface>) (i1, i2) -> i1.getTodaySortOrder().compareTo(i2.getTodaySortOrder())); //special sort order just for TODAY list
+        } else if (filterSortDef != null) { //no buffer for (see code above for buffer version)
             return (List<E>) filterSortDef.filterAndSortItemList(list);
         } else {
             return list;
@@ -2039,7 +2043,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            if (!storeOnlySingleInstanceOfItems || getItemIndex(item) == -1) {
 //            assert getItemIndex(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
 //</editor-fold>
-                assert listFull.indexOf(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
+//                assert listFull.indexOf(item) == -1 : "should never add same item twice to a list (" + item + " already in list [" + this + "] at pos=" + getItemIndex(item); //if (getItemIndex(item) == -1) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (index <= getSize()) { // shouldn't make this check since it might make us miss some errors
 //                itemList.insertElementAt(item, index);
@@ -2055,15 +2059,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            assert list.indexOf(item) != -1 : "item NOT in list thouygh just added (" + item + " already in list [" + this + "] at pos=" +list.indexOf(item); //if (getItemIndex(item) == -1) {
 //</editor-fold>
                 listFull.add(index, item);
-                if (Config.TEST) {
-                    ASSERT.that(listFull.indexOf(item) != -1, () -> "1.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
-                }
+//                if (Config.TEST) {
+//                    ASSERT.that(listFull.indexOf(item) != -1, () -> "1.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
+//                }
                 setList(listFull);
 //                if(false)
 //                    doAfterInsertionXXX(item);
-                if (Config.TEST) {
-                    ASSERT.that(listFull.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
-                }
+//                if (Config.TEST) {
+//                    ASSERT.that(listFull.indexOf(item) != -1, () -> "2.item NOT in list though just added (item=" + item + ", list=[" + this + "], pos=" + listFull.indexOf(item)); //if (getItemIndex(item) == -1) {
+//                }
                 successfullyAdded = true;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (selectedIndex >= index && selectedIndex < getSize()) { //<getSize() to avoid that an initial 0 value for empty list remains larger than list //TODO: should initial value of selectedIndex be -1 instead of 0??
@@ -2518,7 +2522,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //            }
 //</editor-fold>
             if (elt instanceof WorkSlot) {
-                countUndone += 1;
+                if (countLeafTasks) {
+                    countUndone += ((WorkSlot) elt).getItemsInWorkSlot().size();
+                } else {
+                    countUndone += 1;
+                }
             } else if (elt instanceof ItemList) {
                 countUndone += 1;
             } else {
@@ -4209,13 +4217,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
                         + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
                         + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
             case COMPLETION_LOG:
-                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, false);
+                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, true, false);
             case CREATION_LOG:
                 return new FilterSortDef(screenType.getSystemName(), Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
             case TOUCHED:
                 return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
             case TODAY:
-                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
+                return new FilterSortDef(screenType.getSystemName(), FilterSortDef.FILTER_SORT_TODAY_VIEW, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
             case ALL_TASKS:
                 return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
             case ALL_PROJECTS:

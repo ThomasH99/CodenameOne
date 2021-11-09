@@ -161,7 +161,7 @@ public class ScreenListOfCategories extends MyForm {
 //        restoreKeepPos();
 
         //check if there was an insertContainer active earlier
-        recreateInlineInsertContainerAndReplayCmdIfNeeded();
+//        recreateInlineInsertContainerAndReplayCmdIfNeeded(); //moved to MyForm.refreshAfterEdit()
 
         super.refreshAfterEdit();
     }
@@ -200,7 +200,8 @@ public class ScreenListOfCategories extends MyForm {
         super.addCommandsToToolbar(toolbar);
 
 //        setSearchCmd(new MySearchCommand(getContentPane(), makeSearchFunctionUpperLowerStickyHeaders(categoryList)));
-        setSearchCmd(new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(categoryList)));
+//        setSearchCmd(new MySearchCommand(this, makeSearchFunctionUpperLowerStickyHeaders(categoryList)));
+        setSearchCmd(new MySearchCommand(this, categoryList));
         toolbar.addCommandToRightBar(getSearchCmd());
 
         //NEW TASK to Inbox

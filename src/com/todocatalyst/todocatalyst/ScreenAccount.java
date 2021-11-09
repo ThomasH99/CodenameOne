@@ -83,7 +83,7 @@ public class ScreenAccount extends MyForm {
     private boolean userAuthenticated;
 
     public void refreshAfterEdit() {
-        buildContentPane(container);
+        buildContentPane(mainContentContainer);
 //        revalidate();
         super.refreshAfterEdit();
     }

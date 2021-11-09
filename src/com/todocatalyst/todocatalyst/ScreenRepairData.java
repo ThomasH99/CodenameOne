@@ -43,9 +43,9 @@ public class ScreenRepairData extends MyForm {
     @Override
     public void refreshAfterEdit() {
 //        getContentPane().removeAll();
-        container.removeAll();
+        mainContentContainer.removeAll();
 //        buildContentPane(getContentPane());
-        buildContentPane(container);
+        buildContentPane(mainContentContainer);
 //        restoreKeepPos();
         super.refreshAfterEdit();
     }

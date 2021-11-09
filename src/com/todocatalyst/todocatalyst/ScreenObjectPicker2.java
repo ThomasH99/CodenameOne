@@ -66,7 +66,7 @@ public class ScreenObjectPicker2<E> extends MyForm {
 //    private Container listCont;
     private String errorMsgInSelection;
     private Tabs tabs;
-    private Container container;
+//    private Container container;
     ActionListener search;
 
 //    class SelectionState {
@@ -166,8 +166,9 @@ public class ScreenObjectPicker2<E> extends MyForm {
             MyForm previousForm, Runnable updateOnDone, GetStringFrom labelMaker, int minNbOfSelected, int maxNbOfSelected,
             boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
         super(title, previousForm, updateOnDone);
+        setUniqueFormId("ScreenObjectPicker");
+        previousValues = new SaveEditedValuesLocally(getUniqueFormId());
         assert maxNbOfSelected >= minNbOfSelected && maxNbOfSelected >= 1;
-
         //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
 //             listCont = new Container(BoxLayout.y());
 //            listCont.setScrollableY(true); //disable scrolling of form, necessary to let lists handle their own scrolling 
@@ -217,9 +218,9 @@ public class ScreenObjectPicker2<E> extends MyForm {
 //            setLayout(BoxLayout.y());
             makeContainerBoxY();
 //            container = getContentPane(); //new Container(BoxLayout.y());
-            Component firstSelectedChk = buildList(container, getLists[0].getList(), this.selectedObjects, this.labelMaker, listSelector);
+            Component firstSelectedChk = buildList(mainContentContainer, getLists[0].getList(), this.selectedObjects, this.labelMaker, listSelector);
             if (this.scrollToFirstSelected && firstSelectedChk != null) {
-                container.scrollComponentToVisible(firstSelectedChk);
+                mainContentContainer.scrollComponentToVisible(firstSelectedChk);
             }
 //            getToolbar().setTitle(getListTitles[0]);
             setTitle((getListTitles != null && getListTitles[0] != null ? getListTitles[0] : title), icons[0], iconFonts[0]);
@@ -314,22 +315,32 @@ public class ScreenObjectPicker2<E> extends MyForm {
 
         search = (e) -> {
             String text = (String) e.getSource();
+            ASSERT.that(text!=null);
             boolean showAll = (text == null || text.length() == 0);
             String textLowercase = text.toLowerCase();
+            boolean searchOnLowerCaseOnly = text.equals(text.toLowerCase()); //if search string is all lower case, then search on lower case only, otherwise search on 
 
             Container searchCont;
-            if (container != null) {
-                searchCont = container;
+            if (mainContentContainer != null) {
+                searchCont = mainContentContainer;
                 for (int i = 0, size = searchCont.getComponentCount(); i < size; i++) {
                     CheckBox checkBox = (CheckBox) searchCont.getComponentAt(i);
-                    checkBox.setHidden(!(showAll || checkBox.getText().toLowerCase().contains(textLowercase))); //https://www.codenameone.com/blog/toolbar-search-mode.html
+                    if (searchOnLowerCaseOnly) {
+                        checkBox.setHidden(!(showAll || checkBox.getText().toLowerCase().contains(textLowercase))); //https://www.codenameone.com/blog/toolbar-search-mode.html
+                    } else {
+                        checkBox.setHidden(!(showAll || checkBox.getText().contains(text)));
+                    }
                 }
             } else {
                 for (int t = 0, tsize = tabs.getTabCount(); t < tsize; t++) {
                     searchCont = (Container) tabs.getTabComponentAt(t);
                     for (int i = 0, size = searchCont.getComponentCount(); i < size; i++) {
                         CheckBox checkBox = (CheckBox) searchCont.getComponentAt(i);
-                        checkBox.setHidden(!(showAll || checkBox.getText().toLowerCase().contains(textLowercase))); //https://www.codenameone.com/blog/toolbar-search-mode.html
+                        if (searchOnLowerCaseOnly) {
+                            checkBox.setHidden(!(showAll || checkBox.getText().toLowerCase().contains(textLowercase))); //https://www.codenameone.com/blog/toolbar-search-mode.html
+                        } else {
+                            checkBox.setHidden(!(showAll || checkBox.getText().contains(text)));
+                        }
                     }
                 }
             }

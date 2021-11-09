@@ -71,6 +71,8 @@ public class KeepInSameScreenPosition {
         Component cont = MyForm.findScrollableChild(myForm);
         if (cont != null) {
             this.scrollY = cont.getScrollY();
+        } else if (Config.TEST) {
+            Log.p("KeepInSameScreenPosition not found scrollableCont in form=" + myForm.getUniqueFormId());
         }
     }
 
@@ -545,6 +547,12 @@ public class KeepInSameScreenPosition {
 //                        }
                         int scrollYAbs = Math.max(0, scrollableCompAbsY - relScroll);
                         int scrollY = Math.max(0, scrollableCompY - relScroll);
+//                        scrollY=Math.min(scrollY, Display.getInstance().getDisplayHeight());
+                        if (Config.TEST) {
+                            Log.p("keepPos setScrollYPublic - scrollY=" + scrollY + "; scrollableContainer.getHeight()=" + scrollableContainer.getHeight()
+                                    + "; scrollableComp.getHeight()=" + scrollableComp.getHeight());
+                        }
+                        scrollY = Math.min(scrollY, scrollableContainer.getHeight()); //prevent scrolling more than height (reason why 
 //                        if (Config.TEST_SCROLL_Y) Log.p("relScroll="+relScroll+", scrollableCompY="+scrollableCompY+", scrollY="+scrollY);
                         if (false && Config.TEST_SCROLL_Y) {
                             Log.p("KeepInSameScreenPosition-2: scrolling to Y=" + scrollY + ", relScroll=" + relScroll + ", scrollableCompY=" + scrollableCompY);

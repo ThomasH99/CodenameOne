@@ -364,7 +364,8 @@ public class ScreenRepeatRule extends MyForm {
             }
         }));
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleInstancesOverview", "Show all instances", Icons.iconRepeatOverview, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleInstancesOverview", "Show history", //"Show all instances"
+                Icons.iconRepeatOverview, (e) -> {
             new ScreenRepeatRuleInstancesOverview(repeatRuleEdited, ScreenRepeatRule.this, () -> {
                 if (false) {
                     refreshAfterEdit();
@@ -986,36 +987,36 @@ public class ScreenRepeatRule extends MyForm {
     }
 
     private void fieldsAdd() {
-        container.removeAll();
+        mainContentContainer.removeAll();
 
         if (repeatRuleDetailsContainerXXX != null) {
-            container.addComponent(repeatRuleDetailsContainerXXX); //may be null if new rule
+            mainContentContainer.addComponent(repeatRuleDetailsContainerXXX); //may be null if new rule
         }
 //        motherContainer.addComponent(repeatFromDueOrCompletedFieldContainer);
         if (oldMode) {
-            container.addComponent(repeatFrom_NoneCompletedDue_Field);
+            mainContentContainer.addComponent(repeatFrom_NoneCompletedDue_Field);
         } else {
-            container.addComponent(repeatFrom_NoneCompletedDue_FieldCont);
+            mainContentContainer.addComponent(repeatFrom_NoneCompletedDue_FieldCont);
         }
 //        if (repeatFromDueOrCompletedField.getSelectedValue() == 1) //"due date
 //        {
         if (false && repeatStartDatePickerXXX != null) { //false: hide for now, shouldn't be needed anymore
-            container.addComponent(repeatStartDatePickerXXX);
+            mainContentContainer.addComponent(repeatStartDatePickerXXX);
         }
         if (repeatStartDateLabel != null) {
-            container.addComponent(repeatStartDateLabel);
+            mainContentContainer.addComponent(repeatStartDateLabel);
         }
         //Label("Create next repeat on specific dates" / "Repeat on a specific date" / 
 //        motherContainer.addComponent(onCompletionDatedRepeats);
-        container.addComponent(onCompletionDatedRepeatsCont);
+        mainContentContainer.addComponent(onCompletionDatedRepeatsCont);
 //        }
 
         //FREQUENCY: DAILY/MONTHLY BASIS
-        container.addComponent(frequency_DailyWeekMonthYearly_FieldCont);
+        mainContentContainer.addComponent(frequency_DailyWeekMonthYearly_FieldCont);
 
         //EVERY 1,2,3,.. DAYS/WEEKS/MONTHS/YEARS
 //        motherContainer.addComponent(intervalField); //TODO make interval show a list, e.g. every 2 weeks, every 3 weeks, or every month, every 2 months, ...
-        container.addComponent(intervalField_1_NN_TextFieldCont); //TODO make interval show a list, e.g. every 2 weeks, every 3 weeks, or every month, every 2 months, ...
+        mainContentContainer.addComponent(intervalField_1_NN_TextFieldCont); //TODO make interval show a list, e.g. every 2 weeks, every 3 weeks, or every month, every 2 months, ...
 
         //ADAPT rest according to type
 //        switch (myRepeatRule.getFrequency()) {
@@ -1024,35 +1025,35 @@ public class ScreenRepeatRule extends MyForm {
 //                RepeatRuleParseObject.getFreqText(frequency, false, false, true), 1, false, true);
 //         ** 
 //        motherContainer.addComponent(daysInWeekField);
-        container.addComponent(yearlyChoice_DayMonths_ComboCont);
+        mainContentContainer.addComponent(yearlyChoice_DayMonths_ComboCont);
 
         //Select day of year
-        container.addComponent(dayInYear_1_365_FieldCont);
+        mainContentContainer.addComponent(dayInYear_1_365_FieldCont);
 
-        container.addComponent(monthsInYear_JanDec_FieldCont);
+        mainContentContainer.addComponent(monthsInYear_JanDec_FieldCont);
 
         //Select yearly repeat on a monthly basis
 //        addMonthlyFieldsToContainer(motherContainer, myRepeatRule, true);
-        addMonthlyFieldsToContainer(container);//, myRepeatRule, false);
+        addMonthlyFieldsToContainer(mainContentContainer);//, myRepeatRule, false);
 
-        container.addComponent(repeatHowLong_ForeverUntilNumber_ChoiceComboCont);
+        mainContentContainer.addComponent(repeatHowLong_ForeverUntilNumber_ChoiceComboCont);
         //{"Repeat forever", "Repeat until", "Number of repeats"}
-        container.addComponent(repeatEndDateEditButtonCont);
-        container.addComponent(repeatHowManyTimesFieldCont);
+        mainContentContainer.addComponent(repeatEndDateEditButtonCont);
+        mainContentContainer.addComponent(repeatHowManyTimesFieldCont);
 
         //if Repeat from DUE DATE then add option to choose how many future instances to create (if repeat from Completed date, not ossible to create future instances with right date)
 //        motherContainer.addComponent(showHowManyContainer);
 //Show how many REPEAT INSTANCED
-        container.addComponent(showNumberFutureRepeatsCont);
+        mainContentContainer.addComponent(showNumberFutureRepeatsCont);
 //Show how many DAYS AHEAD
         if (false) {
-            container.addComponent(showNumberDaysAheadZZZ);
+            mainContentContainer.addComponent(showNumberDaysAheadZZZ);
         }
 
         if (false && Config.TEST && MyPrefs.repeatShowInternalDataInRepeatScreen.getBoolean()) {
-            container.addComponent(showDatesButton);
+            mainContentContainer.addComponent(showDatesButton);
 
-            container.addComponent(internalData);
+            mainContentContainer.addComponent(internalData);
         }
 
         if (false) {

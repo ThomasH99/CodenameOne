@@ -6,6 +6,7 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.io.Log;
+import com.codename1.ui.Command;
 //import com.codename1.ui.CommandTracked;
 import com.codename1.ui.Display;
 import com.codename1.ui.Font;
@@ -23,6 +24,8 @@ public class MyReplayCommand extends CommandTracked {
 
     private String cmdUniqueID;
     private boolean keep; //indicates a replaycommand that should NOT be deleted when rebuilding the list of replaycommands for a screen (on refreshAfterEdit)
+    private ActionListener actionListener;
+    private MyForm.GetBool pushCmd;
 
 //    public MyReplayCommand(String command, Image icon) {
 //        super(command, icon);
@@ -31,7 +34,12 @@ public class MyReplayCommand extends CommandTracked {
 //        ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
 //    }
     private MyReplayCommand(String cmdUniqueID, String commandName, Image icon) {
+        this(cmdUniqueID, commandName, icon, null);
+    }
+
+    private MyReplayCommand(String cmdUniqueID, String commandName, Image icon, ActionListener actionListener) {
         super(commandName, icon);
+        this.actionListener = actionListener;
         assert (cmdUniqueID != null && !cmdUniqueID.isEmpty()) || (commandName != null && commandName.length() > 0) : "when using command name/String as unique ID it must not be null or empty";
         if (cmdUniqueID != null && !cmdUniqueID.isEmpty()) {
             setCmdUniqueID(cmdUniqueID);
@@ -42,12 +50,18 @@ public class MyReplayCommand extends CommandTracked {
     }
 
     private MyReplayCommand(String cmdUniqueID, String commandName, char icon) {
-        this(cmdUniqueID, commandName, icon, null);
+        this(cmdUniqueID, commandName, icon, null, null);
     }
 
-    private MyReplayCommand(String cmdUniqueID, String commandName, char icon, Font font) {
+    public MyReplayCommand(String cmdUniqueID, String commandName, char icon, ActionListener actionListener) {
+        this(cmdUniqueID, commandName, icon, null, actionListener);
+        setPushCmd(() -> true);
+    }
+
+    private MyReplayCommand(String cmdUniqueID, String commandName, char icon, Font font, ActionListener actionListener) {
         super(commandName);
-        if (font!=null) {
+        this.actionListener = actionListener;
+        if (font != null) {
             setIconFont(font);
         }
         setMaterialIcon(icon);
@@ -61,7 +75,7 @@ public class MyReplayCommand extends CommandTracked {
         ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
     }
 
-    private MyReplayCommand(String cmdUniqueID, String commandName) {
+    public MyReplayCommand(String cmdUniqueID, String commandName) {
 //        super(command);
 //        setCmdUniqueID(cmdUniqueID);
 //        ReplayLog.getInstance().addToSetOfScreenCommands(this); //automatically add this command to the current screen's set (assumes that the ReplayLog's map of commands has been cleared in the screens' constructor)
@@ -79,25 +93,27 @@ public class MyReplayCommand extends CommandTracked {
 //    public String toStringXXX() {
 //        return "UniqID=" + cmdUniqueID + "; keep=" + keep;
 //    }
-
     //TODO: toString is used (I think) in eg menu commands to get the string to display, should use getCommandName() instead - puch fix
 //    @Override
 //    public String toString() {
 ////        return getCommandName()+"/"+getCmdUniqueID();
 //        return cmdUniqueID;
 //    }
-    @Override
-    public void actionPerformed(ActionEvent evt) {
-//        ReplayLog.getInstance().pushCmd(this);
-        super.actionPerformed(evt);
-    }
-
+//    @Override
+//    public void actionPerformed(ActionEvent evt) {
+////        ReplayLog.getInstance().pushCmd(this);
+//        super.actionPerformed(evt);
+//    }
     void setCmdUniqueID(String cmdUniqueID) {
         this.cmdUniqueID = cmdUniqueID;
     }
 
     String getCmdUniqueID() {
         return cmdUniqueID;
+    }
+
+    private void setPushCmd(MyForm.GetBool pushCmd) {
+        this.pushCmd = pushCmd;
     }
 
     void setKeep(boolean keep) {
@@ -110,6 +126,21 @@ public class MyReplayCommand extends CommandTracked {
 
     public static MyReplayCommand create(String cmdUniqueId, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev, boolean keep) {
         return create(cmdUniqueId, cmdUniquePostfix, commandName, icon, ev, keep, () -> true);
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent evt) {
+        if (pushCmd.getVal()) {
+            ReplayLog.getInstance().pushCmd(this); //DON'T call here, is called in MyReplayCommand.actionPerformed which is called below!
+        }//                ev.actionPerformed(evt);
+        if (actionListener != null) {
+//                    MyAnalyticsService.event(Display.getInstance().getCurrent(), cmdUniqueID);
+            actionListener.actionPerformed(evt);
+        } else {
+            ASSERT.that("NOT REALLY SURE THIS WORKS!!!");
+//                    super.actionPerformed(evt);
+        }
+        super.actionPerformed(evt);
     }
 
     /**
@@ -126,7 +157,7 @@ public class MyReplayCommand extends CommandTracked {
      * launched)
      * @return
      */
-    public static MyReplayCommand create(String cmdUniqueId, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev, boolean keep, MyForm.GetBool pushCmd) {
+    public static MyReplayCommand createXXX(String cmdUniqueId, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev, boolean keep, MyForm.GetBool pushCmd) {
 //        String cmdUniqueIdFull = cmdUniqueId + cmdUniquePostfix;
         String cmdUniqueIdFull = cmdUniqueId + cmdUniquePostfix;
         MyReplayCommand cmd = new MyReplayCommand(cmdUniqueIdFull, commandName, icon) {
@@ -152,6 +183,17 @@ public class MyReplayCommand extends CommandTracked {
         return cmd;
     }
 
+    public static MyReplayCommand create(String cmdUniqueId, String cmdUniquePostfix, String commandName, Image icon, final ActionListener ev, boolean keep, MyForm.GetBool pushCmd) {
+        String cmdUniqueIdFull = cmdUniqueId + cmdUniquePostfix;
+        MyReplayCommand cmd = new MyReplayCommand(cmdUniqueIdFull, commandName, icon, ev);
+        cmd.setPushCmd(pushCmd);
+        cmd.setAnalyticsActionId(cmdUniqueIdFull);
+        cmd.setKeep(keep);
+//        if (Config.TEST) cmd.setName("ReplayCmd-" + cmdUniqueId);
+
+        return cmd;
+    }
+
     public static MyReplayCommand create(String cmdUniqueId, String cmdUniquePostfix, String commandName, char icon,
             final ActionListener ev, boolean keep, MyForm.GetBool pushCmd) {
         return create(cmdUniqueId, cmdUniquePostfix, commandName, icon, null, ev, keep, pushCmd);
@@ -162,26 +204,36 @@ public class MyReplayCommand extends CommandTracked {
         return create(cmdUniqueId, cmdUniquePostfix, commandName, icon, iconFont, ev, keep, pushCmd, cmdUniqueId + cmdUniquePostfix);
     }
 
+//    public static MyReplayCommand createXXX(String cmdUniqueId, String cmdUniquePostfix, String commandName, char icon,
+//            Font iconFont, final ActionListener ev, boolean keep, MyForm.GetBool pushCmd, String cmdUniqueIdFull) {
+////        String cmdUniqueIdFull = cmdUniqueId + cmdUniquePostfix;
+////        String cmdUniqueIdFull = cmdUniqueId + cmdUniquePostfix;
+//        MyReplayCommand cmd = new MyReplayCommand(cmdUniqueIdFull, commandName, icon, iconFont) {
+//            @Override
+//            public void actionPerformed(ActionEvent evt) {
+//                if (pushCmd.getVal()) {
+//                    ReplayLog.getInstance().pushCmd(this); //DON'T call here, is called in MyReplayCommand.actionPerformed which is called below!
+//                }//                ev.actionPerformed(evt);
+//                if (ev != null) {
+////                    MyAnalyticsService.event(Display.getInstance().getCurrent(), cmdUniqueID);
+//                    ev.actionPerformed(evt);
+//                } else {
+//                    ASSERT.that("NOT REALLY SURE THIS WORKS!!!");
+////                    super.actionPerformed(evt);
+//                }
+//                super.actionPerformed(evt);
+//            }
+//        };
+//        cmd.setAnalyticsActionId(cmdUniqueIdFull);
+//        cmd.setKeep(keep);
+////        if (Config.TEST) cmd.setName("ReplayCmd-" + cmdUniqueId);
+//
+//        return cmd;
+//    }
     public static MyReplayCommand create(String cmdUniqueId, String cmdUniquePostfix, String commandName, char icon,
             Font iconFont, final ActionListener ev, boolean keep, MyForm.GetBool pushCmd, String cmdUniqueIdFull) {
-//        String cmdUniqueIdFull = cmdUniqueId + cmdUniquePostfix;
-//        String cmdUniqueIdFull = cmdUniqueId + cmdUniquePostfix;
-        MyReplayCommand cmd = new MyReplayCommand(cmdUniqueIdFull, commandName, icon, iconFont) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                if (pushCmd.getVal()) {
-                    ReplayLog.getInstance().pushCmd(this); //DON'T call here, is called in MyReplayCommand.actionPerformed which is called below!
-                }//                ev.actionPerformed(evt);
-                if (ev != null) {
-//                    MyAnalyticsService.event(Display.getInstance().getCurrent(), cmdUniqueID);
-                    ev.actionPerformed(evt);
-                } else {
-                    ASSERT.that("NOT REALLY SURE THIS WORKS!!!");
-//                    super.actionPerformed(evt);
-                }
-                super.actionPerformed(evt);
-            }
-        };
+        MyReplayCommand cmd = new MyReplayCommand(cmdUniqueIdFull, commandName, icon, iconFont, ev);
+        cmd.setPushCmd(pushCmd);
         cmd.setAnalyticsActionId(cmdUniqueIdFull);
         cmd.setKeep(keep);
 //        if (Config.TEST) cmd.setName("ReplayCmd-" + cmdUniqueId);
@@ -212,6 +264,7 @@ public class MyReplayCommand extends CommandTracked {
     public static MyReplayCommand create(String commandNameAndUniqueId, char icon, final ActionListener ev) {
         return create(commandNameAndUniqueId, "", commandNameAndUniqueId, icon, ev, false, () -> true);
     }
+
     public static MyReplayCommand create(String commandNameAndUniqueId, char icon, Font iconFont, final ActionListener ev) {
         return create(commandNameAndUniqueId, "", commandNameAndUniqueId, icon, iconFont, ev, false, () -> true);
     }
@@ -234,12 +287,11 @@ public class MyReplayCommand extends CommandTracked {
 //    public static MyReplayCommand create(String name, char icon, final ActionListener ev, String analyticsActionId) {
 //        return create(name, name, name, icon, null, ev, false, () -> true, analyticsActionId);
 //    }
-
-    public static MyReplayCommand createKeep(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, MyForm.GetBool pushCmd) {
+    public static MyReplayCommand createKeepXXX(String cmdUniqueID, String commandName, Image icon, final ActionListener ev, MyForm.GetBool pushCmd) {
         return create(cmdUniqueID, "", commandName, icon, ev, true, pushCmd);
     }
 
-    public static MyReplayCommand createKeep(String cmdUniqueID, String commandName, char icon, final ActionListener ev, MyForm.GetBool pushCmd) {
+    public static MyReplayCommand createKeepXXX(String cmdUniqueID, String commandName, char icon, final ActionListener ev, MyForm.GetBool pushCmd) {
         return create(cmdUniqueID, "", commandName, icon, ev, true, pushCmd);
     }
 

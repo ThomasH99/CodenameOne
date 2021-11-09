@@ -280,7 +280,7 @@ public class Icons {
     final static char iconCancelledDate = FontImage.MATERIAL_EVENT_BUSY; //TODO: find better symbol (with unchecked boxes)
     final static char iconDateRange = FontImage.MATERIAL_DATE_RANGE; //TODO: find better symbol (with unchecked boxes)
     
-    final static char iconRepeatOverview = FontImage.MATERIAL_FILTER; //or: DYNAMIC_FEED
+    final static char iconRepeatOverview = FontImage.MATERIAL_SETTINGS_BACKUP_RESTORE; //FILTER; //or: DYNAMIC_FEED
 
     final static char iconSelectedElt = FontImage.MATERIAL_CHECK_BOX; //3mm
     final static char iconSelectedEltCust = '^'; //3mm

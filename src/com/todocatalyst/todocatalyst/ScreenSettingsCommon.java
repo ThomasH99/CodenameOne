@@ -18,7 +18,7 @@ import com.codename1.ui.table.TableLayout;
  * @author Thomas
  */
 public class ScreenSettingsCommon extends MyForm {
-
+    
     TableLayout tl;
     int nbFields = 30;
     TableLayout.Constraint rightAdj;// = tl.createConstraint().horizontalAlign(Component.RIGHT);
@@ -33,7 +33,7 @@ public class ScreenSettingsCommon extends MyForm {
 //        this("Settings " + previousScreen.SCREEN_TITLE, previousScreen, doneAction);
         this("Settings " + previousScreen.getTitle(), previousScreen, doneAction);
     }
-
+    
     ScreenSettingsCommon(String title, MyForm previousScreen, Runnable doneAction) { // throws ParseException, IOException {
 //        super("Settings " +title, previousScreen, doneAction); // ScreenTimer.SCREEN_TITLE + " settings"
         super(title, previousScreen, doneAction); // ScreenTimer.SCREEN_TITLE + " settings"
@@ -59,34 +59,34 @@ public class ScreenSettingsCommon extends MyForm {
 //            setScrollableY(true);
             makeContainerBoxY();
         }
-
+        
         addCommandsToToolbar();
         refreshAfterEdit();
     }
-
+    
     @Override
     public void refreshAfterEdit() {
 //        getContentPane().removeAll();
-        container.removeAll();
+        mainContentContainer.removeAll();
 //        buildContentPane(getContentPane());
-        buildContentPane(container);
+        buildContentPane(mainContentContainer);
 //        revalidateWithAnimationSafety();
 //        revalidate();
         super.refreshAfterEdit();
 //        restoreKeepPos();
 //        super.refreshAfterEdit();
     }
-
+    
     public void addCommandsToToolbar() {
         Toolbar toolbar = getToolbar();
         //DONE/BACK
 //        toolbar.setBackCommand(makeDoneUpdateWithParseIdMapCommand());
         addStandardBackCommand();
-
+        
         if (MyPrefs.getBoolean(MyPrefs.enableCancelInAllScreens)) {
             toolbar.addCommandToOverflowMenu(makeCancelCommand());
         }
-
+        
         if (false) {
             toolbar.addCommandToOverflowMenu(new CommandTracked("Reset to default**")); //reset to default values
         }
@@ -199,18 +199,28 @@ public class ScreenSettingsCommon extends MyForm {
                 }
         );
     }
-
+    
     static Component makeEditBooleanSetting(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
         return makeEditBooleanSetting(parseIdMap2, prefEntry, null, null, null);
     }
-
+    
     static Component makeEditBoolean(ParseIdMap2 parseIdMap2, String fieldDescription, MyForm.GetBoolean getBool, MyForm.PutBoolean putBool, Runnable onOffAction, String helpTxt) {
         return makeEditBoolean(parseIdMap2, fieldDescription, getBool, putBool, onOffAction, onOffAction, helpTxt);
     }
-
+    static Component makeEditBoolean(ParseIdMap2 parseIdMap2, String fieldDescription, MyForm.GetBoolean getBool, MyForm.PutBoolean putBool, Runnable onOffAction, String helpTxt, String uiid) {
+        return makeEditBoolean(parseIdMap2, fieldDescription, getBool, putBool, onOffAction, onOffAction, helpTxt,uiid);
+    }
+    
     static Component makeEditBoolean(ParseIdMap2 parseIdMap2, String fieldDescription, MyForm.GetBoolean getBool, MyForm.PutBoolean putBool, Runnable onOnAction, Runnable offAction, String helpTxt) {
+        return makeEditBoolean(parseIdMap2, fieldDescription, getBool, putBool, onOnAction, offAction, helpTxt, null);
+    }
+
+    static Component makeEditBoolean(ParseIdMap2 parseIdMap2, String fieldDescription, MyForm.GetBoolean getBool, MyForm.PutBoolean putBool, Runnable onOnAction, Runnable offAction, String helpTxt, String uiid) {
         ASSERT.that(fieldDescription != null && fieldDescription.length() != 0, "no fieldDescription");
         Switch switchCmp = new MyOnOffSwitch(parseIdMap2, getBool, putBool);
+        if (uiid != null) {
+            switchCmp.setUIID(uiid);
+        }
         switchCmp.addActionListener((e) -> {
             if (switchCmp.isOn()) {
                 if (onOnAction != null) {
@@ -224,7 +234,7 @@ public class ScreenSettingsCommon extends MyForm {
         });
         return layoutN(fieldDescription, switchCmp, helpTxt);
     }
-
+    
     static Component makeEditBooleanSetting(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnAction, Runnable offAction, String labelText) {
 //        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
         ASSERT.that(prefEntry.getFieldDescription() != null && prefEntry.getFieldDescription().length() != 0, "trying to define a setting for a field without description, settingId=" + prefEntry.settingId);
@@ -272,26 +282,26 @@ public class ScreenSettingsCommon extends MyForm {
 //        return compForActionListener;
         return layoutSetting(labelText != null ? labelText : prefEntry.getFieldDescription(), switchCmp, prefEntry.getHelpText());
     }
-
+    
     static Component makeEditBooleanSetting(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOnAction, Runnable offAction) {
         return makeEditBooleanSetting(parseIdMap2, prefEntry, onOnAction, offAction, null);
     }
-
+    
     static Component makeEditBooleanSetting(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOffAction) {
         return makeEditBooleanSetting(parseIdMap2, prefEntry, onOffAction, onOffAction);
     }
-
+    
     static Component makeEditBooleanSetting(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Runnable onOffAction, String labelText) {
         return makeEditBooleanSetting(parseIdMap2, prefEntry, onOffAction, onOffAction, labelText);
     }
-
+    
     static Component makeEditBoolean(String fieldDescription, String helpText, GetBoolean getBoolean, PutBoolean setBoolean) {
 //        ASSERT.that(prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 ,
         ASSERT.that(fieldDescription != null && fieldDescription.length() != 0, "trying to define a boolean edit for without description");
         Switch switchCmp = new MyOnOffSwitch(null, getBoolean, setBoolean);
         return layoutSetting(fieldDescription, switchCmp, helpText);
     }
-
+    
     private static void hideShowAll(boolean show, Component... settings) {
         if (settings.length > 0) {
             for (Component setting : settings) {
@@ -307,7 +317,7 @@ public class ScreenSettingsCommon extends MyForm {
             }
         }
     }
-
+    
     static Component makeEditBooleanSetting(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, boolean showWhen, Component... settings) {
         hideShowAll(prefEntry.getBoolean() == showWhen, settings);
         return makeEditBooleanSetting(parseIdMap2, prefEntry, () -> hideShowAll(prefEntry.getBoolean() == showWhen, settings), () -> hideShowAll(prefEntry.getBoolean() == showWhen, settings));
@@ -328,11 +338,11 @@ public class ScreenSettingsCommon extends MyForm {
     static Component makeSectionTitle(String title) {
         return new SpanLabel(title, "SettingSectionLabel");
     }
-
+    
     static Component makeHelpText(String helpText) {
         return new SpanLabel(helpText, "ButtonHelpText");
     }
-
+    
     protected Component makeEditTimeInMinutesSetting(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry) {
 
 //        assert prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()==0 : "trying to define a setting for a field without description";
@@ -367,11 +377,11 @@ public class ScreenSettingsCommon extends MyForm {
         return layoutSetting(prefEntry.getFieldDescription(), durationPicker2, prefEntry.getHelpText());
 //        }
     }
-
+    
     protected Component makeEditIntSetting(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, int minValue, int maxValue, int step) {
         return makeEditIntSetting(parseIdMap2, prefEntry, minValue, maxValue, step, null);
     }
-
+    
     protected Component makeEditIntSetting(ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, int minValue, int maxValue, int step, ActionListener pickerActionListener) {
 
 //        ASSERT.that( prefEntry.getFieldScription() != null && prefEntry.getFieldScription().length()!=0 , "trying to define a setting for a field without description");
@@ -485,9 +495,9 @@ public class ScreenSettingsCommon extends MyForm {
 //        }
         return compGroup;
     }
-
+    
     protected void addSettingEnumAsPickerTODO(Container cont, ParseIdMap2 parseIdMap2, MyPrefs.PrefEntry prefEntry, Object[] enumValues, boolean unselectAllowed) {
-
+        
         cont.add(layoutN(prefEntry.getFieldDescription(), new MyComponentGroup(enumValues, parseIdMap2, () -> {
             for (Object e : enumValues) {
                 if (((Enum) e).name().equals(prefEntry.getString())) {
@@ -504,7 +514,7 @@ public class ScreenSettingsCommon extends MyForm {
             }
         }, unselectAllowed),
                 prefEntry.getHelpText()));
-
+        
     }
 
 //    protected void addSettingStringValuesXXX(Container cont, Map<Object, UpdateField> parseIdMap2, MyPrefs.PrefEntry prefEntry, MyEnumInterface enumSetting, MyForm.GetString get, MyForm.PutString set, boolean unselectAllowed) {

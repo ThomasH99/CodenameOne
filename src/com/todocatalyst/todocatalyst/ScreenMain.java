@@ -60,11 +60,11 @@ public class ScreenMain extends MyForm {
 //    private Resources theme;
     private static final String SCREEN_MAIN_NAME = "TodoCatalyst";
     Container menuContainer;
-
+    
     public ScreenMain(MyForm previousScreen) { //throws ParseException, IOException {
         super(SCREEN_MAIN_NAME, previousScreen, () -> {
         });
-
+        setUniqueFormId("ScreenMain");
         String countStr = "";
         if (false) {
             int totalCount = DAO.getInstance().getItemCount(false);
@@ -122,10 +122,10 @@ public class ScreenMain extends MyForm {
             Log.p("STATUSBAR: getUIManager().isThemeConstant(\"paintsTitleBarBool\", false)=="
                     + (getUIManager().isThemeConstant("paintsTitleBarBool") == null ? "<null>" : "" + getUIManager().isThemeConstant("paintsTitleBarBool")));
         }
-
+        
         refreshAfterEdit();
     }
-
+    
     @Override
     public void refreshAfterEdit() {
 //         getContentPane().removeAll();
@@ -135,8 +135,8 @@ public class ScreenMain extends MyForm {
         }
         setKeepPos(); //store previous scroll (to re
 //        addCommandsToToolbar(getToolbar(), menuContainer);//, theme);
-        buildContentPane(this,menuContainer);
-
+        buildContentPane(this, menuContainer);
+        
         super.refreshAfterEdit();
     }
 
@@ -163,7 +163,7 @@ public class ScreenMain extends MyForm {
 //        c.setLeadComponent(titleButton);
         cont.add(titleButton);
     }
-
+    
     private static Button makeAndAddButtons(Command cmd, String helpText) {
 //        Component titleButton = makeHelpButton(cmd.getCommandName(), helpText);
         Button titleButton = new MyButtonLongPress(cmd, Command.create(null, null, (e) -> {
@@ -243,10 +243,10 @@ public class ScreenMain extends MyForm {
 //        TableLayout.Constraint w40 = new TableLayout.Constraint().widthPercentage(40);
 //        TableLayout.Constraint right = new TableLayout.Constraint().horizontalAlign(Component.RIGHT);
         TableLayout.Constraint span2 = new TableLayout.Constraint().horizontalSpan(2).ha(Component.CENTER);
-
+        
         toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
         toolbar.addCommandToOverflowMenu(makeInterruptCommand(true));
-
+        
         toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Settings", ScreenSettings.SCREEN_TITLE, Icons.iconSettings, (e) -> {
 //                new ScreenListOfCategories("Categories", new ItemList(DAO.getInstance().getAllCategories()), ScreenMain.this, (i)->{}).show();
             new ScreenSettings(ScreenMain.this).show();
@@ -255,7 +255,7 @@ public class ScreenMain extends MyForm {
 //        makeAndAddButtons(settings, toolbar, cont, ScreenSettings.SCREEN_HELP);
 
         if (Config.TEST) {
-
+            
             toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Repair", ScreenRepair.SCREEN_TITLE, Icons.iconRepair, (e) -> {
 //                new ScreenListOfCategories("Categories", new ItemList(DAO.getInstance().getAllCategories()), ScreenMain.this, (i)->{}).show();
                 new ScreenRepair(ScreenMain.this).show();
@@ -263,11 +263,16 @@ public class ScreenMain extends MyForm {
             ));
 //            makeAndAddButtons(repair, toolbar, cont, "**");
         }
-
+        
         toolbar.addCommandToOverflowMenu(MyReplayCommand.create("HomePage", "Home page"/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainWeb, (e) -> {
                     Display.getInstance().execute("https://todocatalyst.com");
                 }
         ));
+    }
+    
+    @Override
+    protected boolean isDragAndDropEnabled() {
+        return true; //!optionDisableDragAndDrop && !isSortOn(); //
     }
     
     static public void buildContentPane(MyForm myForm, Container cont) { //, Resources theme) {
@@ -439,7 +444,7 @@ public class ScreenMain extends MyForm {
 //        MyReplayCommand workSlots = new MyReplayCommand(ScreenListOfWorkSlots.SCREEN_TITLE/*FontImage.create(" \ue838 ", iconStyle)*/) {
 //            @Override
 //            public void actionPerformed(ActionEvent evt) {
-        Button workSlotsOLD = makeAndAddButtons((MyReplayCommand) MyReplayCommand.create("WorkSlots", WORKSLOTS.getTitle(),
+        Button workSlotsOLDXXX = makeAndAddButtons((MyReplayCommand) MyReplayCommand.create("WorkSlots", WORKSLOTS.getTitle(),
                 WORKSLOTS.getIcon(), WORKSLOTS.getFont(), (e) -> {
 //                super.actionPerformed(e);
 //            new ScreenListOfWorkSlots("", DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())), null, ScreenMain.this, (i) -> {
@@ -448,7 +453,8 @@ public class ScreenMain extends MyForm {
 //            ItemList tempWorkSlotOwnerList = new ItemList("Future " + WorkSlot.WORKSLOT + "s", true);
             ItemList tempWorkSlotOwnerList = new ItemList("", true);
 //            tempWorkSlotOwnerList.setWorkSlotList(new WorkSlotList(tempWorkSlotOwnerList, DAO.getInstance().getWorkSlots(new MyDate(MyDate.currentTimeMillis())), true));
-            tempWorkSlotOwnerList.setWorkSlotsInParse(DAO.getInstance().getWorkSlots(new MyDate(MyDate.currentTimeMillis())));
+//            tempWorkSlotOwnerList.setWorkSlotsInParse(DAO.getInstance().getWorkSlotsAsItemList(new MyDate(MyDate.currentTimeMillis())));
+            tempWorkSlotOwnerList.setWorkSlotsInParse(DAO.getInstance().getActiveWorkSlotsAsItemList());
 //} else{
 //WorkSlotList tempWorkSlotList = new WorkSlotList(DAO.getInstance().getWorkSlots(new Date(System.currentTimeMillis())));
 //}
@@ -461,12 +467,13 @@ public class ScreenMain extends MyForm {
                     }, true, false).show();
         }
         ), ScreenType.WORKSLOTS.getHelpText());
-        workSlotsOLD.setUIID("MainMenuButton");
-
-        Component workSlots = new MainItemListButton(WORKSLOTS.getTitle(), WORKSLOTS.getIcon(), WORKSLOTS.getFont(),
+        workSlotsOLDXXX.setUIID("MainMenuButton");
+        
+        Component workSlotsXXX = new MainItemListButton(WORKSLOTS.getTitle(), WORKSLOTS.getIcon(), WORKSLOTS.getFont(),
                 "", "", (e) -> {
                     ItemList tempWorkSlotOwnerList = new ItemList("", true);
-                    tempWorkSlotOwnerList.setWorkSlotsInParse(DAO.getInstance().getWorkSlots(new MyDate(MyDate.currentTimeMillis()), true));
+//                    tempWorkSlotOwnerList.setWorkSlotsInParse(DAO.getInstance().getWorkSlotsAsItemList(new MyDate(MyDate.currentTimeMillis()), true));
+                    tempWorkSlotOwnerList.setWorkSlotsInParse(DAO.getInstance().getActiveWorkSlotsAsItemList());
                     new ScreenListOfWorkSlots(tempWorkSlotOwnerList, myForm,
                             () -> {
                             }, true, false).show();
@@ -497,11 +504,11 @@ public class ScreenMain extends MyForm {
             myForm2.show();
         }
         ), STATISTICS.getHelpText());
-
+        
         Component statistics = new MainItemListButton(STATISTICS.getTitle(), STATISTICS.getIcon(), STATISTICS.getFont(),
                 "", "", (e) -> new ScreenStatistics2(myForm, () -> {
                 }).show(), "Statistics");
-
+        
         statisticsOLD.setUIID("MainMenuButton");
 //        makeAndAddButtons(statistics, toolbar, cont, SCREEN_STATISTICS);
 
@@ -595,7 +602,7 @@ public class ScreenMain extends MyForm {
             ), "");
 //            makeAndAddButtons(touched24h, toolbar, cont, "**");
         }
-
+        
         if (false && Config.TEST) {
             Button allTasksWithoutOwner = makeAndAddButtons(MyReplayCommand.create("Tasks without owner**"/*FontImage.create(" \ue838 ", iconStyle)*/, null, (e) -> {
                         new ScreenListOfItems("Tasks without owner**",
@@ -664,28 +671,28 @@ public class ScreenMain extends MyForm {
             ), "");
 //            makeAndAddButtons(cleanTemplates, toolbar, cont, "**");
         }
-
+        
         if (false) {
             cont.add(listOfAlarms);
             cont.add(overdue);
-
+            
             cont.add(span2, today);
-
+            
             cont.add(next);
             cont.add(inbox);
-
+            
             cont.add(lists);
             cont.add(categories);
-
-            cont.add(span2, workSlots);
+            
+            cont.add(span2, workSlotsXXX);
             cont.add(span2, statistics);
-
+            
             cont.add(completionLog);
             cont.add(creationLog);
-
+            
             cont.add(allTasks);
             cont.add(projects);
-
+            
             cont.add(templates);
             cont.add(touched);
         } else if (false) {
@@ -694,7 +701,7 @@ public class ScreenMain extends MyForm {
                     GridLayout.encloseIn(1, today),
                     GridLayout.encloseIn(2, next, inbox),
                     GridLayout.encloseIn(2, lists, categories),
-                    GridLayout.encloseIn(1, workSlots),
+                    GridLayout.encloseIn(1, workSlotsXXX),
                     GridLayout.encloseIn(1, statistics),
                     GridLayout.encloseIn(2, completionLog, creationLog),
                     GridLayout.encloseIn(2, allTasks, projects),
@@ -706,7 +713,7 @@ public class ScreenMain extends MyForm {
             cont.addAll(
                     GridLayout.encloseIn(2, next, inbox),
                     GridLayout.encloseIn(2, lists, categories),
-                    GridLayout.encloseIn(1, workSlots),
+                    GridLayout.encloseIn(1, workSlotsXXX),
                     GridLayout.encloseIn(1, statistics),
                     GridLayout.encloseIn(3, creationLog, touched, completionLog),
                     GridLayout.encloseIn(2, allTasks, projects),
@@ -715,7 +722,7 @@ public class ScreenMain extends MyForm {
             ComponentGroup compGrp1 = ComponentGroup.enclose(new Label("PLAN"), //"Prepare"
                     GridLayout.encloseIn(1, inbox),
                     GridLayout.encloseIn(2, lists, categories),
-                    GridLayout.encloseIn(2, workSlots, templates)
+                    GridLayout.encloseIn(2, workSlotsXXX, templates)
             );
             ComponentGroup compGrp2 = ComponentGroup.enclose(new Label("DO"), //"Execute"
                     GridLayout.encloseIn(2, listOfAlarms, overdue),
@@ -752,11 +759,12 @@ public class ScreenMain extends MyForm {
                     new MyTree2(myForm, CategoryList.getInstance()),
                     //                    new MyTree2(this, DAO.getInstance().getWorkSlots(new MyDate(MyDate.currentTimeMillis())), true, false),
                     //                    workSlots,
-                    new MyTree2(myForm, DAO.getInstance().getWorkSlots(new MyDate(), true)),
+//                    new MyTree2(myForm, DAO.getInstance().getWorkSlots(new MyDate(), true)),
+                    new MyTree2(myForm, DAO.getInstance().getActiveWorkSlotsAsItemList()),
                     //                    new MyTree2(this, TemplateList.getInstance(), true, false) //,                    inbox, lists, categories, workSlots, templates);
                     new MyTree2(myForm, TemplateList.getInstance()) //,                    inbox, lists, categories, workSlots, templates);
             );
-
+            
             cont.addAll(new StickyHeader("Do", "MainStickyHeader", true),
                     //                    listOfAlarms, overdue, 
                     //                    today, next,

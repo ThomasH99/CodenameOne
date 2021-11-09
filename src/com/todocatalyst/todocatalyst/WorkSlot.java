@@ -59,10 +59,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    final static String BELONGS_TO = "Owner"; //"Start time";
 //    final static String BELONGS_TO_HELP = "Owner (List, Category, project) this workslot belongs to"; //"Start time";
     final static String BELONGS_TO = "For List/Project"; //"Owner List/Project" "Belongs to";
-      final static String BELONGS_TO_PROJECT = "For Project"; //"Owner List/Project" "Belongs to";
+    final static String BELONGS_TO_PROJECT = "For Project"; //"Owner List/Project" "Belongs to";
     final static String BELONGS_TO_LIST = "For List"; //"Owner List/Project" "Belongs to";
     final static String BELONGS_TO_CATEGORY = "For Category"; //"Owner List/Project" "Belongs to";
-    final static String BELONGS_TO_HELP = Format.f("Indicates the List or Project this {0 workslot} belongs to. Change to move the {0} to another List or Project",WorkSlot.WORKSLOT);
+    final static String BELONGS_TO_HELP = Format.f("Indicates the List or Project this {0 workslot} belongs to. Change to move the {0} to another List or Project", WorkSlot.WORKSLOT);
 
     final static String END_TIME = "End by"; //"Start time";
     final static String END_TIME_HELP = "Define when the " + WORKSLOT + " ends"; //"Start time";
@@ -72,8 +72,6 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     final static String SOURCE = Item.SOURCE; //Template or Task that this one is a copy of, "Task copy of"
     final static String SOURCE_HELP = "Shows the " + WORKSLOT + " was copied from. E.g. for repeating or copy/paste.?"; //Template or Task that this one is a copy of, "Task copy of"
-    
-  
 
     final static int FIELD_DESCRIPTION = 0;
     final static int FIELD_DURATION = 1;
@@ -135,12 +133,26 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
 //    public WorkSlot(String description, Date start, int durationInMinutes, RepeatRuleParseObject myRepeatRule) {//, boolean importedFromPIM) {
-    public WorkSlot(String description, Date start, long durationInMillis, RepeatRuleParseObject myRepeatRule) {//, boolean importedFromPIM) {
+    public WorkSlot(boolean setEditedDate) {//, boolean importedFromPIM) {
         this();
+        if (setEditedDate) {
+            setEditedDateToNow(); //UI: always make the creation of a task an 'edit' event
+        }
+    }
+
+    public WorkSlot(String description, Date start, long durationInMillis, RepeatRuleParseObject myRepeatRule, boolean setEditedDate) {//, boolean importedFromPIM) {
+        this();
+        if (setEditedDate) {
+            setEditedDateToNow(); //UI: always make the creation of a task an 'edit' event
+        }
         setText(description);
         setStartTime(start);
         setDurationInMillis(durationInMillis);
         setRepeatRule(myRepeatRule);
+    }
+
+    public WorkSlot(String description, Date start, long durationInMillis, RepeatRuleParseObject myRepeatRule) {//, boolean importedFromPIM) {
+        this(description, start, durationInMillis, myRepeatRule, true);
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -501,44 +513,45 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         setRepeatRuleInParse(repeatRule);
     }
 
-    public final void setRepeatRuleOLD(RepeatRuleParseObject newRepeatRuleN) {
-        RepeatRuleParseObject oldRepeatRule = getRepeatRuleN();
-        if (oldRepeatRule == null) { //setting a RR for the first time
-            if (newRepeatRuleN != null) {
-//                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null) { //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
-//                    DAO.getInstance().saveInBackground(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public final void setRepeatRuleOLD(RepeatRuleParseObject newRepeatRuleN) {
+//        RepeatRuleParseObject oldRepeatRule = getRepeatRuleN();
+//        if (oldRepeatRule == null) { //setting a RR for the first time
+//            if (newRepeatRuleN != null) {
+////                if (newRepeatRule.isDirty() || newRepeatRule.getObjectIdP() == null) { //                    DAO.getInstance().saveAndWait(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+////                    DAO.getInstance().saveInBackground(newRepeatRule); //must save to get an ObjectId before creating repeat instances (so they can refer to the objId)
+////                }
+//                newRepeatRuleN.addOriginatorToRule(this); //if new RepeatRule, add WorkSlot as originator
+//                setRepeatRuleInParse(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
+////                newRepeatRule.updateWorkslotsForNewRepeatRule(this);
+////                newRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this, true);
+////                opsAfterSubtaskUpdates.add(() -> newRepeatRule.updateItemsWhenRuleCreatedOrEdited(this, true)); //will also save RR
+//                opsAfterSubtaskUpdates.add(() -> newRepeatRuleN.updateWorkSlotsWhenRuleCreatedOrEdited(this, true)); //will also save RR
+//            } else {
+//                //setting null when already null - do nothing
+//            }
+//        } else { //oldRepeatRule != null
+//            if (newRepeatRuleN == null || newRepeatRuleN.getRepeatType() == REPEAT_TYPE_NO_REPEAT) { //deleting the existing RR
+////                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)) {
+////                    setRepeatRuleInParse(null);
+////                }
+//                setRepeatRuleInParse(null);
+////                opsAfterSubtaskUpdates.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)); //will also save RR
+//                opsAfterSubtaskUpdates.add(() -> oldRepeatRule.delete(new MyDate())); //will also save RR
+//
+//            } else { //possibly modified
+//                if (!newRepeatRuleN.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
+//                    oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRuleN); //update existing rule with updated values
+////                oldRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this); //
+////                oldRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this, false); //will also save RR
+//                    setRepeatRuleInParse(oldRepeatRule);
+////                        opsAfterSubtaskUpdates.add(() -> oldRepeatRule.updateItemsWhenRuleCreatedOrEdited(this, false)); //will also save RR
+//                    opsAfterSubtaskUpdates.add(() -> oldRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this, false)); //will also save RR
 //                }
-                newRepeatRuleN.addOriginatorToRule(this); //if new RepeatRule, add WorkSlot as originator
-                setRepeatRuleInParse(newRepeatRuleN); //MUST set repeat rule *before* creating repeat instances in next line to ensure repeatInstance copies point back to the repeatRule
-//                newRepeatRule.updateWorkslotsForNewRepeatRule(this);
-//                newRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this, true);
-//                opsAfterSubtaskUpdates.add(() -> newRepeatRule.updateItemsWhenRuleCreatedOrEdited(this, true)); //will also save RR
-                opsAfterSubtaskUpdates.add(() -> newRepeatRuleN.updateWorkSlotsWhenRuleCreatedOrEdited(this, true)); //will also save RR
-            } else {
-                //setting null when already null - do nothing
-            }
-        } else { //oldRepeatRule != null
-            if (newRepeatRuleN == null || newRepeatRuleN.getRepeatType() == REPEAT_TYPE_NO_REPEAT) { //deleting the existing RR
-//                if (oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)) {
-//                    setRepeatRuleInParse(null);
-//                }
-                setRepeatRuleInParse(null);
-//                opsAfterSubtaskUpdates.add(() -> oldRepeatRule.deleteAskIfDeleteRuleAndAllOtherInstancesExceptThis(this)); //will also save RR
-                opsAfterSubtaskUpdates.add(() -> oldRepeatRule.delete(new MyDate())); //will also save RR
-
-            } else { //possibly modified
-                if (!newRepeatRuleN.equals(oldRepeatRule)) { //do nothing if rule is not edited!!
-                    oldRepeatRule.updateToValuesInEditedRepeatRule(newRepeatRuleN); //update existing rule with updated values
-//                oldRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this); //
-//                oldRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this, false); //will also save RR
-                    setRepeatRuleInParse(oldRepeatRule);
-//                        opsAfterSubtaskUpdates.add(() -> oldRepeatRule.updateItemsWhenRuleCreatedOrEdited(this, false)); //will also save RR
-                    opsAfterSubtaskUpdates.add(() -> oldRepeatRule.updateWorkSlotsWhenRuleCreatedOrEdited(this, false)); //will also save RR
-                }
-            }
-        }
-    }
-
+//            }
+//        }
+//    }
+//</editor-fold>
     public final void setRepeatRule(RepeatRuleParseObject newRepeatRuleN) {
         RepeatRuleParseObject oldRepeatRule = getRepeatRuleN();
 //<editor-fold defaultstate="collapsed" desc="old version">
@@ -790,7 +803,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     @Override
     public WorkSlot cloneMe(CopyMode copyFieldDefinition) {
-        WorkSlot newCopy = new WorkSlot();
+        WorkSlot newCopy = new WorkSlot(true);
         copyMeInto(newCopy, copyFieldDefinition);
         return newCopy;
     }
@@ -1355,12 +1368,9 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      */
     public long getDurationAdjusted(long fromTime, long toTime) {
         if (Config.TEST) {
-            Date actualEnd = new MyDate(
-                    Math.min(getStartTimeD().getTime() + getDurationInMillis(), toTime)
-            ); //get the earliest endDate
-            Date actualStart = new MyDate(
-                    Math.max(getStartTimeD().getTime(), fromTime)
-            ); //get the latest startDate
+
+            Date actualEnd = new MyDate(Math.min(getStartTimeD().getTime() + getDurationInMillis(), toTime)); //get the earliest endDate
+            Date actualStart = new MyDate(Math.max(getStartTimeD().getTime(), fromTime)); //get the latest startDate
 
             long duration = actualEnd.getTime() - actualStart.getTime(); //get the duration (may be negative)
             long finalDuration = Math.max(0, duration);
@@ -1381,6 +1391,14 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
      */
     public boolean hasDurationInInterval(long fromTime, long endTime) {
         return getDurationAdjusted(fromTime, endTime) > 0;
+    }
+
+    public boolean hasActiveDuration(long now) {
+        return getDurationAdjusted(now, MyDate.MAX_DATE) > 0;
+    }
+
+    public boolean hasActiveDuration() {
+        return getDurationAdjusted(new MyDate().getTime(), MyDate.MAX_DATE) > 0;
     }
 
     public final void setDurationInMillis(long durationInMilliSeconds) {
@@ -2518,6 +2536,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         }
     }
 
+    /**
+     * return start/end dates if they fall within today, or if the workslot
+     * overlaps with today, return start and/or end of today
+     */
     public Date[] getTodayDates() {
         Date todayStart = MyDate.getStartOfToday();
         Date todayEnd = MyDate.getEndOfToday();
@@ -2525,6 +2547,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         Date endDate = getEndTimeD();
         Date startDateToday;
         Date endDateToday;
+
         if (endDate.getTime() < todayStart.getTime() || startDate.getTime() > todayEnd.getTime()) { //no overlap with today
             startDateToday = null;
             endDateToday = null;
@@ -2596,6 +2619,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     @Override
     public void pullToRefresh() {
 
+    }
+
+    public TodaySortOrder getTodaySortOrder() {
+        return TodaySortOrder.TODAY_OTHER;
     }
 
 }

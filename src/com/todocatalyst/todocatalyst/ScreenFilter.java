@@ -89,9 +89,9 @@ public class ScreenFilter extends MyForm {
     public void refreshAfterEdit() {
         ReplayLog.getInstance().clearSetOfScreenCommandsNO_EFFECT(); //must be cleared each time we rebuild, otherwise same ReplayCommand ids will be used again
 //        getContentPane().removeAll();
-        container.removeAll();
+        mainContentContainer.removeAll();
 //        buildContentPane(getContentPane());
-        buildContentPane(container);
+        buildContentPane(mainContentContainer);
 //        restoreKeepPos();
         super.refreshAfterEdit();
     }
@@ -357,7 +357,7 @@ public class ScreenFilter extends MyForm {
 //        content.add(new SpanLabel("Show only certain types of tasks"));
         content.add(makeSpacerThin());
         //Starred
-        content.add(layoutSetting(Format.f("Show only {0} tasks", Item.STARRED), new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting(Format.f("Show only {0 starred} tasks", Item.STARRED), new MyOnOffSwitch(parseIdMap2,
                 () -> {
                     return filterSortDef.isShowStarredTasksOnly();
                 }, (b) -> {

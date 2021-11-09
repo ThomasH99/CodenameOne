@@ -45,9 +45,9 @@ public class ScreenRepeatRuleInstancesOverview extends MyForm {
     @Override
     public void refreshAfterEdit() {
 //        getContentPane().removeAll();
-        container.removeAll();
+        mainContentContainer.removeAll();
 //        buildContentPane(getContentPane());
-        buildContentPane(container, repeatRule, this);
+        buildContentPane(mainContentContainer, repeatRule, this);
         super.refreshAfterEdit();
     }
 

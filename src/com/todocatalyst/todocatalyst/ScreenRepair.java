@@ -72,9 +72,9 @@ public class ScreenRepair extends MyForm {
     @Override
     public void refreshAfterEdit() {
 //        getContentPane().removeAll();
-        container.removeAll();
+        mainContentContainer.removeAll();
 //        buildContentPane(getContentPane());
-        buildContentPane(container);
+        buildContentPane(mainContentContainer);
 //        restoreKeepPos();
         super.refreshAfterEdit();
     }
@@ -817,12 +817,12 @@ public class ScreenRepair extends MyForm {
                 for (int i = 0, size = list.size(); i < size; i++) {
                     //https://www.codenameone.com/blog/toolbar-search-mode.html:
                     if (searchOnLowerCaseOnly) {
-                        logForm.container.getComponentAt(i).setHidden(((String) list.get(i)).toLowerCase().indexOf(txt) < 0);
+                        logForm.mainContentContainer.getComponentAt(i).setHidden(((String) list.get(i)).toLowerCase().indexOf(txt) < 0);
                     } else {
-                        logForm.container.getComponentAt(i).setHidden(((String) list.get(i)).indexOf(txt) < 0);
+                        logForm.mainContentContainer.getComponentAt(i).setHidden(((String) list.get(i)).indexOf(txt) < 0);
                     }
                 }
-                logForm.container.animateLayout(ANIMATION_TIME_FAST);
+                logForm.mainContentContainer.animateLayout(ANIMATION_TIME_FAST);
             });
 //                logForm.getToolbar().addSearchCommand(logForm.getSearchCmd());
 
@@ -830,11 +830,11 @@ public class ScreenRepair extends MyForm {
             for (String s : list) {
                 c = new SpanLabel(s, "ErrorLogText");
 //                    logForm.addComponent(c);
-                logForm.container.addComponent(c);
+                logForm.mainContentContainer.addComponent(c);
             }
 //                logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneCommandWithNoUpdate());
             logForm.getToolbar().addCommandToLeftBar(logForm.makeDoneUpdateWithParseIdMapCommand());
-            logForm.container.scrollComponentToVisible(c); //scroll down to show last line in list
+            logForm.mainContentContainer.scrollComponentToVisible(c); //scroll down to show last line in list
             logForm.show();
 //                logForm.scrollComponentToVisible(c); //scroll down to show last line in list
         }
@@ -872,6 +872,12 @@ public class ScreenRepair extends MyForm {
 //TODO!!!! show waiting turning symbol + message: "Do not make changes to data on the server while refreshing locally stored data"
                 DAO.getInstance().resetAndDeleteAndReloadAllCachedData();
                 Dialog.show("Info", "Finished updating cache", "OK", null);
+            }
+        }));
+        content.add(new Button(new Command("Play sound") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                AlarmHandler.getInstance().playAlarm();
             }
         }));
 

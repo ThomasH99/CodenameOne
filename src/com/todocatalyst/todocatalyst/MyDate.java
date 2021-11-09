@@ -2287,7 +2287,8 @@ public class MyDate extends Date {
     }
 
     static boolean isToday(Date date) {
-        return date.getTime() >= getStartOfToday().getTime() && date.getTime() < getStartOfToday().getTime() + DAY_IN_MILLISECONDS;
+//        return date.getTime() >= getStartOfToday().getTime() && date.getTime() < getStartOfToday().getTime() + DAY_IN_MILLISECONDS;
+        return date.getTime() >= getStartOfToday().getTime() && date.getTime() <= getEndOfToday().getTime();
     }
 
     /**

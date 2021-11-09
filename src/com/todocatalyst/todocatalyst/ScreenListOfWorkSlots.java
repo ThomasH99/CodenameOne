@@ -113,6 +113,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        this.refreshWorkSlotList = refreshWorkSlotList;
         this.showOwner = showOwner;
         setPinchInsertEnabled(true);
+        previousValues = new SaveEditedValuesLocally(getUniqueFormId() + "-" + owner.getGuid());
 //        this.previousForm = previousForm;
 //        this.updateItemListOnDone = updateItemListOnDone;
 
@@ -201,8 +202,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //            this.keepPos.setNewScrollYPosition();
 //        }
         //check if there was an insertContainer active earlier
-        recreateInlineInsertContainerAndReplayCmdIfNeeded();
-
+//        recreateInlineInsertContainerAndReplayCmdIfNeeded(); //moved to MyForm.refreshAfterEdit()
         super.refreshAfterEdit();
 //        revalidate();
 //        restoreKeepPos();
@@ -221,7 +221,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //            toolbar.addCommandToRightBar(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNewToolbarStyle(), (e) -> {
 //            toolbar.addCommandToRightBar(MyReplayCommand.createKeep("NewWorkSlot", "", Icons.iconNew, (e) -> {
             toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("NewWorkSlot", "Add " + WorkSlot.WORKSLOT, Icons.iconNew, (e) -> {
-                WorkSlot newWorkSlot = new WorkSlot();
+                WorkSlot newWorkSlot = new WorkSlot(true);
                 newWorkSlot.setOwner(workSlotListOwner); //MUST set owner before editing to ensure a possible RepeatRule will insert workslot repeatInstances in right owner list
                 setKeepPos(new KeepInSameScreenPosition());
                 new ScreenWorkSlot(newWorkSlot, workSlotListOwner, ScreenListOfWorkSlots.this, () -> {
@@ -536,6 +536,9 @@ public class ScreenListOfWorkSlots extends MyForm {
 //            showItemsInWorkSlotButton.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, showItemsInWorkSlotButton);
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, showItemsInWorkSlotButton);
             east.addComponent(showItemsInWorkSlotButton);
+            if (myForm.expandedObjects != null) {
+                myForm.expandedObjects.updateExpandedUIID(showItemsInWorkSlotButton, workSlot, "ListOfWorkSlotsShowTasks", "ListOfWorkSlotsShowTasksExpanded");
+            }
         }
 
         east.addComponent(editWorkSlotButton);

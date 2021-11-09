@@ -43,6 +43,9 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     private Component lastDraggedOverXXX = null;
 //    private MyDragAndDropSwipeableContainer lastDraggedOverMyDD = null;
     private long lastScroll;
+    private Component bottomLeft;
+    private Component bottomRight;
+    private ItemAndListCommonInterface owner;
 
     interface Call {
 
@@ -421,51 +424,6 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //    }
 //</editor-fold>
     /**
-     * insert the dropPlaceholder into the parent container of refComp at the
-     * right relative position wrt refComp
-     *
-     * @param refComp the component relative to which the dropPlaceholder should
-     * be inserted (dropPh is inserted either before or after refComp)
-     * @param dropPh dropPlaceholder component
-     * @param relativeIndex relative position where to insert dropPh, +1: after
-     * refComp, 0: at refComp's position, Integer.MAX_VALUE: at the end of the
-     * container list to which refComp belongs, -1: before refComp (not used?!)
-     */
-//    private static boolean addDropPlaceholderToAppropriateParentCont(Component refComp, Component dropPh, int relativeIndex) {
-//     static boolean addDropPlaceholderToAppropriateParentCont(MyDragAndDropSwipeableContainer refComp, Component dropPh, int relativeIndex) {
-    static boolean addDropPlaceholderToAppropriateParentCont(Component refComp, Component dropPh, int relativeIndex) {
-
-//        ASSERT.that(!(refComp instanceof MyTree2) && !(refComp instanceof ContainerScrollY));
-//        Container dropCont =getParentScrollYContainer(refComp); //NOT possible to use getParentScrollYContainer because we need the refCompComp below to find the index
-        Container dropContParent = refComp.getParent(); //treeList = the list in which to insert the dropPlaceholder
-        if (Config.TEST) {
-            ASSERT.that(dropContParent != null, "parent to refComp=" + refComp + " is null!");
-        }
-        Component refCompComp = refComp; //the containing container of refComp contained in dropCont
-        while (!(dropContParent instanceof ContainerScrollY) && dropContParent != null) {
-            refCompComp = dropContParent;
-            dropContParent = dropContParent.getParent();
-        }
-
-        ASSERT.that(dropContParent == null || (dropContParent instanceof ContainerScrollY), "dropCont not correct type, dropCont=" + (dropContParent != null ? dropContParent.toString() : "<null>"));
-        if (dropContParent != null) {
-//            return (Container) dropCont;
-//            ( (Container) dropCont).addComponent(dropCont.getC, refComp);
-            if (relativeIndex == Integer.MAX_VALUE) {
-//                ((Container) dropCont).addComponent(((Container) dropCont).getComponentCount(), dropPh);
-                dropContParent.addComponent(dropPh);
-            } else {
-                int index = dropContParent.getComponentIndex(refCompComp);
-                dropContParent.addComponent(index + relativeIndex, dropPh);
-            }
-            return true;
-        } else {
-            assert false;
-            return false;
-        }
-    }
-
-    /**
      * insert as first subtask
      *
      * @param refComp
@@ -667,7 +625,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @return or null if none found
      */
 //    private static MyDragAndDropSwipeableContainer getParentMyDDCont(MyDragAndDropSwipeableContainer cont) {
-    private static MyDragAndDropSwipeableContainer getParentMyDDCont(Component cont) {
+    static MyDragAndDropSwipeableContainer findParentMyDDCont(Component cont) {
 //        Component beforeParent = cont;
         Container beforeParentParent = cont.getParent(); //treeList = the list in which to insert the dropPlaceholder
 
@@ -711,7 +669,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @param cont
      * @return
      */
-    private static MyDragAndDropSwipeableContainer getTopLevelParentMyDDCont(MyDragAndDropSwipeableContainer cont) {
+    static MyDragAndDropSwipeableContainer findTopLevelParentMyDDCont(MyDragAndDropSwipeableContainer cont) {
         Container parent = cont.getParent();
         MyDragAndDropSwipeableContainer topLevelMyDD = null;
         Component north = null;
@@ -737,7 +695,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
      * @return null if none
      */
 //     static ContainerScrollY getParentScrollYContainer(MyDragAndDropSwipeableContainer myDDCont) {
-    static ContainerScrollY getParentScrollYContainerN(Component myDDCont) {
+    static ContainerScrollY findParentScrollYContainerN(Component myDDCont) {
         if (myDDCont == null) {
             return null;
         }
@@ -779,6 +737,13 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         return removeFromParentScrollYAndReturnParentN(comp) != null;
     }
 
+    /**
+     * remove the comp (or whatever container it may be included in) from the
+     * higher level ContainerY
+     *
+     * @param comp
+     * @return
+     */
     static ContainerScrollY removeFromParentScrollYAndReturnParentN(Component comp) {
         if (comp == null) {
             return null;
@@ -810,7 +775,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     private boolean isSibling(MyDragAndDropSwipeableContainer myDDCont1, MyDragAndDropSwipeableContainer myDDCont2) {
 //        return myDDCont1.getParent().getParent() == myDDCont2.getParent().getParent();
         if (myDDCont1 != myDDCont2 && myDDCont1 != null && myDDCont2 != null) {
-            return getParentScrollYContainerN(myDDCont1) == getParentScrollYContainerN(myDDCont2);
+            return findParentScrollYContainerN(myDDCont1) == findParentScrollYContainerN(myDDCont2);
         } else {
             return false;
         }
@@ -1028,7 +993,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             if (isSibling(dragged, sibling)) {
                 return sibling;
             }
-            sibling = getParentMyDDCont(sibling);
+            sibling = findParentMyDDCont(sibling);
         }
         return null;
     }
@@ -1108,7 +1073,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //    static int getPositionInParentContainerScrollY(MyDragAndDropSwipeableContainer eltContOrNull) {
     static int getPositionInParentContainerScrollY(Container eltContOrNull) {
         if (eltContOrNull != null) {
-            ContainerScrollY parentScrollY = getParentScrollYContainerN(eltContOrNull);
+            ContainerScrollY parentScrollY = findParentScrollYContainerN(eltContOrNull);
             if (parentScrollY != null) {
                 return getPositionInContainerScrollY(parentScrollY, eltContOrNull);
             }
@@ -1168,7 +1133,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //    static MyDragAndDropSwipeableContainer findPrecedingMyDDCont(MyDragAndDropSwipeableContainer cont, MyDragAndDropSwipeableContainer dragged) {
     static MyDragAndDropSwipeableContainer findPrecedingMyDDCont(Component cont, MyDragAndDropSwipeableContainer dragged) {
         //find a preceding sibling if any
-        ContainerScrollY parentScrollYContainer = getParentScrollYContainerN(cont);
+        ContainerScrollY parentScrollYContainer = findParentScrollYContainerN(cont);
         //Examples of lists with (H)idden element: H T1 T2: preceding(T1)=null (a), preceding(T2)=T1 (b); T1 H T2: preceding(T2)=T1 (c)
         //                                        idx(H)=0            idx=1
         int index = -1;
@@ -1200,7 +1165,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 // next(S22)==S3, next(S3)==T2
 //</editor-fold>
             if (index < 0) {
-                return getParentMyDDCont(cont); //if cont is first/only element in a list, then the preceding MyDD will be the expanded parent (e.g. an Item in an expanded Category)
+                return findParentMyDDCont(cont); //if cont is first/only element in a list, then the preceding MyDD will be the expanded parent (e.g. an Item in an expanded Category)
 //                return null; //no previous container found
             } else if (index >= 0) {
                 //if it has an earlier subelements, find and return the preceding one
@@ -1220,7 +1185,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             }
         }
         //if there are no preceding items in the same list, the preceding element is necessarily the expanded parent task
-        return getParentMyDDCont(cont);
+        return findParentMyDDCont(cont);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        dropTargetTopLevelParent = cont;
 //        Container dropCont = dropTargetTopLevelParent.getParent();
@@ -1247,7 +1212,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     static MyDragAndDropSwipeableContainer findPrecedingMyDDCont(MyDragAndDropSwipeableContainer cont) {
         MyDragAndDropSwipeableContainer dragged;
         //find a preceding sibling if any
-        ContainerScrollY parentScrollYContainer = getParentScrollYContainerN(cont);
+        ContainerScrollY parentScrollYContainer = findParentScrollYContainerN(cont);
         //Examples of lists with (H)idden element: H T1 T2: preceding(T1)=null (a), preceding(T2)=T1 (b); T1 H T2: preceding(T2)=T1 (c)
         //                                        idx(H)=0            idx=1
         int index = -1;
@@ -1282,7 +1247,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
             }
         }
         //if there are no preceding items in the same list, the preceding element is necessarily the expanded parent task
-        return getParentMyDDCont(cont);
+        return findParentMyDDCont(cont);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        dropTargetTopLevelParent = cont;
 //        Container dropCont = dropTargetTopLevelParent.getParent();
@@ -1426,7 +1391,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //</editor-fold>
 //        MyDragAndDropSwipeableContainer parentComp = comp;
         Component parentComp = comp;
-        ContainerScrollY parentScrollYCont = getParentScrollYContainerN(parentComp);
+        ContainerScrollY parentScrollYCont = findParentScrollYContainerN(parentComp);
 //            ContainerScrollY contY=getParentScrollYContainer(comp);
         while (parentScrollYCont != null) {
 //            indexOfHiddenDraggedCont = getPositionInContainerScrollY(parentScrollYCont, dragged); //this==dragged
@@ -1443,8 +1408,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 Container c = (Container) parentScrollYCont.getComponentAt(adjIndex); //get next element in the list
                 return getTaskContainer(c); //return the element
             }
-            parentComp = getParentMyDDCont(parentComp);
-            parentScrollYCont = parentComp != null ? getParentScrollYContainerN(parentComp) : null;
+            parentComp = findParentMyDDCont(parentComp);
+            parentScrollYCont = parentComp != null ? findParentScrollYContainerN(parentComp) : null;
         }
         return null;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1549,7 +1514,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //</editor-fold>
 //            //if there are no appropriate expanded subtasks, then if there is a following sibling, return it
         MyDragAndDropSwipeableContainer parentComp = comp;
-        ContainerScrollY parentScrollYCont = getParentScrollYContainerN(parentComp);
+        ContainerScrollY parentScrollYCont = findParentScrollYContainerN(parentComp);
 //            ContainerScrollY contY=getParentScrollYContainer(comp);
         while (parentScrollYCont != null) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1576,8 +1541,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                     return getTaskContainer((Container) c); //return the element
                 }
             }
-            parentComp = getParentMyDDCont(parentComp);
-            parentScrollYCont = parentComp != null ? getParentScrollYContainerN(parentComp) : null;
+            parentComp = findParentMyDDCont(parentComp);
+            parentScrollYCont = parentComp != null ? findParentScrollYContainerN(parentComp) : null;
         }
         return null;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2029,36 +1994,62 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
         }
     }
 
+//    boolean openToRightEnabled = true;
+//    boolean openToLeftEnabled = true;
+    public void setOpenToLeftEnabled(boolean enabled) {
+        if (bottomRight != null) {
+            bottomRight.setHidden(!enabled);
+        }
+    }
+
+    public boolean isOpenToLeftEnabled() {
+        return bottomRight != null && !bottomRight.isHidden();
+    }
+
+    public void setOpenToRightEnabled(boolean enabled) {
+        if (bottomLeft != null) {
+            bottomLeft.setHidden(!enabled);
+        };
+    }
+
+    public boolean isOpenToRightEnabled() {
+        return bottomLeft != null && !bottomLeft.isHidden();
+    }
+
     @Override
     public void openToLeft() {
-        Form f = getComponentForm();
-        if (f instanceof MyForm) {
-            if (false && ((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
-                ((MyForm) f).openSwipeContainer.close();
-            }
+        if (true || isOpenToLeftEnabled()) {
+            Form f = getComponentForm();
+            if (f instanceof MyForm) {
+                if (false && ((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                    ((MyForm) f).openSwipeContainer.close();
+                }
 //            SwipeableContainer openSwipeContainer = ((MyForm) f).openSwipeContainer;
-            if (((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
-                ((MyForm) f).openSwipeContainer.close();
+                if (((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                    ((MyForm) f).openSwipeContainer.close();
+                }
+                ((MyForm) f).openSwipeContainer = this;
             }
-            ((MyForm) f).openSwipeContainer = this;
+            super.openToLeft();
         }
-        super.openToLeft();
     }
 
     @Override
     public void openToRight() {
-        Form f = getComponentForm();
-        if (f instanceof MyForm) {
-            if (false && ((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
-                ((MyForm) f).openSwipeContainer.close();
-            }
+        if (true || isOpenToRightEnabled()) {
+            Form f = getComponentForm();
+            if (f instanceof MyForm) {
+                if (false && ((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                    ((MyForm) f).openSwipeContainer.close();
+                }
 //            SwipeableContainer openSwipeContainer = ((MyForm) f).openSwipeContainer;
-            if (((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
-                ((MyForm) f).openSwipeContainer.close();
+                if (((MyForm) f).openSwipeContainer != null && ((MyForm) f).openSwipeContainer != this) {
+                    ((MyForm) f).openSwipeContainer.close();
+                }
+                ((MyForm) f).openSwipeContainer = this;
             }
-            ((MyForm) f).openSwipeContainer = this;
+            super.openToRight();
         }
-        super.openToRight();
     }
 
     @Override
@@ -2067,7 +2058,14 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
     }
 
     MyDragAndDropSwipeableContainer(Component bottomLeft, Component bottomRight, Component top) {
+        this(bottomLeft, bottomRight, top, null);
+    }
+
+    MyDragAndDropSwipeableContainer(Component bottomLeft, Component bottomRight, Component top, ItemAndListCommonInterface owner) {
         super(bottomLeft, bottomRight, top);
+        this.bottomLeft = bottomLeft;
+        this.bottomRight = bottomRight;
+        this.owner = owner;
         setDropTarget(true); //containers are both dropTargets and draggable
         setDraggable(false); //set false by default to allow scrolling. LongPress will activate, drop will deactivate it
         setUIID("MyDragAndDropSwipeableContainer");
@@ -2289,7 +2287,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                         moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, afterElement, false);
                     };
                     insertDropPlaceholder = (dropPh) -> {
-                        addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+                        PinchInsertItemContainer.addDropPlaceholderToContYParent(afterMyDDCont, dropPh, 0);
                     };
                 } else if (beforeElement instanceof Category && !(afterElement instanceof Item)) {
                     //insert a dragged category *after* a Category (as long as the next element is not an expanded subtask)
@@ -2301,7 +2299,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                         moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, beforeElement, true);
                     };
                     insertDropPlaceholder = (dropPh) -> {
-                        addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                        PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeMyDDCont, dropPh, 1);
                     };
                 } else if (beforeElement instanceof Item) { //insert after the last expanded subtask on the screen (all other cases should be covered by the above!?)
                     MyDragAndDropSwipeableContainer beforeCategoryContN = findMyDDContAboveHoldingCategory(beforeMyDDCont);
@@ -2317,7 +2315,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                         moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, newCatN, true);
                     };
                     insertDropPlaceholder = (dropPh) -> {
-                        addDropPlaceholderToAppropriateParentCont(beforeCategoryContN, dropPh, 1);
+                        PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeCategoryContN, dropPh, 1);
                     };
                 } else if (false) {
                     //                        if (afterCont != null && (afterCont.getDragAndDropObject() instanceof Category || afterCont.getDragAndDropObject() == null)) { //can always drop a Category before another Category
@@ -2334,7 +2332,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                                 moveItemOrItemListAndSave(categoryOwnerList, (Category) draggedElement, afterElement, false);
                             };
                             insertDropPlaceholder = (dropPh) -> {
-                                addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+                                PinchInsertItemContainer.addDropPlaceholderToContYParent(afterMyDDCont, dropPh, 0);
                             };
 //                    } else { //if (afterMyDDCont == null) {
                         } else if (beforeMyDDCont != null) {
@@ -2358,7 +2356,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                             insertDropPlaceholder = (dropPh) -> {
 //                            addDropPlaceholderToAppropriateParentCont(beforeCategoryCont, dropPh, 1);
 //                            addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
-                                addDropPlaceholderToAppropriateParentCont(beforeCategoryContN, dropPh, 1);
+                                PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeCategoryContN, dropPh, 1);
                             };
                         }
                     } else if (beforeElement instanceof Category && (afterElement instanceof Category || afterMyDDCont == null)) {
@@ -2380,7 +2378,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                         insertDropPlaceholder = (dropPh) -> {
 //                            afterCont.getParent().addComponent(afterCont.getParent().getComponentIndex(afterCont), dropPh);
 //                            findParentContForDropPlaceholder(afterCont).addComponent(afterCont.getParent().getComponentIndex(afterCont), dropPh);
-                            addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                            PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeMyDDCont, dropPh, 1);
                         };
 //                    } else if (afterMyDDCont == null) {
 //                } else if (afterMyDDCont != null && afterMyDDCont.getDragAndDropObject() instanceof Category) { //drop *before* an ItemList
@@ -2400,7 +2398,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                         };
                         insertDropPlaceholder = (dropPh) -> {
 //                            this.getParent().addComponent(this.getParent().getComponentCount(), dropPh); //add at the end of the container with the list of categories
-                            addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+                            PinchInsertItemContainer.addDropPlaceholderToContYParent(afterMyDDCont, dropPh, 0);
                         };
                     }
                 }
@@ -2426,7 +2424,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                 //NB dropping as sub or superelement does not make sense for ItemLists (currently - TODO!! this will change once meta-lists are introduced)
 //                    if (afterCont != null && afterCont.getDragAndDropObject() instanceof ItemList) { //drop *before* an ItemList
 //                if (beforeMyDDCont != null && beforeMyDDCont.getDragAndDropObject() instanceof ItemList) { //drop *after* an ItemList
-                if (beforeElement instanceof ItemList) { //drop *after* an ItemList //TODO!!!! even if expanded and showing subtasks???!!!
+                if (beforeElement instanceof ItemList && beforeElement != ItemListList.getInstance()) { //drop *after* an ItemList, *except* if itemList is ItemListList //TODO!!!! even if expanded and showing subtasks???!!!
                     if (Config.TEST_DRAG_AND_DROP) {
                         Log.p("-INSERT03 List \"" + draggedElement.getText() + "\" after List \"" + beforeElement + "\"", Log.DEBUG);
                     }
@@ -2441,7 +2439,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //                        xx;
                     };
                     insertDropPlaceholder = (dropPh) -> {
-                        addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                        PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeMyDDCont, dropPh, 1);
                     };
 
 //                    } else if (afterCont == null) { //drop after last element in list (even if it's an Item from an expanded ItemList)
@@ -2462,7 +2460,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                     };
                     insertDropPlaceholder = (dropPh) -> {
 //                            addParentContForDropPlaceholder(this, dropPh, Integer.MAX_VALUE);
-                        addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+                        PinchInsertItemContainer.addDropPlaceholderToContYParent(afterMyDDCont, dropPh, 0);
                     };
                 } else if (afterMyDDCont == null) { //drop at the end of the list (even if beforeElement is not an ItemList)
                     if (Config.TEST_DRAG_AND_DROP) {
@@ -2478,7 +2476,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                         moveItemOrItemListAndSave(listOwner, draggedElement, true); //+ addOneOnDownwardsDrag
                     };
                     insertDropPlaceholder = (dropPh) -> {
-                        addDropPlaceholderToAppropriateParentCont(this, dropPh, Integer.MAX_VALUE);
+                        PinchInsertItemContainer.addDropPlaceholderToContYParent(this, dropPh, Integer.MAX_VALUE);
                     };
                 }
 //</editor-fold>
@@ -2496,7 +2494,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                             moveItemBetweenCategoriesAndSave(draggedItemsCategory, (Category) beforeElement, (Item) draggedElement, (Item) afterElement, false);
                         };
                         insertDropPlaceholder = (dropPh) -> {
-                            addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+                            PinchInsertItemContainer.addDropPlaceholderToContYParent(afterMyDDCont, dropPh, 0);
                         };
                     } else {//Category is NOT expanded
                         dropActionCall = () -> {
@@ -2570,14 +2568,14 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                     };
                     insertDropPlaceholder = (dropPh) -> {
 //                        addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
-                        addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                        PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeMyDDCont, dropPh, 1);
                     };
                     if (true || beforeElement instanceof Item) { //we can insert an item as a subtask below a previous Item
                         //insert as subtask
                         dropAsSubtaskActionCall = () -> {
                             ItemAndListCommonInterface newOwnerPrj = beforeElement;
+                            expandSubtasks(newOwnerPrj); //expand to show list of subtasks to avoid that just dropped element 'disappears' NB Expand before inserting/chgEvent
                             moveItemOrItemListAndSave(newOwnerPrj, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
-                            expandSubtasks(newOwnerPrj); //expand to show list of subtasks to avoid that just dropped element 'disappears'
                         };
                         insertDropPlaceholderForSubtask = (dropPh) -> {
                             addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
@@ -2639,13 +2637,14 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                     };
                     insertDropPlaceholder = (dropPh) -> {
 //                        addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
-                        addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                        PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeMyDDCont, dropPh, 1);
                     };
 
                     //insert as subtask
                     dropAsSubtaskActionCall = () -> {
 //                        ItemAndListCommonInterface newOwnerPrj = beforeElement;
                         moveItemOrItemListAndSave(beforeElement, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
+                        expandSubtasks(beforeElement); //expand to show list of subtasks to avoid that just dropped element 'disappears' NB Expand before inserting/chgEvent
                         expandSubtasks(beforeElement); //expand to show list of subtasks to avoid that just dropped element 'disappears'
                     };
                     insertDropPlaceholderForSubtask = (dropPh) -> {
@@ -2664,7 +2663,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                         moveItemBetweenCategoriesAndSave(draggedItemsCategory, afterCategory, (Item) draggedElement, (Item) afterElement, false); //true=insert *after* beforeElt
                     };
                     insertDropPlaceholder = (dropPh) -> {
-                        addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+                        PinchInsertItemContainer.addDropPlaceholderToContYParent(afterMyDDCont, dropPh, 0);
                     };
 //</editor-fold>
                 } else if (beforeElement instanceof ItemList) {
@@ -2712,7 +2711,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                             moveItemOrItemListAndSave((ItemList) beforeElement, (Item) draggedElement, afterElement, false); //false: insert before afterElement
                         };
                         insertDropPlaceholder = (dropPh) -> {
-                            addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+                            PinchInsertItemContainer.addDropPlaceholderToContYParent(afterMyDDCont, dropPh, 0);
                         };
                     } else {//ItemList is NOT expanded
                         dropActionCall = () -> {
@@ -2746,7 +2745,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                         moveItemOrItemListAndSave(newOwnerPrj, draggedElement, afterElement, false); //false=insert at head of list
                     };
                     insertDropPlaceholder = (dropPh) -> {
-                        addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+                        PinchInsertItemContainer.addDropPlaceholderToContYParent(afterMyDDCont, dropPh, 0);
                     };
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                                               if (beforeMyDDCont == null) {
@@ -2816,7 +2815,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                                 moveItemOrItemListAndSave(beforeOwner, draggedElement, beforeElement, true);
                             };
                             insertDropPlaceholderForSupertask = (dropPh) -> {
-                                addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                                PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeMyDDCont, dropPh, 1);
                             };
                         }
                         if (false && draggedElement.getOwner() == beforeElement) {
@@ -2833,7 +2832,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                                     };
                                     insertDropPlaceholderForSupertask = (dropPh) -> {
 //                                        addDropPlaceholderAsFirstSubtask(beforeMyDDCont, dropPh, beforeElement);
-                                        addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                                        PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeMyDDCont, dropPh, 1);
                                     };
                                 }
                             }
@@ -2850,7 +2849,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                             moveItemOrItemListAndSave(beforeElement, draggedElement, false);
                         };
                         insertDropPlaceholder = (dropPh) -> {
-                            addDropPlaceholderToAppropriateParentCont(afterMyDDCont, dropPh, 0);
+                            PinchInsertItemContainer.addDropPlaceholderToContYParent(afterMyDDCont, dropPh, 0);
                         };
                         dropAsSubtaskActionCall = null; // doesn't make sense here since dropping already make dragged a subtask
                         dropAsSuperTaskActionCall = null; //does not make sense
@@ -2868,8 +2867,8 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
 //</editor-fold>
                         //insert between two siblings at same level, or *before* first element in a list
                         if (Config.TEST_DRAG_AND_DROP) {
-                            Log.p("-INSERT13 +NOR+SUB-SUP \"" + draggedElement.getText() + "\" between two siblings with same owner("
-                                    + afterElement.getOwner() + ") \"" + beforeElement.getText() + "\" and \"" + afterElement.getText() + "\"", Log.DEBUG);
+                            Log.p("-INSERT13 +NOR+SUB-SUP \"" + draggedElement.getText() + "\" between two siblings with same owner=("
+                                    + afterElement.getOwner() + "), before=\"" + beforeElement.getText() + "\" and after=\"" + afterElement.getText() + "\"", Log.DEBUG);
                         }
 
                         dropActionCall = () -> {
@@ -2878,13 +2877,13 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                             }
                         };
                         insertDropPlaceholder = (dropPh) -> {
-                            addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                            PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeMyDDCont, dropPh, 1);
                         };
 
                         //insert as subtask
                         dropAsSubtaskActionCall = () -> {
+                            expandSubtasks(beforeElement); //expand to show list of subtasks to avoid that just dropped element 'disappears' NB Expand before inserting/chgEvent
                             moveItemOrItemListAndSave(beforeElement, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
-                            expandSubtasks(beforeElement); //expand to show list of subtasks to avoid that just dropped element 'disappears'
 
                         };
                         insertDropPlaceholderForSubtask = (dropPh) -> {
@@ -2892,7 +2891,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                         };
 
                         if (draggedElement.getOwner() == beforeElement) {
-                            MyDragAndDropSwipeableContainer beforeOwnerDD = getParentMyDDCont(beforeMyDDCont);
+                            MyDragAndDropSwipeableContainer beforeOwnerDD = findParentMyDDCont(beforeMyDDCont);
                             if (beforeOwnerDD != null) {
                                 // insert a subtask to A, as a sibling task between A and B to give A; S1; B
                                 ItemAndListCommonInterface beforeOwner = beforeOwnerDD.getDragAndDropObject();
@@ -2903,7 +2902,7 @@ class MyDragAndDropSwipeableContainer extends SwipeableContainer implements Mova
                                         moveItemOrItemListAndSave(beforeOwner, draggedElement, beforeElement, true);
                                     };
                                     insertDropPlaceholderForSupertask = (dropPh) -> {
-                                        addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                                        PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeMyDDCont, dropPh, 1);
                                     };
                                 }
                             }
@@ -2987,7 +2986,7 @@ before getting to here, we've already covered the following cases where both bef
                                     + ", siblingContainer.getDragAndDropObject()=" + siblingContainer.getDragAndDropObject()
                                     + ", owner=" + siblingContainer.getDragAndDropObject().getOwner());
                             ItemAndListCommonInterface siblingElement = siblingContainer.getDragAndDropObject();
-                            MyDragAndDropSwipeableContainer siblingOwnerDD = getParentMyDDCont(siblingContainer);
+                            MyDragAndDropSwipeableContainer siblingOwnerDD = findParentMyDDCont(siblingContainer);
                             ItemAndListCommonInterface siblingOwner = siblingElement.getOwner();
                             ASSERT.that(siblingOwnerDD == null || siblingOwner == siblingOwnerDD.getDragAndDropObject(),
                                     "inconsistency: not getting the same sibling owner, siblingOwner=" + siblingOwner
@@ -2997,17 +2996,17 @@ before getting to here, we've already covered the following cases where both bef
                                 moveItemOrItemListAndSave(siblingOwner, draggedElement, siblingElement, true);
                             };
                             insertDropPlaceholder = (dropPh) -> { //insert after sibling
-                                addDropPlaceholderToAppropriateParentCont(siblingContainer, dropPh, 1);
+                                PinchInsertItemContainer.addDropPlaceholderToContYParent(siblingContainer, dropPh, 1);
                             };
                             // dropAsSubtaskActionCall and dropAsSuperTaskActionCall are both defined below
                             //inserting as 'subtask' below a last subtask of sibling should not create a subtask, but simply insert after the last subtask
                             dropAsSubtaskActionCall = () -> {
                                 ItemAndListCommonInterface newOwnerPrj = beforeElement;
+                                expandSubtasks(newOwnerPrj); //UI: expand to show list of subtasks to avoid that just dropped element 'disappears' NB Expand before inserting/chgEvent
                                 moveItemOrItemListAndSave(newOwnerPrj, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
-                                expandSubtasks(newOwnerPrj); //UI: expand to show list of subtasks to avoid that just dropped element 'disappears'
                             };
                             insertDropPlaceholderForSubtask = (dropPh) -> {
-                                addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                                PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeMyDDCont, dropPh, 1);
                             };
                             //insert at (top-level-NO) level *above the sibling*, *if* that is a not the same (always a higher level?!) than the beforeElement's owner (meaning we're already at top-level)
                             if (siblingOwnerDD != null) {
@@ -3029,7 +3028,7 @@ before getting to here, we've already covered the following cases where both bef
                                     }
                                 };
                                 insertDropPlaceholderForSupertask = (dropPh) -> {
-                                    addDropPlaceholderToAppropriateParentCont(siblingOwnerDD, dropPh, 1);
+                                    PinchInsertItemContainer.addDropPlaceholderToContYParent(siblingOwnerDD, dropPh, 1);
                                 };
                             } else if (Config.TEST_DRAG_AND_DROP) {
                                 Log.p("-INSERT15 +NOR+SUB-sup" + " \"" + draggedElement.getText() + "\" after sibling \"" + siblingElement.getText() + "\""
@@ -3051,13 +3050,13 @@ before getting to here, we've already covered the following cases where both bef
                                 moveItemOrItemListAndSave(newOwner, draggedElement, beforeElement, true);
                             };
                             insertDropPlaceholder = (dropPh) -> {
-                                addDropPlaceholderToAppropriateParentCont(beforeMyDDCont, dropPh, 1);
+                                PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeMyDDCont, dropPh, 1);
                             };
 
                             dropAsSubtaskActionCall = () -> {
                                 ItemAndListCommonInterface newOwnerPrj = beforeElement;
+                                expandSubtasks(newOwnerPrj); //expand to show list of subtasks to avoid that just dropped element 'disappears' NB Expand before inserting/chgEvent
                                 moveItemOrItemListAndSave(newOwnerPrj, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean());
-                                expandSubtasks(newOwnerPrj); //expand to show list of subtasks to avoid that just dropped element 'disappears'
 //                                insertIntoCategoryOfSiblingItemAndSave(beforeMyDDCont, draggedMyDDCont); //CAN NEVER belong to a Category
                             };
                             insertDropPlaceholderForSubtask = (dropPh) -> {
@@ -3066,7 +3065,7 @@ before getting to here, we've already covered the following cases where both bef
                             };
 
                             //insert at level above beforeElt (if exists) == exdent the dropped task
-                            MyDragAndDropSwipeableContainer beforeOwnerDD = getParentMyDDCont(beforeMyDDCont);
+                            MyDragAndDropSwipeableContainer beforeOwnerDD = findParentMyDDCont(beforeMyDDCont);
                             if (beforeOwnerDD != null) {
                                 ItemAndListCommonInterface beforeOwner = beforeOwnerDD.getDragAndDropObject();
                                 if (beforeOwner instanceof Item) {
@@ -3076,14 +3075,14 @@ before getting to here, we've already covered the following cases where both bef
                                             moveItemBetweenCategoriesAndSave(draggedItemsCategory, beforeOwnerCategory, (Item) draggedElement, (Item) beforeOwner, true); //true: insert after 
                                         };
                                         insertDropPlaceholderForSupertask = (dropPh) -> {
-                                            addDropPlaceholderToAppropriateParentCont(beforeOwnerDD, dropPh, 1);
+                                            PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeOwnerDD, dropPh, 1);
                                         };
                                     } else {
                                         dropAsSuperTaskActionCall = () -> {//shouldn't be allowed to super-drop a task in ScreenListOfItemLists where lists are top-level
                                             moveItemOrItemListAndSave(beforeOwner, draggedElement, beforeElement, true);
                                         };
                                         insertDropPlaceholderForSupertask = (dropPh) -> {
-                                            addDropPlaceholderToAppropriateParentCont(beforeOwnerDD, dropPh, 1);
+                                            PinchInsertItemContainer.addDropPlaceholderToContYParent(beforeOwnerDD, dropPh, 1);
                                         };
                                         if (false) {
                                             moveItemOrItemListAndSave(beforeOwner, draggedElement, MyPrefs.insertTasksDroppedAsSubtasksUnderUnexpandedTaskAtEndOfSubtaskList.getBoolean()); //WHY was this code here?!
@@ -3429,7 +3428,8 @@ before getting to here, we've already covered the following cases where both bef
 //    }
 //</editor-fold>
     @Override
-    public void drop(Component dragged, int x, int y) {
+    public void drop(Component dragged, int x, int y
+    ) {
         //do nothing if dropped on this container
     }
 
@@ -4374,7 +4374,8 @@ before getting to here, we've already covered the following cases where both bef
      * @param y the y location
      */
     @Override
-    protected void dragFinished(int x, int y) {
+    protected void dragFinished(int x, int y
+    ) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        removePlaceholder(); //do *before* setting dropPlaceholder=null!
 //        setHidden(wasHidden);
@@ -4826,4 +4827,14 @@ before getting to here, we've already covered the following cases where both bef
 //        }
 //    }
 //</editor-fold>
+    /**
+     * Indicates whether this component can be dragged in a drag and drop
+     * operation rather than scroll the parent
+     *
+     * @return the draggable state
+     */
+    @Override
+    public boolean isDraggable() {
+        return super.isDraggable() && (owner == null || !owner.isSortOn());
+    }
 }
