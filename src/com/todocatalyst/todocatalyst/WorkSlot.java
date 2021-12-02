@@ -1397,6 +1397,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return getDurationAdjusted(now, MyDate.MAX_DATE) > 0;
     }
 
+    /**
+     * true if the workslot is currently active (overlaps with 'now')
+     * @return 
+     */
     public boolean hasActiveDuration() {
         return getDurationAdjusted(new MyDate().getTime(), MyDate.MAX_DATE) > 0;
     }
@@ -2140,6 +2144,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
         return false;
     }
 
+    public void setNoSave(boolean temporaryNoSaveList) {
+        ASSERT.that(false, "shouldn't be used");
+    }
+
 //    @Override
 //    public WorkTimeAllocator getWorkTimeAllocatorN(boolean reset) {
 //        throw new Error("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
@@ -2434,9 +2442,12 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
                     getMultipleComparator(new Comparator[]{
                 (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
                 (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareLong(i2.getDurationInMillis(), i1.getDurationInMillis()), //longest slots first
-                (Comparator<WorkSlot>) (i1, i2) -> i1.getObjectIdP() == null
-                ? (i2.getObjectIdP() == null ? 0 : -1)
-                : (i2.getObjectIdP() == null ? 1 : i1.getObjectIdP().compareTo(i2.getObjectIdP())), //sort equal workslots on objectId to make it deterministic
+//                (Comparator<WorkSlot>) (i1, i2) -> i1.getObjectIdP() == null
+//                ? (i2.getObjectIdP() == null ? 0 : -1)
+//                : (i2.getObjectIdP() == null ? 1 : i1.getObjectIdP().compareTo(i2.getObjectIdP())), //sort equal workslots on objectId to make it deterministic
+                (Comparator<WorkSlot>) (i1, i2) -> i1.getGuid()== null
+                ? (i2.getGuid() == null ? 0 : -1)
+                : (i2.getGuid() == null ? 1 : i1.getGuid().compareTo(i2.getGuid())), //sort equal workslots on -objectId- ->Guid to make it deterministic
             }));
         }
 //        return sortedWorkslotList;
@@ -2621,8 +2632,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     }
 
-    public TodaySortOrder getTodaySortOrder() {
-        return TodaySortOrder.TODAY_OTHER;
-    }
+//    public TodaySortOrder getTodaySortOrder() {
+//        return TodaySortOrder.TODAY_OTHER;
+//    }
 
 }

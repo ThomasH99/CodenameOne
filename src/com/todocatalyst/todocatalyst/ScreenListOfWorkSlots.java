@@ -348,7 +348,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        boolean isListOfWorkSlots = myForm instanceof ScreenListOfWorkSlots; //use to determine if owner of individual workslots should be shown 
         KeepInSameScreenPosition keepPos = myForm.keepPos;
 
-        Container cont = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE));
+        Container cont = new Container(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE), "WorkSlotContainer");
 //        cont.setLayout(new BorderLayout(BorderLayout.CENTER_BEHAVIOR_SCALE)); //CENTER_BEHAVIOR_CENTER:center hor+ver, CENTER_BEHAVIOR_CENTER_ABSOLUTE:ditto
         MyDragAndDropSwipeableContainer swipCont = new MyDragAndDropSwipeableContainer(null, null, cont) {
             @Override
@@ -458,7 +458,7 @@ public class ScreenListOfWorkSlots extends MyForm {
         if (workSlot.isOngoing(now)) {
             startTimeStr = MyDate.formatDateSmart(new MyDate(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
         } else {
-            startTimeStr = MyDate.formatDateSmart(workSlot.getStartTimeD()); //UI: for ongoing workSlot, show 'now' instead of startTime
+            startTimeStr = MyDate.formatDateSmart(workSlot.getStartTimeD(), true, false, true); //UI: for ongoing workSlot, show 'now' instead of startTime
         }//        String startTimeGUID = workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime() ? "WorkSlotStartTimeNow" : "WorkSlotStartTime";
         String startTimeGUID;
 //<editor-fold defaultstate="collapsed" desc="comment">

@@ -75,7 +75,7 @@ public class ScreenWorkSlot extends MyForm {
                     this.workSlot.setEditedDateToNow();
                 }
 //                if (this.owner.getWorkSlotListN() == null || !this.owner.getWorkSlotListN().contains(this.workSlot)) { //NOW addWorkSLots only adds if not already in the list
-                if (true||this.owner.getWorkSlotListN() == null) {
+                if (true || this.owner.getWorkSlotListN() == null) {
                     this.owner.addWorkSlot(this.workSlot);
                 }
                 DAO.getInstance().saveToParseNow(this.workSlot);
@@ -243,7 +243,7 @@ public class ScreenWorkSlot extends MyForm {
         });
         toolbar.addCommandToOverflowMenu(deleteCmd);
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("WorkSlotSettings", "Settings", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("WorkSlotSettings", ScreenSettingsWorkSlot.SETTINGS_MENU_TEXT, Icons.iconSettings, (e) -> {
             new ScreenSettingsWorkSlot(ScreenWorkSlot.this, () -> {
                 if (false) {
                     refreshAfterEdit();
@@ -342,7 +342,7 @@ public class ScreenWorkSlot extends MyForm {
                 ownerLabelTxt = WorkSlot.BELONGS_TO_LIST;
             }
         }
-        boolean editOwner = workSlot.getRepeatRuleN()==null||workSlot.getRepeatRuleN().getRepeatType()==RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT; //UI: cannot (currently) change owner for a repeating workslot
+        boolean editOwner = workSlot.getRepeatRuleN() == null || workSlot.getRepeatRuleN().getRepeatType() == RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT; //UI: cannot (currently) change owner for a repeating workslot
         if (editOwner) {
             SpanButton editOwnerButton = new SpanButton();
             editOwnerButton.setText(workSlot.getOwner() != null ? workSlot.getOwner().getText() : "");
@@ -559,7 +559,6 @@ public class ScreenWorkSlot extends MyForm {
 //            });
 //        }
 //</editor-fold>
-
         durationPicker.addActionListener(e -> {
             if (workSlot.getStartTimeD().getTime() == 0) { //no start time set yet, set to default
                 workSlot.setStartTime((Date) makeDefaultWorkSlotStartDate.getVal());
@@ -820,7 +819,6 @@ public class ScreenWorkSlot extends MyForm {
 //        if (false) {
 //            refreshRepeatRuleButtonXXX.actionPerformed(null);
 //        }
-
 //        if (false) {
 //            parseIdMap2.put(REPEAT_RULE_KEY,
 //                    () -> {
@@ -841,7 +839,6 @@ public class ScreenWorkSlot extends MyForm {
 //            );
 //        }
 //</editor-fold>
-
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
 //            MyTextArea owner = new MyTextArea(Item.BELONGS_TO, 20, TextArea.ANY, parseIdMap2, () -> {
@@ -928,11 +925,9 @@ public class ScreenWorkSlot extends MyForm {
             ));
 //        content.add(layout(WorkSlot.REPEAT_DEFINITION, editSubtasksFullScreen, WorkSlot.REPEAT_DEFINITION_HELP, true, false, false));
 //            content.add(layoutN("Tasks in WorkSlot", editSubtasksFullScreen, "**", true, true, false));
-            content.add(layoutN(WorkSlot.PARSE_TASKS_IN_WORKSLOT_VIRT, "Tasks in WorkSlot", editSubtasksFullScreen, "**", hideIcons ? null : Icons.iconWorkSlotTasks));
+            content.add(layoutN(WorkSlot.PARSE_TASKS_IN_WORKSLOT_VIRT, "Tasks in WorkSlot", editSubtasksFullScreen, "**", 
+                    hideIcons ? null : Icons.iconWorkSlotTasksCust,Icons.myIconFont));
         }
-
-        Label lastEditedDate = new Label(workSlot.getEditedDate().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getEditedDate()));
-        content.add(layoutN(Item.PARSE_EDITED_DATE, Item.EDITED_DATE, lastEditedDate, Item.EDITED_DATE_HELP, true, hideIcons ? null : Icons.iconEditedDate));
 
         //ORIGINAL SOURCE
         if (Config.TEST) { //hide source except when testing since purpose has to be clarified  
@@ -958,7 +953,12 @@ public class ScreenWorkSlot extends MyForm {
 
         //CREATED
         Label createdDate = new Label(workSlot.getCreatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getCreatedAt().getTime())); //NOT use itemLS since CreatedDate is not saved locally
-        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDateCust,Icons.myIconFont));
+//        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDateCust,Icons.myIconFont));
+        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconItemStatusCreatedCust, Icons.myIconFont));
+
+        //EDITED
+        Label lastEditedDate = new Label(workSlot.getEditedDate().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getEditedDate()));
+        content.add(layoutN(Item.PARSE_EDITED_DATE, Item.EDITED_DATE, lastEditedDate, Item.EDITED_DATE_HELP, true, hideIcons ? null : Icons.iconEditedDate));
 
         //MODIFIED
         Label lastModifiedDate = new Label(workSlot.getUpdatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(workSlot.getUpdatedAt()));

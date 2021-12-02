@@ -231,7 +231,7 @@ public class ScreenItemListProperties extends MyForm {
                 (t) -> itemList.setText((String) t),
                 () -> description.getText(),
                 (t) -> description.setText((String) t));
-        if (itemList.getText().isEmpty()) {
+        if (MyPrefs.enableEditingAsync.getBoolean()&&itemList.getText().isEmpty()) {
             setEditOnShow(description); //UI: start editing this field
         }
         content.add(description);

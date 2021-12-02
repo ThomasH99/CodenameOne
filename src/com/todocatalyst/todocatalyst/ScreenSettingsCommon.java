@@ -31,7 +31,8 @@ public class ScreenSettingsCommon extends MyForm {
 //    MyForm mainScreen;
     ScreenSettingsCommon(MyForm previousScreen, Runnable doneAction) {
 //        this("Settings " + previousScreen.SCREEN_TITLE, previousScreen, doneAction);
-        this("Settings " + previousScreen.getTitle(), previousScreen, doneAction);
+//        this("Settings " + previousScreen.getTitle(), previousScreen, doneAction);
+        this(Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, previousScreen.getTitle()), previousScreen, doneAction);
     }
     
     ScreenSettingsCommon(String title, MyForm previousScreen, Runnable doneAction) { // throws ParseException, IOException {

@@ -6,8 +6,13 @@
 package com.todocatalyst.todocatalyst;
 
 import com.codename1.compat.java.util.Objects;
+import com.codename1.l10n.DateFormat;
+import com.codename1.l10n.SimpleDateFormat;
+//import java.text.DateFormat;
+//import com.codename1.l10n.DateFormat;
 import java.util.Comparator;
 import java.util.List;
+//import java.util.Locale;
 import java.util.Random;
 
 /**
@@ -163,7 +168,7 @@ public class MyUtil {
 
     public static boolean eql(Object a, Object b) {
 //        return a == null ? b == null : a.equals(b);
-        return Objects.equals(a, b) ;
+        return Objects.equals(a, b);
     }
 
     public static boolean neql(Object a, Object b) {
@@ -228,6 +233,7 @@ public class MyUtil {
         if (pos != -1) {
             StringBuilder res = new StringBuilder();
 //            res.append(s.substring(0, pos)).append(newStr).append(s.substring(pos + 2));
+//            res.replace(pos,pos + subStr.length(),newStr); //replace NOT implemented
             res.append(s.substring(0, pos)).append(newStr).append(s.substring(pos + subStr.length()));
             return res.toString();
         }
@@ -253,6 +259,20 @@ public class MyUtil {
             l = l >>> 6; //use lowest 6 bits for each number
         }
         return objectId;
+    }
+
+    public static boolean usesAmPm() {
+        //https://stackoverflow.com/questions/20283622/how-to-find-out-if-a-locale-uses-am-pm
+//    String pattern = DateTimeFormatterBuilder.getLocalizedDateTimePattern(
+//        FormatStyle.MEDIUM, FormatStyle.MEDIUM, IsoChronology.INSTANCE, locale);
+//    return pattern.contains("a");
+
+// DateFormat df = DateFormat.getTimeInstance(DateFormat.FULL, locale);
+//        return df instanceof SimpleDateFormat && ((SimpleDateFormat) df).toPattern().contains("a");
+// DateFormat df = DateFormat.getTimeInstance(DateFormat.FULL, locale);
+        java.text.DateFormat df2 = java.text.DateFormat.getTimeInstance(java.text.DateFormat.FULL);
+        String dfs2 = ((java.text.SimpleDateFormat) df2).toPattern();
+        return dfs2.contains("a");
     }
 
 }

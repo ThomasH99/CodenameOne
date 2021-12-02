@@ -162,10 +162,11 @@ public class ScreenObjectPicker2<E> extends MyForm {
      * @param scrollToFirstSelected
      * @param exitWhenMaxObjectsIsSelected
      */
-    public ScreenObjectPicker2(String title, GetLists[] getLists, String[] getListTitles, Character[] icons, Font[] iconFonts, List selectedObjs,
+    public ScreenObjectPicker2(String title, GetLists[] getLists, String[] getListTitlesN, Character[] icons, Font[] iconFonts, List selectedObjs,
             MyForm previousForm, Runnable updateOnDone, GetStringFrom labelMaker, int minNbOfSelected, int maxNbOfSelected,
             boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
         super(title, previousForm, updateOnDone);
+        ASSERT.that(getListTitlesN==null&&icons==null&&iconFonts==null,"all should be null, or neither");
         setUniqueFormId("ScreenObjectPicker");
         previousValues = new SaveEditedValuesLocally(getUniqueFormId());
         assert maxNbOfSelected >= minNbOfSelected && maxNbOfSelected >= 1;
@@ -223,7 +224,7 @@ public class ScreenObjectPicker2<E> extends MyForm {
                 mainContentContainer.scrollComponentToVisible(firstSelectedChk);
             }
 //            getToolbar().setTitle(getListTitles[0]);
-            setTitle((getListTitles != null && getListTitles[0] != null ? getListTitles[0] : title), icons[0], iconFonts[0]);
+            setTitle((getListTitlesN != null && getListTitlesN[0] != null ? getListTitlesN[0] : title), icons[0], iconFonts[0]);
 //            getContentPane().add(container);
         } else {
 //            setLayout(new BorderLayout());
@@ -244,14 +245,14 @@ public class ScreenObjectPicker2<E> extends MyForm {
                 }
                 tab.setScrollableY(true);
 
-                Label l = new Label(getListTitles[i]);
+                Label l = new Label(getListTitlesN[i]);
                 l.setMaterialIcon(icons[i]);
 //                tabs.addTab(getListTitles[i], icons[i], ScreenItem2.TAB_ICON_SIZE_IN_MM, tab);
                 if (iconFonts.length > 0 && iconFonts[i] != null) {
-                    tabs.addTab(getListTitles[i], icons[i], iconFonts[i], ScreenItem2.TAB_ICON_SIZE_IN_MM, tab);
+                    tabs.addTab(getListTitlesN[i], icons[i], iconFonts[i], ScreenItem2.TAB_ICON_SIZE_IN_MM, tab);
 //                    tabs.addTab(getListTitles[i], icons[i], ScreenItem2.TAB_ICON_SIZE_IN_MM, tab);
                 } else {
-                    tabs.addTab(getListTitles[i], icons[i], ScreenItem2.TAB_ICON_SIZE_IN_MM, tab);
+                    tabs.addTab(getListTitlesN[i], icons[i], ScreenItem2.TAB_ICON_SIZE_IN_MM, tab);
                 }
 
                 Component selected = buildList(tab, getLists[i].getList(), this.selectedObjects, this.labelMaker, listSelector);
@@ -516,7 +517,28 @@ public class ScreenObjectPicker2<E> extends MyForm {
         return ownerPicker2;
     }
 
-    public static ScreenObjectPicker2 makePickPrjLstCat(String title, boolean includeInbox, ItemAndListCommonInterface selectedElement, MyForm previousForm, Runnable runOnReturn) {
+    public static ScreenObjectPicker2 makePickCategories(String title, boolean includeInbox, List<ItemAndListCommonInterface> selectedElements,
+            MyForm previousForm, Runnable runOnReturn, boolean mustSelectOneElement) {
+        List tempListOfItemListsInclInbox = new ArrayList();
+        tempListOfItemListsInclInbox.addAll(ItemListList.getInstance());
+        if (includeInbox) {
+            tempListOfItemListsInclInbox.add(0, Inbox.getInstance()); //add Inbox to start of list
+        }
+        ScreenObjectPicker2 ownerPicker2 = new ScreenObjectPicker2("Select " + Item.OWNER,
+                new ScreenObjectPicker2.GetLists[]{ () -> CategoryList.getInstance()},
+                null,
+                null,
+                new Font[]{Icons.myIconFont, null, Icons.myIconFont},
+                selectedElements,
+                //                ScreenWorkSlot.this,
+                previousForm,
+                //minNbOfSelected,  maxNbOfSelected, removeFirstAddedObjectIfMoreThanMaxAreAdded, scrollToFirstSelected, exitWhenMaxObjectsIsSelected
+                runOnReturn, null, mustSelectOneElement ? 1 : 0, 1, true, true, false); //select exactly 1, scrollToFirstSelected, exitWhenMaxObjectsIsSelected
+        return ownerPicker2;
+    }
+
+    public static ScreenObjectPicker2 makePickPrjLstCat(String title, boolean includeInbox, ItemAndListCommonInterface selectedElement, 
+            MyForm previousForm, Runnable runOnReturn) {
         return makePickPrjLstCat(title, includeInbox, new ArrayList(Arrays.asList(selectedElement)), previousForm, runOnReturn);
     }
 }

@@ -393,14 +393,18 @@ public class ScreenItem2 extends MyForm {
 //        itemOrg.updateRepeatRule(); //only update RR on exit, after all fields are updated, templates added, ...
 //if(dueDate!=null&&dueDate.isEditing())
 //    dueDate.stopEditing(onFinish);
-        if (itemOrg.hasUserModifiedData()) { //update Edited date before anything else
+        if (!itemOrg.isNoSave()) {
+            if (itemOrg.hasUserModifiedData()) { //update Edited date before anything else
 //        if (userModifiedData) {
-            itemOrg.setEditedDateToNow();
+                itemOrg.setEditedDateToNow();
 //            userModifiedData=false;
+            }
+            super.updateOnExit();
+            itemOrg.updateRepeatRule(); //only update RR as the very last thing, after updateOnExit/actionOnDone which may insert the new task into its appropriate list
+            DAO.getInstance().saveToParseNow(itemOrg);
+        } else {
+            super.updateOnExit();
         }
-        super.updateOnExit();
-        itemOrg.updateRepeatRule(); //only update RR as the very last thing, after updateOnExit/actionOnDone which may insert the new task into its appropriate list
-        DAO.getInstance().saveToParseNow(itemOrg);
     }
 
     @Override
@@ -760,7 +764,8 @@ public class ScreenItem2 extends MyForm {
             showPreviousScreen(true);
         }, "DeleteItem"));
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", "Task settings", Icons.iconSettings, (e) -> {
+//        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", "Task settings", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", ScreenSettingsItem.SETTINGS_MENU_TEXT_BASE, Icons.iconSettings, (e) -> {
             new ScreenSettingsItem("Settings tasks", ScreenItem2.this, () -> {
 //                if (false) {
 //                    refreshAfterEdit();
@@ -1263,7 +1268,8 @@ public class ScreenItem2 extends MyForm {
                     || templateOrg.getExpiresOnDate().getTime() != 0 || templateOrg.getHideUntilDateD().getTime() != 0;
 
             if (templFieldsDependOnDue) { //only if there are any fields in the template that depend on due date:
-                Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //TODO setting to pich a f
+//                Date newDueDate = new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS); //TODO setting to pick a f
+                Date newDueDate = Item.getDefaultDueDate();
 //                if (dueDate.getDate().getTime() == 0) {
                 if (itemOrgN == null || itemOrgN.getDueDate().getTime() == 0) {
 //                Dialog.show(SUBTASK_KEY, this, cmds);
@@ -1924,7 +1930,7 @@ public class ScreenItem2 extends MyForm {
 //            }
 //        });
 //</editor-fold>
-        if (description.getText().isEmpty()) {
+        if (MyPrefs.enableEditingAsync.getBoolean() && description.getText().isEmpty()) { //UI: false because not nice UI to have keyboard pop-up whenever you enter the screen
             setEditOnShow(description); //UI: start editing this field, only if empty (to avoid keyboard popping up)
         }
 
@@ -3952,7 +3958,9 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 () -> completedDate.getDate(), (s) -> completedDate.setDate((Date) s));
 
         statusCont.add(layoutN(Item.PARSE_COMPLETED_DATE, Item.COMPLETED_DATE, isTemplate ? null : completedDate, Item.COMPLETED_DATE_HELP,
-                hideIcons ? null : (status.getStatus() == ItemStatus.CANCELLED ? Icons.iconCancelledDate : Icons.iconCompletedDate))); //"click to set a completed date"
+                //                hideIcons ? null : (status.getStatus() == ItemStatus.CANCELLED ? Icons.iconCancelledDate : Icons.iconCompletedDate))); //"click to set a completed date"
+                hideIcons ? null : (status.getStatus() == ItemStatus.CANCELLED ? Icons.iconItemStatusCancelledCust : Icons.iconItemStatusDoneCust),
+                Icons.myIconFont)); //"click to set a completed date"
 
 //<editor-fold defaultstate="collapsed" desc="old setStatusChangeHandler">
         if (false) {
@@ -4284,15 +4292,20 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         Label createdDate = new Label(itemOrg.getCreatedAt().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getCreatedAt().getTime())); //NOT use itemLS since CreatedDate is not saved locally
 //        statusCont.add(new Label(Item.CREATED_DATE)).add(createdDate);
 //        statusCont.add(layout(Item.CREATED_DATE, createdDate, "**", true, true, true));
-        statusCont.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDateCust, Icons.myIconFont));
+//        statusCont.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconCreatedDateCust, Icons.myIconFont));
+//        statusCont.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hideIcons ? null : Icons.iconItemStatusCreatedCust, Icons.myIconFont));
+        statusCont.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, Item.CREATED_DATE_HELP, true, true, false,
+                hideIcons ? null : Icons.iconItemStatusCreatedCust, Icons.myIconFont));
 
         if (itemOrg.isProject()) {
             long lastEditedSubtasks = itemOrg.getEditedDateProjectOrSubtasks().getTime();
             Label lastEditedDateSubtasks = new Label(lastEditedSubtasks == 0 ? "" : MyDate.formatDateTimeNew(lastEditedSubtasks));
-            statusCont.add(layoutN(Item.PARSE_EDITED_DATE, Item.EDITED_DATE, lastEditedDateSubtasks, "**", true, hideIcons ? null : Icons.iconEditedDate));
+            statusCont.add(layoutN(Item.PARSE_EDITED_DATE, Item.EDITED_DATE, lastEditedDateSubtasks, Item.EDITED_DATE_HELP, true, true, false,
+                    hideIcons ? null : Icons.iconEditedDate, null));
         } else {
             Label lastEditedDate = new Label(itemOrg.getEditedDate().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getEditedDate()));
-            statusCont.add(layoutN(Item.PARSE_EDITED_DATE, Item.EDITED_DATE, lastEditedDate, Item.EDITED_DATE_HELP, true, hideIcons ? null : Icons.iconEditedDate));
+            statusCont.add(layoutN(Item.PARSE_EDITED_DATE, Item.EDITED_DATE, lastEditedDate, Item.EDITED_DATE_HELP, true, true, false,
+                    hideIcons ? null : Icons.iconEditedDate, null));
         }
 
         if (itemOrg.isProject()) {
@@ -4303,7 +4316,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //            statusCont.add(layout(Item.UPDATED_DATE_SUBTASKS, lastModifiedDateSubtasks, "**", true, true, true));
 //            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true, true, true));
 //</editor-fold>
-            statusCont.add(layoutN(Item.PARSE_UPDATED_AT, Item.UPDATED_DATE, lastModifiedDateSubtasks, "**", true, hideIcons ? null : Icons.iconModifiedDateCust, Icons.myIconFont));
+            statusCont.add(layoutN(Item.PARSE_UPDATED_AT, Item.UPDATED_DATE, lastModifiedDateSubtasks, Item.UPDATED_DATE_HELP, true, true, false,
+                    hideIcons ? null : Icons.iconModifiedDateCust, Icons.myIconFont));
         } else {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Label lastModifiedDate = new Label(item.getLastModifiedDate() == 0 ? "<date when modified>" : L10NManager.getInstance().formatDateShortStyle(new Date(item.getLastModifiedDate())));
@@ -4314,7 +4328,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
             Label lastModifiedDate = new Label(itemOrg.getLastModifiedDate() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getLastModifiedDate()));
 //        statusCont.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
 //            statusCont.add(layout(Item.UPDATED_DATE, lastModifiedDate, "**", true, true, true));
-            statusCont.add(layoutN(Item.PARSE_UPDATED_AT, Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, hideIcons ? null : Icons.iconModifiedDateCust, Icons.myIconFont));
+            statusCont.add(layoutN(Item.PARSE_UPDATED_AT, Item.UPDATED_DATE, lastModifiedDate, Item.UPDATED_DATE_HELP, true, true, false,
+                    hideIcons ? null : Icons.iconModifiedDateCust, Icons.myIconFont));
         }
 
         statusCont.add(makeSpacerThin());

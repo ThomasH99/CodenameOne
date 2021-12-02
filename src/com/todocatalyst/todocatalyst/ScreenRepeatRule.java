@@ -374,7 +374,7 @@ public class ScreenRepeatRule extends MyForm {
         }
         ));
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleSettings", "Settings", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("RepeatRuleSettings", ScreenSettingsRepeatRules.SETTINGS_MENU_TEXT, Icons.iconSettings, (e) -> {
             new ScreenSettingsRepeatRules(ScreenRepeatRule.this, () -> {
                 if (false) {
                     refreshAfterEdit();

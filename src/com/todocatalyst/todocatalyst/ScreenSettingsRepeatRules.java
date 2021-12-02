@@ -27,6 +27,7 @@ public class ScreenSettingsRepeatRules extends ScreenSettingsCommon {
         super(mainScreen, doneAction);
         setUniqueFormId("ScreenItemSettings");
     }
+    public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, Item.REPEAT_RULE);
 
     /**
      * This method shows the main user interface of the app

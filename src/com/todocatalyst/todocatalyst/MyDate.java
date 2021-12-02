@@ -1662,6 +1662,17 @@ public class MyDate extends Date {
         return time >= startOfToday + DAY_IN_MILLISECONDS && time < startOfToday + DAY_IN_MILLISECONDS * 7;
     }
 
+    /**
+     * check if date is within next 6 days, e.g. if today is Thursday it will be true if date is Fri-Wed, but NOT next Thur to avoid in smart dates that next Thur is shown as Thur which may make user think it is today
+     * @param date
+     * @return 
+     */
+    public static boolean isNextcoming6Days(Date date) {
+        long startOfToday = MyDate.getStartOfDay(new MyDate()).getTime();
+        long time = date.getTime();
+        return time >= startOfToday + DAY_IN_MILLISECONDS && time < startOfToday + DAY_IN_MILLISECONDS * 6;
+    }
+
     public static boolean isPreviousWeek(Date date) {
         long startOfToday = MyDate.getStartOfDay(new MyDate()).getTime();
         long time = date.getTime();
@@ -1755,7 +1766,8 @@ public class MyDate extends Date {
 //        if (diff <= MyDate.DAY_IN_MILLISECONDS) {
 //        if ((date.getTime() >= startOfToday.getTime() && date.getTime() < startOfTomorrow.getTime()) //nextcoming week
         //within next 7 days: "Mon13h"
-        if ((MyPrefs.smartDatesShowOnlyWeekdayAndTimeForNextcomingWeek.getBoolean() && isNextcomingWeek(date))) {//  || (forceShowPastDatesAsSmart && isPreviousWeek(date))) { //previous week
+//        if ((MyPrefs.smartDatesShowOnlyWeekdayAndTimeForNextcomingWeek.getBoolean() && isNextcomingWeek(date))) {//  || (forceShowPastDatesAsSmart && isPreviousWeek(date))) { //previous week
+        if ((MyPrefs.smartDatesShowOnlyWeekdayAndTimeForNextcomingWeek.getBoolean() && isNextcoming6Days(date))) {//  || (forceShowPastDatesAsSmart && isPreviousWeek(date))) { //previous week
 //            return new SimpleDateFormat("EEE HH'h'mm").format(date);
 //            return new SimpleDateFormat("EEE H'h'mm").format(date);
             return new SimpleDateFormat("EEE" + timeOfDateFormatPrecSpace + (forceShowTimeOfDay && !alwaysHideTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date);
@@ -1766,13 +1778,13 @@ public class MyDate extends Date {
 //            if (date.getTime() < startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * 365) {
         if (MyPrefs.smartDatesShowOnlyMonDayForNext365Days.getBoolean() && isNextcomingYear(date)) {// || (forceShowPastDatesAsSmart && isPreviousYear(date))) {
 //            return new SimpleDateFormat("MMM dd" + (forceShowTimeOfDay ? " H'h'mm" : "")).format(date);
-            return new SimpleDateFormat((showDayOfWeek ? "EEE " : "") + "MMM dd" + (forceShowTimeOfDay && !alwaysHideTimeOfDay? timeOfDateFormatPrecSpace : "")).format(date);
+            return new SimpleDateFormat((showDayOfWeek ? "EEE " : "") + "MMM dd" + (forceShowTimeOfDay && !alwaysHideTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date);
         }
 
         //beyond 365 days: "Jun'18"???
 //        return new SimpleDateFormat("MMM''yy").format(date); //"Jun'18"
 //        return new SimpleDateFormat("dd'/'MM'/'yy" + (forceShowTimeOfDay ? " H'h'mm" : "")).format(date); //"Jun'18"
-        return new SimpleDateFormat((showDayOfWeek ? "EEE " : "") + "dd'/'MM'/'yy" + (forceShowTimeOfDay && !alwaysHideTimeOfDay? timeOfDateFormatPrecSpace : "")).format(date); //"Jun'18"
+        return new SimpleDateFormat((showDayOfWeek ? "EEE " : "") + "dd'/'MM'/'yy" + (forceShowTimeOfDay && !alwaysHideTimeOfDay ? timeOfDateFormatPrecSpace : "")).format(date); //"Jun'18"
     }
     //<editor-fold defaultstate="collapsed" desc="comment">
     //    private static String formatDateNewXX(MyDate date, MyDate referenceDate) { //, boolean useYesterdayTodayTomorrow) {
@@ -2399,6 +2411,7 @@ public class MyDate extends Date {
 //        return cal.getTime();
         return new MyDate(getStartOfDay(time).getTime() + DAY_IN_MILLISECONDS - 1);
     }
+
     static Date getEndOfToday() {
         return getEndOfDay(new MyDate());
     }

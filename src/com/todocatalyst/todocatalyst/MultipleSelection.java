@@ -31,11 +31,11 @@ public class MultipleSelection {
         return (item) -> item.setDueDate(dueDate);
     }
 
-    static ItemOperation setStarred(boolean starred) {
-        return (item) -> item.setStarred(starred);
+    static ItemOperation setStarred() {
+        return (item) -> item.setStarred(!item.isStarred());
     }
 
-    static ItemOperation moveTo(ItemAndListCommonInterface newProject) {
+    static ItemOperation moveTo(ItemAndListCommonInterface newOwner) {
         return (item) -> {
             item.removeFromOwner();
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -46,8 +46,15 @@ public class MultipleSelection {
 //                list.add(item);
 //            }
 //</editor-fold>
-            newProject.addToList(item, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+//            newProject.addToList(item, !MyPrefs.insertNewItemsInStartOfLists.getBoolean());
+            newOwner.addToList(item);
 //            newProject.setList(list);
+        };
+    }
+
+    static ItemOperation addToCategories(List<ItemAndListCommonInterface> categories) {
+        return (item) -> {
+            item.addCategories((List)categories);
         };
     }
 

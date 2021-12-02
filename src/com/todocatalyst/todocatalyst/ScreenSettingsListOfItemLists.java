@@ -27,6 +27,9 @@ public class ScreenSettingsListOfItemLists extends ScreenSettingsCommon {
         super("task lists", mainScreen, doneAction);
         setUniqueFormId("ScreenListOfItemsSettings");
     }
+    
+    public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, MyForm.SCREEN_LISTS_TITLE);
+
 
     /**
      * This method shows the main user interface of the app

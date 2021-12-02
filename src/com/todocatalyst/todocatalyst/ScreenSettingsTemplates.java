@@ -21,6 +21,9 @@ import com.codename1.ui.Container;
  */
 public class ScreenSettingsTemplates extends ScreenSettingsCommon {
 
+    
+        public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE,MyForm.SCREEN_TEMPLATES_TITLE);
+
 //     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     ScreenSettingsTemplates(MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);

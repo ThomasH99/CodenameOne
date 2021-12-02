@@ -69,7 +69,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    final static String PARSE_SYSTEM_LIST = "system";
     final static String PARSE_SYSTEM_NAME = "systemName"; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
     final static String PARSE_EDITED_DATE = Item.PARSE_EDITED_DATE; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
+    final static String PARSE_EXPIRE_BY_DATE = "expireBy"; //special field (never saved to Parse, only used for locally stored systemlists)
     final static String PARSE_DELETED_DATE = Item.PARSE_DELETED_DATE; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
+    final static String PARSE_IS_NOSAVE = "noSave"; //not persistent to Parse, only to local storage to not lose it when reloading system lists from local storage
 
     final static String PARSE_SHOW_WHAT_LIST_STATS = "show";
     final static String SHOW_NUMBER_UNDONE_TASKS = "Undone";
@@ -259,6 +261,10 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return (!systemName.isEmpty());
     }
 
+    public boolean isNoSaveSystemList() {
+        return isSystemList() && isNoSave();
+    }
+
     /**
      * system lists, e.g. Inbox, Today, etc are predefined and should eg NOT be
      * part of ItemListList
@@ -315,14 +321,13 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         public boolean save();
     }
 
-    public void setAllowAddingElements(boolean allowAddingTasks) {
-        this.allowAddingTasks = allowAddingTasks;
-    }
-
-    public boolean isAllowAddingElements() {
-        return allowAddingTasks;
-    }
-
+//    public void setAllowAddingElements(boolean allowAddingTasks) {
+//        this.allowAddingTasks = allowAddingTasks;
+//    }
+//
+//    public boolean isAllowAddingElements() {
+//        return allowAddingTasks;
+//    }
     /**
      * returns true if this list should NOT be saved to parse, e.g. because it
      * is a temporary lists, e.g. wrapping a parse search results
@@ -331,7 +336,8 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      */
     @Override
     public boolean isNoSave() {
-        return noSave;
+        Boolean b = (Boolean) get(PARSE_IS_NOSAVE);
+        return b != null && b;
     }
 
     /**
@@ -340,7 +346,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      * @param temporaryNoSaveList
      */
     public void setNoSave(boolean temporaryNoSaveList) {
-        noSave = temporaryNoSaveList;
+//        noSave = temporaryNoSaveList;
+        if (temporaryNoSaveList) {
+            put(PARSE_IS_NOSAVE, true);
+        } else {
+            remove(PARSE_IS_NOSAVE);
+        }
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1733,35 +1744,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //    public ItemList getOwnerList() {
 //        return null; //TODO return useful value?
 //    }
-    /**
-     * set, save and apply filter (and resets the filtered/sorted list)
-     *
-     * @param filterSortDef
-     * @param saveEvenDefaultFilter
-     */
-    public void setFilterSortDef(FilterSortDef filterSortDef, boolean saveEvenDefaultFilter) {
-//        if (filterSortDef != null && filterSortDef != FilterSortDef.getDefaultFilter()) { //only save if not the default filter
-//        if ((filterSortDef != null && !filterSortDef.equals(FilterSortDef.getDefaultFilter())) || saveEvenDefaultFilter) { //only save if changed compared to the default filter
-//        if ((filterSortDef == null || filterSortDef.equals(getDefaultFilterSortDef()))
-//                && !saveEvenDefaultFilter) { //only save if changed compared to the default filter
-////                || isFilterSortDefInherited(filterSortDef
-////            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved --> should be done in DAO now
-////                DAO.getInstance().saveInBackground(filterSortDef); //
-////            }
-//            remove(PARSE_FILTER_SORT_DEF);
-//        } else {
-//            put(PARSE_FILTER_SORT_DEF, filterSortDef);
-//        }
-        if (filterSortDef != null && (!filterSortDef.equals(getDefaultFilterSortDef()) || saveEvenDefaultFilter)) { //only save if changed compared to the default filter
-            put(PARSE_FILTER_SORT_DEF, filterSortDef);
-        } else {
-            remove(PARSE_FILTER_SORT_DEF);
-        }
-//        filteredSortedList = null;
-    }
-
     private boolean useDefaultFilter = true; //use default filter unless explicitly de-activated
 
+    @Override
     public boolean isUseDefaultFilter() {
         return useDefaultFilter;
     }
@@ -1777,9 +1762,102 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         this.useDefaultFilter = useDefaultFilter;
     }
 
+    /**
+     * set, save and apply filter (and resets the filtered/sorted list)
+     *
+     * @param filterSortDef
+     * @param saveEvenDefaultFilter
+     */
+    public void setFilterSortDef(FilterSortDef filterSortDef, boolean saveEvenDefaultFilter) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (filterSortDef != null && filterSortDef != FilterSortDef.getDefaultFilter()) { //only save if not the default filter
+//        if ((filterSortDef != null && !filterSortDef.equals(FilterSortDef.getDefaultFilter())) || saveEvenDefaultFilter) { //only save if changed compared to the default filter
+//        if ((filterSortDef == null || filterSortDef.equals(getDefaultFilterSortDef()))
+//                && !saveEvenDefaultFilter) { //only save if changed compared to the default filter
+////                || isFilterSortDefInherited(filterSortDef
+////            if (!isNoSave()) { //otherwise temporary filters for e.g. Overdue will be saved --> should be done in DAO now
+////                DAO.getInstance().saveInBackground(filterSortDef); //
+////            }
+//            remove(PARSE_FILTER_SORT_DEF);
+//        } else {
+//            put(PARSE_FILTER_SORT_DEF, filterSortDef);
+//        }
+//</editor-fold>
+//        if (isSystemList()&&isNoSave()) {
+        if (isNoSaveSystemList()) {
+            ASSERT.that(!saveEvenDefaultFilter, "should never want to save a default filter for a system list");
+            if (filterSortDef != null && (!filterSortDef.equals(getDefaultFilterSortDef()) || saveEvenDefaultFilter)) { //only save if changed compared to the default filter
+                DAO.getInstance().saveToParseAndWait(filterSortDef);
+            }
+        } else if (filterSortDef != null && (!filterSortDef.equals(getDefaultFilterSortDef()) || saveEvenDefaultFilter)) { //only save if changed compared to the default filter
+            put(PARSE_FILTER_SORT_DEF, filterSortDef);
+        } else {
+            remove(PARSE_FILTER_SORT_DEF);
+        }
+//        filteredSortedList = null;
+    }
+
     @Override
     public void setFilterSortDef(FilterSortDef filterSortDef) {
+//        if (isSystemList()) {
+//if(filterSortDef!=null&&!filterSortDef.equals(getDefaultFilterSortDef()))
+////    ItemAndListCommonInterface.super.setFilterSortDef(filterSortDef);
+//    setFilterSortDef(filterSortDef);
+//    DAO.getInstance().save
+//        } else {
         setFilterSortDef(filterSortDef, false);
+//    }
+    }
+
+    //    public static FilterSortDef getSystemDefaultFilter(ScreenType screenType) {
+    public static FilterSortDef getDefaultFilterSortDef(String systemName) {
+        switch (systemName) {
+            case DAO.SYSTEM_LIST_NEXT:
+                return new FilterSortDef(systemName, Item.PARSE_DUE_DATE,
+                        FilterSortDef.FILTER_SHOW_NEW_TASKS
+                        + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
+                        + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false, false, false, false, false);
+            case DAO.SYSTEM_LIST_OVERDUE:
+                return new FilterSortDef(systemName, Item.PARSE_DUE_DATE,
+                        FilterSortDef.FILTER_SHOW_NEW_TASKS
+                        + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
+                        + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false, false, false, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
+            case DAO.SYSTEM_LIST_LOG:
+                return new FilterSortDef(systemName, Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, true, false, false, false, false);
+            case DAO.SYSTEM_LIST_DIARY:
+//                return new FilterSortDef(systemName, Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false, false, false, true);
+                return new FilterSortDef(systemName, Item.PARSE_CREATED_AT, 
+                        FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
+                        + FilterSortDef.FILTER_SHOW_WAITING_TASKS + FilterSortDef.FILTER_SHOW_DONE_TASKS + FilterSortDef.FILTER_SHOW_CANCELLED_TASKS, 
+                        true, false, false, false, true);
+            case DAO.SYSTEM_LIST_TOUCHED:
+                return new FilterSortDef(systemName, Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true, false, false, true); //true => show most recent first
+            case DAO.SYSTEM_LIST_TODAY:
+                return new FilterSortDef(systemName, FilterSortDef.FILTER_SORT_TODAY_VIEW, FilterSortDef.FILTER_SHOW_ALL, true, true, false, false, false); //true => show most recent first
+            case DAO.SYSTEM_LIST_ALL:
+                return new FilterSortDef(systemName, Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
+            case DAO.SYSTEM_LIST_PROJECTS:
+                return new FilterSortDef(systemName, Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
+            case DAO.SYSTEM_LIST_STATISTICS:
+                return new FilterSortDef(systemName, Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, false, true); //true => show most recent first
+            case DAO.SYSTEM_LIST_WORKSLOTS:
+                return null; //new FilterSortDef(systemName, WorkSlot.PARSE_START_TIME, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
+            default:
+                ASSERT.that(false, "No default filter defined for systemName=" + systemName);
+//                    return ItemAndListCommonInterface.super.getDefaultFilterSortDef();
+            }
+        return null;
+    }
+
+    @Override
+    public FilterSortDef getDefaultFilterSortDef() {
+        String systemName = getSystemName();
+        FilterSortDef filterSortDef = getDefaultFilterSortDef(systemName);
+        if (filterSortDef != null) {
+            return filterSortDef;
+        } else {
+            return ItemAndListCommonInterface.super.getDefaultFilterSortDef();
+        }
     }
 
     @Override
@@ -1789,6 +1867,34 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
             filterSortDef = (FilterSortDef) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(filterSortDef);
         }
         return filterSortDef;
+    }
+
+    @Override
+    public FilterSortDef getFilterSortDef(boolean returnDefaultFilterIfNoneDefined) {
+        if (isNoSaveSystemList()) {
+            FilterSortDef cachedFilter = (FilterSortDef) DAO.getInstance().cacheGetNamedFilterSort(getSystemName());
+            if (cachedFilter == null) { //in case this is the first time and no name filter was cached before
+                cachedFilter = getDefaultFilterSortDef();
+            }
+            return cachedFilter;
+        } else {
+            FilterSortDef filterSortDef = getFilterSortDefN();
+            //automatically recover from the situation where the predefined/default filter for system lists were not saved:
+            if (filterSortDef == null && returnDefaultFilterIfNoneDefined) {
+                filterSortDef = FilterSortDef.getDefaultItemListFilter();
+            }
+//            else if (Config.TEST && filterSortDef == null && isSystemList()) {
+////            getSystemDefaultFilter(ScreenType.valueOf(getSystemName()));
+//                ScreenType st = ScreenType.getScreenType(getSystemName());
+//                if (st != null) {
+//                    filterSortDef = getSystemDefaultFilter(st);
+//                    setFilterSortDef(filterSortDef);
+////                DAO.getInstance().saveNew((ParseObject) this);
+//                    DAO.getInstance().saveToParseNow((ParseObject) this);
+//                }
+//            }
+            return filterSortDef;
+        }
     }
 
     //<editor-fold defaultstate="collapsed" desc="comment">
@@ -4204,55 +4310,6 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return restartTimerOnNotFound != null; //return null to indicate NOT deleted
     }
 
-    public static FilterSortDef getSystemDefaultFilter(ScreenType screenType) {
-        switch (screenType) {
-            case NEXT:
-                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_DUE_DATE,
-                        FilterSortDef.FILTER_SHOW_NEW_TASKS
-                        + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
-                        + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false, false);
-            case OVERDUE:
-                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_DUE_DATE,
-                        FilterSortDef.FILTER_SHOW_NEW_TASKS
-                        + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
-                        + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true, false); //FilterSortDef.FILTER_SHOW_DONE_TASKS
-            case COMPLETION_LOG:
-                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, true, false);
-            case CREATION_LOG:
-                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false);
-            case TOUCHED:
-                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
-            case TODAY:
-                return new FilterSortDef(screenType.getSystemName(), FilterSortDef.FILTER_SORT_TODAY_VIEW, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
-            case ALL_TASKS:
-                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
-            case ALL_PROJECTS:
-                return new FilterSortDef(screenType.getSystemName(), Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true); //true => show most recent first
-            default:
-                ASSERT.that(false, "No default filter defined for " + screenType.getTitle());
-        }
-        return null;
-    }
-
-    @Override
-    public FilterSortDef getFilterSortDef(boolean returnDefaultFilterIfNoneDefined) {
-        FilterSortDef filterSortDef = getFilterSortDefN();
-        //automatically recover from the situation where the predefined/default filter for system lists were not saved:
-        if (filterSortDef == null && returnDefaultFilterIfNoneDefined) {
-            filterSortDef = FilterSortDef.getDefaultFilter();
-        } else if (Config.TEST && filterSortDef == null && isSystemList()) {
-//            getSystemDefaultFilter(ScreenType.valueOf(getSystemName()));
-            ScreenType st = ScreenType.getScreenType(getSystemName());
-            if (st != null) {
-                filterSortDef = getSystemDefaultFilter(st);
-                setFilterSortDef(filterSortDef);
-//                DAO.getInstance().saveNew((ParseObject) this);
-                DAO.getInstance().saveToParseNow((ParseObject) this);
-            }
-        }
-        return filterSortDef;
-    }
-
     /**
      * @return The first time this object was saved on the server.
      */
@@ -4395,11 +4452,12 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return s != null ? s : SHOW_NUMBER_UNDONE_TASKS + SHOW_REMAINING; //UI: default is show nb undone tasks and remaining time
     }
 
-    public void setShowWhat(boolean nbUndoneTasks, boolean nbDoneTasks, boolean nbLeafTasks, boolean remaining, boolean total, boolean workTime) {
+    public void setShowWhat(boolean nbUndoneTasks, boolean nbDoneTasks, boolean nbLeafTasks, boolean remaining, boolean actual, boolean total, boolean workTime) {
         setShowNumberUndoneTasks(nbUndoneTasks);
         setShowNumberDoneTasks(nbDoneTasks);
         setShowNumberLeafTasks(nbLeafTasks);
         setShowRemaining(remaining);
+        setShowActual(actual);
         setShowTotal(total);
         setShowWorkTime(workTime);
     }
@@ -4482,6 +4540,63 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     public void onDelete() {
         fireDeleteEvent(); //only fire if changed
     }
+
+    public static ItemList makeSystemList(String name) {
+        return makeSystemList(name, null);
+    }
+
+    public static ItemList makeSystemList(String name, List updatedListN) {
+        String visibleName = MyForm.ScreenType.getListTitleN(name);
+        ItemList tempItemList = new ItemList(updatedListN);
+        tempItemList.setNoSave(true); //don't save dynamic lists to Parse (only locally!)
+
+        tempItemList.setText(visibleName);
+        tempItemList.setSystemName(name);
+//            tempItemList.setFilterSortDef(defaultFilterSortDef); //filter is made based on systemName
+        //setup Completion log to show number of done tasks and sum of actual effort
+        if (DAO.SYSTEM_LIST_LOG.equals(name)) {
+//            tempItemList.setShowNumberDoneTasks(true); //
+//            tempItemList.setShowNumberUndoneTasks(false);
+//            tempItemList.setShowRemaining(false);
+//            tempItemList.setShowActual(true);
+            tempItemList.setShowWhat(false, true, false, false, true, false, false);
+
+        }
+//            saveToParseAndWait(defaultFilterSortDef, tempItemList); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+//            if (false) {
+//                saveToParseAndWait(tempItemList); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+//            }
+        return tempItemList;
+    }
+
+    public void setExpireDate(Date expireByDate) {
+        Date oldVal = getExpireDate();
+
+        if (expireByDate != null && expireByDate.getTime() != 0) {
+            if (!Objects.equals(oldVal, expireByDate)) {
+                put(PARSE_EXPIRE_BY_DATE, expireByDate);
+            }
+        } else {
+            remove(PARSE_EXPIRE_BY_DATE);
+        }
+    }
+
+    public Date getExpireDate() {
+        Date date = getDate(PARSE_EXPIRE_BY_DATE);
+        return (date == null) ? new MyDate(0) : date;
+    }
+
+    /**
+     * return true if expire date is in the past so the list needs to be updated
+     *
+     * @return
+     */
+    public boolean isExpired() {
+        return getExpireDate().getTime() < System.currentTimeMillis();
+    }
+
+//            cachePut(defaultFilterSortDef);
+//            cachePut(name, tempItemList);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    @Override
 //    public List<ItemAndListCommonInterface> getWorkTimeProviders() {

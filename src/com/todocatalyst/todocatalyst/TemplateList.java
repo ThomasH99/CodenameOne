@@ -32,6 +32,8 @@ public class TemplateList<T> extends ItemList {
 
     public TemplateList() {
         super(CLASS_NAME);
+        setText(Item.TEMPLATE_LIST);
+        setSystemName(CLASS_NAME);
     }
 
     static synchronized public TemplateList getInstance() {

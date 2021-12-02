@@ -28,6 +28,8 @@ public class ScreenSettingsToday extends ScreenSettingsCommon {
         setUniqueFormId("ScreenItemSettings");
     }
 
+    public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, MyForm.SCREEN_TODAY_TITLE);
+
     /**
      * This method shows the main user interface of the app
      *

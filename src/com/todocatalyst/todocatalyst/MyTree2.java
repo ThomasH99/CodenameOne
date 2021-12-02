@@ -103,6 +103,7 @@ public class MyTree2 extends ContainerScrollY {
 //    private InsertNewElementFunc newInsertContainer = null;
     private PinchInsertContainer insertNewElementFuncXXX = null;
     private PinchInsertContainer newInsertContainer = null;
+    private boolean disableSwipeTimer;
 //    private TextArea startEditTextArea = null;
 
 //    private void setInsertField(InsertNewElementFunc newInsertContainer) {
@@ -185,8 +186,8 @@ public class MyTree2 extends ContainerScrollY {
         this(myForm, model, null, true, false, noHeaders);
     }
 
-    public MyTree2(MyForm myForm, MyTreeModel model, boolean showTopLevel, boolean makeScrollable) {
-        this(myForm, model, null, showTopLevel, makeScrollable);
+    public MyTree2(MyForm myForm, MyTreeModel model, boolean showTopLevel, boolean disableSwipeTimer) {
+        this(myForm, model, null, showTopLevel, false, false, disableSwipeTimer);
     }
 
     public MyTree2(MyForm myForm, MyTreeModel model, StickyHeaderGenerator stickyHeaderGen, boolean showTopLevel, boolean makeScrollable) {
@@ -194,9 +195,14 @@ public class MyTree2 extends ContainerScrollY {
     }
 
     public MyTree2(MyForm myForm, MyTreeModel model, StickyHeaderGenerator stickyHeaderGen, boolean showTopLevel, boolean makeScrollable, boolean noHeaders) {
+        this(myForm, model, stickyHeaderGen, showTopLevel, makeScrollable, noHeaders, false);
+    }
+
+    public MyTree2(MyForm myForm, MyTreeModel model, StickyHeaderGenerator stickyHeaderGen, boolean showTopLevel, boolean makeScrollable, boolean noHeaders, boolean disableSwipeTimer) {
         super();
         this.model = model;
         this.parentForm = myForm;
+        this.disableSwipeTimer = disableSwipeTimer;
 //        setUIID("MyTree2");
         if (Config.TEST) {
             setName("MyTree2");
@@ -1243,7 +1249,7 @@ public class MyTree2 extends ContainerScrollY {
             cmp = ScreenListOfCategories.buildCategoryContainer(parentForm, (Category) node);
         } else if (node instanceof ItemList) {
 //            cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, f.keepPos, false, f.expandedObjects);
-            cmp = ScreenListOfItemLists.buildItemListContainer(parentForm, (ItemList) node);
+            cmp = ScreenListOfItemLists.buildItemListContainer(parentForm, (ItemList) node, false, disableSwipeTimer);
         } else {
 //                        assert false;
             ASSERT.that(false, "node of unknown type=" + node);
@@ -1408,6 +1414,24 @@ public class MyTree2 extends ContainerScrollY {
     }
 
     /**
+     *
+     * @param values
+     * @param headers need one more header than value (eg values {10,100,1000},
+     * headers={"Below 10","10-100","100-1000","Above 1000"}
+     * @return
+     */
+    private static String makeValueIntervalHeader(int value, int[] values, String[] headers) {
+        ASSERT.that(values != null && headers != null && headers.length == values.length + 1, "values or headers undefined, or length not matching");
+        for (int i = 0; i < values.length; i++) {
+            if (value < values[i]) {
+                return headers[i];
+            }
+        }
+        ASSERT.that(value > values[values.length - 1]);
+        return headers[headers.length - 1];
+    }
+
+    /**
      * will calculate if a (new) StickyHeader is needed and if so, return it for
      * insertion into the Container. otherwise returns null.
      */
@@ -1514,6 +1538,17 @@ public class MyTree2 extends ContainerScrollY {
                                 ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
                                 : item.getDreadFunValueN().getDescription()));
                         break;
+                    case Item.PARSE_EARNED_VALUE:
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EARNED_VALUE,
+                                item.getEarnedValue() == 0
+                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                : makeValueIntervalHeader((int) item.getEarnedValue(), new int[]{10, 100, 1000}, new String[]{"Below 10", "10-100", "100-1000", "Above 1000"})));
+                    case Item.PARSE_EARNED_VALUE_PER_HOUR:
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EARNED_VALUE,
+                                item.getEarnedValuePerHour() == 0
+                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                : makeValueIntervalHeader((int) item.getEarnedValuePerHour(), new int[]{10, 100, 1000}, new String[]{"Below 10", "10-100", "100-1000", "Above 1000"})));
+                        break;
                     case Item.PARSE_TEXT: //no header for text, could do a letter 'A' but not valuable //TODO - add the right-side menu with letters to jump directly to tasks starting with that letter
 //                        newStr = getDiffStr(newStickyStr, Item.CHALLENGE + " " + item.getChallengeN().toString());
                         break;
@@ -1546,10 +1581,10 @@ public class MyTree2 extends ContainerScrollY {
                                 newStr = Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDate());
                                 break;
                             case DUE_TODAY_ONGOING:
-                                newStr = Item.DUE_DATE + " " +ItemStatus.ONGOING.getName()+" "+ MyDate.formatDateNew(item.getDueDate());
+                                newStr = Item.DUE_DATE + " " + ItemStatus.ONGOING.getName() + " " + MyDate.formatDateNew(item.getDueDate());
                                 break;
                             case DUE_TODAY_WAITING:
-                                newStr = Item.DUE_DATE + " " +ItemStatus.WAITING.getName()+" "+ MyDate.formatDateNew(item.getDueDate());
+                                newStr = Item.DUE_DATE + " " + ItemStatus.WAITING.getName() + " " + MyDate.formatDateNew(item.getDueDate());
                                 break;
                             case WAITING_TODAY:
                                 newStr = Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitUntilDate());
@@ -1560,7 +1595,7 @@ public class MyTree2 extends ContainerScrollY {
                                 newStr = Item.START_BY_TIME + " " + MyDate.formatDateNew(item.getStartByDateD());
                                 break;
                             case STARTING_TODAY_WORKSLOT: //SHOULD NEVER BE USED, only else below for WorkSlot!
-                                ASSERT.that(false,"should never happen");
+                                ASSERT.that(false, "should never happen");
                                 newStr = WorkSlot.WORKSLOT + " " + MyDate.formatDateNew(item.getStartByDateD());
                                 break;
                             case OVERDUE_TODAY:

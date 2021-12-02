@@ -529,6 +529,7 @@ public class MyForm extends Form implements ActionListener {
     static final String SCREEN_IMPROVE_HELP = "Shows you insights on how well you do and gives feedback on how you may improve. COMING..."; //how to improve, more precise estimates, analysis per type of tasks (respect due date, estimates, split up, allow to become interrupted, ...)
     static final String SETTINGS_SCREEN_TITLE = "Settings for "; //"Statistics", "History"
     static final String SCREEN_INTERRUPT = "Interrupt";// "Time interrupt"; 
+    static final String SETTINGS_MENU_TEXT_BASE = "{0 screenName} Settings";// fixed text for naming settings menus
 
     //https://www.schemecolor.com/red-orange-yellow-blue.php
     static int colorLightGreen = 0x89e19c; //??
@@ -585,7 +586,7 @@ public class MyForm extends Form implements ActionListener {
                 | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
                 | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, DAO.SYSTEM_LIST_TOUCHED),
         WORKSLOTS(SCREEN_WORKSLOTS_TITLE, SCREEN_WORKSLOTS_HELP, SCREEN_WORKSLOTS_EMPTY, Icons.iconMainWorkSlots, null, DAO.SYSTEM_LIST_WORKSLOTS),
-        STATISTICS(SCREEN_STATISTICS_TITLE, SCREEN_STATISTICS_HELP, "", Icons.iconMainStatistics, null);
+        STATISTICS(SCREEN_STATISTICS_TITLE, SCREEN_STATISTICS_HELP, "", Icons.iconMainStatistics, null,DAO.SYSTEM_LIST_STATISTICS);
         private String screenTitle;
         private String helpText;
         private String emptyScrText;
@@ -679,8 +680,35 @@ public class MyForm extends Form implements ActionListener {
 
         static ScreenType getScreenType(String screenTitle) {
             for (ScreenType st : ScreenType.values()) {
-                if (st.getTitle().equals(screenTitle)) {
+                if (screenTitle.equals(st.getTitle())) {
                     return st;
+                }
+            }
+            return null;
+        }
+
+        static String getListTitleN(String systemName) {
+            for (ScreenType st : ScreenType.values()) {
+                if (systemName.equals(st.getSystemName())) {
+                    return st.getTitle();
+                }
+            }
+            return null;
+        }
+
+        static Character getListIcon(String systemName) {
+            for (ScreenType st : ScreenType.values()) {
+                if (systemName.equals(st.getSystemName())) {
+                    return st.getIcon();
+                }
+            }
+            return null;
+        }
+
+        static Font getListFont(String systemName) {
+            for (ScreenType st : ScreenType.values()) {
+                if (systemName.equals(st.getSystemName())) {
+                    return st.getFont();
                 }
             }
             return null;
@@ -1060,7 +1088,7 @@ public class MyForm extends Form implements ActionListener {
     void initMyStatusBar() {
 //        Button bar = new Button("", "FormTitle") {
 //        Button statusBarButton = new Button(" ", "StatusBarButton") {
-        Button statusBarButton = new Button(" ", "StatusBar") {
+        Button statusBarButton = new Button(" ", "StatusBarButton") {
 
             @Override
             public void pointerReleased(int x, int y) {
@@ -1436,10 +1464,13 @@ public class MyForm extends Form implements ActionListener {
     @Override
     public void revalidate() {
         super.revalidate();
-        if(getUniqueFormId()==null)
-        if(Config.TEST) Log.p("REVALIDATE for form.getClass=" + getClass());
-        else
-        if(Config.TEST) Log.p("REVALIDATE for form=" + getUniqueFormId());
+        if (getUniqueFormId() == null) {
+            if (Config.TEST) {
+                Log.p("REVALIDATE for form.getClass=" + getClass());
+            } else if (Config.TEST) {
+                Log.p("REVALIDATE for form=" + getUniqueFormId());
+            }
+        }
 //        ASSERT.that(true, "REVALIDATE for form=" + getUniqueFormId());
     }
 
@@ -2124,6 +2155,9 @@ public class MyForm extends Form implements ActionListener {
      *
      * @param dueDate
      */
+    static Date showDialogSetDueDateN() {
+        return showDialogSetDueDateN(Item.getDefaultDueDate(), "This template");
+    }
     static Date showDialogSetDueDateN(Date dueDate) {
         return showDialogSetDueDateN(dueDate, "This template");
     }
@@ -2134,6 +2168,7 @@ public class MyForm extends Form implements ActionListener {
         PickerDialog dia = new PickerDialog(Format.f("Set {0 due date}", Item.DUE_DATE),
                 Format.f(templateIdText + " has dates defined relative to {0 due date}, enter a {0} to use them or {1 Cancel}", Item.DUE_DATE, PickerDialog.CANCEL_BUTTON_TEXT),
                 dueDate);
+        dia.setMeridiem(MyUtil.usesAmPm());
         return (Date) dia.show();
     }
 
@@ -3467,15 +3502,15 @@ public class MyForm extends Form implements ActionListener {
 
     public static Button makeTimerStopSwipeButton(SwipeableContainer swipCont, Item item, ItemAndListCommonInterface itemOrItemList, String commandTrackId) {
         Button stopTimer;
-            stopTimer = makeSwipeButton("Timer", "SwipeButtonTimer", Icons.iconTimerQuitTimer, null, null,
-                    CommandTracked.create("Timer", Icons.iconTimerQuitTimer, (ev) -> {
-                        MyForm myForm = (MyForm) swipCont.getComponentForm();
-                        if (myForm != null) {
-                            myForm.setKeepPos(new KeepInSameScreenPosition(itemOrItemList, swipCont));
-                        }
-                        TimerStack2.getInstance().stopCurrentTimerAndGotoNext();
-                        swipCont.close();
-                    }, commandTrackId));
+        stopTimer = makeSwipeButton("Timer", "SwipeButtonTimer", Icons.iconTimerQuitTimer, null, null,
+                CommandTracked.create("Timer", Icons.iconTimerQuitTimer, (ev) -> {
+                    MyForm myForm = (MyForm) swipCont.getComponentForm();
+                    if (myForm != null) {
+                        myForm.setKeepPos(new KeepInSameScreenPosition(itemOrItemList, swipCont));
+                    }
+                    TimerStack2.getInstance().stopCurrentTimerAndGotoNext();
+                    swipCont.close();
+                }, commandTrackId));
         return stopTimer;
     }
 
@@ -3737,7 +3772,8 @@ public class MyForm extends Form implements ActionListener {
     }
 
     public MyReplayCommand makeEditFilterSortCommand(ItemAndListCommonInterface filterOwnerItemListOrItem) {
-        return MyReplayCommand.createKeep("FilterSortSettings", "Edit filter/sort", Icons.iconEditFilterSort, (e) -> {
+//        return MyReplayCommand.createKeep("FilterSortSettings", "Edit filter/sort", Icons.iconEditFilterSort, (e) -> {
+        return MyReplayCommand.createKeep("FilterSortSettings", Format.f("Edit {0 filter}",FilterSortDef.FILTER_SORT), Icons.iconEditFilterSort, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDefN() == null
 //                    ? new FilterSortDef()
@@ -4361,7 +4397,7 @@ public class MyForm extends Form implements ActionListener {
     protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable, Character materialIcon) {
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, false, false);
 //        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false);
-        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, false, false, materialIcon, null);
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, true, showAsFieldUneditable, !showAsFieldUneditable, showAsFieldUneditable, false, materialIcon, null);
     }
 //    protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help, boolean showAsFieldUneditable, Character materialIcon) {
 ////        return layoutN(fieldLabelTxt, field, help, null, true, showAsFieldUneditable, false, false);
@@ -4391,7 +4427,8 @@ public class MyForm extends Form implements ActionListener {
     protected static Component layoutN(String settingId, String fieldLabelTxt, Component field, String help,
             boolean wrapText, boolean showAsFieldUneditable, boolean visibleEditButton, Character materialIcon, Font iconFont) {
 //        return layoutN(fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false);
-        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon, iconFont);
+//        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, false, false, materialIcon, iconFont);
+        return new EditFieldContainer(settingId, fieldLabelTxt, field, help, null, wrapText, showAsFieldUneditable, visibleEditButton, !visibleEditButton, false, materialIcon, iconFont);
     }
 
     protected static Component layoutN(boolean sizeWestBeforeEast, String fieldLabelTxt, Component field, String help,
@@ -6583,7 +6620,7 @@ public class MyForm extends Form implements ActionListener {
 //                    if (Config.TEST_PINCH) {
 //                        Log.p("[B] removing  pinchContainer");
 //                    }
-                     if (Config.TEST_PINCH) {
+                    if (Config.TEST_PINCH) {
                         Log.p("[C] MyForm(" + getUniqueFormId() + ").pinchInsertFinished() minPinch NOT Reached, newPinchContainer=" + newPinchContainer + "; current=" + currentPinchContainer);
                     }
                     parentToAnimateN = MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParentN(newPinchContainer); //remove new pinch container, leave old one (if exists) in pinchContainerPrevious
@@ -6822,7 +6859,7 @@ public class MyForm extends Form implements ActionListener {
 //                    y = y2;
                 x2 = new int[]{x[0], x[0]}; //replace org values with simulatd pair
                 y2 = new int[]{y[0], Math.min(displayHeight, Math.max(0, simulY))}; //make sure the simulated y position stays within the screen;
-                if (false&&Config.TEST) {
+                if (false && Config.TEST) {
                     Log.p("Simulated y[0]=" + y2[0] + " y[1]=" + y2[1] + " x[0]=" + x2[0] + " x[1]=" + x2[1] + " dragging " + (dragDistance < 0 ? "UP" : "DOWN"));
                 }
             }
@@ -7015,7 +7052,7 @@ public class MyForm extends Form implements ActionListener {
                     }
 //                    MyForm.this.animateLayout(300);//.revalidate(); //refresh
 //                    if (false&&parent != null) { //XXXX
-                    if (false&&parent != null) { //XXXX
+                    if (false && parent != null) { //XXXX
 //                        parent.animateLayout(300);
 //                        if(false)parent.revalidateWithAnimationSafety();
 //                        else parent.repaint();

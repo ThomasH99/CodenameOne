@@ -27,7 +27,7 @@ import java.util.ArrayList;
  * @author Thomas
  */
 //public class ScreenSettings extends MyForm {
-public class ScreenGlobalSettings extends ScreenSettingsCommon {
+public class ScreenSettingsGlobal extends ScreenSettingsCommon {
     //TODO store login+password locally (or at least user key?)
     //TODO Settings option to log out
     //DONE support option to update email (and change login id since email is normally used)
@@ -38,11 +38,13 @@ public class ScreenGlobalSettings extends ScreenSettingsCommon {
 // protected static String FORM_UNIQUE_ID = "ScreenSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 //    MyForm mainScreen;
-    ScreenGlobalSettings(MyForm mainScreen) { // throws ParseException, IOException {
+    ScreenSettingsGlobal(MyForm mainScreen) { // throws ParseException, IOException {
         super(SCREEN_TITLE, mainScreen, () -> {
         });
         setUniqueFormId("ScreenSettings");
     }
+
+            public static String SETTINGS_MENU_TEXT = SCREEN_TITLE;
 
     /**
      * This method shows the main user interface of the app

@@ -320,7 +320,7 @@ public class ScreenListOfAlarms extends MyForm {
         backCommand = addStandardBackCommand();
 
 //        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("AlarmSettings", "", Icons.iconSettings, (e) -> {
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("AlarmSettings", "Settings", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("AlarmSettings", ScreenSettingsAlarms.SETTINGS_MENU_TEXT, Icons.iconSettings, (e) -> {
             boolean oldShowDueTime = MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean();
             int oldAlarmInterval = MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes.getInt();
 

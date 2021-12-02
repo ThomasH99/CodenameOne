@@ -214,5 +214,12 @@ public class PickerDialog {
     public PickerDialog(String title, String text, long value) {
         this(title, text, value, DONE_BUTTON_TEXT, CANCEL_BUTTON_TEXT, Display.PICKER_TYPE_DURATION);
     }
+    
+    public void setMeridiem(boolean on) {
+         if( dateTimeSpinner!=null)
+             dateTimeSpinner.setShowMeridiem(on);
+//         if( dateSpinner!=null)
+//             dateSpinner.setShowMeridiem(on);
+    }
 
 }

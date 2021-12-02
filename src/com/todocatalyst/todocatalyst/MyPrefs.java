@@ -16,7 +16,7 @@ import java.util.Date;
  */
 public class MyPrefs {
 
-    static boolean prod = Config.PRODUCTION_RELEASE;
+    static boolean prod = Config.PRODUCTION_RELEASE ;
     //TODAY view
     static PrefEntry todayViewIncludeWaitingExpiringToday
             = new PrefEntry("In Today, include tasks until today", "todayViewIncludeWaitingExpiringToday", prod ? true : true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
@@ -105,10 +105,10 @@ public class MyPrefs {
                     "dropZoneWidthInPercentForDroppingAsSubtaskOrSuperTask", prod ? 5 : 10, "**");
     static PrefEntry simulatedPinchZoneWidth
             = new PrefEntry("Approximate width in millimeters of center screen zone where dragging will simulate a two finger pinch",
-                    "simulatedPinchZoneWidth",  8, "**");
+                    "simulatedPinchZoneWidth", 8, "**");
     static PrefEntry simulatedPinchRightMargin
             = new PrefEntry("Approximate width in millimeters of center screen zone where dragging will simulate a two finger pinch",
-                    "simulatedPinchRightMargin",  0 , "**");
+                    "simulatedPinchRightMargin", 0, "**");
 
 //    static PrefEntry dragDropLeftDropZoneWidth
 //            = new PrefEntry("Width of the left-hand drop zone (%)", "dragDropLeftDropZoneWidth", 10, ""); 
@@ -254,6 +254,9 @@ public class MyPrefs {
     static PrefEntry hideIconsInEditTaskScreen //also used for SCreenWorkSlot!
             = new PrefEntry("Hide the icons when editing to save screen space",
                     "hideIconsInEditTaskScreen", prod ? false : false, "Get a cleaner or more space-efficient look");
+    static PrefEntry enableEditingAsync //also used for SCreenWorkSlot!
+            = new PrefEntry("Enable automatically popping up keyboard when editing a task with no text defined yet",
+                    "enableEditingAsync", prod ? false : false, "**");
     //COMMENTS
     static PrefEntry commentsAddToBeginningOfComment
             = new PrefEntry("Insert time-stamped comments at beginning of comment", "commentsAddToBeginningOfComment", prod ? false : false, "Add automatic comments to beginning of comment instead of at the end");
@@ -545,7 +548,7 @@ public class MyPrefs {
     //INTERNAL / TECHNICAL / CACHE
     static PrefEntry backgroundFetchIntervalInSeconds = new PrefEntry("**", "backgroundFetchIntervalInSeconds",
             1 * MyDate.HOUR_IN_MILISECONDS / 1000, "interval for updating eg local notifications and badge count when app is in background**");
-    static PrefEntry badgeCountShowsNbLeaftasks = new PrefEntry(Format.f("Show number of leaf tasks and tasks in {0}",WorkSlot.WORKSLOT), 
+    static PrefEntry badgeCountShowsNbLeaftasks = new PrefEntry(Format.f("Show number of leaf tasks and tasks in {0}", WorkSlot.WORKSLOT),
             "badgeCountShowsNbLeaftasks", true, "interval for updating eg local notifications and badge count when app is in background**");
 
     static PrefEntry cacheDynamicSize = new PrefEntry("**", "cacheDynamicSize", 100000, "number of tasks, lists, categories etc cached**");
@@ -578,6 +581,9 @@ public class MyPrefs {
     static PrefEntry showDebugInfoInLabelsEtc
             = new PrefEntry("Show debug info, e.g. add ^ to subtask", "showDebugInfoInLabelsEtc",
                     prod ? false : true, "** - NOT END USER");
+    static PrefEntry showEmptyTaskText
+            = new PrefEntry(Format.f("Show \"{0\" for tasks with no text", Item.EMPTY_TASK_TEXT), "showEmptyTaskText",
+                    prod ? true : true, "** ");
 
     static PrefEntry reloadChangedDataInBackground
             = new PrefEntry("Refresh changed data in background", "reloadChangedDataInBackground",
@@ -827,6 +833,9 @@ public class MyPrefs {
             prod ? true : true, "**");
     static PrefEntry statisticsScreenNumberPastDaysToShow = new PrefEntry("Past days to include in view", "statisticsScreenNumberPastDaysToShow",
             prod ? 30 : 30, "How many past days to include");
+    //this is the number of days before today which is the *last* day to include in the statistics (combined with above enable showing statistics for a specific internal, like last month, last week etc). If 0 will include everything up to Today, if 1, will exclude today, if 2 will exclude yesterday, ...
+    static PrefEntry statisticsScreenDaysBeforeTodayToExclude = new PrefEntry("**Past days to include in view", "statisticsScreenDaysBeforeTodayToExclude",
+            prod ? 0 : 0, "How many past days to include");
 
     //LIST OF CATEGORIES
     static PrefEntry listOfCategoriesShowNumberUndoneTasks = new PrefEntry("Show number of tasks", "listOfCategoriesShowNumberUndoneTasks",

@@ -26,6 +26,7 @@ import com.codename1.util.Callback;
 import com.parse4cn1.Parse;
 import com.parse4cn1.ParseACL;
 import com.parse4cn1.ParseConstants;
+import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import com.parse4cn1.ParseUser;
 import com.parse4cn1.Permissions;
@@ -36,6 +37,7 @@ import com.parse4cn1.util.ParseRegistry;
 import static com.todocatalyst.todocatalyst.ScreenLogin.setDefaultACL;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.TimeZone;
@@ -612,6 +614,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 
         Toolbar.setGlobalToolbar(true); //needed, otherwise toolbar null in other screens
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        InputStream alarmSound = new InputStream();
 //        InputStream alarmSound = new DataInputStream();
 //        if (false) {
@@ -628,7 +631,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //            }
 //        }
 //        Log.getInstance();
-//<editor-fold defaultstate="collapsed" desc="** bindCrashProtection **">
+//</editor-fold>
         if (false) {
             Log.bindCrashProtection(false); //TODO: should probaly be true in production version (to consume errors so end-user doesn't see them)
         } else {
@@ -687,7 +690,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                         read = com.codename1.io.Util.readInputStream(Storage.getInstance().createInputStream("CN1Log__$"));
 //                        read.toString();
 
-                        Message m = new Message("Body of message"
+                        String content = "Body of message"
                                 + "DeviceId: " + Log.getUniqueDeviceId()
                                 + "DeviceKey: " + Log.getUniqueDeviceKey()
                                 + "\nBuilt by user: " + Display.getInstance().getProperty("built_by_user", "")
@@ -697,8 +700,16 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                                 //                            + Storage.getInstance().readObject("CN1Log__$")
                                 //                            + new String(read)
                                 //                            + MyUtil.hexStringToByteArray(read)
-                                + new String(read, "BaSE64") // for UTF-8 encoding, https://stackoverflow.com/questions/1536054/how-to-convert-byte-array-to-string-and-vice-versa
-                        );
+                                + new String(read, "BaSE64");  // for UTF-8 encoding, https://stackoverflow.com/questions/1536054/how-to-convert-byte-array-to-string-and-vice-versa
+
+                        StackTrace stackTrace = new StackTrace(content);
+                        try {
+                            stackTrace.save();
+                        } catch (ParseException ex) {
+                            Log.p(ex.toString());
+                        }
+
+                        Message m = new Message(content);
 //            m.getAttachments().put(textAttachmentUri, "text/plain");
 //            m.getAttachments().put(imageAttachmentUri, "image/png");
                         Display.getInstance().sendMessage(new String[]{"crashreport@todocatalyst.com"}, "TodoCatalyst crash report", m);
@@ -709,14 +720,14 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
                 }
             });
         }
-//</editor-fold>
-
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        Log.getInstance().setFileWriteEnabled(true);
 //        Log.setLevel(Log.DEBUG);
 //        Log.setReportingLevel(Log.REPORTING_DEBUG);
 //        //PARSE logging:
 //        Logger.getInstance().setLogLevel(Log.DEBUG); //set parse4cn1 log level
 //        NativeLogs.initNativeLogs();
+//</editor-fold>
         Log.p("LOCALE = " + locale);
 
 //        if (Config.PARSE_OFFLINE && !getPlatformName().equals("ios") && !getPlatformName().equals("and")) { //never run in local mode on a device !!seems to return "ios" with ios skin on simulator??
@@ -846,15 +857,19 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //</editor-fold>
 //        Icons.get(); //Init singleton for icons
 
-        if (!Config.FULLY_LOCAL_MODE) {
+        if (false) {
+            ConnectionRequest.setHandleErrorCodesInGlobalErrorHandler(false); //default true, 
+        }
+        if (true || !Config.FULLY_LOCAL_MODE) {
             NetworkManager.getInstance().addErrorListener((e) -> {
-                Log.p("NetworkManager error=" + e);
+                Log.p("NetworkManager error=" + (e.getError() != null ? e.getError().getMessage() : "<no error message>"));
                 //"There was a network error, would you like to retry?"
                 //"There is no network connection, please retry when the network is available again (your changes will be lost if the app is stopped before the network is available)"
 //            if (Dialog.show("Network Error", "There was a network error, would you like to retry?", "Retry", "Cancel")) {
 //            if (Dialog.show("Network Error", "There is no network connection, please retry when the network is available again. The just made changes will be lost unless you retry successfully before the exiting app.", "Retry", null)) {
-                if (Dialog.show("Network Error", "No network connection. Please Retry when available again. "
-                        + "\n\nIf you exit the app before a successful Retry, any changes just made will be lost.", "Retry", null)) {
+//                if (Dialog.show("Network Error", "No network connection. Please Retry when available again. "
+//                        + "\n\nIf you exit the app before a successful Retry, any changes just made will be lost.", "Retry", null)) {
+                if (Dialog.show("Network Error", "No network connection. Please Retry when connected to the network again.", "Retry", null)) {
                     e.consume();
                     ConnectionRequest conReq = e.getConnectionRequest();
                     conReq.retry();
@@ -1088,8 +1103,10 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             storedNotificationId = null; //reset
             AlarmHandler.getInstance().localNotificationReceived(temp);
         }
-//<editor-fold defaultstate="collapsed" desc="comment">
 
+        DAO.getInstance().savePendingParseUpdatesToParse(); //if aany pending saves (not saved due to network pbs), save them as the app is brought up to foreground again
+
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
 //            Item item = new Item();
 //            item.setFilterSortDef(new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, true));
@@ -1229,8 +1246,9 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             Display.getInstance().setBadgeNumber(badgeCount);
 //            Display.getInstance().setBadgeNumber(99);
         } else {
-            if (Config.TEST)
-            Log.p("performBackgroundFetch-refreshBadgeCount() - Display.getInstance().isBadgingSupported()=" + Display.getInstance().isBadgingSupported() + "; Display.getInstance().isSimulator()=" + Display.getInstance().isSimulator());
+            if (Config.TEST) {
+                Log.p("performBackgroundFetch-refreshBadgeCount() - Display.getInstance().isBadgingSupported()=" + Display.getInstance().isBadgingSupported() + "; Display.getInstance().isSimulator()=" + Display.getInstance().isSimulator());
+            }
         }
     }
 

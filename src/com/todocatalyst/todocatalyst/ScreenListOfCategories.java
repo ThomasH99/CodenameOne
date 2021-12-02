@@ -162,7 +162,6 @@ public class ScreenListOfCategories extends MyForm {
 
         //check if there was an insertContainer active earlier
 //        recreateInlineInsertContainerAndReplayCmdIfNeeded(); //moved to MyForm.refreshAfterEdit()
-
         super.refreshAfterEdit();
     }
 
@@ -250,7 +249,8 @@ public class ScreenListOfCategories extends MyForm {
         //INTERRUPT TASK
         toolbar.addCommandToOverflowMenu(makeInterruptCommand(true));
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfCategoriesSettings", "Settings", Icons.iconSettings, (e) -> {
+//        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfCategoriesSettings", "Settings", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfCategoriesSettings", ScreenSettingsListOfCategories.SETTINGS_MENU_TEXT, Icons.iconSettings, (e) -> {
             new ScreenSettingsListOfCategories(ScreenListOfCategories.this, () -> {
                 if (false) {
                     refreshAfterEdit();
@@ -512,7 +512,7 @@ public class ScreenListOfCategories extends MyForm {
         mainCont.addComponent(BorderLayout.EAST, east);
 //        east.addComponent(new Label(MyDate.formatDurationStd(category.getRemaining()))); //TODO reactivate this once caching of sum of effort in category is implemented
 //        Button subTasksButton = new Button();
-        if (category.getSize() > 0) {
+        if (false && category.getSize() > 0) {
 //            east.addComponent(new Label("[" + category.getSize() + "]"));
 //            Button subTasksButton = new Button("[" + category.getSize() + "]");
 //            Button subTasksButton = new Button("[" + category.getNumberOfUndoneItems(false) + "]");
@@ -548,14 +548,17 @@ public class ScreenListOfCategories extends MyForm {
 //            cont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, subTasksButton);
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandCategorySubTasksButton);
         }
-        
+
         int numberItems = category.getSize();
-        if (numberItems >= 0) {
+        if (numberItems > 0) {
             Command expandSubTasksCmd = CommandTracked.create("", null,
                     (e) -> {
-                        expandCategorySubTasksButton.setUIID(expandCategorySubTasksButton.getUIID().equals("CategoryListShowItems")
-                                ? "CategoryListShowItemsExpanded"
-                                : "CategoryListShowItems");
+//                        expandCategorySubTasksButton.setUIID(expandCategorySubTasksButton.getUIID().equals("CategoryListShowItems")
+//                                ? "CategoryListShowItemsExpanded"
+//                                : "CategoryListShowItems");
+                        expandCategorySubTasksButton.setUIID(expandCategorySubTasksButton.getUIID().equals("ListOfItemListsShowItemsExpandable")
+                                ? "ListOfItemListsShowItemsExpanded"
+                                : "ListOfItemListsShowItemsExpandable");
                     },
                     "CategoryExpandSubtasks");// {
             expandCategorySubTasksButton.setCommand(expandSubTasksCmd);
@@ -567,11 +570,14 @@ public class ScreenListOfCategories extends MyForm {
                 }
             }
             expandCategorySubTasksButton.setText(subTaskStr);
-            expandCategorySubTasksButton.setUIID(expandedObjects != null && expandedObjects.contains(category) ? "CategoryListShowItemsExpanded" : "CategoryListShowItems");
+//            expandCategorySubTasksButton.setUIID(expandedObjects != null && expandedObjects.contains(category) ? "CategoryListShowItemsExpanded" : "CategoryListShowItems");
+            expandCategorySubTasksButton.setUIID(expandedObjects != null && expandedObjects.contains(category) ? "ListOfItemListsShowItemsExpanded" : "ListOfItemListsShowItemsExpandable");
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandCategorySubTasksButton);
+        } else {
+            expandCategorySubTasksButton.setText("0");
+            expandCategorySubTasksButton.setUIID("ListOfItemListsShowItems");
         }
-        
-        
+
         if (false) {
             if (MyPrefs.listOfCategoriesShowRemainingEstimate.getBoolean()) {
                 long remainingEffort = category.getRemainingTotal();
@@ -589,112 +595,112 @@ public class ScreenListOfCategories extends MyForm {
                     }
                 }
             }
-            }
-            if (category.getShowRemaining()) {
-                WorkSlotList workSlotsN = category.getWorkSlotListN();
-                long workTimeSumMillis = workSlotsN != null ? workSlotsN.getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
+        }
+        if (category.getShowRemaining()) {
+            WorkSlotList workSlotsN = category.getWorkSlotListN();
+            long workTimeSumMillis = workSlotsN != null ? workSlotsN.getWorkTimeSum() : 0; //optimization: avoid calculating this if setting not activate and not in statisticsMode
 
-                long remainingEffort = category.getRemainingTotal();
-                long totalEffort = category.getShowTotal() ? category.getEstimateTotal() : 0;
+            long remainingEffort = category.getRemainingTotal();
+            long totalEffort = category.getShowTotal() ? category.getEstimateTotal() : 0;
 
-                String effortStr;
-                if (category.getShowActual()) {
-                    effortStr = MyDate.formatDurationStd(category.getActualTotal());
-                } else {
-                    effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
-                            + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
-                    if (workTimeSumMillis != 0 && category.getShowWorkTime()) {
-                        effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
-                    }
-                }
-                east.addComponent(new Label(effortStr, "CategoryListRemainingTime")); //format: "remaining/workTime"
-                east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
-                east.addComponent(editItemPropertiesButton);
+            String effortStr;
+            if (category.getShowActual()) {
+                effortStr = MyDate.formatDurationStd(category.getActualTotal());
             } else {
-                east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
-                east.addComponent(editItemPropertiesButton);
+                effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
+                        + (totalEffort != 0 ? ("/" + MyDate.formatDurationStd(totalEffort)) : "");
+                if (workTimeSumMillis != 0 && category.getShowWorkTime()) {
+                    effortStr += ((!effortStr.isEmpty() ? "/" : "") + "[" + MyDate.formatDurationStd(workTimeSumMillis) + "]");
+                }
             }
+            east.addComponent(new Label(effortStr, "CategoryListRemainingTime")); //format: "remaining/workTime"
+            east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
+            east.addComponent(editItemPropertiesButton);
+        } else {
+            east.addComponent(expandCategorySubTasksButton); //format: "remaining/workTime"
+            east.addComponent(editItemPropertiesButton);
+        }
 
 //        east.addComponent(editItemPropertiesButton);
-            if (MyPrefs.showCategoryDescriptionInCategoryList.getBoolean() && !category.getComment().equals("")) {
-                mainCont.addComponent(BorderLayout.SOUTH,
-                        new Container(BoxLayout.x()).add(
-                                new Label("(" + category.getComment() + ")", "CategoryListDescriptionLabel")));
-            }
+        if (MyPrefs.showCategoryDescriptionInCategoryList.getBoolean() && !category.getComment().equals("")) {
+            mainCont.addComponent(BorderLayout.SOUTH,
+                    new Container(BoxLayout.x()).add(
+                            new Label("(" + category.getComment() + ")", "CategoryListDescriptionLabel")));
+        }
 
 //        east.addComponent(new Label(new SimpleDateFormat().format(new Date(itemList.getFinishTime(item, 0)))));
 //        return cont;
 //TODO any swipeable actions on category list??
-            return swipCont;
-        }
-        //<editor-fold defaultstate="collapsed" desc="comment">
-        //    class TreeItemList extends TreeInitialCollapse {
-        //
-        //        private int myDepthIndent = 15;
-        ////            Tree dt = new Tree(listOfItemLists) {
-        //
-        //        TreeItemList(ItemList listOfItemLists, boolean collapseTopLevelNode) {
-        //            super(listOfItemLists, collapseTopLevelNode);
-        //            setNodeIcon(null);
-        //            setFolderOpenIcon(Icons.get().iconShowLessLabelStyle);
-        //            setFolderIcon(Icons.get().iconShowMoreLabelStyle);
-        //        }
-        //
-        //        @Override
-        //        protected Component createNode(Object node, int depth) {
-        //            Container cmp = null;
-        ////            if (node instanceof ItemList) {
-        ////                cmp = buildItemListContainer((ItemList) node, itemListList);
-        ////            } else if (node instanceof Item) {
-        ////                cmp = Container.encloseIn(BoxLayout.y(), new Label(((Item) node).getText())); //TODO!!! replace by appropriate container
-        ////            } else {
-        ////                assert false : "unknown type of node" + node;
-        ////            }
-        //            if (node instanceof Item) {
-        ////                cmp = ItemContainer.buildTreeOrSingleItemContainer((Item) node, (ItemList) treeParent);
-        ////                cmp = ItemContainer.buildItemContainer((Item) node, (ItemList) treeParent);
-        //                cmp = ScreenListOfItems.buildItemContainer((Item) node, category, () -> true;() -> {
-        //                }
-        //              );
-        //            } else if (node instanceof Category) {
-        //                cmp = buildCategoryContainer((Category) node); //, (ItemList) treeParent);
-        //            } else {
-        //                assert false : "treeParent should only be Item or ItemList: treeParent=" + treeParent;
-        //            }
-        //
-        ////                cmp.setUIID("TreeNode"); cmp.setTextUIID("TreeNode"); if(model.isLeaf(node)) {cmp.setIcon(nodeImage);} else {cmp.setIcon(folder);}
-        //            cmp.getSelectedStyle().setMargin(LEFT, depth * myDepthIndent);
-        //            cmp.getUnselectedStyle().setMargin(LEFT, depth * myDepthIndent);
-        //            cmp.getPressedStyle().setMargin(LEFT, depth * myDepthIndent);
-        //            cmp.setScrollable(false); //to avoid nested scrolling, http://stackoverflow.com/questions/36044418/how-to-extend-infinitecontainer-with-the-capability-of-expanding-the-nodes-in-th
-        //            return cmp;
-        //        }
-        //
-        //        @Override
-        //        protected void bindNodeListener(ActionListener l, Component node) {
-        ////            Object expandCollapseButton = node.getClientProperty("subTasksButton");
-        ////            if (expandCollapseButton != null && expandCollapseButton instanceof Button) //            ((Button) (((Container) node).getClientProperty("subTasksButton"))).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
-        ////            {
-        ////                ((Button) (expandCollapseButton)).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
-        ////            }
-        //            Object expandCollapseButton = node.getClientProperty("subTasksButton");
-        //            if (expandCollapseButton != null && expandCollapseButton instanceof Button) {
-        //                ((Button) (expandCollapseButton)).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
-        //                ((Button) (expandCollapseButton)).putClientProperty("TreeContainer", node);
-        //            }
-        //
-        //        }
-        //
-        //        @Override
-        //        protected void setNodeIcon(Image icon, Component node) {
-        //            Object expandCollapseButton = node.getClientProperty("subTasksButton");
-        ////            ((Button) (((Container) node).getClientProperty("subTasksButton"))).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
-        //            if (expandCollapseButton != null && expandCollapseButton instanceof Button) {
-        //                ((Button) (expandCollapseButton)).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
-        //            }
-        //        }
-        //    };
-        //</editor-fold>
+        return swipCont;
+    }
+    //<editor-fold defaultstate="collapsed" desc="comment">
+    //    class TreeItemList extends TreeInitialCollapse {
+    //
+    //        private int myDepthIndent = 15;
+    ////            Tree dt = new Tree(listOfItemLists) {
+    //
+    //        TreeItemList(ItemList listOfItemLists, boolean collapseTopLevelNode) {
+    //            super(listOfItemLists, collapseTopLevelNode);
+    //            setNodeIcon(null);
+    //            setFolderOpenIcon(Icons.get().iconShowLessLabelStyle);
+    //            setFolderIcon(Icons.get().iconShowMoreLabelStyle);
+    //        }
+    //
+    //        @Override
+    //        protected Component createNode(Object node, int depth) {
+    //            Container cmp = null;
+    ////            if (node instanceof ItemList) {
+    ////                cmp = buildItemListContainer((ItemList) node, itemListList);
+    ////            } else if (node instanceof Item) {
+    ////                cmp = Container.encloseIn(BoxLayout.y(), new Label(((Item) node).getText())); //TODO!!! replace by appropriate container
+    ////            } else {
+    ////                assert false : "unknown type of node" + node;
+    ////            }
+    //            if (node instanceof Item) {
+    ////                cmp = ItemContainer.buildTreeOrSingleItemContainer((Item) node, (ItemList) treeParent);
+    ////                cmp = ItemContainer.buildItemContainer((Item) node, (ItemList) treeParent);
+    //                cmp = ScreenListOfItems.buildItemContainer((Item) node, category, () -> true;() -> {
+    //                }
+    //              );
+    //            } else if (node instanceof Category) {
+    //                cmp = buildCategoryContainer((Category) node); //, (ItemList) treeParent);
+    //            } else {
+    //                assert false : "treeParent should only be Item or ItemList: treeParent=" + treeParent;
+    //            }
+    //
+    ////                cmp.setUIID("TreeNode"); cmp.setTextUIID("TreeNode"); if(model.isLeaf(node)) {cmp.setIcon(nodeImage);} else {cmp.setIcon(folder);}
+    //            cmp.getSelectedStyle().setMargin(LEFT, depth * myDepthIndent);
+    //            cmp.getUnselectedStyle().setMargin(LEFT, depth * myDepthIndent);
+    //            cmp.getPressedStyle().setMargin(LEFT, depth * myDepthIndent);
+    //            cmp.setScrollable(false); //to avoid nested scrolling, http://stackoverflow.com/questions/36044418/how-to-extend-infinitecontainer-with-the-capability-of-expanding-the-nodes-in-th
+    //            return cmp;
+    //        }
+    //
+    //        @Override
+    //        protected void bindNodeListener(ActionListener l, Component node) {
+    ////            Object expandCollapseButton = node.getClientProperty("subTasksButton");
+    ////            if (expandCollapseButton != null && expandCollapseButton instanceof Button) //            ((Button) (((Container) node).getClientProperty("subTasksButton"))).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
+    ////            {
+    ////                ((Button) (expandCollapseButton)).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
+    ////            }
+    //            Object expandCollapseButton = node.getClientProperty("subTasksButton");
+    //            if (expandCollapseButton != null && expandCollapseButton instanceof Button) {
+    //                ((Button) (expandCollapseButton)).addActionListener(l); //in a tree of ItemLists there shall always be a subTasksButton
+    //                ((Button) (expandCollapseButton)).putClientProperty("TreeContainer", node);
+    //            }
+    //
+    //        }
+    //
+    //        @Override
+    //        protected void setNodeIcon(Image icon, Component node) {
+    //            Object expandCollapseButton = node.getClientProperty("subTasksButton");
+    ////            ((Button) (((Container) node).getClientProperty("subTasksButton"))).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
+    //            if (expandCollapseButton != null && expandCollapseButton instanceof Button) {
+    //                ((Button) (expandCollapseButton)).setIcon(icon); //in a tree of ItemLists there shall always be a subTasksButton
+    //            }
+    //        }
+    //    };
+    //</editor-fold>
 
     protected Container buildContentPaneForItemList(ItemList categoryLists) {
         parseIdMap2.parseIdMapReset();

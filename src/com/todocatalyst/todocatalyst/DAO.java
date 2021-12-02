@@ -193,11 +193,40 @@ public class DAO {
      * @param parseObject must be a non-null, valid ParseObject
      */
 //    private void cachePut(String objectId, ParseObject parseObject) {
-    private synchronized void cachePut(ParseObject parseObject) {
-        cachePut(null, parseObject);
+//    private synchronized void cachePutOLD(ParseObject parseObject) {
+//        cachePut(null, parseObject);
+//    }
+    private static String FILTER_PREFIX = "FILTER-";
+    private static String ITEMLIST_PREFIX = "ITEMLIST-";
+
+//    private void putNamedRefs(String name, ParseObject parseObject) {
+//        if (parseObject.getObjectIdP() != null) { //above just caches the singletons, so now also cache other objects, with a special treatment for workSlots
+//            cacheObjId.put(parseObject.getObjectIdP(), parseObject);
+//        }
+//        cacheGuid.put(parseObject.getGuid(), parseObject); //will override any previously put object with same ojectId
+//    }
+    private void putSystemNameRefs(ParseObject parseObject) {
+        if (parseObject instanceof FilterSortDef) {
+            String name = ((FilterSortDef) parseObject).getSystemName();
+            if (!name.isEmpty()) {
+                if (parseObject.getObjectIdP() != null) { //above just caches the singletons, so now also cache other objects, with a special treatment for workSlots
+                    cacheObjId.put(FILTER_PREFIX + name, parseObject.getObjectIdP());
+                }
+                cacheGuid.put(FILTER_PREFIX + name, parseObject); //will override any previously put object with same ojectId
+            }
+        } else if (parseObject instanceof ItemList) {
+            String name = ((ItemList) parseObject).getSystemName();
+            if (!name.isEmpty()) {
+                if (parseObject.getObjectIdP() != null) { //above just caches the singletons, so now also cache other objects, with a special treatment for workSlots
+                    cacheObjId.put(ITEMLIST_PREFIX + name, parseObject.getObjectIdP());
+                }
+                cacheGuid.put(ITEMLIST_PREFIX + name, parseObject.getGuid()); //will override any previously put object with same ojectId
+            }
+        }
     }
 
-    private synchronized void cachePut(String name, ParseObject parseObject) {
+//    private synchronized void cachePut(String name, ParseObject parseObject) {
+    private synchronized void cachePut(ParseObject parseObject) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (cache.get(objectId)==null)
 //cache the singleton lists:
@@ -219,7 +248,7 @@ public class DAO {
             ASSERT.that(parseObject instanceof ParseObject, () -> "trying to store non-ParseObject in cache: parseObject=" + parseObject);
             ASSERT.that((parseObject instanceof WorkSlot || parseObject instanceof ItemAndListCommonInterface || parseObject instanceof RepeatRuleParseObject || parseObject instanceof FilterSortDef || parseObject instanceof TimerInstance2));
             ASSERT.that(parseObject.getGuid() != null, () -> "cachePut of parseObject with guid==null, parseObject=" + parseObject);
-            ASSERT.that(name == null || !name.isEmpty(), () -> "cachePut of parseObject with empty name, parseObject=" + parseObject);
+//            ASSERT.that(name == null || !name.isEmpty(), () -> "cachePut of parseObject with empty name, parseObject=" + parseObject);
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (parseObject.getObjectIdP() != null) { //above just caches the singletons, so now also cache other objects, with a special treatment for workSlots
@@ -242,28 +271,36 @@ public class DAO {
                 cacheObjIdWorkSlots.put(parseObject.getObjectIdP(), parseObject);
             }
             cacheGuidWorkSlots.put(parseObject.getGuid(), parseObject);
+//        } else if (parseObject instanceof FilterSortDef) {
+//            if (!((FilterSortDef) parseObject).getSystemName().isEmpty()) { //above just caches the singletons, so now also cache other objects, with a special treatment for workSlots
+//                cacheObjIdWorkSlots.put(parseObject.getObjectIdP(), parseObject);
+//            }
+//            cacheGuidWorkSlots.put(parseObject.getGuid(), parseObject);
+//            putSystemNameRefs(parseObject);
         } else {
             if (parseObject.getObjectIdP() != null) { //above just caches the singletons, so now also cache other objects, with a special treatment for workSlots
                 cacheObjId.put(parseObject.getObjectIdP(), parseObject);
             }
             cacheGuid.put(parseObject.getGuid(), parseObject); //will override any previously put object with same ojectId
         }
-
-        if (name != null) {
-            if (Config.TEST) {
-                Object alreadyInCache = cacheObjId.getNoPut(name); //use getNoPut when testing to avoid adding the object in this call (makes it duplicated below)
-                if (alreadyInCache != null && !alreadyInCache.equals(parseObject.getGuid())) {
-                    ASSERT.that(alreadyInCache == null, () -> "An object already exists in cache for name=" + name + "; oldCached=" + alreadyInCache);
-                }
-                ASSERT.that(parseObject.getObjectIdP() != null || (parseObject instanceof ItemList && ((ItemList) parseObject).isNoSave()),
-                        "ERROR - trying to store named parseObj w/o ObjId, name=" + name + "; Obj=" + parseObject);
-            }
-//             cacheGuid.put(name, parseObject.getGuid());
-            if (parseObject.getObjectIdP() != null) {
-                cacheObjId.put(name, parseObject.getObjectIdP());
-            }
-            cacheGuid.put(name, parseObject.getGuid());
-        }
+        putSystemNameRefs(parseObject);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (name != null) {
+//            if (Config.TEST) {
+//                Object alreadyInCache = cacheObjId.getNoPut(name); //use getNoPut when testing to avoid adding the object in this call (makes it duplicated below)
+//                if (alreadyInCache != null && !alreadyInCache.equals(parseObject.getGuid())) {
+//                    ASSERT.that(alreadyInCache == null, () -> "An object already exists in cache for name=" + name + "; oldCached=" + alreadyInCache);
+//                }
+//                ASSERT.that(parseObject.getObjectIdP() != null || (parseObject instanceof ItemList && ((ItemList) parseObject).isNoSave()),
+//                        "ERROR - trying to store named parseObj w/o ObjId, name=" + name + "; Obj=" + parseObject);
+//            }
+////             cacheGuid.put(name, parseObject.getGuid());
+//            if (parseObject.getObjectIdP() != null) {
+//                cacheObjId.put(name, parseObject.getObjectIdP());
+//            }
+//            cacheGuid.put(name, parseObject.getGuid());
+//        }
+//</editor-fold>
     }
 
     //    private synchronized ParseObject cacheGetNamed(String name) {
@@ -301,6 +338,14 @@ public class DAO {
 //</editor-fold>
     }
 
+    public ParseObject cacheGetNamedFilterSort(String name) {
+        return cacheGetNamed(FILTER_PREFIX + name);
+    }
+
+    public ParseObject cacheGetNamedItemList(String name) {
+        return cacheGetNamed(ITEMLIST_PREFIX + name);
+    }
+
     /**
      * cache a special named list, accessible both via its name and (as usual)
      * via its objectId
@@ -323,10 +368,12 @@ public class DAO {
 //    private void cacheList(List<ParseObject> list) {
 //    private void cacheList(List<ParseObject> list) {
 //</editor-fold>
+//    private void cacheList(List<ParseObject> list) {
     private void cacheList(List list) {
         if (list == null) {
             return;
         }
+//        for (ParseObject o : list) {
         for (Object o : list) {
 //            if (true || o instanceof ParseObject) { // && o.isDataAvailable() //NOT necessary
 //                if (o instanceof WorkSlot) {
@@ -1829,54 +1876,341 @@ public class DAO {
     private List<Item> cachedOverdue;
     private Date cachedExpiryOverdue;
 
-    public List<Item> getOverdue() {
-        if (cachedOverdue != null && cachedOverdue != null && System.currentTimeMillis() <= cachedExpiryOverdue.getTime()) {
-            return cachedOverdue;
-        } else {
-            Date startOfToday = MyDate.getStartOfToday();
-//        Date startOfOverdueInterval = new Date(startOfToday.getTime() - MyPrefs.overdueLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
-            Date startOfOverdueInterval = getOverdueStartDate();
-
-            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
-            setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
-            setupItemQueryWithIndirectAndGuids(query);
-            query.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startOfOverdueInterval);
-            query.whereLessThan(Item.PARSE_DUE_DATE, startOfToday);
-
-            try {
-                List results = query.find();
-                fetchListElementsIfNeededReturnCachedIfAvail(results);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public List<Item> getOverdueOLD(boolean forceReloadFromParse) {
+//        refreshCachedList();
+//        if (cachedOverdue == null || forceReloadFromParse) {
+//
+//            ItemList tempItemList = (ItemList) cacheGetNamedItemList(name); //cahce: name -> objectIdP
+//            if (tempItemList != null) {
+//                tempItemList.updateTo(updatedList);
+//                Date startOfToday = MyDate.getStartOfToday();
+////        Date startOfOverdueInterval = new Date(startOfToday.getTime() - MyPrefs.overdueLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//                Date startOfOverdueInterval = getOverdueStartDate();
+//
+//                ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//                setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
+//                setupItemQueryWithIndirectAndGuids(query);
+//                query.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, startOfOverdueInterval);
+//                query.whereLessThan(Item.PARSE_DUE_DATE, startOfToday);
+//
+//                try {
+//                    List results = query.find();
+//                    fetchListElementsIfNeededReturnCachedIfAvail(results);
+//                    sortOverdue(results);
+//                    cachedOverdue = results;
+//                    cachedExpiryOverdue = MyDate.getEndOfToday(); //valid until midnight
+//                    return results;
+//                } catch (ParseException ex) {
+//                    Log.e(ex);
+//                }
+//            }
+//            return cachedOverdue;
+//        } else {
+//            return null;//new ItemList();
+//        }
+//    }
+//    public ItemList getOverdue(boolean forceReloadFromParse) {
+//        String name = DAO.SYSTEM_LIST_OVERDUE;
+//        refreshCachedList();
+//        ItemList tempItemList = (ItemList) cacheGetNamedItemList(name); //cahce: name -> objectIdP
+//        if (tempItemList == null) {
+//            tempItemList = ItemList.makeSystemList(name);
+//            ASSERT.that(!tempItemList.isExpired(), "a new system ist should always be expired to ensure load of data from Parse");
+//        }
+//        if (tempItemList.isExpired() || forceReloadFromParse) {
+//            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//            setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
+//            setupItemQueryWithIndirectAndGuids(query);
+//            query.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, getOverdueStartDate());
+//            query.whereLessThan(Item.PARSE_DUE_DATE, MyDate.getStartOfToday());
+//            try {
+//                List results = query.find();
+//                fetchListElementsIfNeededReturnCachedIfAvail(results);
+//                sortOverdue(results);
+//                tempItemList.setList(results);
+//                tempItemList.setExpireDate(MyDate.getEndOfToday());
+//                cachedExpiryOverdue = MyDate.getEndOfToday(); //valid until midnight
+//                return tempItemList;
+//            } catch (ParseException ex) {
+//                Log.e(ex);
+//            }
+//            cachePut(tempItemList); //systemLists are purely local, so only save to cache, not to Parse
+//        }
+//        return tempItemList;
+//    }
+//</editor-fold>
+    private void sortSystemList(String name, List results) {
+        switch (name) {
+            case SYSTEM_LIST_ALL:
+                break;
+            case SYSTEM_LIST_DIARY:
+                sortCreationLog(results);
+                break;
+            case SYSTEM_LIST_LOG:
+                sortCompletionLog(results);
+                break;
+            case SYSTEM_LIST_NEXT:
+                sortNext(results);
+                break;
+            case SYSTEM_LIST_OVERDUE:
                 sortOverdue(results);
-                cachedOverdue = results;
-                cachedExpiryOverdue = MyDate.getEndOfToday(); //valid until midnight
-                return results;
-            } catch (ParseException ex) {
-                Log.e(ex);
-            }
+                break;
+            case SYSTEM_LIST_PROJECTS:
+                sortAllProjects(results);
+                break;
+            case SYSTEM_LIST_TODAY:
+//                sortToday(cachedToday);
+                sortToday(results);
+                break;
+            case SYSTEM_LIST_TOUCHED:
+                sortTouchedLog(results);
+                break;
+            case SYSTEM_LIST_WORKSLOTS:
+                WorkSlot.sortWorkSlotList(results);
+                break;
+            case SYSTEM_LIST_STATISTICS:
+                //no sorting done here since done by Statistics screen
+                break;
         }
-        return null;//new ItemList();
     }
 
-    private void checkAndRefreshOverdue(Item element, boolean delete) {
-        if (cachedOverdue != null) {
-            if (delete) {
-                cachedOverdue.remove(element);
-            } else {
-                Date startDate = getOverdueStartDate();
-                Date startOfToday = MyDate.getStartOfToday();
-                if (!cachedOverdue.contains(element)) {
-                    if (element.getDueDate().getTime() >= startDate.getTime() && element.getDueDate().getTime() < startOfToday.getTime()) {
-                        cachedOverdue.add(element);
-                        sortOverdue(cachedOverdue);
-                    }
-                } else if (element.getDueDate().getTime() < startDate.getTime() || element.getDueDate().getTime() > startOfToday.getTime()) {
-                    cachedOverdue.remove(element);
+    /**
+     *
+     * @param results
+     * @param onlyFirst if the list contains all potentially expired workslots
+     * at the beginning of list (eg sorted list of workslots only) this avoids
+     * running through the full list. If the list may contain workslots in other
+     * positions, e.g. the Today list, this option should NOT be used
+     */
+//    private void removeExpiredWorkSlots(String name, List results, boolean onlyFirst) {
+    private void removeExpiredWorkSlots(String name, List results) {
+//        if (name.equals(SYSTEM_LIST_WORKSLOTS)) {
+//                    removeExpiredWorkSlots(results, true);
+//                } else if (name.equals(SYSTEM_LIST_TODAY)) {
+//                    removeExpiredWorkSlots(results, false);
+//                }
+        if (name.equals(SYSTEM_LIST_WORKSLOTS)) {
+            while (!results.isEmpty() && results.get(0) instanceof WorkSlot && ((WorkSlot) results.get(0)).getEndTimeD().getTime() < System.currentTimeMillis()) {
+                results.remove(0);
+            }
+        } else if (name.equals(SYSTEM_LIST_TODAY)) {
+            int i = 0;
+            while (i < results.size()) {
+                if (results.get(i) instanceof WorkSlot && ((WorkSlot) results.get(i)).getEndTimeD().getTime() < System.currentTimeMillis()) {
+                    results.remove(i);
+                } else {
+                    i++;
                 }
             }
         }
     }
 
+    public static Date getStatisticsStartDate() {
+//        return MyDate.getStartOfDay(new MyDate(MyDate.getEndOfToday().getTime() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS));
+        return new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS);
+    }
+
+    public static Date getStatisticsEndDate() {
+        return new MyDate(MyDate.getEndOfToday().getTime() - MyPrefs.statisticsScreenDaysBeforeTodayToExclude.getInt() * MyDate.DAY_IN_MILLISECONDS);
+    }
+
+    public ItemList fetchDynamicNamedItemList(String name, boolean forceReloadFromParse) {
+//        String name = DAO.SYSTEM_LIST_OVERDUE;
+//        refreshCachedList();
+        ItemList tempItemList = (ItemList) cacheGetNamedItemList(name); //cahce: name -> objectIdP
+        if (tempItemList == null) {
+            tempItemList = ItemList.makeSystemList(name);
+            ASSERT.that(tempItemList.isExpired(), "a new system list should always be expired to ensure load of data from Parse");
+        }
+        if (tempItemList.isExpired() || forceReloadFromParse) {
+            if (Config.TEST) {
+                Log.p("update dynamic list=" + name + "; expires=" + MyDate.formatDateNew(tempItemList.getExpireDate()));
+            }
+            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+            setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
+            setupItemQueryWithIndirectAndGuids(query);
+            List results = null;
+            switch (name) {
+                case SYSTEM_LIST_ALL:
+                    results = getAllItems(false);
+                    break;
+                case SYSTEM_LIST_DIARY:
+                    query.whereGreaterThanOrEqualTo(Item.PARSE_CREATED_AT, getCreationLogStartDate());
+                    break;
+                case SYSTEM_LIST_LOG:
+                    query.whereEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //include if has subtaskss
+                    query.whereGreaterThanOrEqualTo(Item.PARSE_COMPLETED_DATE, getCompletionLogStartDate());
+                    break;
+                case SYSTEM_LIST_NEXT:
+                    query.whereGreaterThan(Item.PARSE_DUE_DATE, MyDate.getEndOfToday());
+                    query.whereLessThanOrEqualTo(Item.PARSE_DUE_DATE, getNextEndDate()); //+1 since Next always start tomorrow
+                    break;
+                case SYSTEM_LIST_OVERDUE:
+                    query.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, getOverdueStartDate());
+                    query.whereLessThan(Item.PARSE_DUE_DATE, MyDate.getStartOfToday());
+                    break;
+                case SYSTEM_LIST_PROJECTS:
+                    query.whereExists(Item.PARSE_SUBTASKS); //include if has subtaskss
+//                    if (!includeSubProjects)
+                    query.whereDoesNotExist(Item.PARSE_OWNER_ITEM); //exclude if owned by another item (is a subtasks)
+                    break;
+                case SYSTEM_LIST_TODAY:
+                    results = getToday();
+                    break;
+                case SYSTEM_LIST_TOUCHED:
+                    query.whereGreaterThanOrEqualTo(Item.PARSE_UPDATED_AT, getTouchedLogStartDate());
+                    break;
+                case SYSTEM_LIST_WORKSLOTS:
+//                    results=getWorkSlotsFromCacheOrParse(cacheExpiryDate, cacheExpiryDate, forceReloadFromParse);
+                    results = getWorkSlotsFromParse(new MyDate(), new MyDate(MyDate.MAX_DATE)); //from now to eternity
+                    break;
+                case SYSTEM_LIST_STATISTICS:
+                    query.whereEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //include if has subtaskss
+//                    query.whereGreaterThanOrEqualTo(Item.PARSE_COMPLETED_DATE, MyDate.getStartOfDay(new MyDate(MyDate.getEndOfToday().getTime()
+//                            - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS)));
+//                    query.whereLessThanOrEqualTo(Item.PARSE_COMPLETED_DATE,
+//                            new MyDate(MyDate.getEndOfToday().getTime() - MyPrefs.statisticsScreenDaysBeforeTodayToExclude.getInt() * MyDate.DAY_IN_MILLISECONDS)); //end of interval is now (*end* of last day in interval)
+                    query.whereGreaterThanOrEqualTo(Item.PARSE_COMPLETED_DATE, getStatisticsStartDate());
+                    query.whereLessThanOrEqualTo(Item.PARSE_COMPLETED_DATE, getStatisticsEndDate()); //end of interval is now (*end* of last day in interval)
+//            if (onlyLeafTasks) 
+//                query.whereDoesNotExist(Item.PARSE_SUBTASKS);
+                    break;
+            }
+            if (results == null) {
+                try {
+                    results = query.find();
+                } catch (ParseException ex) {
+                    Log.e(ex);
+                }
+            }
+            if (results != null) {
+                fetchListElementsIfNeededReturnCachedIfAvail(results);
+                sortSystemList(name, results); //sort
+//                if (name.equals(SYSTEM_LIST_WORKSLOTS)) {
+//                    removeExpiredWorkSlots(results, true);
+//                } else if (name.equals(SYSTEM_LIST_TODAY)) {
+//                    removeExpiredWorkSlots(results, false);
+//                };
+                removeExpiredWorkSlots(name, results); //NB - currently optimized for sorted list of workslots so MUST sort *before* calling
+                tempItemList.setList(results);
+                tempItemList.setExpireDate(MyDate.getEndOfToday());
+                cachePut(tempItemList); //systemLists are purely local, so only save to cache, not to Parse
+            }
+        }
+//        set list icon and font here to make sure they are always set for dynamic lists (since the icon is not persisted)
+        tempItemList.setItemListIcon(MyForm.ScreenType.getListIcon(name));
+        tempItemList.setItemListIconFont(MyForm.ScreenType.getListFont(name));
+        return tempItemList;
+    }
+
+    private void checkAndRefreshSystemList(String name, ItemAndListCommonInterface element, boolean delete) {
+        ItemList itemList = fetchDynamicNamedItemList(name, false);
+        List elements = itemList.getListFull();
+        if (delete) {
+            elements.remove(element);
+            itemList.setList(elements);
+        } else {
+            boolean add;
+            if (element instanceof Item) {
+                Item item = (Item) element;
+                switch (name) {
+                    case SYSTEM_LIST_ALL:
+                        add = true;//add all tasks (unless they're already in the list
+                        break;
+                    case SYSTEM_LIST_DIARY:
+                        add = item.getCreatedAt() == null || item.getCreatedAt().getTime() >= getCreationLogStartDate().getTime();
+                        break;
+                    case SYSTEM_LIST_LOG:
+                        add = item.getCompletedDate().getTime() >= getCompletionLogStartDate().getTime();
+                        break;
+                    case SYSTEM_LIST_NEXT:
+                        add = item.getDueDate().getTime() >= MyDate.getEndOfToday().getTime() && item.getDueDate().getTime() <= getNextEndDate().getTime();
+                        break;
+                    case SYSTEM_LIST_OVERDUE:
+                        add = item.getDueDate().getTime() >= getOverdueStartDate().getTime() && item.getDueDate().getTime() < MyDate.getStartOfToday().getTime();
+                        break;
+                    case SYSTEM_LIST_PROJECTS:
+                        add = item.isProject();
+                        break;
+                    case SYSTEM_LIST_TODAY:
+                        add = item.hasTodayDates();
+                        break;
+                    case SYSTEM_LIST_TOUCHED:
+                        add = (item.getEditedDate() == null || item.getEditedDate().getTime() >= getEditedLogStartDate().getTime());
+                        break;
+                    case SYSTEM_LIST_STATISTICS:
+                        add = (item.getCompletedDate().getTime() >= getStatisticsStartDate().getTime()
+                                && item.getCompletedDate().getTime() <= getStatisticsEndDate().getTime());
+                        break;
+                    default:
+                        add = false;
+                }
+            } else if (element instanceof WorkSlot) {
+                WorkSlot workSlot = (WorkSlot) element;
+                add = workSlot.getEndTime() >= System.currentTimeMillis();//&& !cachedAllActiveWorkSlots.contains(workSlot);
+            } else {
+                add = false;
+                ASSERT.that("shouldn't happen, element=" + element);
+            }
+            if (add) {
+//                    Collections.binarySearch(itemList, add, c)
+                if (!elements.contains(element)) { //optimization: this will first compare element to everything in the list, and then sort the list: would be more efficient to search for place to insert and only insert if not already there
+                    elements.add(element);
+                    sortSystemList(name, elements);
+                    removeExpiredWorkSlots(name, elements); //NB - currently optimized for sorted list of workslots so MUST sort *before* calling
+                    itemList.setList(elements);
+//                    cachePut(itemList);
+                }
+            } else {
+                elements.remove(element);
+                removeExpiredWorkSlots(name, elements); //NB - currently optimized for sorted list of workslots so MUST sort *before* calling
+                itemList.setList(elements);
+            }
+        }
+        cachePut(itemList);
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
+//    private void checkAndRefreshOverdueOLD(Item element, boolean delete) {
+//        ItemList overdue = getOverdue(false);
+//        if (overdue != null) {
+//            if (delete) {
+//                overdue.remove(element);
+//            } else {
+//                Date startDate = getOverdueStartDate();
+//                Date startOfToday = MyDate.getStartOfToday();
+//                if (!overdue.contains(element)) {
+//                    if (element.getDueDate().getTime() >= startDate.getTime() && element.getDueDate().getTime() < startOfToday.getTime()) {
+//                        overdue.add(element);
+//                        sortOverdue(overdue);
+//                    }
+//                } else if (element.getDueDate().getTime() < startDate.getTime() || element.getDueDate().getTime() > startOfToday.getTime()) {
+//                    overdue.remove(element);
+//                }
+//            }
+//        }
+//    }
+//    private void checkAndRefreshOverdue(Item element, boolean delete) {
+//        ItemList itemList = getOverdue(false);
+//        List overdue = itemList.getListFull();
+//        if (delete) {
+//            overdue.remove(element);
+//        } else {
+//            Date startDate = getOverdueStartDate();
+//            Date startOfToday = MyDate.getStartOfToday();
+//            if (element.getDueDate().getTime() >= startDate.getTime() && element.getDueDate().getTime() < startOfToday.getTime()) {
+//                if (!overdue.contains(element)) {
+//                    overdue.add(element);
+//                    sortOverdue(overdue);
+//                    itemList.setList(overdue);
+//                }
+//            } else {
+//                overdue.remove(element);
+//                itemList.setList(overdue);
+//            }
+//        }
+//    }
 //    public ItemList getOverdueXXX(ItemList existingListToUpdate) {
 //        Date startOfToday = MyDate.getStartOfToday();
 //        Date startOfOverdueInterval = new Date(startOfToday.getTime() - MyPrefs.overdueLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
@@ -2020,59 +2354,58 @@ public class DAO {
     private List<Item> cachedNext;
     private Date cachedExpiryNext;
 
+//<editor-fold defaultstate="collapsed" desc="//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * returns future Undone tasks with a future StartDate or DueDate
      *
      * @return
      */
-    public List<Item> getNext() {
-        if (cachedNext != null && cachedNext != null && System.currentTimeMillis() <= cachedExpiryNext.getTime()) {
-            return cachedNext;
-        } else {
-            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
-            setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
-//            Date startOfToday = MyDate.getStartOfToday();
-//            query.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS));
-//            query.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, MyDate.getEndOfToday());
-            query.whereGreaterThan(Item.PARSE_DUE_DATE, MyDate.getEndOfToday());
-            Date nextEndDate = getNextEndDate();
-//            query.whereLessThan(Item.PARSE_DUE_DATE, new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * (1 + MyPrefs.nextInterval.getInt()))); //+1 since Next always start tomorrow
-            query.whereLessThanOrEqualTo(Item.PARSE_DUE_DATE, nextEndDate); //+1 since Next always start tomorrow
-            setupItemQueryWithIndirectAndGuids(query);
-            List results = null;
-            try {
-                results = query.find();
-                fetchListElementsIfNeededReturnCachedIfAvail(results);
-                sortNext(results);
-                cachedNext = results;
-                cachedExpiryNext = MyDate.getEndOfToday(); //valid until midnight
-                return results;
-            } catch (ParseException ex) {
-                Log.e(ex);
-            }
-        }
-        return null;
-    }
-
-    private void checkAndRefreshNext(Item element, boolean delete) {
-        if (cachedNext != null) {
-            if (delete) {
-                cachedNext.remove(element);
-            } else {
-                Date endDate = getNextEndDate();
-                if (!cachedNext.contains(element)) {
-                    if (element.getDueDate().getTime() >= MyDate.getEndOfToday().getTime() && element.getDueDate().getTime() <= endDate.getTime()) {
-                        cachedNext.add(element);
-                        sortNext(cachedNext);
-                    }
-                } else if (element.getDueDate().getTime() > endDate.getTime() || element.getDueDate().getTime() < MyDate.getEndOfToday().getTime()) {
-                    cachedNext.remove(element);
-                }
-            }
-        }
-    }
-
-//<editor-fold defaultstate="collapsed" desc="//<editor-fold defaultstate="collapsed" desc="comment">
+//    public List<Item> getNextXXX() {
+//        if (cachedNext != null && cachedNext != null && System.currentTimeMillis() <= cachedExpiryNext.getTime()) {
+//            return cachedNext;
+//        } else {
+//            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//            setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
+////            Date startOfToday = MyDate.getStartOfToday();
+////            query.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS));
+////            query.whereGreaterThanOrEqualTo(Item.PARSE_DUE_DATE, MyDate.getEndOfToday());
+//            query.whereGreaterThan(Item.PARSE_DUE_DATE, MyDate.getEndOfToday());
+//            Date nextEndDate = getNextEndDate();
+////            query.whereLessThan(Item.PARSE_DUE_DATE, new Date(startOfToday.getTime() + MyDate.DAY_IN_MILLISECONDS * (1 + MyPrefs.nextInterval.getInt()))); //+1 since Next always start tomorrow
+//            query.whereLessThanOrEqualTo(Item.PARSE_DUE_DATE, nextEndDate); //+1 since Next always start tomorrow
+//            setupItemQueryWithIndirectAndGuids(query);
+//            List results = null;
+//            try {
+//                results = query.find();
+//                fetchListElementsIfNeededReturnCachedIfAvail(results);
+//                sortNext(results);
+//                cachedNext = results;
+//                cachedExpiryNext = MyDate.getEndOfToday(); //valid until midnight
+//                return results;
+//            } catch (ParseException ex) {
+//                Log.e(ex);
+//            }
+//        }
+//        return null;
+//    }
+//
+//    private void checkAndRefreshNext(Item element, boolean delete) {
+//        if (cachedNext != null) {
+//            if (delete) {
+//                cachedNext.remove(element);
+//            } else {
+//                Date endDate = getNextEndDate();
+//                if (!cachedNext.contains(element)) {
+//                    if (element.getDueDate().getTime() >= MyDate.getEndOfToday().getTime() && element.getDueDate().getTime() <= endDate.getTime()) {
+//                        cachedNext.add(element);
+//                        sortNext(cachedNext);
+//                    }
+//                } else if (element.getDueDate().getTime() > endDate.getTime() || element.getDueDate().getTime() < MyDate.getEndOfToday().getTime()) {
+//                    cachedNext.remove(element);
+//                }
+//            }
+//        }
+//    }
 //    public ItemList getCalendarXXX(ItemList existingListToUpdate) {
 ////        Calendar cal = Calendar.getInstance();
 ////        cal.set(Calendar.HOUR_OF_DAY, 0);
@@ -2269,7 +2602,8 @@ public class DAO {
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        cachePut(CategoryList.CLASS_NAME, listCached);
+//        cachePut(CategoryList.CLASS_NAME, listCached);
+        cachePut(listCached); //named ref to CategoryList.CLASS_NAME now added automatically when caching
         return listCached;
     }
 
@@ -2588,7 +2922,8 @@ public class DAO {
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        cachePut(ItemListList.CLASS_NAME, itemListListCached);
+//        cachePut(ItemListList.CLASS_NAME, itemListListCached);
+        cachePut(itemListListCached);
         return itemListListCached;
     }
 
@@ -2752,8 +3087,8 @@ public class DAO {
 //                fetchListElementsIfNeededReturnCachedIfAvail(templateList); //get the right elements  
             } else { //initialise the templateList for the first time
                 templateList = new TemplateList();
-                templateList.setText(Item.TEMPLATE_LIST);
-                templateList.setSystemName(Item.TEMPLATE_LIST);
+//                templateList.setText(Item.TEMPLATE_LIST);
+//                templateList.setSystemName(Item.TEMPLATE_LIST);
 //                saveNew((ParseObject) templateList); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
 //                saveNewTriggerUpdate();
 //                saveToParseNow((ParseObject) templateList); //always save so new lists can be assigned to it //CANNOT save in background since must have a parseId assigned before caching!!
@@ -2762,7 +3097,8 @@ public class DAO {
         } catch (ParseException ex) {
             Log.e(ex);
         }
-        cachePut(TemplateList.CLASS_NAME, templateList);
+//        cachePut(TemplateList.CLASS_NAME, templateList);
+        cachePut(templateList);
         return templateList;
     }
 
@@ -2873,7 +3209,6 @@ public class DAO {
 //        return null;
 //    }
 //    public TimerInstance getTimerInstanceList(boolean forceLoadFromParse) {
-////</editor-fold>
 //    public List<TimerInstance> getTimerInstanceList() {
 ////        if (!forceLoadFromParse && (timerStack = (TimerInstance) cacheGet(TemplateList.CLASS_NAME)) != null) {
 ////            return timerStack;
@@ -2913,6 +3248,7 @@ public class DAO {
 //        }
 //        return results;
 //    }
+////</editor-fold>
     public List<TimerInstance2> getTimerInstanceList2() {
 //        if (!forceLoadFromParse && (timerStack = (TimerInstance) cacheGet(TemplateList.CLASS_NAME)) != null) {
 //            return timerStack;
@@ -3012,10 +3348,10 @@ public class DAO {
      * @param defaultFilter default filter to use if none was stored in Parse
      * @return
      */
-    public FilterSortDef getSystemFilterSortFromParse(ScreenType screenType) {
-        return getSystemFilterSortFromParse(screenType.getSystemName(), ItemList.getSystemDefaultFilter(screenType));
-    }
-
+//    public FilterSortDef getSystemFilterSortFromParseXXX(ScreenType screenType) {
+////        return getSystemFilterSortFromParse(screenType.getSystemName(), ItemList.getSystemDefaultFilter(screenType));
+//        return getSystemFilterSortFromParse(screenType.getSystemName(), getSystemDefaultFilter(screenType));
+//    }
     /**
      * returns filter with systemName or defaultFilter if systemName is not
      * defined or no filter with that name is found
@@ -3024,9 +3360,43 @@ public class DAO {
      * @param defaultFilter
      * @return
      */
-    public FilterSortDef getSystemFilterSortFromParse(String systemNameN, FilterSortDef defaultFilter) {
+//    public FilterSortDef getSystemFilterSortFromParseOLD(String systemNameN, FilterSortDef defaultFilter) {
+//        if (systemNameN == null || systemNameN.isEmpty()) {
+//            return defaultFilter;
+//        } else {
+//            ParseQuery<FilterSortDef> query = ParseQuery.getQuery(FilterSortDef.CLASS_NAME);
+//            ASSERT.that(systemNameN != null && !systemNameN.isEmpty());
+//            query.whereEqualTo(FilterSortDef.PARSE_SYSTEM_NAME, systemNameN);
+//            List<FilterSortDef> results = null;
+//            try {
+//                results = query.find();
+//            } catch (ParseException ex) {
+//                Log.e(ex);
+//            }
+//            if (Config.TEST) {
+//                int s = results.size();
+//                ASSERT.that(s <= 1, () -> "too many filters (" + s + ") with reserved name: " + systemNameN);
+//            }
+//            if (results.size() > 0) {
+//                return (FilterSortDef) fetchIfNeededReturnCachedIfAvail(results.get(0));
+//            } else {
+//                FilterSortDef newSystemFilter;
+////                if (false) {
+////                    newSystemFilter = FilterSortDef.getDefaultFilter();
+////                    newSystemFilter.setSystemName(systemNameN);
+////                } else {
+//                    newSystemFilter = defaultFilter;
+//                    ASSERT.that(defaultFilter == null || defaultFilter.getSystemName() == null || defaultFilter.getSystemName().isEmpty() || Objects.equals(defaultFilter.getSystemName(), systemNameN),
+//                            () -> "changing systemName, from filter.getSystemName()=" + defaultFilter.getSystemName() + "; to systemNane=" + systemNameN);
+//                    newSystemFilter.setSystemName(systemNameN);
+////                }
+//                return newSystemFilter;
+//            }
+//        }
+//    }
+    public FilterSortDef getSystemFilterSortFromParseN(String systemNameN) {
         if (systemNameN == null || systemNameN.isEmpty()) {
-            return defaultFilter;
+            return null;
         } else {
             ParseQuery<FilterSortDef> query = ParseQuery.getQuery(FilterSortDef.CLASS_NAME);
             ASSERT.that(systemNameN != null && !systemNameN.isEmpty());
@@ -3044,17 +3414,7 @@ public class DAO {
             if (results.size() > 0) {
                 return (FilterSortDef) fetchIfNeededReturnCachedIfAvail(results.get(0));
             } else {
-                FilterSortDef newSystemFilter;
-                if (false) {
-                    newSystemFilter = FilterSortDef.getDefaultFilter();
-                    newSystemFilter.setSystemName(systemNameN);
-                } else {
-                    newSystemFilter = defaultFilter;
-                    ASSERT.that(defaultFilter == null || defaultFilter.getSystemName() == null || defaultFilter.getSystemName().isEmpty() || Objects.equals(defaultFilter.getSystemName(), systemNameN),
-                            () -> "changing systemName, from filter.getSystemName()=" + defaultFilter.getSystemName() + "; to systemNane=" + systemNameN);
-                    newSystemFilter.setSystemName(systemNameN);
-                }
-                return newSystemFilter;
+                return null;
             }
         }
     }
@@ -3064,23 +3424,26 @@ public class DAO {
 //            return inbox;
 //        } //NO need for caching since this is done in the instance/singleton
 //*named* lists are cached twice: as "name"->objectId and as usual: objectId->parseObject
-        ItemList temp = (ItemList) cacheGetNamed(systemName); //cahce: name -> objectIdP
+//        ItemList temp = (ItemList) cacheGetNamed(systemName); //cahce: name -> objectIdP
+        ItemList temp = (ItemList) cacheGetNamedItemList(systemName); //cahce: name -> objectIdP
+        ItemList inbox;
 //        Object cachedObjIdStr = cache.get(name);
 //        if (cachedObjIdStr != null) {
 //            return (ItemList) cache.get(cachedObjIdStr); //cahce: name -> objectIdP
         if (temp != null) {
-            return temp;
+//            return temp;
+            inbox = temp;
         } else {
-            ItemList inbox = getItemListWithSystemNameFromParse(systemName);
+            inbox = getItemListWithSystemNameFromParse(systemName);
             if (inbox == null) { //if no Inbox already saved, initialize it with existing motherless tasks
-                ItemList newInbox = new ItemList();
+                inbox = new ItemList();
 //                newInbox.setSystemList(true);
-                newInbox.setSystemName(systemName);
-                newInbox.setText(visibleName);
-                newInbox.setUseDefaultFilter(true);
+                inbox.setSystemName(systemName);
+                inbox.setText(visibleName);
+                inbox.setUseDefaultFilter(true);
                 List itemsWithoutOwners = getAllItemsWithoutOwners();
                 for (Item item : (List<Item>) itemsWithoutOwners) {
-                    newInbox.addToList(item);
+                    inbox.addToList(item);
                 }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                saveAndWait((ParseObject) inbox); //save first to set ObjectId (for when adding tasks in for loop, saveAndWait to ensure an objectId is assigned before caching below)
@@ -3095,8 +3458,9 @@ public class DAO {
 //                saveNew((ParseObject) newInbox);
 //                saveNewTriggerUpdate();
 //                saveToParseNow((ParseObject) newInbox);
-                saveToParseAndWait((ParseObject) newInbox);
-                cachePut(systemName, newInbox);
+                saveToParseAndWait((ParseObject) inbox);
+//                cachePut(systemName, newInbox);
+                cachePut(inbox);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //                if (false) {
 //                    saveInBackground(itemsWithoutOwners); //save all items who now have their Inbox owner assigned
@@ -3104,7 +3468,7 @@ public class DAO {
 //            saveInBackground((ParseObject)inbox); //always save so new lists can be assigned to it
 //            saveAndWait((ParseObject)inbox); //always save so new lists can be assigned to it
 //</editor-fold>
-                return newInbox;
+//                return newInbox;
             } else { //check if list is already cached, use that object instance instead of the one returned by getSpecialNamedItemListFromParse
                 Object temp2 = cacheGet(inbox);
                 ASSERT.that(temp2 instanceof ItemList, () -> "Inbox already cached but without systemName??!!, already cached inbox=" + temp2);
@@ -3112,15 +3476,22 @@ public class DAO {
                 if (temp2 instanceof ItemList) {
                     inbox = (ItemList) temp2; //reuse an already cached list
 //                    cache.put(name, inbox.getObjectIdP()); //can't be sure it's already cached under name "Inbox"
-                    cachePut(systemName, inbox);
-                } else {
-//                    cache.put(name, inbox.getObjectIdP());
-//                    cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
-                    cachePut(systemName, inbox);
+//                    cachePut(systemName, inbox);
+//                    cachePut( inbox);
                 }
-                return inbox;
+//                else {
+////                    cache.put(name, inbox.getObjectIdP());
+////                    cachePut(inbox); //may fetchFromCacheOnly by objectId via getOwner
+////                    cachePut(systemName, inbox);
+//                }
+                cachePut(inbox);
+//                return inbox;
             }
         }
+        //set list icon and font here to make sure they are always set for dynamic lists (since the icon is not persisted)
+        inbox.setItemListIcon(INBOX.getIcon());
+        inbox.setItemListIconFont(INBOX.getFont());
+        return inbox;
     }
 
 //    public final static String SYSTEM_LIST_OVERDUE = ScreenType.OVERDUE.name(); //"Overdue";
@@ -3129,16 +3500,19 @@ public class DAO {
 //    public final static String SYSTEM_LIST_LOG = ScreenType.COMPLETION_LOG.name(); //"Log";
 //    public final static String SYSTEM_LIST_DIARY = ScreenType.CREATION_LOG.name(); //"Diary";
 //    public final static String SYSTEM_LIST_TOUCHED = ScreenType.TOUCHED.name(); //"Touched";
-    public final static String SYSTEM_LIST_OVERDUE = "Overdue";
+    public final static String SYSTEM_LIST_OVERDUE = "Overdue"; //these are *system* names, not localized and must never be changed!
     public final static String SYSTEM_LIST_TODAY = "Today";
     public final static String SYSTEM_LIST_NEXT = "Next";
-    public final static String SYSTEM_LIST_LOG = "Log";
-    public final static String SYSTEM_LIST_DIARY = "Diary";
-    public final static String SYSTEM_LIST_TOUCHED = "Touched";
+//    public final static String SYSTEM_LIST_LOG = "Log"; //log of completed tasks "Done Log"
+    public final static String SYSTEM_LIST_LOG = "Log"; //log of completed tasks "Done Log"
+    public final static String SYSTEM_LIST_DIARY = "Diary"; //list of all tasks in order created, any status
+    public final static String SYSTEM_LIST_TOUCHED = "Touched"; //list of recently edited tasks (*not* changed since changed include update via inheritance or aggregration)
     public final static String SYSTEM_LIST_ALL = "All";
     public final static String SYSTEM_LIST_PROJECTS = "Projects";
     public final static String SYSTEM_LIST_TEMPLATES = "Templates";
     public final static String SYSTEM_LIST_WORKSLOTS = "Workslots";
+    public final static String SYSTEM_LIST_STATISTICS = "Statistics";
+//    public final static String SYSTEM_LIST_COMPLETION = "Completion";
 //                      CategoryList.CLASS_NAME);
 //            } else if (parseObject instanceof ItemListList) {
 //                cache.delete(ItemListList.CLASS_NAME);
@@ -3171,113 +3545,128 @@ public class DAO {
      * @param defaultFilterSortDef
      * @return
      */
-    public ItemList fetchDynamicNamedItemList(String name, String visibleName, FilterSortDef defaultFilterSortDef, boolean forceReloadFromParse) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        ItemList temp = (ItemList) cacheGetNamed(name); //cahce: name -> objectIdP
-//        if (temp == null) {
-//            //if not cached, try to get from Parse:
-//            temp = getSpecialNamedItemListFromParse(name); //fetch from parse
-//            if (temp == null) {
-//                //if not on Parse, create a new - this will only be done ONCE for every user for each list
-//                temp = new ItemList();
-//                temp.setText(visibleName);
-//                temp.setSystemName(name);
-//                temp.setFilterSortDef(filterSortDef);
-////                saveNew(true, filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
-//                saveNew(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
-//                saveNewExecuteUpdate();
-////                cache.put(name, temp);
-////                cache.put(name, temp.getObjectIdP());
-//                cachePut(name, temp);
-//            } else { //if list is already cached, use that object instance instead of the one returned by getSpecialNamedItemListFromParse
-//                Object temp2 = cacheGet(temp);
-//                ASSERT.that(temp2 instanceof ItemList, "cached named list is NOT an ItemList, temp2=" + temp2);
-//                if (temp2 instanceof ItemList) {
-//                    temp = (ItemList) temp2; //reuse an already cached list
-////                    cache.put(name, temp.getObjectIdP());
-//                    cachePut(name, temp);
-//                }
-//            }
-//        }
-//</editor-fold>
-//        List<ItemAndListCommonInterface> updatedList = null;
-        List updatedList = null;
-        if (forceReloadFromParse || !MyPrefs.cacheDynamicLists.getBoolean()) {
-            switch (name) {
-                case SYSTEM_LIST_OVERDUE:
-                    updatedList = getOverdue();
-                    break;
-                case SYSTEM_LIST_TODAY:
-                    updatedList = getToday();
-                    break; //unreachable statement!!
-                case SYSTEM_LIST_NEXT:
-                    updatedList = getNext();
-                    break; //unreachable statement!!
-                case SYSTEM_LIST_LOG:
-                    updatedList = getCompletionLog();
-                    break;
-                case SYSTEM_LIST_DIARY:
-                    updatedList = getCreationLog();
-                    break;
-                case SYSTEM_LIST_TOUCHED:
-                    updatedList = getTouchedLog();
-                    break;
-                case SYSTEM_LIST_ALL:
-                    updatedList = getAllItems();
-                    break;
-                case SYSTEM_LIST_PROJECTS:
-                    updatedList = getAllProjects();
-                    break;
-                default:
-                    ASSERT.that(false, "unhandled case in DAO.fetchDynamicNamedItemList, name=" + name + ";visibleName=" + visibleName);
-            }
-        }
-
-        ItemList tempItemList;
-//        if (true || MyPrefs.cacheDynamicLists.getBoolean()) {
-        tempItemList = (ItemList) cacheGetNamed(name); //cahce: name -> objectIdP
-        if (tempItemList != null) {
-            tempItemList.updateTo(updatedList);
-            tempItemList.setFilterSortDef(defaultFilterSortDef); //hack: override whatever earlier default filter was referenced, but not saved(
-//            cachePut(defaultFilterSortDef);
-            if (false) { //DON'T put a direct link from here, already done first time cachePut(name, elt) is called 
-                cachePut(name, tempItemList);
-            }
-        } else {
-//            temp = new ItemList(updatedList);
-            tempItemList = new ItemList(updatedList);
-            tempItemList.setText(visibleName);
-            tempItemList.setSystemName(name);
-            tempItemList.setFilterSortDef(defaultFilterSortDef);
-            tempItemList.setNoSave(true); //don't save dynamic lists to Parse (only locally!)
-            if (SYSTEM_LIST_LOG.equals(name)) {
-                tempItemList.setShowNumberDoneTasks(true);
-                tempItemList.setShowNumberUndoneTasks(false);
-                tempItemList.setShowActual(true);
-            }
-//            saveToParseAndWait(defaultFilterSortDef, tempItemList); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
-            if (false) {
-                saveToParseAndWait(tempItemList); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
-            }
-            cachePut(defaultFilterSortDef);
-            cachePut(name, tempItemList);
-        }
-//        } else {
-//            tempItemList = new ItemList(updatedList);
-//            tempItemList.setText(visibleName);
-//            tempItemList.setSystemName(name);
-//            tempItemList.setFilterSortDef(defaultFilterSortDef);
-//            tempItemList.setNoSave(true); //don't save dynamic lists
-//        }
-//        saveNew(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
-//        saveNewTriggerUpdate();
-//        saveToParseNow(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
-//        saveToParseAndWait(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
-//        cachePut(name, temp);
-
-        return tempItemList;
+//    public ItemList fetchDynamicNamedItemList(String name, String visibleName, FilterSortDef defaultFilterSortDef, boolean forceReloadFromParse) {
+//    public ItemList fetchDynamicNamedItemList(String name, String visibleName, boolean forceReloadFromParse) {
+    public ItemList fetchDynamicNamedItemList(String name) {
+        return fetchDynamicNamedItemList(name, false);
     }
 
+//    public ItemList fetchDynamicNamedItemListOLD(String name, boolean forceReloadFromParse) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        ItemList temp = (ItemList) cacheGetNamed(name); //cahce: name -> objectIdP
+////        if (temp == null) {
+////            //if not cached, try to get from Parse:
+////            temp = getSpecialNamedItemListFromParse(name); //fetch from parse
+////            if (temp == null) {
+////                //if not on Parse, create a new - this will only be done ONCE for every user for each list
+////                temp = new ItemList();
+////                temp.setText(visibleName);
+////                temp.setSystemName(name);
+////                temp.setFilterSortDef(filterSortDef);
+//////                saveNew(true, filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+////                saveNew(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+////                saveNewExecuteUpdate();
+//////                cache.put(name, temp);
+//////                cache.put(name, temp.getObjectIdP());
+////                cachePut(name, temp);
+////            } else { //if list is already cached, use that object instance instead of the one returned by getSpecialNamedItemListFromParse
+////                Object temp2 = cacheGet(temp);
+////                ASSERT.that(temp2 instanceof ItemList, "cached named list is NOT an ItemList, temp2=" + temp2);
+////                if (temp2 instanceof ItemList) {
+////                    temp = (ItemList) temp2; //reuse an already cached list
+//////                    cache.put(name, temp.getObjectIdP());
+////                    cachePut(name, temp);
+////                }
+////            }
+////        }
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        List<ItemAndListCommonInterface> updatedList = null;
+//        List updatedList = null;
+//        if (forceReloadFromParse || !MyPrefs.cacheDynamicLists.getBoolean()) {
+//            switch (name) {
+//                case SYSTEM_LIST_OVERDUE:
+//                    updatedList = getOverdue(forceReloadFromParse);
+//                    break;
+//                case SYSTEM_LIST_TODAY:
+//                    updatedList = getToday();
+//                    break; //unreachable statement!!
+//                case SYSTEM_LIST_NEXT:
+//                    updatedList = getNext();
+//                    break; //unreachable statement!!
+//                case SYSTEM_LIST_LOG:
+//                    updatedList = getCompletionLog();
+//                    break;
+//                case SYSTEM_LIST_DIARY:
+//                    updatedList = getCreationLog();
+//                    break;
+//                case SYSTEM_LIST_TOUCHED:
+//                    updatedList = getTouchedLog();
+//                    break;
+//                case SYSTEM_LIST_ALL:
+//                    updatedList = getAllItems();
+//                    break;
+//                case SYSTEM_LIST_PROJECTS:
+//                    updatedList = getAllProjects();
+//                    break;
+//                case SYSTEM_LIST_WORKSLOTS:
+//                    updatedList = getAllProjects();
+//                    break;
+//                default:
+//                    ASSERT.that(false, "unhandled case in DAO.fetchDynamicNamedItemList, name=" + name);
+//            }
+//        }
+//
+//        ItemList tempItemList;
+////        if (true || MyPrefs.cacheDynamicLists.getBoolean()) {
+//        tempItemList = (ItemList) cacheGetNamedItemList(name); //cahce: name -> objectIdP
+//        if (tempItemList != null) {
+//            tempItemList.updateTo(updatedList);
+////            tempItemList.setFilterSortDef(defaultFilterSortDef); //hack: override whatever earlier default filter was referenced, but not saved(
+////            cachePut(defaultFilterSortDef);
+////            if (false) { //DON'T put a direct link from here, already done first time cachePut(name, elt) is called 
+////                cachePut(name, tempItemList);
+////            }
+//        } else {
+////            temp = new ItemList(updatedList);
+////            tempItemList = new ItemList(updatedList);
+////            tempItemList.setText(visibleName);
+////            tempItemList.setSystemName(name);
+//////            tempItemList.setFilterSortDef(defaultFilterSortDef);
+////            tempItemList.setNoSave(true); //don't save dynamic lists to Parse (only locally!)
+////            if (SYSTEM_LIST_LOG.equals(name)) {
+////                tempItemList.setShowNumberDoneTasks(true);
+////                tempItemList.setShowNumberUndoneTasks(false);
+////                tempItemList.setShowActual(true);
+////            }
+////            saveToParseAndWait(defaultFilterSortDef, tempItemList); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+////            if (false) {
+////                saveToParseAndWait(tempItemList); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+////            }
+////            cachePut(defaultFilterSortDef);
+////            cachePut(name, tempItemList);
+//            tempItemList = ItemList.makeSystemList(name, updatedList);
+//            cachePut(tempItemList); //systemLists are purely local, so only save to cache, not to Parse
+//        }
+////</editor-fold>
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        } else {
+////            tempItemList = new ItemList(updatedList);
+////            tempItemList.setText(visibleName);
+////            tempItemList.setSystemName(name);
+////            tempItemList.setFilterSortDef(defaultFilterSortDef);
+////            tempItemList.setNoSave(true); //don't save dynamic lists
+////        }
+////        saveNew(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+////        saveNewTriggerUpdate();
+////        saveToParseNow(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+////        saveToParseAndWait(filterSortDef, temp); //we only save it this once to have a parseId, never later since we'll always fetch the actual list dynamically
+////        cachePut(name, temp);
+//        //set list icon and font here to make sure they are always set for dynamic lists (since the icon is not persisted)
+//        tempItemList.setItemListIcon(MyForm.ScreenType.getListIcon(name));
+//        tempItemList.setItemListIconFont(MyForm.ScreenType.getListFont(name));
+//        return tempItemList;
+//    }
 //    public ItemList getNamedItemList(String name) {
 //        switch (name) {
 //            case SYSTEM_LIST_OVERDUE:
@@ -3291,30 +3680,45 @@ public class DAO {
 //        }
 //        return null;
 //    }
-    public ItemList getSystemListXXX(ScreenType screenType) {
-        return fetchDynamicNamedItemList(screenType.getSystemName(), screenType.getTitle(), ItemList.getSystemDefaultFilter(screenType), screenType.isFilterEditable());
-    }
-
-    public ItemList getNamedItemList(String name, String visibleName, FilterSortDef defaultFilterSortDef) {
-        return fetchDynamicNamedItemList(name, visibleName, defaultFilterSortDef, true);
-    }
-
+//    public ItemList getSystemListXXX(ScreenType screenType) {
+//        return fetchDynamicNamedItemList(screenType.getSystemName(), screenType.getTitle(), ItemList.getSystemDefaultFilter(screenType), screenType.isFilterEditable());
+//    }
+//    public ItemList getNamedItemList(String name, String visibleName, FilterSortDef defaultFilterSortDef) {
+//        return fetchDynamicNamedItemList(name, visibleName, defaultFilterSortDef, true);
+//    }
+////</editor-fold>
     public ItemList getNamedItemList(ScreenType screenType) {
-        return getNamedItemList(screenType, false);
+        return getNamedItemList(screenType.getSystemName());
     }
 
-    public ItemList getNamedItemList(ScreenType screenType, boolean fetchFilterSort) {
-        ItemList itemList = fetchDynamicNamedItemList(screenType.getSystemName(), screenType.getTitle(),
-                fetchFilterSort
-                        ? getSystemFilterSortFromParse(screenType.getSystemName(), ItemList.getSystemDefaultFilter(screenType))
-                        : ItemList.getSystemDefaultFilter(screenType),
-                //                true);
-                screenType.isFilterEditable());
-        itemList.setItemListIcon(screenType.getIcon());
-        itemList.setItemListIconFont(screenType.getFont());
+//    public ItemList getNamedItemList(ScreenType screenType, boolean fetchFilterSort) {
+//        ItemList itemList = fetchDynamicNamedItemList(screenType.getSystemName(), screenType.getTitle(),
+//                fetchFilterSort
+//                        ? getSystemFilterSortFromParse(screenType.getSystemName(), ItemList.getSystemDefaultFilter(screenType))
+//                        : ItemList.getSystemDefaultFilter(screenType),
+//                //                true);
+//                screenType.isFilterEditable());
+//        itemList.setItemListIcon(screenType.getIcon());
+//        itemList.setItemListIconFont(screenType.getFont());
+//        return itemList;
+//    }
+//    public ItemList getNamedItemList(String systemName, boolean fetchFilterSort) {
+    public ItemList getNamedItemList(String systemName) {
+        ItemList itemList = fetchDynamicNamedItemList(systemName);
+//                fetchFilterSort
+////                        ? getSystemFilterSortFromParse(screenType.getSystemName(), ItemList.getSystemDefaultFilter(screenType))
+//                        ? getSystemFilterSortFromParse(screenType.getSystemName(), ItemList.getSystemDefaultFilter())
+//                        : ItemList.getSystemDefaultFilter(screenType),
+//                //                true);
+//                screenType.isFilterEditable());
+//        itemList.setItemListIcon(screenType.getIcon());
+//        itemList.setItemListIconFont(screenType.getFont());
         return itemList;
     }
 
+//    public ItemList getNamedItemList(String systemName) {
+//        return getNamedItemList(systemName, true);
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public ItemList getNamedItemListOLD(String name, String visibleName, FilterSortDef filterSortDef) {
 ////<editor-fold defaultstate="collapsed" desc="comment">
@@ -3703,7 +4107,6 @@ public class DAO {
 //            Log.e(ex);
 //        }
 //    }
-//</editor-fold>
 //    public void getAllItemsInCategory(Category category) {
 //        try {
 //            category.fetchIfNeeded();
@@ -3718,6 +4121,7 @@ public class DAO {
 //            Log.e(ex);
 //        }
 //    }
+//</editor-fold>
     /**
      * ensures all the right includes are set when fetching an Item. NEVER
      * returns an items marked as templates.
@@ -4069,21 +4473,25 @@ public class DAO {
         }
     }
 
-    private void checkAndRefreshAllProjects(Item element, boolean delete) {
-        if (cachedAllProjects != null) {
-            if (delete) {
-                cachedAllProjects.remove(element);
-            } else if (!cachedAllProjects.contains(element)) {
-                if (element.isProject()) {
-                    cachedAllProjects.add(element);
-                    sortAllProjects(cachedAllProjects);
-                }
-            } else if (!element.isProject()) {
-                cachedAllProjects.remove(element);
-            }
-        }
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private void checkAndRefreshAllProjects(Item element, boolean delete) {
+//        if (cachedAllProjects != null) {
+//            if (delete) {
+//                cachedAllProjects.remove(element);
+//            } else if (!cachedAllProjects.contains(element)) {
+//                if (element.isProject()) {
+//                    cachedAllProjects.add(element);
+//                    sortAllProjects(cachedAllProjects);
+//                }
+//            } else if (!element.isProject()) {
+//                cachedAllProjects.remove(element);
+//            }
+//        }
+//    }
+//    private Date getCompletedStartDate() {
+//        return new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.completionLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//    }
+//</editor-fold>
     private Date getCompletionLogStartDate() {
         return new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.completionLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
     }
@@ -4093,68 +4501,67 @@ public class DAO {
         Collections.sort(list, (i1, i2) -> FilterSortDef.compareDate(i1.getUpdatedAt(), i2.getUpdatedAt())); //must put null values *first* since it would mean a new item not yet saved
     }
 
-    private List<Item> cachedCompletionLog;
-    private Date cachedCompletionLogExpiry;
-
-    /**
-     * returns completed tasks by date completed
-     *
-     * @return
-     */
-    public List<Item> getCompletionLog() {
-        if (cachedCompletionLog != null && cachedCompletionLogExpiry != null && System.currentTimeMillis() <= cachedCompletionLogExpiry.getTime()) {
-            return cachedCompletionLog;
-        } else {
-
-            //get the start of the day creationLogInterval days back in time
-//        Date firstDate = new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.completionLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
-            Date firstDate = getCompletionLogStartDate();
-
-            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
-            setupItemQueryNotTemplateNotDeletedLimit10000(query, false);
-            //Projects are defined as containing subtasks and not being owner by another Item
-            query.whereEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //include if has subtaskss
-            if (false) {
-                query.orderByDescending(Item.PARSE_COMPLETED_DATE);
-            }
-            query.whereGreaterThanOrEqualTo(Item.PARSE_COMPLETED_DATE, firstDate);
-//        query.whereLessThanOrEqualTo(Item.PARSE_COMPLETED_DATE, new MyDate()); //not really necessary
-            setupItemQueryWithIndirectAndGuids(query);
-
-            List results = null;
-            try {
-                results = query.find();
-                fetchListElementsIfNeededReturnCachedIfAvail(results);
-                sortCompletionLog(results);
-                cachedCompletionLog = results;
-                cachedCompletionLogExpiry = MyDate.getEndOfToday(); //valid until midnight
-                return results;
-            } catch (ParseException ex) {
-                Log.e(ex);
-            }
-            return null;
-        }
-    }
-
-    private void checkAndRefreshCompletionLog(Item element, boolean delete) {
-        if (cachedCompletionLog != null) {
-            if (delete) {
-                cachedCompletionLog.remove(element);
-            } else {
-                Date firstDate = getCompletionLogStartDate();
-                if (!cachedCompletionLog.contains(element)) {
-                    if (element.getCompletedDate().getTime() >= firstDate.getTime()) {
-                        cachedCompletionLog.add(element);
-                        sortTouchedLog(cachedCompletionLog);
-                    }
-                } else if (element.getCompletedDate().getTime() < firstDate.getTime()) {
-                    cachedCompletionLog.remove(element);
-                }
-            }
-        }
-    }
-
 //<editor-fold defaultstate="collapsed" desc="comment">
+//    private List<Item> cachedCompletionLog;
+//    private Date cachedCompletionLogExpiry;
+//
+//    /**
+//     * returns completed tasks by date completed
+//     *
+//     * @return
+//     */
+//    public List<Item> getCompletionLog() {
+//        if (cachedCompletionLog != null && cachedCompletionLogExpiry != null && System.currentTimeMillis() <= cachedCompletionLogExpiry.getTime()) {
+//            return cachedCompletionLog;
+//        } else {
+//
+//            //get the start of the day creationLogInterval days back in time
+////        Date firstDate = new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.completionLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//            Date firstDate = getCompletionLogStartDate();
+//
+//            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//            setupItemQueryNotTemplateNotDeletedLimit10000(query, false);
+//            //Projects are defined as containing subtasks and not being owner by another Item
+//            query.whereEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //include if has subtaskss
+//            if (false) {
+//                query.orderByDescending(Item.PARSE_COMPLETED_DATE);
+//            }
+//            query.whereGreaterThanOrEqualTo(Item.PARSE_COMPLETED_DATE, firstDate);
+////        query.whereLessThanOrEqualTo(Item.PARSE_COMPLETED_DATE, new MyDate()); //not really necessary
+//            setupItemQueryWithIndirectAndGuids(query);
+//
+//            List results = null;
+//            try {
+//                results = query.find();
+//                fetchListElementsIfNeededReturnCachedIfAvail(results);
+//                sortCompletionLog(results);
+//                cachedCompletionLog = results;
+//                cachedCompletionLogExpiry = MyDate.getEndOfToday(); //valid until midnight
+//                return results;
+//            } catch (ParseException ex) {
+//                Log.e(ex);
+//            }
+//            return null;
+//        }
+//    }
+//
+//    private void checkAndRefreshCompletionLog(Item element, boolean delete) {
+//        if (cachedCompletionLog != null) {
+//            if (delete) {
+//                cachedCompletionLog.remove(element);
+//            } else {
+//                Date firstDate = getCompletionLogStartDate();
+//                if (!cachedCompletionLog.contains(element)) {
+//                    if (element.getCompletedDate().getTime() >= firstDate.getTime()) {
+//                        cachedCompletionLog.add(element);
+//                        sortTouchedLog(cachedCompletionLog);
+//                    }
+//                } else if (element.getCompletedDate().getTime() < firstDate.getTime()) {
+//                    cachedCompletionLog.remove(element);
+//                }
+//            }
+//        }
+//    }
 //    public ItemList XXX(ItemList existingListToUpdate) {
 //        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
 //        setupItemQueryNotTemplateNotDeletedLimit10000(query, false);
@@ -4186,85 +4593,111 @@ public class DAO {
 ////        return (List<Item>) getAll(Item.CLASS_NAME);
 //    }
 //</editor-fold>
-    private Date getCompletedLogStartDate() {
-        return new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.editedLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
-    }
-
+//    private Date getCompletedLogStartDate() {
+//        return new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.editedLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//    }
     private void sortCompletedLog(List<Item> list) {
 //        Collections.sort(list, (i1, i2) -> FilterSortDef.compareDate(i1.getCreatedAt(), i2.getCreatedAt()));
         Collections.sort(list, (i1, i2) -> FilterSortDef.compareDate(i1.getEditedDate(), i2.getEditedDate())); //must put null values *first* since it would mean a new item not yet saved
     }
 
-    private List<Item> cachedCompletedLog;
-    private Date cachedExpiryCompletedLog;
-    private Date cachedCompletedLogStartDate;
-    private Date cachedCompletedLogEndDate;
+//    private List<Item> cachedCompletedLog;
+//    private Date cachedExpiryCompletedLog;
+//    private Date cachedCompletedLogStartDate;
+//    private Date cachedCompletedLogEndDate;
+//
+    private Date cacheExpiryDate;
 
+    private Date getCacheExpiryDate() {
+        return cacheExpiryDate;
+    }
+
+    private void setCacheExpiryDate(Date newExpiryDate) {
+        cacheExpiryDate = newExpiryDate;
+    }
+
+//    private void refreshCachedList() {
+//        if (System.currentTimeMillis() > cacheExpiryDate.getTime()) {
+//            cachedAllActiveWorkSlots = null;
+//            cachedAllProjects = null;
+//            cachedAllTasks = null;
+//            cachedCompletedLog = null;
+//            cachedCompletionLog = null;
+//            cachedCreationLog = null;
+//            cachedEditedLog = null;
+//            cachedNext = null;
+//            cachedOverdue = null;
+//            cachedToday = null;
+////            cachedTouchedLog = null;
+//
+//            cacheExpiryDate = MyDate.getEndOfToday(); //valid until midnight
+//        }
+//    }
     /**
      * used for Statistics, returns completed tasks from and including startDate
      * up to and including endDate
      *
      * @return
      */
-    public List<Item> getCompletedItems(Date startDate, Date endDate, boolean onlyLeafTasks) {
-        if (cachedCompletedLog != null && cachedExpiryCompletedLog != null
-                && System.currentTimeMillis() <= cachedExpiryCompletedLog.getTime()
-                && startDate.equals(cachedCompletedLogStartDate) && endDate.equals(cachedCompletedLogEndDate)) {
-            return cachedCompletedLog;
-        } else {
-
-            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
-            setupItemQueryNotTemplateNotDeletedLimit10000(query, false);
-
-            //Projects are defined as containing subtasks and not being owner by another Item
-            query.whereEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //include if has subtaskss
-
-//        query.orderByDescending(Item.PARSE_COMPLETED_DATE);
-//        query.orderByAscending(Item.PARSE_COMPLETED_DATE); //don't request sorted, do that when showing
-            query.whereGreaterThanOrEqualTo(Item.PARSE_COMPLETED_DATE, startDate);
-            query.whereLessThanOrEqualTo(Item.PARSE_COMPLETED_DATE, endDate);
-            if (onlyLeafTasks) {
-                query.whereDoesNotExist(Item.PARSE_SUBTASKS);
-            }
-//        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-//        query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
-
-            List<Item> results = null;
-            try {
-                results = query.find();
-                fetchListElementsIfNeededReturnCachedIfAvail(results);
-                sortCompletedLog(results);
-                cachedCompletedLog = results;
-                cachedExpiryCompletedLog = MyDate.getEndOfToday(); //valid until midnight
-                cachedCompletedLogStartDate = startDate;
-                cachedCompletedLogEndDate = endDate;
-            } catch (ParseException ex) {
-                Log.e(ex);
-            }
-            return results;
-        }
-    }
-
-    private void checkAndRefreshCompletedLog(Item element, boolean delete) {
-        if (cachedCompletedLog != null) {
-            if (delete) {
-                cachedCompletedLog.remove(element);
-            } else {
-                Date firstDate = getCompletedLogStartDate();
-                if (!cachedCompletedLog.contains(element)) {
-                    if (element.getCompletedDate().getTime() >= cachedCompletedLogStartDate.getTime()
-                            && element.getCompletedDate().getTime() <= cachedCompletedLogEndDate.getTime()) {
-                        cachedCompletedLog.add(element);
-                        sortCompletedLog(cachedCompletedLog);
-                    }
-                } else if (element.getCompletedDate().getTime() < cachedCompletedLogStartDate.getTime()
-                        || element.getCompletedDate().getTime() > cachedCompletedLogEndDate.getTime()) {
-                    cachedCompletedLog.remove(element); //completed date changed to outside this interval
-                }
-            }
-        }
-    }
-
+//    public List<Item> getCompletedItems(Date startDate, Date endDate, boolean onlyLeafTasks) {
+//        refreshCachedList();
+////        if (cachedCompletedLog == null && cachedExpiryCompletedLog != null
+////                && System.currentTimeMillis() <= cachedExpiryCompletedLog.getTime()
+////                && startDate.equals(cachedCompletedLogStartDate) && endDate.equals(cachedCompletedLogEndDate)) {
+//        if (cachedCompletedLog == null) {
+//
+//            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//            setupItemQueryNotTemplateNotDeletedLimit10000(query, false);
+//
+//            //Projects are defined as containing subtasks and not being owner by another Item
+//            query.whereEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //include if has subtaskss
+//
+////        query.orderByDescending(Item.PARSE_COMPLETED_DATE);
+////        query.orderByAscending(Item.PARSE_COMPLETED_DATE); //don't request sorted, do that when showing
+//            query.whereGreaterThanOrEqualTo(Item.PARSE_COMPLETED_DATE, startDate);
+//            query.whereLessThanOrEqualTo(Item.PARSE_COMPLETED_DATE, endDate);
+//            if (onlyLeafTasks) {
+//                query.whereDoesNotExist(Item.PARSE_SUBTASKS);
+//            }
+////        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+////        query.selectKeys(new ArrayList()); //just get search result, no data (these are cached)
+//
+//            List<Item> results = null;
+//            try {
+//                results = query.find();
+//                fetchListElementsIfNeededReturnCachedIfAvail(results);
+//                sortCompletedLog(results);
+//                cachedCompletedLog = results;
+//                cachedExpiryCompletedLog = MyDate.getEndOfToday(); //valid until midnight
+//                cachedCompletedLogStartDate = startDate;
+//                cachedCompletedLogEndDate = endDate;
+//            } catch (ParseException ex) {
+//                Log.e(ex);
+//            }
+//            return results;
+//        } else {
+//            return cachedCompletedLog;
+//        }
+//    }
+//    private void checkAndRefreshCompletedLog(Item element, boolean delete) {
+//        if (cachedCompletedLog != null) {
+//            if (delete) {
+//                cachedCompletedLog.remove(element);
+//            } else {
+//                Date firstDate = getCompletedLogStartDate();
+//                if (!cachedCompletedLog.contains(element)) {
+//                    if (element.getCompletedDate().getTime() >= cachedCompletedLogStartDate.getTime()
+//                            && element.getCompletedDate().getTime() <= cachedCompletedLogEndDate.getTime()) {
+//                        cachedCompletedLog.add(element);
+//                        sortCompletedLog(cachedCompletedLog);
+//                    }
+//                } else if (element.getCompletedDate().getTime() < cachedCompletedLogStartDate.getTime()
+//                        || element.getCompletedDate().getTime() > cachedCompletedLogEndDate.getTime()) {
+//                    cachedCompletedLog.remove(element); //completed date changed to outside this interval
+//                }
+//            }
+//        }
+//    }
     /**
      * return all soft-deleted tasks
      *
@@ -4298,7 +4731,7 @@ public class DAO {
         Collections.sort(list, (i1, i2) -> FilterSortDef.compareDate(i1.getUpdatedAt(), i2.getUpdatedAt())); //must put null values *first* since it would mean a new item not yet saved
     }
 
-    private List<Item> cachedTouchedLog;
+//    private List<Item> cachedTouchedLog;
     private Date cachedExpiryTouchedLog;
 
     /**
@@ -4306,57 +4739,55 @@ public class DAO {
      *
      * @return
      */
-    public List<Item> getTouchedLog() {
-        if (cachedTouchedLog != null && cachedExpiryTouchedLog != null && System.currentTimeMillis() <= cachedExpiryTouchedLog.getTime()) {
-            return cachedTouchedLog;
-        } else {
-            //get the start of the day touchedLogInterval days back in time
-//        Date firstDate = new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.touchedLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
-            Date firstDate = getTouchedLogStartDate();
-
-            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
-            setupItemQueryNotTemplateNotDeletedLimit10000(query);
-
-            query.whereGreaterThanOrEqualTo(Item.PARSE_UPDATED_AT, firstDate);
-            if (false) {
-                query.orderByDescending(Item.PARSE_UPDATED_AT);
-            }
-            setupItemQueryWithIndirectAndGuids(query);
-
-            List results = null;
-            try {
-                results = query.find();
-                fetchListElementsIfNeededReturnCachedIfAvail(results);
-                sortTouchedLog(results);
-                cachedTouchedLog = results;
-                cachedExpiryTouchedLog = MyDate.getEndOfToday(); //valid until midnight
-
-                return results;
-            } catch (ParseException ex) {
-                Log.e(ex);
-            }
-            return null;
-        }
-    }
-
-    private void checkAndRefreshTouchedLog(Item element, boolean delete) {
-        if (cachedTouchedLog != null) {
-            if (delete) {
-                cachedTouchedLog.remove(element);
-            } else {
-                Date firstDate = getTouchedLogStartDate();
-                if (!cachedTouchedLog.contains(element)) {
-                    if ((element.getUpdatedAt() == null || element.getUpdatedAt().getTime() >= firstDate.getTime())) {
-                        cachedTouchedLog.add(element);
-                        sortTouchedLog(cachedTouchedLog);
-                    }
-                } else if (element.getUpdatedAt() != null && element.getUpdatedAt().getTime() < firstDate.getTime()) {
-                    cachedTouchedLog.remove(element);
-                }
-            }
-        }
-    }
-
+//    public List<Item> getTouchedLogXXX() {
+//        if (cachedTouchedLog != null && cachedExpiryTouchedLog != null && System.currentTimeMillis() <= cachedExpiryTouchedLog.getTime()) {
+//            return cachedTouchedLog;
+//        } else {
+//            //get the start of the day touchedLogInterval days back in time
+////        Date firstDate = new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.touchedLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//            Date firstDate = getTouchedLogStartDate();
+//
+//            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//            setupItemQueryNotTemplateNotDeletedLimit10000(query);
+//
+//            query.whereGreaterThanOrEqualTo(Item.PARSE_UPDATED_AT, firstDate);
+//            if (false) {
+//                query.orderByDescending(Item.PARSE_UPDATED_AT);
+//            }
+//            setupItemQueryWithIndirectAndGuids(query);
+//
+//            List results = null;
+//            try {
+//                results = query.find();
+//                fetchListElementsIfNeededReturnCachedIfAvail(results);
+//                sortTouchedLog(results);
+//                cachedTouchedLog = results;
+//                cachedExpiryTouchedLog = MyDate.getEndOfToday(); //valid until midnight
+//
+//                return results;
+//            } catch (ParseException ex) {
+//                Log.e(ex);
+//            }
+//            return null;
+//        }
+//    }
+//    private void checkAndRefreshTouchedLogXXX(Item element, boolean delete) {
+//        if (cachedTouchedLog != null) {
+//            if (delete) {
+//                cachedTouchedLog.remove(element);
+//            } else {
+//                Date firstDate = getTouchedLogStartDate();
+//                if (!cachedTouchedLog.contains(element)) {
+//                    if ((element.getUpdatedAt() == null || element.getUpdatedAt().getTime() >= firstDate.getTime())) {
+//                        cachedTouchedLog.add(element);
+//                        sortTouchedLog(cachedTouchedLog);
+//                    }
+//                } else if (element.getUpdatedAt() != null && element.getUpdatedAt().getTime() < firstDate.getTime()) {
+//                    cachedTouchedLog.remove(element);
+//                }
+//            }
+//        }
+//    }
     private Date getEditedLogStartDate() {
         return new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.editedLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
     }
@@ -4374,7 +4805,7 @@ public class DAO {
      *
      * @return
      */
-    public List<Item> getEditedLog() {
+    public List<Item> getEditedLogXXX() {
         if (cachedEditedLog != null && cachedExpiryEditedLog != null && System.currentTimeMillis() <= cachedExpiryEditedLog.getTime()) {
             return cachedEditedLog;
         } else {
@@ -4407,7 +4838,7 @@ public class DAO {
         }
     }
 
-    private void checkAndRefreshEditedLog(Item element, boolean delete) {
+    private void checkAndRefreshEditedLogXXX(Item element, boolean delete) {
         if (cachedEditedLog != null) {
             if (delete) {
                 cachedEditedLog.remove(element);
@@ -4457,7 +4888,7 @@ public class DAO {
 ////        return (List<Item>) getAll(Item.CLASS_NAME);
 //    }
 //</editor-fold>
-    public List<Item> getTouched24hLog() {
+    public List<Item> getTouched24hLogXXX() {
         ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
         setupItemQueryNotTemplateNotDeletedLimit10000(query);
 
@@ -4492,149 +4923,193 @@ public class DAO {
     private List<Item> cachedCreationLog;
     private Date cachedExpiryCreationLog;
 
-    /**
-     * on next getCreationLog, force a reload of the list (by removing the cache
-     * expiry date)
-     */
-    public void reloadCompleted() {
-        cachedCompletedLog = null; //
-    }
-
-    public void reloadCompletionLog() {
-        cachedCompletionLog = null; //
-    }
-
-    /**
-     * on next getCreationLog, force a reload of the list (by removing the cache
-     * expiry date)
-     */
-    public void reloadCreationLog() {
-        cachedCreationLog = null; //
-    }
-
-    public void reloadEdited() {
-        cachedEditedLog = null; //
-    }
-
-    /**
-     * on next getCreationLog, force a reload of the list (by removing the cache
-     * expiry date)
-     */
-    public void reloadNext() {
-        cachedNext = null; //
-    }
-
-    public void reloadOverdue() {
-        cachedOverdue = null; //
-    }
-
-    public void reloadToday() {
-        cachedToday = null; //
-    }
-
-    public void reloadTouched() {
-        cachedTouchedLog = null; //
-    }
-
-    public void reloadList(ItemAndListCommonInterface listToReloadFromParse) {
-        if (listToReloadFromParse == cacheGuidWorkSlots) {
-            cacheGuidWorkSlots = null;
-        } else if (listToReloadFromParse == cachedAllActiveWorkSlots) {
-            cachedAllActiveWorkSlots = null;
-        } else if (listToReloadFromParse == cachedAllProjects) {
-            cachedAllProjects = null;
-        } else if (listToReloadFromParse == cachedAllTasks) {
-            cachedAllTasks = null;
-        } else if (listToReloadFromParse == cachedCompletedLog) {
-            cachedCompletedLog = null;
-        } else if (listToReloadFromParse == cachedCompletionLog) {
-            cachedCompletionLog = null;
-        } else if (listToReloadFromParse == cachedCreationLog) {
-            cachedCreationLog = null;
-        } else if (listToReloadFromParse == cachedEditedLog) {
-            cachedEditedLog = null;
-        } else if (listToReloadFromParse == cachedNext) {
-            cachedNext = null;
-        } else if (listToReloadFromParse == cachedOverdue) {
-            cachedOverdue = null;
-        } else if (listToReloadFromParse == cachedToday) {
-            cachedToday = null;
-        } else if (listToReloadFromParse == cachedTouchedLog) {
-            cachedTouchedLog = null;
+    public void reloadSystemList(String name) {
+        ItemList tempItemList = (ItemList) cacheGetNamedItemList(name); //cahce: name -> objectIdP
+        if (tempItemList != null) {
+            tempItemList.setExpireDate(null);
+            cachePut(tempItemList); //uppdate local copy
         }
     }
+//<editor-fold defaultstate="collapsed" desc="comment">
 
+    /**
+     * on next getCreationLog, force a reload of the list (by removing the cache
+     * expiry date)
+     */
+//    public void reloadCompleted() {
+////        cachedCompletedLog = null; //
+//        reloadList(SYSTEM_LIST_LOG);
+//    }
+//    public void reloadCompletionLog() {
+////        cachedCompletionLog = null; //
+//        reloadList(SYSTEM_LIST_LOG);xxx;
+//    }
+    /**
+     * on next getCreationLog, force a reload of the list (by removing the cache
+     * expiry date) cachedCreationLog = null; // reloadList(SYSTEM_LIST_DIARY);
+     * }
+     */
+//    public void reloadCreationLog() {
+////        cachedCreationLog = null; //
+//        reloadList(SYSTEM_LIST_DIARY);
+//    }
+//    public void reloadEdited() {
+////        cachedEditedLog = null; //
+//        reloadList(SYSTEM_LIST_TOUCHED);
+//    }
+    /**
+     * on next getCreationLog, force a reload of the list (by removing the cache
+     * expiry date)
+     */
+//    public void reloadNext() {
+////        cachedNext = null; //
+//        reloadList(SYSTEM_LIST_NEXT);
+//    }
+//
+//    public void reloadOverdue() {
+////        cachedOverdue = null; //
+//        reloadList(SYSTEM_LIST_OVERDUE);
+//    }
+//
+//    public void reloadToday() {
+////        cachedToday = null; //
+//        reloadList(SYSTEM_LIST_TODAY);
+//    }
+//
+//    public void reloadTouched() {
+////        cachedTouchedLog = null; //
+//        reloadList(SYSTEM_LIST_LOG);
+//    }
+//    public void reloadListXXX(ItemAndListCommonInterface listToReloadFromParse) {
+//        if (listToReloadFromParse == cacheGuidWorkSlots) {
+//            cacheGuidWorkSlots = null;
+//        } else if (listToReloadFromParse == cachedAllActiveWorkSlots) {
+//            cachedAllActiveWorkSlots = null;
+//        } else if (listToReloadFromParse == cachedAllProjects) {
+//            cachedAllProjects = null;
+//        } else if (listToReloadFromParse == cachedAllTasks) {
+//            cachedAllTasks = null;
+//        } else if (listToReloadFromParse == cachedCompletedLog) {
+//            cachedCompletedLog = null;
+//        } else if (listToReloadFromParse == cachedCompletionLog) {
+//            cachedCompletionLog = null;
+//        } else if (listToReloadFromParse == cachedCreationLog) {
+//            cachedCreationLog = null;
+//        } else if (listToReloadFromParse == cachedEditedLog) {
+//            cachedEditedLog = null;
+//        } else if (listToReloadFromParse == cachedNext) {
+//            cachedNext = null;
+//        } else if (listToReloadFromParse == cachedOverdue) {
+//            cachedOverdue = null;
+//        } else if (listToReloadFromParse == cachedToday) {
+//            cachedToday = null;
+//        } else if (listToReloadFromParse == cachedTouchedLog) {
+//            cachedTouchedLog = null;
+//        }
+//    }
     /**
      * returns list of all tasks by date created (should be grouped/collapsed by
      * e.g. week or month)
      *
      * @return
      */
-    public List<Item> getCreationLog() {
-        //get the start of the day creationLogInterval days back in time
-//        Date firstDate = new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.creationLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
-        Date firstDate = getCreationLogStartDate();
-//        if (cachedCreationLog == null || cachedCreationLogExpiry == null || System.currentTimeMillis() > cachedCreationLogExpiry.getTime()) {
-        if (cachedCreationLog != null && cachedExpiryCreationLog != null && System.currentTimeMillis() <= cachedExpiryCreationLog.getTime()) {
-            return cachedCreationLog;
-        } else {
-            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
-            setupItemQueryNotTemplateNotDeletedLimit10000(query);
-
-            if (false) {
-                query.orderByDescending(Item.PARSE_CREATED_AT);
-            }
-            query.whereGreaterThanOrEqualTo(Item.PARSE_CREATED_AT, firstDate);
-            setupItemQueryWithIndirectAndGuids(query);
-            List results = null;
-            try {
-                results = query.find();
-                fetchListElementsIfNeededReturnCachedIfAvail(results);
-                sortCreationLog(results);
-                cachedCreationLog = results;
-                cachedExpiryCreationLog = MyDate.getEndOfToday(); //valid until midnight
-                return results;
-            } catch (ParseException ex) {
-                Log.e(ex);
-            }
-            return null;
-        }
-    }
-
-    private void checkAndRefreshCreationLog(Item element, boolean delete) {
-        if (cachedCreationLog != null) {
-            if (delete) {
-                cachedCreationLog.remove(element);
-            } else {
-                Date firstDate = getCreationLogStartDate();
-                if (!cachedCreationLog.contains(element)) {
-                    if (element.getCreatedAt() == null || element.getCreatedAt().getTime() >= firstDate.getTime()) {
-                        cachedCreationLog.add(element);
-                        sortCreationLog(cachedCreationLog);
-                    }
-                } else if (element.getCreatedAt() != null && element.getCreatedAt().getTime() < firstDate.getTime()) {
-                    cachedCreationLog.remove(element);
-                }
-            }
-        }
-    }
-
+//    public List<Item> getCreationLog() {
+//        //get the start of the day creationLogInterval days back in time
+////        Date firstDate = new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.creationLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//        Date firstDate = getCreationLogStartDate();
+////        if (cachedCreationLog == null || cachedCreationLogExpiry == null || System.currentTimeMillis() > cachedCreationLogExpiry.getTime()) {
+//        if (cachedCreationLog != null && cachedExpiryCreationLog != null && System.currentTimeMillis() <= cachedExpiryCreationLog.getTime()) {
+//            return cachedCreationLog;
+//        } else {
+//            ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//            setupItemQueryNotTemplateNotDeletedLimit10000(query);
+//
+//            if (false) {
+//                query.orderByDescending(Item.PARSE_CREATED_AT);
+//            }
+//            query.whereGreaterThanOrEqualTo(Item.PARSE_CREATED_AT, firstDate);
+//            setupItemQueryWithIndirectAndGuids(query);
+//            List results = null;
+//            try {
+//                results = query.find();
+//                fetchListElementsIfNeededReturnCachedIfAvail(results);
+//                sortCreationLog(results);
+//                cachedCreationLog = results;
+//                cachedExpiryCreationLog = MyDate.getEndOfToday(); //valid until midnight
+//                return results;
+//            } catch (ParseException ex) {
+//                Log.e(ex);
+//            }
+//            return null;
+//        }
+//    }
+//    private void checkAndRefreshCreationLog(Item element, boolean delete) {
+//        if (cachedCreationLog != null) {
+//            if (delete) {
+//                cachedCreationLog.remove(element);
+//            } else {
+//                Date firstDate = getCreationLogStartDate();
+//                if (!cachedCreationLog.contains(element)) {
+//                    if (element.getCreatedAt() == null || element.getCreatedAt().getTime() >= firstDate.getTime()) {
+//                        cachedCreationLog.add(element);
+//                        sortCreationLog(cachedCreationLog);
+//                    }
+//                } else if (element.getCreatedAt() != null && element.getCreatedAt().getTime() < firstDate.getTime()) {
+//                    cachedCreationLog.remove(element);
+//                }
+//            }
+//        }
+//    }
+//    private void checkAndRefreshAllCachedListsOLD(ParseObject element, boolean delete) {
+//        if (element instanceof Item) {
+//            Item item = (Item) element;
+//            //each call below can, and should, be callable multiple times with the same items without it causing any issues
+//            checkAndRefreshToday(item, delete);
+//            checkAndRefreshAllProjects(item, delete);
+//            checkAndRefreshAllTasks(item, delete);
+//            checkAndRefreshCompletedLog(item, delete);
+//            checkAndRefreshCompletionLog(item, delete);
+//            checkAndRefreshCreationLog(item, delete);
+//            checkAndRefreshEditedLog(item, delete);
+//            checkAndRefreshNext(item, delete);
+//            checkAndRefreshOverdue(item, delete);
+////            checkAndRefreshTouchedLog(item, delete);
+//        } else if (element instanceof WorkSlot) {
+//            checkAndRefreshToday((WorkSlot) element, delete);
+//            checkAndRefreshActiveWorkSlots((WorkSlot) element, delete);
+//        }
+//    }
+//</editor-fold>
     private void checkAndRefreshAllCachedLists(ParseObject element, boolean delete) {
         if (element instanceof Item) {
             Item item = (Item) element;
-            checkAndRefreshToday(item, delete);
-            checkAndRefreshAllProjects(item, delete);
-            checkAndRefreshAllTasks(item, delete);
-            checkAndRefreshCompletedLog(item, delete);
-            checkAndRefreshCompletionLog(item, delete);
-            checkAndRefreshCreationLog(item, delete);
-            checkAndRefreshEditedLog(item, delete);
-            checkAndRefreshNext(item, delete);
-            checkAndRefreshOverdue(item, delete);
-            checkAndRefreshTouchedLog(item, delete);
+            //each call below can, and should, be callable multiple times with the same items without it causing any issues 
+//            checkAndRefreshToday(item, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_TODAY, item, delete);
+//            checkAndRefreshAllProjects(item, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_PROJECTS, item, delete);
+//            checkAndRefreshAllTasks(item, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_ALL, item, delete);
+//            checkAndRefreshCompletedLog(item, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_LOG, item, delete);
+//            checkAndRefreshCreationLog(item, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_DIARY, item, delete);
+//            checkAndRefreshEditedLog(item, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_TOUCHED, item, delete);
+//            checkAndRefreshNext(item, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_NEXT, item, delete);
+//            checkAndRefreshOverdue(item, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_OVERDUE, item, delete);
+//            checkAndRefreshTouchedLog(item, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_TEMPLATES, item, delete);
+//            checkAndRefreshCompletionLog(item, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_STATISTICS, item, delete);
         } else if (element instanceof WorkSlot) {
-            checkAndRefreshToday((WorkSlot) element, delete);
-            checkAndRefreshActiveWorkSlots((WorkSlot) element, delete);
+            WorkSlot workSlot = (WorkSlot) element;
+//            checkAndRefreshToday(workSlot, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_TODAY, workSlot, delete);
+//            checkAndRefreshActiveWorkSlots((WorkSlot) element, delete);
+            checkAndRefreshSystemList(SYSTEM_LIST_WORKSLOTS, workSlot, delete);
         }
     }
 
@@ -5381,7 +5856,7 @@ public class DAO {
         }
     }
 
-    private ParseBatch batchSavePrepare(Collection<ParseObject> saveList, Collection<ParseObject> deleteListN) throws ParseException {
+    private ParseBatch batchSavePrepareN(Collection<ParseObject> saveList, Collection<ParseObject> deleteListN) throws ParseException {
 //        if ((saveList == null || saveList.size() == 0) && (deleteList == null || deleteList.size() == 0)) {
 //            return null;
 //        }
@@ -5715,8 +6190,10 @@ public class DAO {
 //            for (Object o : list) {
             for (int i = list.size() - 1; i >= 0; i--) { //start from end of list to enable exiting loop on first
                 ParseObject o = list.get(i);
-                if (false && stopOnFirstUndirty && !o.isDirty()) { //false=> stopOnFirstUndirty is a dangerous optimiziation, assumes that dirty elt is always last in list, not the case for pinchinsert etc
-                    break;
+//                if (false && stopOnFirstUndirty && !o.isDirty()) { //false=> stopOnFirstUndirty is a dangerous optimiziation, assumes that dirty elt is always last in list, not the case for pinchinsert etc
+//                    break;
+                if (!o.isDirty()) { //false=> stopOnFirstUndirty is a dangerous optimiziation, assumes that dirty elt is always last in list, not the case for pinchinsert etc
+                    continue; //skip objects w no change
                 } else if (o instanceof Item) {
                     saveItemNew3((Item) o, saveList, afterParseUpdate);
                 } else if (o instanceof WorkSlot) { //do workslots first, because most likely to be repeated(?)
@@ -5769,13 +6246,13 @@ public class DAO {
     }
 
     private List<ParseObject> listOfNeverSaved(List<ParseObject> parseObjects) {
-        List<ParseObject> neverCreated = null;
+        List<ParseObject> neverCreated = new ArrayList<ParseObject>();
         for (int i = 0, size = parseObjects.size(); i < size; i++) {
             ParseObject p = (ParseObject) parseObjects.get(i);
             if (p.isNotCreated()) {
-                if (neverCreated == null) {
-                    neverCreated = new ArrayList<ParseObject>();
-                }
+//                if (neverCreated == null) {
+//                    neverCreated = new ArrayList<ParseObject>();
+//                }
                 neverCreated.add(p);
             }
 //            else if (false && onlyTestLastInList) { //false=disable onlyTestLastInList which is a dangerous optimization
@@ -7735,6 +8212,11 @@ public class DAO {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         List<FilterSortDef> results = getAllFilterSortDefsFromParse(reloadUpdateAfterThis, now);
         cacheList(results);
+        for (FilterSortDef filter : results) {
+            if (!filter.getSystemName().isEmpty()) {
+
+            }
+        }
         return !results.isEmpty();
     }
 
@@ -7935,13 +8417,13 @@ public class DAO {
      */
     private void initAndConfigureCache() {
 //        if (cache == null || forceCreationOfNewInMemoryCache) {
-        cacheGuid = new MyCacheMapHash("cacheGuid","ALG");
+        cacheGuid = new MyCacheMapHash("cacheGuid", "ALG");
         cacheGuid.setCacheSize(MyPrefs.cacheDynamicSize.getInt()); //persist cached elements
         //activate or de-activate local storage
         cacheGuid.setAlwaysStore(MyPrefs.cacheLocalStorageSize.getInt() > 0); //persist cached elements
         cacheGuid.setStorageCacheSize(MyPrefs.cacheLocalStorageSize.getInt()); //persist cached elements //TODO!!!! will this automatically too many locally cached elements?? At first look, seems not
 
-        cacheObjId = new MyCacheMapHash("cacheObjId","ALO");
+        cacheObjId = new MyCacheMapHash("cacheObjId", "ALO");
         cacheObjId.setCacheSize(MyPrefs.cacheDynamicSize.getInt()); //persist cached elements
         //activate or de-activate local storage
         cacheObjId.setAlwaysStore(MyPrefs.cacheLocalStorageSize.getInt() > 0); //persist cached elements
@@ -7964,7 +8446,7 @@ public class DAO {
 //        }
 //</editor-fold>
         if (true || cacheGuidWorkSlots == null) { // || forceCreationOfNewCache) {
-            cacheGuidWorkSlots = new MyCacheMapHash("cacheGuidWorkSlots","WSG"); //prefix neccessary to not confuse locally cached items
+            cacheGuidWorkSlots = new MyCacheMapHash("cacheGuidWorkSlots", "WSG"); //prefix neccessary to not confuse locally cached items
             //                    = new MyCacheMap("WS"); //prefix neccessary to not confuse locally cached items
             cacheGuidWorkSlots.setCacheSize(MyPrefs.cacheDynamicSizeWorkSlots.getInt()); //persist cached elements
             //activate or de-activate local storage
@@ -7974,7 +8456,7 @@ public class DAO {
         }
 
         if (true || cacheObjIdWorkSlots == null) { // || forceCreationOfNewCache) {
-            cacheObjIdWorkSlots = new MyCacheMapHash("cacheObjIdWorkSlots","WSO"); //prefix neccessary to not confuse locally cached items
+            cacheObjIdWorkSlots = new MyCacheMapHash("cacheObjIdWorkSlots", "WSO"); //prefix neccessary to not confuse locally cached items
             //                    = new MyCacheMap("WS"); //prefix neccessary to not confuse locally cached items
             cacheObjIdWorkSlots.setCacheSize(MyPrefs.cacheDynamicSizeWorkSlots.getInt()); //persist cached elements
             //activate or de-activate local storage
@@ -8447,6 +8929,17 @@ public class DAO {
 //        });
 //    }
 //</editor-fold>
+    final static String SAVE_LIST_FILENAME = "SaveList";
+    final static String DELETE_LIST_FILENAME = "DeleteList";
+
+    public void savePendingParseUpdatesToParse() {
+        Log.p("DAO.savePendingParseUpdatesToParse()()");
+        loadPendingParseUpdatesFromLocalstorage(); //load saved lists (if any)
+        //try to save (should do nothing for empty lists)
+        triggerParseUpdate(false); //don't wait for completion, e.g. if network is still not working don't block everything. In case lists are not saved and new edits are made, they will simply be added to the lists and saved sometime later
+//        savePendingParseUpdatesToLocalstorage(toSaveList, toDeleteList); //done in triggerParseUpdate if needed
+    }
+
     /**
      * save savelist and deleteList to local storage. If any is null, that
      * parameter is not used (ignored, no effect)
@@ -8457,7 +8950,7 @@ public class DAO {
     private void savePendingParseUpdatesToLocalstorage(Collection<ParseObject> saveList, Collection<ParseObject> deleteList) {
         if (saveList != null) {
             if (false && Config.TEST) {
-                List toSaveListTest = (List<ParseObject>) Storage.getInstance().readObject("SaveList");
+                List toSaveListTest = (List<ParseObject>) Storage.getInstance().readObject(SAVE_LIST_FILENAME);
                 int i = 0;
                 if (false) {
                     if (Objects.equals(toSaveListTest, saveList)) {
@@ -8467,7 +8960,7 @@ public class DAO {
                     }
                 }
             }
-            Storage.getInstance().writeObject("SaveList", saveList); //save
+            Storage.getInstance().writeObject(SAVE_LIST_FILENAME, saveList); //save
 
         }//        List<String> deleteParseIds = new ArrayList<>();
 //        for (ParseObject p : deleteList) {
@@ -8476,23 +8969,38 @@ public class DAO {
 //        Storage.getInstance().writeObject("DeleteList", deleteParseIds); //save
         if (deleteList != null) {
             if (Config.TEST) {
-                Collection deleteListTest = (Collection<ParseObject>) Storage.getInstance().readObject("DeleteList");
+                Collection deleteListTest = (Collection<ParseObject>) Storage.getInstance().readObject(DELETE_LIST_FILENAME);
                 int i = 0;
             }
-            Storage.getInstance().writeObject("DeleteList", deleteList); //save
+            Storage.getInstance().writeObject(DELETE_LIST_FILENAME, deleteList); //save
         }
     }
 
+    /**
+     *
+     */
     private void loadPendingParseUpdatesFromLocalstorage() {
-        toSaveList = (List<ParseObject>) Storage.getInstance().readObject("SaveList");
+        toSaveList = (List<ParseObject>) Storage.getInstance().readObject(SAVE_LIST_FILENAME);
+        if (toSaveList != null) {
+            fetchListElementsIfNeededReturnCachedIfAvail(toSaveList, true); //fetch the locally saved elements to avoid duplicate instances
+        } else {
+            toSaveList = new ArrayList<>();
+        }
 //        List<String> deleteParseIds = (List<String>) Storage.getInstance().readObject("DeleteList");
 //        for (String  objId : deleteParseIds) {
 //            DAO.getInstance().deleteParseIds.add(p.getObjectIdP());
 //        }
-        toDeleteList = (Set<ParseObject>) Storage.getInstance().readObject("DeleteList");
+        toDeleteList = (Set<ParseObject>) Storage.getInstance().readObject(DELETE_LIST_FILENAME);
+        if (toDeleteList != null) {
+            List tmp = new ArrayList(toDeleteList);
+            fetchListElementsIfNeededReturnCachedIfAvail(tmp, true); //doesn't take set as an argument
+            toDeleteList = new HashSet(tmp);
+        } else {
+            toDeleteList = new HashSet<>();
+        }
     }
 
-    private void setSavePending(List<ParseObject> saveList, boolean value) {
+    private void setSavePendingXXX(List<ParseObject> saveList, boolean value) {
         for (ParseObject p : saveList) {
             p.setSaveIsPending(value);
         }
@@ -8807,7 +9315,7 @@ public class DAO {
 //        synchronized (toSaveList) {
 //        savePendingParseUpdatesToLocalstorage(saveList, deleteList); //save modified items locally
         savePendingParseUpdatesToLocalstorage(toSaveList, toDeleteList); //save modified items locally
-        checkAndRefreshAllCachedLists(toSaveList, toDeleteList);
+        checkAndRefreshAllCachedLists(toSaveList, toDeleteList); //
 
 //            //pre-processes: remove all refs to unsaved items and create lmbdas to restablish them
 //            for (Runnable r : beforeParseUpdate) {
@@ -8820,7 +9328,7 @@ public class DAO {
         processedList.clear();//clear at start of each run
         //make sure all work is done on copies of data
         List<ParseObject> toSaveListCopy = new ArrayList(toSaveList);
-        List<ParseObject> saveList = new ArrayList(); //list of all explicitly or indirectly saved objects (e.g. updated via inheritance or aggregation)
+        List<ParseObject> saveList = new ArrayList(); //list of all explicitly or indirectly saved objects (e.g. updated via inheritance or aggregation, or referenced by the object)
         List<ParseObject> deleteList = new ArrayList(this.toDeleteList);
 //        List<Runnable> afterParseUpdate = new ArrayList(this.afterParseUpdate);
         List<Runnable> afterParseUpdate = new ArrayList();
@@ -8875,12 +9383,11 @@ public class DAO {
             }
             processedList.clear();
 
-            if (!waitForCompletion) {
-                setSavePending(saveList, true); //mark all to-be-saved parseobjects as pending save to prevent modification (via .set()) until saved
-            }
-
+//            if (!waitForCompletion) {
+//                setSavePending(saveList, true); //mark all to-be-saved parseobjects as pending save to prevent modification (via .set()) until saved
+//            }
             try {
-                ParseBatch batchSav = batchSavePrepare(saveList, deleteList); //add save/create/delete objecs to batch and send it
+                ParseBatch batchSav = batchSavePrepareN(saveList, deleteList); //add save/create/delete objecs to batch and send it
                 if (batchSav != null) {
                     batchSav.execute();
                 }
@@ -8955,9 +9462,9 @@ public class DAO {
 //            if (!saveList.isEmpty()) {
             try {
 //                    ParseBatch batchSav = batchSavePrepare(stillNeedsSaving, null);
-                ParseBatch batchSav = batchSavePrepare(saveList, null);
-                if (batchSav != null) {
-                    batchSav.execute();
+                ParseBatch batchSavN = batchSavePrepareN(saveList, null);
+                if (batchSavN != null) {
+                    batchSavN.execute();
                 }
             } catch (ParseException ex) { //encoding issue
                 Log.e(ex);
@@ -9270,81 +9777,112 @@ public class DAO {
         ));
     }
 
-    private List<WorkSlot> getWorkSlotsFromCacheOrParse(Date afterDate, Date beforeDate) {
-        return getWorkSlotsFromCacheOrParse(afterDate, beforeDate, true);
-    }
-
-    private List<WorkSlot> getWorkSlotsFromCacheOrParse(Date startDate, Date endDate, boolean useCachedWorkSlots) {
-        List<WorkSlot> list = null;
-        if (useCachedWorkSlots) {
-            list = new ArrayList();
-//            Hashtable cachedWS = cacheGuidWorkSlots.getCacheContent();
-            Hashtable cachedWS = cacheObjIdWorkSlots.getCacheContent();
-//            if(Config.TEST) ASSERT.that(cacheGuidWorkSlots.getCacheContent())
-            cachedWS.putAll(cacheGuidWorkSlots.getCacheContent()); //add any WS with only guid
-            Enumeration<WorkSlot> listOfWS = cachedWS.elements();
-            while (listOfWS.hasMoreElements()) {
-                WorkSlot workSlot = listOfWS.nextElement();
-                if (workSlot.hasDurationInInterval(startDate.getTime(), endDate.getTime())) {
-                    list.add(workSlot);
-                }
-            }
-            if (!list.isEmpty()) {
-                WorkSlot.sortWorkSlotList(list); //optimization: sort list *before* filtering and eliminate all outdated/after endDate by removing the sequence
-//                return new ItemList(WORKSLOTS.getTitle(), list, true);
-//                ItemList workslotItemList = new ItemList(WORKSLOTS.getTitle(), list, true);
-//                workslotItemList.setItemListIcon(ScreenType.WORKSLOTS.getIcon());
-//                workslotItemList.setSystemName(WorkSlot.CLASS_NAME);
-//                return workslotItemList;
-            }
-        } else {
-//            //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
-//            ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
-//            query.whereGreaterThan(Item.PARSE_UPDATED_AT, startDate);
-//            query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, endDate);
-//            query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
-//            query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-////<editor-fold defaultstate="collapsed" desc="comment">
-////        query.selectKeys(Arrays.asList(ParseObject.GUID));
-////        if (false) {
-////            query.include(WorkSlot.PARSE_ORIGINAL_SOURCE);
-////            query.include(WorkSlot.PARSE_OWNER_CATEGORY);
-////            query.include(WorkSlot.PARSE_OWNER_ITEM);
-////            query.include(WorkSlot.PARSE_OWNER_LIST);
-////            query.include(WorkSlot.PARSE_REPEAT_RULE);
-////            query.selectKeys(Arrays.asList(
-////                    WorkSlot.PARSE_ORIGINAL_SOURCE + "." + ParseObject.GUID,
-////                    WorkSlot.PARSE_OWNER_CATEGORY + "." + ParseObject.GUID,
-////                    WorkSlot.PARSE_OWNER_ITEM + "." + ParseObject.GUID,
-////                    WorkSlot.PARSE_OWNER_LIST + "." + ParseObject.GUID,
-////                    WorkSlot.PARSE_REPEAT_RULE + "." + ParseObject.GUID,
-////                    ParseObject.GUID,
-////                    WorkSlot.PARSE_DURATION,
-////                    WorkSlot.PARSE_END_TIME,
-////                    WorkSlot.PARSE_START_TIME,
-////                    WorkSlot.PARSE_TEXT
-////            ));
-////        } else {
-////</editor-fold>
-//            setupWorkSlotQueryWithIndirectAndGuids(query);
-//
-//            try {
-//                list = query.find();
-//            } catch (ParseException ex) {
-//                Log.e(ex);
+//    private List<WorkSlot> getWorkSlotsFromCacheOrParse(Date afterDate, Date beforeDate) {
+//        return getWorkSlotsFromCacheOrParse(afterDate, beforeDate, true);
+//    }
+//    public List<WorkSlot> getWorkSlotsFromCacheOrParse(Date startDate, Date endDate, boolean useCachedWorkSlots) {
+//        List<WorkSlot> list = null;
+//        xxx;
+//        if (useCachedWorkSlots) {
+//            list = new ArrayList();
+////            Hashtable cachedWS = cacheGuidWorkSlots.getCacheContent();
+//            Hashtable cachedWS = cacheObjIdWorkSlots.getCacheContent();
+////            if(Config.TEST) ASSERT.that(cacheGuidWorkSlots.getCacheContent())
+//            cachedWS.putAll(cacheGuidWorkSlots.getCacheContent()); //add any WS with only guid
+//            Enumeration<WorkSlot> listOfWS = cachedWS.elements();
+//            while (listOfWS.hasMoreElements()) {
+//                WorkSlot workSlot = listOfWS.nextElement();
+//                if (workSlot.hasDurationInInterval(startDate.getTime(), endDate.getTime())) {
+//                    list.add(workSlot);
+//                }
 //            }
-            list = getWorkSlotsFromParse(startDate, endDate);
+//            if (!list.isEmpty()) {
+//                WorkSlot.sortWorkSlotList(list); //optimization: sort list *before* filtering and eliminate all outdated/after endDate by removing the sequence
+////                return new ItemList(WORKSLOTS.getTitle(), list, true);
+////                ItemList workslotItemList = new ItemList(WORKSLOTS.getTitle(), list, true);
+////                workslotItemList.setItemListIcon(ScreenType.WORKSLOTS.getIcon());
+////                workslotItemList.setSystemName(WorkSlot.CLASS_NAME);
+////                return workslotItemList;
+//            }
+//        } else {
+//////<editor-fold defaultstate="collapsed" desc="comment">
+////            //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
+////            ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+////            query.whereGreaterThan(Item.PARSE_UPDATED_AT, startDate);
+////            query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, endDate);
+////            query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
+////            query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//////        query.selectKeys(Arrays.asList(ParseObject.GUID));
+//////        if (false) {
+//////            query.include(WorkSlot.PARSE_ORIGINAL_SOURCE);
+//////            query.include(WorkSlot.PARSE_OWNER_CATEGORY);
+//////            query.include(WorkSlot.PARSE_OWNER_ITEM);
+//////            query.include(WorkSlot.PARSE_OWNER_LIST);
+//////            query.include(WorkSlot.PARSE_REPEAT_RULE);
+//////            query.selectKeys(Arrays.asList(
+//////                    WorkSlot.PARSE_ORIGINAL_SOURCE + "." + ParseObject.GUID,
+//////                    WorkSlot.PARSE_OWNER_CATEGORY + "." + ParseObject.GUID,
+//////                    WorkSlot.PARSE_OWNER_ITEM + "." + ParseObject.GUID,
+//////                    WorkSlot.PARSE_OWNER_LIST + "." + ParseObject.GUID,
+//////                    WorkSlot.PARSE_REPEAT_RULE + "." + ParseObject.GUID,
+//////                    ParseObject.GUID,
+//////                    WorkSlot.PARSE_DURATION,
+//////                    WorkSlot.PARSE_END_TIME,
+//////                    WorkSlot.PARSE_START_TIME,
+//////                    WorkSlot.PARSE_TEXT
+//////            ));
+//////        } else {
+////            setupWorkSlotQueryWithIndirectAndGuids(query);
+////
+////            try {
+////                list = query.find();
+////            } catch (ParseException ex) {
+////                Log.e(ex);
+////            }
+//////</editor-fold>
+//            list = getWorkSlotsFromParse(startDate, endDate);
+//        }
+////        return new WorkSlotList(results);
+//        return list;
+//    }
+    /**
+     * save time by not sending parsre request to get the workslots but using
+     * the cached values
+     *
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public List<WorkSlot> getWorkSlotsFromCache(Date startDate, Date endDate) {
+        List<WorkSlot> list = null;
+        list = new ArrayList();
+        Hashtable cachedWS = cacheObjIdWorkSlots.getCacheContent();
+        if (Config.TEST) {
+            Hashtable cachedWSGuid = cacheGuidWorkSlots.getCacheContent();
+            ASSERT.that(cachedWS.size() == cachedWSGuid.size(), "difference between workslots in ObjId cache (size=" + cachedWS.size() + ") and Guid cache (size=" + cachedWSGuid.size() + ")");
         }
-//        return new WorkSlotList(results);
+        cachedWS.putAll(cacheGuidWorkSlots.getCacheContent()); //add any WS with only guid
+        Enumeration<WorkSlot> listOfWS = cachedWS.elements();
+        while (listOfWS.hasMoreElements()) {
+            WorkSlot workSlot = listOfWS.nextElement();
+            if (workSlot.hasDurationInInterval(startDate.getTime(), endDate.getTime())) {
+                list.add(workSlot);
+            }
+        }
+        if (!list.isEmpty()) {
+            WorkSlot.sortWorkSlotList(list); //optimization: sort list *before* filtering and eliminate all outdated/after endDate by removing the sequence
+        }
         return list;
     }
 
-    private List<WorkSlot> getWorkSlotsFromParse(Date startDate, Date endDate) {
+    public List<WorkSlot> getWorkSlotsFromParse(Date startDate, Date endDate) {
         List<WorkSlot> list = null;
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
-        query.whereGreaterThan(Item.PARSE_UPDATED_AT, startDate);
-        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, endDate);
+//        query.whereGreaterThan(Item.PARSE_UPDATED_AT, startDate);
+//        query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, endDate);
+        query.whereGreaterThan(WorkSlot.PARSE_END_TIME, startDate); //end date should be after start date to have (at least part of) the workslot in the interval
+        query.whereLessThanOrEqualTo(WorkSlot.PARSE_START_TIME, endDate); //has to start *before* the last date, if it starts later it will have no relevant duration
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
         setupWorkSlotQueryWithIndirectAndGuids(query);
@@ -9361,26 +9899,24 @@ public class DAO {
         return list;
     }
 
-    private List<WorkSlot> cachedAllActiveWorkSlots;
-
+//    private List<WorkSlot> cachedAllActiveWorkSlots;
     /**
      * returns completed tasks by date completed
      *
      * @return
      */
-    public List<WorkSlot> getAllActiveWorkSlots() {
-        if (cachedAllActiveWorkSlots != null) {
-            //remove any expired workslots before returning
-            while (!cachedAllActiveWorkSlots.isEmpty() && cachedAllActiveWorkSlots.get(0).getEndTimeD().getTime() < System.currentTimeMillis()) {
-                cachedAllActiveWorkSlots.remove(0);
-            }
-//            return cachedAllActiveWorkSlots;
-        } else {
-            cachedAllActiveWorkSlots = getWorkSlotsFromCacheOrParse(new MyDate(), new MyDate(MyDate.MAX_DATE), true);
-        }
-        return cachedAllActiveWorkSlots;
-    }
-
+//    public List<WorkSlot> getAllActiveWorkSlotsXXX() {
+//        if (cachedAllActiveWorkSlots != null) {
+//            //remove any expired workslots before returning
+//            while (!cachedAllActiveWorkSlots.isEmpty() && cachedAllActiveWorkSlots.get(0).getEndTimeD().getTime() < System.currentTimeMillis()) {
+//                cachedAllActiveWorkSlots.remove(0);xxx;
+//            }
+////            return cachedAllActiveWorkSlots;
+//        } else {
+//            cachedAllActiveWorkSlots = getWorkSlotsFromCacheOrParse(new MyDate(), new MyDate(MyDate.MAX_DATE), true);
+//        }
+//        return cachedAllActiveWorkSlots;
+//    }
     /**
      *
      * get all workslots (including past/expired) ones
@@ -9388,49 +9924,47 @@ public class DAO {
      * @return null if no workslots defined
      */
 //    public List<WorkSlot> getAllWorkSlotsFromParse() {
-    List<WorkSlot> getAllWorkSlotsFromParse() {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        List<WorkSlot> results = null;
-////        WorkSlotList results = null;
-//        ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
-//        query.addAscendingOrder(WorkSlot.PARSE_START_TIME);
-//        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-//        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
-//        try {
-////            results = new WorkSlotList(null, query.find(), true);
-//            results = (List<WorkSlot>) query.find();
-//        } catch (ParseException ex) {
-//            Log.e(ex);
-//        }
-////        return new WorkSlotList(null, fetchListElementsIfNeededReturnCachedIfAvail(results), true);
-//        return results;
-//</editor-fold>
-        return getWorkSlotsFromCacheOrParse(new MyDate(MyDate.MIN_DATE), new MyDate(MyDate.MAX_DATE));
-    }
-
+//    List<WorkSlot> getAllWorkSlotsFromParseXXX() {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        List<WorkSlot> results = null;
+//////        WorkSlotList results = null;
+////        ParseQuery<WorkSlot> query = ParseQuery.getQuery(WorkSlot.CLASS_NAME);
+////        query.addAscendingOrder(WorkSlot.PARSE_START_TIME);
+////        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+////        query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt());
+////        try {
+//////            results = new WorkSlotList(null, query.find(), true);
+////            results = (List<WorkSlot>) query.find();
+////        } catch (ParseException ex) {
+////            Log.e(ex);
+////        }
+//////        return new WorkSlotList(null, fetchListElementsIfNeededReturnCachedIfAvail(results), true);
+////        return results;
+////</editor-fold>
+//        return getWorkSlotsFromCacheOrParse(new MyDate(MyDate.MIN_DATE), new MyDate(MyDate.MAX_DATE));
+//    }
 //    private boolean cacheAllWorkSlotsFromParse(Date afterDate, Date beforeDate) {
     private boolean cacheAllWorkSlotsFromParse() {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
-        List<WorkSlot> results = getWorkSlotsFromCacheOrParse(new MyDate(MyDate.MIN_DATE), new MyDate(MyDate.MAX_DATE), false);
+        List<WorkSlot> results = getWorkSlotsFromParse(new MyDate(MyDate.MIN_DATE), new MyDate(MyDate.MAX_DATE));
 //        WorkSlotList results = getAllWorkSlotsFromParse(afterDate, beforeDate);
         cacheList(results);
         return !results.isEmpty();
     }
 
-    private void checkAndRefreshActiveWorkSlots(WorkSlot element, boolean delete) {
-        if (cachedAllActiveWorkSlots != null) {
-            if (delete) {
-                cachedAllActiveWorkSlots.remove(element);
-            } else {
-//                Date firstDate = getTouchedLogStartDate();
-                if (element.hasActiveDuration() && !cachedAllActiveWorkSlots.contains(element)) {
-                    cachedAllActiveWorkSlots.add(element);
-                    WorkSlot.sortWorkSlotList(cachedAllActiveWorkSlots);
-                }
-            }
-        }
-    }
-
+//    private void checkAndRefreshActiveWorkSlots(WorkSlot element, boolean delete) {
+//        if (cachedAllActiveWorkSlots != null) {
+//            if (delete) {
+//                cachedAllActiveWorkSlots.remove(element);
+//            } else {
+////                Date firstDate = getTouchedLogStartDate();
+//                if (element.hasActiveDuration() && !cachedAllActiveWorkSlots.contains(element)) {
+//                    cachedAllActiveWorkSlots.add(element);
+//                    WorkSlot.sortWorkSlotList(cachedAllActiveWorkSlots);
+//                }
+//            }
+//        }
+//    }
     /**
      * get all workslots that have at least some available time within the
      * interval between startDate and endDate. after* startDate and NOT after
@@ -9444,11 +9978,10 @@ public class DAO {
 //    public WorkSlotList getWorkSlotsN(Date startDate, Date endDate) {
 //    public WorkSlotList getWorkSlots(Date startDate) {
 //    public List<WorkSlot> getWorkSlots(Date startDate) {
-    public ItemList getActiveWorkSlotsAsItemList() {
+//    public ItemList getActiveWorkSlotsAsItemList() {
+////        return getWorkSlotsAsItemList(new MyDate(), new Date(MyDate.MAX_DATE), true);
 //        return getWorkSlotsAsItemList(new MyDate(), new Date(MyDate.MAX_DATE), true);
-        return getWorkSlotsAsItemList(new MyDate(), new Date(MyDate.MAX_DATE), true);
-    }
-
+//    }
 //    public ItemList getWorkSlotsAsItemList(Date startDate) {
 //        return getWorkSlotsAsItemList(startDate, new Date(MyDate.MAX_DATE),false);
 //    }
@@ -9493,11 +10026,13 @@ public class DAO {
 //            list = getWorkSlotsFromParse(startDate, endDate, useCachedWorkSlots);
 //        }
 //</editor-fold>
-        List<WorkSlot> list = getWorkSlotsFromCacheOrParse(startDate, endDate, useCachedWorkSlots);
+//        List<WorkSlot> list = getWorkSlotsFromCacheOrParse(startDate, endDate, useCachedWorkSlots);
+        List<WorkSlot> list = useCachedWorkSlots ? getWorkSlotsFromCache(startDate, endDate) : getWorkSlotsFromParse(startDate, endDate); //optimization: don't fetch each time, get from cache 
 
         ItemList workslotItemList = new ItemList(WORKSLOTS.getTitle(), list, true);
         workslotItemList.setItemListIcon(ScreenType.WORKSLOTS.getIcon());
-        workslotItemList.setSystemName(WorkSlot.CLASS_NAME);
+//        workslotItemList.setSystemName(WorkSlot.CLASS_NAME);
+        workslotItemList.setSystemName(ScreenType.WORKSLOTS.getSystemName());
         return workslotItemList;
     }
 

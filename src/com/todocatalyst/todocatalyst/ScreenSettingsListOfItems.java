@@ -4,6 +4,7 @@ package com.todocatalyst.todocatalyst;
 import com.codename1.components.SpanLabel;
 import com.codename1.ui.Container;
 import com.codename1.ui.Label;
+import com.codename1.ui.events.ActionListener;
 
 //import com.codename1.ui.*;
 //import com.codename1.ui.events.ActionEvent;
@@ -30,6 +31,8 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
         setUniqueFormId("ScreenListOfItemsSettings");
     }
 
+    public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, MyForm.SCREEN_TASK_LIST_TITLE);
+
     /**
      * This method shows the main user interface of the app
      *
@@ -39,41 +42,54 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
         ScreenType screenType = parentForm.getScreenType();
 //       if (screenType)
         switch (screenType) {
-            case TODAY:
+            case TODAY: {
                 content.add(makeSectionTitle(Format.f("Settings for {0}:", screenType.getTitle())));
-                content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeStartingToday));
-                content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeWaitingExpiringToday));
-                content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeAlarmsExpiringToday));
-                content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeWorkSlotsCoveringToday));
-                content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewShowLeafTasksInsteadOfProjects));
-                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.todayViewIncludeOverdueFromThisManyPastDays, 0, 60, 1)); //UI: max 60 days of overdue
+//                Runnable update = ()->DAO.getInstance().reloadToday();
+                Runnable update = () -> DAO.getInstance().reloadSystemList(screenType.getSystemName());
+                content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeStartingToday, update));
+                content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeWaitingExpiringToday, update));
+                content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeAlarmsExpiringToday, update));
+                content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewIncludeWorkSlotsCoveringToday, update));
+                content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.todayViewShowLeafTasksInsteadOfProjects, update));
+                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.todayViewIncludeOverdueFromThisManyPastDays, 0, 60, 1, (e) -> update.run())); //UI: max 60 days of overdue
                 content.add(makeSpacer());
                 break;
-            case OVERDUE:
+            }
+            case OVERDUE: {
                 content.add(makeSectionTitle(Format.f("Settings for {0}:", screenType.getTitle())));
-                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.overdueLogInterval, 1, 365, 1));
+//                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.overdueLogInterval, 1, 365, 1,(e) -> DAO.getInstance().reloadOverdue()));
+                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.overdueLogInterval, 1, 365, 1, (e) -> DAO.getInstance().reloadSystemList(screenType.getSystemName())));
                 content.add(makeSpacer());
                 break;
-            case CREATION_LOG:
+            }
+            case CREATION_LOG: {
                 content.add(makeSectionTitle(Format.f("Settings for {0}:", screenType.getTitle())));
-                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.creationLogInterval, 1, 365, 1, (e) -> DAO.getInstance().reloadCreationLog()));
+//                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.creationLogInterval, 1, 365, 1, (e) -> DAO.getInstance().reloadCreationLog()));
+                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.creationLogInterval, 1, 365, 1, (e) -> DAO.getInstance().reloadSystemList(screenType.getSystemName())));
                 content.add(makeSpacer());
                 break;
-            case COMPLETION_LOG:
+            }
+            case COMPLETION_LOG: {
                 content.add(makeSectionTitle(Format.f("Settings for {0}:", screenType.getTitle())));
-                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.completionLogInterval, 1, 365, 1));
+//                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.completionLogInterval, 1, 365, 1,(e) -> DAO.getInstance().reloadCompletionLog()));
+                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.completionLogInterval, 1, 365, 1, (e) -> DAO.getInstance().reloadSystemList(screenType.getSystemName())));
                 content.add(makeSpacer());
                 break;
-            case TOUCHED:
+            }
+            case TOUCHED: {
                 content.add(makeSectionTitle(Format.f("Settings for {0}:", screenType.getTitle())));
-                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.touchedLogInterval, 1, 365, 1));
+//                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.touchedLogInterval, 1, 365, 1,(e) -> DAO.getInstance().reloadTouched()));
+                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.touchedLogInterval, 1, 365, 1, (e) -> DAO.getInstance().reloadSystemList(screenType.getSystemName())));
                 content.add(makeSpacer());
                 break;
-            case NEXT:
+            }
+            case NEXT: {
                 content.add(makeSectionTitle(Format.f("Settings for {0}:", screenType.getTitle())));
-                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.nextInterval, 1, 365, 1)); //UI: max 60 days of overdue
+//                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.nextInterval, 1, 365, 1,(e) -> DAO.getInstance().reloadNext())); //UI: max 60 days of overdue
+                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.nextInterval, 1, 365, 1, (e) -> DAO.getInstance().reloadSystemList(screenType.getSystemName()))); //UI: max 60 days of overdue
                 content.add(makeSpacer());
                 break;
+            }
             case NOT_INIT:
             default:
         }

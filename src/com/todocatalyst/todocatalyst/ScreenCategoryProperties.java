@@ -69,7 +69,7 @@ public class ScreenCategoryProperties extends MyForm {
 
 //        setLayout(new BoxLayout(BoxLayout.Y_AXIS));
 //        setScrollableY(true); //https://github.com/codenameone/CodenameOne/wiki/The-Components-Of-Codename-One#important---lists--layout-managers
-makeContainerBoxY();
+        makeContainerBoxY();
 //        previousValues = new SaveEditedValuesLocally(getUniqueFormId());
 
         addCommandsToToolbar(getToolbar());//, theme);
@@ -286,9 +286,9 @@ makeContainerBoxY();
                 (t) -> category.setText((String) t),
                 () -> description.getText(),
                 (t) -> description.setText((String) t));
-        if (category.getText().isEmpty())
-        setEditOnShow(description); //UI: start editing this field, only when empty
-//        content.add(layoutN(Category.CATEGORY, categoryName, "**", true));
+        if (MyPrefs.enableEditingAsync.getBoolean() && category.getText().isEmpty()) {
+            setEditOnShow(description); //UI: start editing this field, only when empty
+        }//        content.add(layoutN(Category.CATEGORY, categoryName, "**", true));
         content.add(description);
 
         content.add(makeSpacerThin());
@@ -309,7 +309,7 @@ makeContainerBoxY();
         content.add(comment);
 
         content.add(makeSpacerThin());
-                content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_NUMBER_UNDONE_TASKS_TEXT, Item.SHOW_NUMBER_UNDONE_TASKS_HELP,
+        content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_NUMBER_UNDONE_TASKS_TEXT, Item.SHOW_NUMBER_UNDONE_TASKS_HELP,
                 () -> category.getShowNumberUndoneTasks(), (b) -> category.setShowNumberUndoneTasks(b)));
 
         content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_NUMBER_DONE_TASKS_TEXT, Item.SHOW_NUMBER_DONE_TASKS_HELP,
@@ -319,7 +319,7 @@ makeContainerBoxY();
                 () -> category.getShowNumberLeafTasks(), (b) -> category.setShowNumberLeafTasks(b)));
 
         content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_REMAINING_TEXT, Item.SHOW_REMAINING_HELP,
-                () -> category.getShowRemaining(), 
+                () -> category.getShowRemaining(),
                 (b) -> category.setShowRemaining(b)));
 
         content.add(ScreenSettingsCommon.makeEditBoolean(Item.SHOW_TOTAL_TEXT, Item.SHOW_TOTAL_HELP,
@@ -329,17 +329,16 @@ makeContainerBoxY();
                 () -> category.getShowWorkTime(), (b) -> category.setShowWorkTime(b)));
 
         content.add(makeSpacerThin());
-        
 
         //CREATED
         Label createdDate = new Label(category.getCreatedAt() == null || category.getCreatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getCreatedAt()));
 //        content.add(new Label(Item.CREATED_DATE)).add(createdDate);
-        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hide ? null : Icons.iconCreatedDateCust,Icons.myIconFont));
+        content.add(layoutN(Item.PARSE_CREATED_AT, Item.CREATED_DATE, createdDate, "**", true, hide ? null : Icons.iconCreatedDateCust, Icons.myIconFont));
 
         //MODIFIED
         Label lastModifiedDate = new Label(category.getUpdatedAt() == null || category.getUpdatedAt().getTime() == 0 ? "<none>" : L10NManager.getInstance().formatDateShortStyle(category.getUpdatedAt()));
 //        content.add(new Label(Item.MODIFIED_DATE)).add(lastModifiedDate);
-        content.add(layoutN(Item.PARSE_UPDATED_AT,Item.UPDATED_DATE, lastModifiedDate, "**", true, hide ? null : Icons.iconModifiedDateCust,Icons.myIconFont));
+        content.add(layoutN(Item.PARSE_UPDATED_AT, Item.UPDATED_DATE, lastModifiedDate, "**", true, hide ? null : Icons.iconModifiedDateCust, Icons.myIconFont));
 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false) {
@@ -372,10 +371,10 @@ makeContainerBoxY();
 //</editor-fold>
         if (MyPrefs.enableShowingSystemInfo.getBoolean() && MyPrefs.showObjectIdsInEditScreens.getBoolean()) {
             Label itemObjectId = new Label(category.getObjectIdP() == null ? "<set on save>" : category.getObjectIdP(), "ScreenItemValueUneditable");
-            content.add(layoutN(Item.PARSE_OBJECT_ID_VIRT,Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hide ? null : Icons.iconObjectId));
-         
+            content.add(layoutN(Item.PARSE_OBJECT_ID_VIRT, Item.OBJECT_ID, itemObjectId, Item.OBJECT_ID_HELP, true, hide ? null : Icons.iconObjectId));
+
             Label itemObjectId2 = new Label(category.getGuid());
-            content.add(layoutN(Item.PARSE_GUID_VIRT,Item.GUID, itemObjectId2, Item.OBJECT_GUID_HELP, true, hide ? null : Icons.iconObjectId));
+            content.add(layoutN(Item.PARSE_GUID_VIRT, Item.GUID, itemObjectId2, Item.OBJECT_GUID_HELP, true, hide ? null : Icons.iconObjectId));
         }
 
         setCheckIfSaveOnExit(()

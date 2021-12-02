@@ -44,7 +44,7 @@ import java.util.ArrayList;
  * @author Thomas
  */
 //public class ScreenSettings extends MyForm {
-public class ScreenAccount extends MyForm {
+public class ScreenSettingsAccount extends MyForm {
     //TODO store login+password locally (or at least user key?)
     //TODO Settings option to log out
     //DONE support option to update email (and change login id since email is normally used)
@@ -52,12 +52,15 @@ public class ScreenAccount extends MyForm {
 
     public final static String SCREEN_TITLE = "Account";
     public final static String SCREEN_HELP = "**";
+    
+            public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, SCREEN_TITLE);
+
 
     private ParseUser parseUser; //fetch password
 
 // protected static String FORM_UNIQUE_ID = "ScreenSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    MyForm mainScreen;
-    ScreenAccount(MyForm previousScreen) { // throws ParseException, IOException {
+    ScreenSettingsAccount(MyForm previousScreen) { // throws ParseException, IOException {
         super(SCREEN_TITLE, previousScreen, () -> {
         });
         setUniqueFormId("ScreenSettings");

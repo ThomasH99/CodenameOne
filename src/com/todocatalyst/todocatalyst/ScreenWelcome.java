@@ -192,6 +192,7 @@ public class ScreenWelcome extends MyForm {
                 "Predict",
                 "Know when your work can be done",
                 "Use the unique predictive planning to block time and see when your tasks will finish.", // Predictable, professional, stressfree.",
+//                Icons.iconFinishDate, Icons.myIconFont, colorLightGreen);
                 Icons.iconFinishDateCust, Icons.myIconFont, colorLightGreen);
         makeTab(tabs,
                 "Projects",

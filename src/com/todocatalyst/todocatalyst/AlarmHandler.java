@@ -57,6 +57,8 @@ public class AlarmHandler {
     private List<ExpiredAlarm> expiredAlarms;
     private AlarmInAppAlarmHandler inAppTimer; // = new AlarmInAppAlarmHandler(notificationList);
 
+    private Media alarmSound;
+
     private AlarmHandler() {
         if (true || Storage.getInstance().exists(NOTIF_LIST_FILE_ID)) { //readObject below return null if no file exists
             //TODO: catch any reading/format problems and recreate the file
@@ -170,8 +172,9 @@ public class AlarmHandler {
                 notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecordN());
             }
             refreshInAppTimerAndSaveNotificationList();
-        } else 
-                    Log.p("updateLocalNotificationsOnBackgroundFetch(): DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS) returned empty list!");
+        } else {
+            Log.p("updateLocalNotificationsOnBackgroundFetch(): DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS) returned empty list!");
+        }
     }
 
     /**
@@ -790,7 +793,7 @@ public class AlarmHandler {
         }
     }
 
-     void playAlarm() {
+    /*static*/ void playAlarm() {
         if (false && MyPrefs.alarmPlayBuiltinAlarmSound.getBoolean()) {
             Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM); //work-around but sound doesn't seem to work on iOS, nor on simulator
         } else {
@@ -812,9 +815,13 @@ public class AlarmHandler {
 //                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/notification_sound_bell.mp3")), "audio/mpeg");
 //                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/"+MyPrefs.alarmSoundFile)), "audio/mpeg"); //doesn't work in static
 //                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/notification_sound_bell.mp3")), "audio/mpeg");
-                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(),"/" + MyPrefs.getString(MyPrefs.alarmSoundFile))), "audio/mpeg"); //in SImulator: put mp3 file in .cn1!
-        
-                m.play();
+//                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(),"/" + MyPrefs.getString(MyPrefs.alarmSoundFile))), "audio/mpeg"); //in SImulator: put mp3 file in .cn1!
+                if (alarmSound == null) {
+                    alarmSound = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/" + MyPrefs.getString(MyPrefs.alarmSoundFile))), "audio/mpeg"); //in SImulator: put mp3 file in .cn1!
+                }
+                if (!alarmSound.isPlaying()) { //uI: two alarms at almost same time will only play if first is finished, avoid overlapping/interrupting sounds
+                    alarmSound.play();
+                }
             } catch (Exception err) {
                 if (true) {
                     Log.e(err);

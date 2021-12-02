@@ -29,6 +29,9 @@ public class ScreenSettingsItem extends ScreenSettingsCommon {
         setUniqueFormId("ScreenItemSettings");
         setTitle(title);
     }
+    
+        public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE,Item.ITEM);
+
 
     /**
      * This method shows the main user interface of the app

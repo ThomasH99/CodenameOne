@@ -2412,7 +2412,8 @@ public class CleanUpDataInconsistencies {
     void cleanUpAllWorkSlotsFromParse(boolean executeCleanup) {
         setLogPrefix("WorkSlots");
 //        WorkSlotList listOfWorkSlots = dao.getAllWorkSlotsFromParse();
-        List<WorkSlot> listOfWorkSlots = dao.getAllWorkSlotsFromParse();
+//        List<WorkSlot> listOfWorkSlots = dao.getWorkSlotsFromCacheOrParse(new MyDate(MyDate.MIN_DATE), new MyDate(MyDate.MAX_DATE), false);
+        List<WorkSlot> listOfWorkSlots = dao.getWorkSlotsFromParse(new MyDate(MyDate.MIN_DATE), new MyDate(MyDate.MAX_DATE));
         List updatedWorkSlots = new ArrayList<>();
         if (false) {
             log("number elements in list = " + listOfWorkSlots.size(), logLevel);

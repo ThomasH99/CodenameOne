@@ -32,7 +32,8 @@ public class ItemListList extends ItemList {
     public ItemListList() {
         super(CLASS_NAME);
         setText("Lists");
-        setSystemName("ItemLists");
+//        setSystemName("ItemLists");
+        setSystemName(CLASS_NAME);
     }
 
     static synchronized public ItemListList getInstance() { //syncrhonized to avoid clashing with reload below

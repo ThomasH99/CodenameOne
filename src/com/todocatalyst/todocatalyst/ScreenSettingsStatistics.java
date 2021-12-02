@@ -26,6 +26,9 @@ public class ScreenSettingsStatistics extends ScreenSettingsCommon {
     ScreenSettingsStatistics(MyForm previousScreen, Runnable doneAction) { // throws ParseException, IOException {
         super(previousScreen, doneAction);
     }
+    
+        public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, MyForm.SCREEN_STATISTICS_TITLE);
+
 
     MyComponentGroup secondGroupBy;
     MyComponentGroup firstGroupBy;

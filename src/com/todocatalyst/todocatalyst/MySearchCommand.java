@@ -349,12 +349,18 @@ public class MySearchCommand extends CommandTracked {
 //                        if (precedingStickyHeader == null || !precedingStickyHeader.isCollapsed()) {
                             if (preceedingHeader != null && preceedingHeader.isCollapsed()) {
                                 hide = true;
-                            } else if (searchOnLowerCaseOnly) {
-//                                hide = ((ItemAndListCommonInterface) itemListOrg.get(i - labelCount)).getText().toLowerCase().indexOf(searchText) < 0;
-                                hide = !((ItemAndListCommonInterface) itemListOrg.get(i - labelCount)).getText().toLowerCase().contains(searchText);
                             } else {
+                                hide = false; //don't hide if sth goes wrong below
+                                int idx = i - labelCount;
+                                if (idx >= 0 && idx < itemListOrg.size()) { //idx may go awry, seems when pinchContainer is inserted/removed incorrectly
+                                    if (searchOnLowerCaseOnly) {
+//                                hide = ((ItemAndListCommonInterface) itemListOrg.get(i - labelCount)).getText().toLowerCase().indexOf(searchText) < 0;
+                                        hide = !((ItemAndListCommonInterface) itemListOrg.get(idx)).getText().toLowerCase().contains(searchText);
+                                    } else {
 //                                hide = ((ItemAndListCommonInterface) itemListOrg.get(i - labelCount)).getText().indexOf(searchText) < 0;
-                                hide = !((ItemAndListCommonInterface) itemListOrg.get(i - labelCount)).getText().contains(searchText);
+                                        hide = !((ItemAndListCommonInterface) itemListOrg.get(idx)).getText().contains(searchText);
+                                    }
+                                }
                             }
                             comp.setHidden(hide);
                             if (!hide) {

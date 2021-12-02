@@ -26,6 +26,8 @@ public class ScreenSettingsAlarms extends ScreenSettingsCommon {
     ScreenSettingsAlarms(MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
         super(mainScreen, doneAction);
     }
+    
+    public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE,MyForm.SCREEN_ALARM_TITLE);
 
     /**
      * This method shows the main user interface of the app

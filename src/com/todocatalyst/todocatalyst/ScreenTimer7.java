@@ -19,6 +19,7 @@ import com.codename1.ui.Toolbar;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.layouts.BorderLayout;
 import com.codename1.ui.layouts.BoxLayout;
+import com.codename1.ui.layouts.FlowLayout;
 import com.codename1.ui.layouts.GridLayout;
 import com.codename1.ui.layouts.LayeredLayout;
 import com.codename1.ui.layouts.MyBorderLayout;
@@ -86,7 +87,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
     Command backCommand = null; //not private since accessed from TimerStack to exit Full screen timer
     private final static String MSG_NO_SOURCE_SET = "<No list selected>"; //"<No source>" "<Select list to time>"
     private final static String MSG_NEW_TASK_DEFAULT_TEXT = "New Task";
-    private final static String MSG_QUIT_TIMER = "Quit timer"; //"Quit Timer"; "Quit"-> clearer if adding 'Timer'
+    private final static String MSG_QUIT_TIMER = "Stop all timers"; //"Quit timer"; //"Quit Timer"; "Quit"-> clearer if adding 'Timer'
     private final static String MSG_QUIT_TIMER_SMALL_TIMER = "Quit";
     private final static String MSG_STOP_TIMER = "Stop"; //"Quit Timer"; "Quit"-> clearer if adding 'Timer'
     private final static String MSG_SET_WAITING = "Wait"; //"Set Waiting"; -> too long w 3 buttons (Quit+Wait+Next)
@@ -164,7 +165,8 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
 
         toolbar.addCommandToOverflowMenu(makeInterruptCommand(true)); //left like all other screens
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("TimerSettings", "Settings", Icons.iconSettings, (e) -> {
+//        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("TimerSettings", "Settings", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("TimerSettings", ScreenSettingsTimer.SETTINGS_MENU_TEXT, Icons.iconSettings, (e) -> {
             new ScreenSettingsTimer(this, null).show();
         }
         ));
@@ -1049,7 +1051,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
         description.addActionListener(itemTextListener);
         description.setDoneListener(itemTextListener);
         //TODO!!! do NOT use item.isInteruptTask() since we may later continue working on a task that was originally created as an interrupt but after that is just treated as a normal task
-        if (false && timedItemN.isInteruptOrInstantTask() && description.getText().equals("")) { //false=NOT good UI on phones since keyboard will pop up!
+        if (MyPrefs.enableEditingAsync.getBoolean() && timedItemN.isInteruptOrInstantTask() && description.getText().equals("")) { //false=NOT good UI on phones since keyboard will pop up!
             myForm.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
         }
 
@@ -1169,13 +1171,14 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
 
 
             /*East*/
+//            Container east = BorderLayout.centerAbsolute(BoxLayout.encloseXNoGrow(timerTimeContainer, FlowLayout.encloseLeftMiddle(timerStartStopButton), fullScreenTimerButton));
             Container east = BorderLayout.centerAbsolute(BoxLayout.encloseXNoGrow(timerTimeContainer, timerStartStopButton, fullScreenTimerButton));
             topContainer.add(BorderLayout.EAST, east);
 
             timerContainer.add(swipeable);
         } else {
             //BIG TIMER 
-            if (timedItemN != null && timedItemN.isInteruptOrInstantTask() && description.getText().equals("")) {
+            if (MyPrefs.enableEditingAsync.getBoolean()&&timedItemN != null && timedItemN.isInteruptOrInstantTask() && description.getText().equals("")) {
 //                    contentPane.getComponentForm().setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
 //                myForm.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
                 description.startEditingAsync();
@@ -1253,7 +1256,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
 //            Container timerBigTimerTopLevelContainer = new Container(new BorderLayout()); //top-level container for TimerScreen
 //            Container timerContainer = timerContainer; //top-level container for TimerScreen
 //            timerBigTimerTopLevelContainer.setScrollableY(true); //since the size of the timer may overflow
-            Container timeContainer = new Container(BoxLayout.y());
+            Container timeContainer = new Container(BoxLayout.y(), "TimerEltContainer");
             timeContainer.setScrollableY(true);
 //            timerContainer=timeContainer;
 
@@ -1344,7 +1347,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                 }
             });
 
-            final Container estimateContainer = new Container(new GridLayout(3));
+            final Container estimateContainer = new Container(new GridLayout(3), "TimerEltContainer");
             Button showEffortDetailsButton = new Button("", MyPrefs.timerShowEffortEstimateDetails.getBoolean() ? Icons.iconShowUpChevron : Icons.iconShowDownChevron, "ShowEffortDetailsButton");
             showEffortDetailsButton.addActionListener((e) -> {
                 MyPrefs.flipBoolean(MyPrefs.timerShowEffortEstimateDetails);
@@ -1354,7 +1357,14 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
             });
             estimateContainer.add(estimate).add(totalActualEffort).add(remainingEffort);  //!!: reuse same strings as from ScreenItem!
             estimateContainer.setHidden(!MyPrefs.getBoolean(MyPrefs.timerShowEffortEstimateDetails)); //hide initially
-            timeContainer.add(BorderLayout.centerAbsoluteEastWest(timerTimeContainer, timerStartStopButton, showEffortDetailsButton));
+//            timeContainer.add(BorderLayout.centerAbsoluteEastWest(timerTimeContainer, timerStartStopButton, showEffortDetailsButton));
+//            timeContainer.add(BorderLayout.centerAbsoluteEastWest(timerTimeContainer, FlowLayout.encloseMiddle(timerStartStopButton), showEffortDetailsButton));
+//            timeContainer.add(BorderLayout.centerAbsoluteEastWest(timerTimeContainer, BoxLayout.encloseX(timerStartStopButton), showEffortDetailsButton));
+//            timeContainer.add(BorderLayout.centerAbsoluteEastWest(timerTimeContainer, BorderLayout.west(timerStartStopButton), showEffortDetailsButton));
+//            timeContainer.add(BorderLayout.centerAbsoluteEastWest(timerTimeContainery, BorderLayout.center(timerStartStopButton), showEffortDetailsButton));
+            Container c = BorderLayout.centerAbsoluteEastWest(timerTimeContainer, MyBorderLayout.west(timerStartStopButton), showEffortDetailsButton);
+            c.setUIID("TimerEltContainer");
+            timeContainer.add(c);
             //TODO make the effort Pickers small (size as the time, not as the cell) and centered (and center the labels above again)
             timeContainer.add(BorderLayout.center(estimateContainer));
 
@@ -1393,7 +1403,10 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
 //                pickTimerSource.setMaterialIcon(Icons.iconEdit);
 //                pickTimerSource.setTextPosition(Component.RIGHT);
 //                timeContainer.add(pickTimerSource);
-                timeContainer.add(BorderLayout.west(pickTimerSource).add(BorderLayout.EAST, editSourceButton));
+                Container d = BorderLayout.west(pickTimerSource).add(BorderLayout.EAST, editSourceButton);
+                d.setUIID("TimerEltContainer");
+                timeContainer.add(makeSpacer());
+                timeContainer.add(d);
             } else { //no source defined
 //                ASSERT.that(timerInstanceN == null);
                 SpanLabel pickTimerSource = new SpanLabel();
@@ -1410,16 +1423,28 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                     }).show();
                 }));
                 pickTimerSource.setText(MSG_NO_SOURCE_SET);
-                timeContainer.add(BorderLayout.west(pickTimerSource).add(BorderLayout.EAST, editSourceButton));
+                Container e = BorderLayout.west(pickTimerSource).add(BorderLayout.EAST, editSourceButton);
+                e.setUIID("TimerEltContainer");
+                timeContainer.add(makeSpacer());
+                timeContainer.add(e);
+
             }
+
+            timeContainer.add(makeSpacer());
 
             //TASK DESCRIPTION
 //            timeContainer.add(BorderLayout.west(status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, editItemButton));
 //            timeContainer.add(BorderLayout.west(BoxLayout.encloseXNoGrow(status, description)).add(BorderLayout.EAST, editItemButton));
-            Container swipe1 = BorderLayout.west(status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, editItemButton);
+//            Container taskTextCont=  BorderLayout.west(status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, editItemButton);
+//            Container taskTextCont=  BorderLayout.west(status).add(BorderLayout.CENTER, description).add(BorderLayout.EAST, editItemButton);
+            Container ts = FlowLayout.encloseLeftMiddle(status);
+            Container tt = FlowLayout.encloseRightMiddle(editItemButton);
+//        Container all = MyBorderLayout.centerEastWest(comment, ts, null);
+            Container taskTextCont = LayeredLayout.encloseIn(description, ts, tt);
+            taskTextCont.setUIID("TimerEltContainer");
 //            swipe1.setUIID("ContainerOpaque");
-            timeContainer.add(swipe1);
-            timeContainer.setUIID("BigTimerTaskContainer");
+            timeContainer.add(taskTextCont);
+//            timeContainer.setUIID("BigTimerTaskContainer");
             //TASK COMMENT
             MyTextField comment = new MyTextField(Item.COMMENT, 20, 2, 4, MyPrefs.commentMaxSizeInChars.getInt(), TextArea.ANY);
             comment.setUIID("BigTimerComment");
@@ -1454,6 +1479,9 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                         (t) -> comment.setText((String) t), null, null, null, null, null //parseIdMap2=null, since everything is saved to ParseServer on edit, so no point in saving on exit as well
                 );
             }
+
+            timeContainer.add(makeSpacer());
+
             Container commentContainer = ScreenItem2.makeCommentContainer(comment);
 //            timerContainer.add(BorderLayout.center(commentContainer)); //TODO add full screen edit for Notes
 //            timerBigTimerTopLevelContainer.add(BorderLayout.center(commentContainer)); //TODO add full screen edit for Notes
@@ -1505,7 +1533,8 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
             Button setWaitingButton = null;
             if (timedItemN != null && !timedItemN.isDone() && !timedItemN.isWaitingAndSetWaitUntilDateNotReached()) {
 //                setWaitingButton = new Button(cmdSetTaskWaitingAndGotoNextTaskOrExit); //"Wait"), 
-                setWaitingButton = new Button(CommandTracked.create(MSG_SET_WAITING, Icons.iconItemStatusWaiting, (e) -> { //"Wait" / "->Waiting"
+//                setWaitingButton = new Button(CommandTracked.create(MSG_SET_WAITING, Icons.iconItemStatusWaiting, (e) -> { //"Wait" / "->Waiting"
+                setWaitingButton = new Button(CommandTracked.create(MSG_SET_WAITING, Icons.iconItemStatusWaitingCust, Icons.myIconFont, (e) -> { //"Wait" / "->Waiting"
 //                    timedItem.setStatus(ItemStatus.WAITING, true, true, true, true);
                     timedItemN.setStatus(ItemStatus.WAITING);
 //                    DAO.getInstance().saveToParseNow(timedItemN);
@@ -1619,7 +1648,8 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
             //COMPLETED BUTTON
             Button completedButton = null;
             if (timedItemN != null && !timedItemN.isDone()) {
-                completedButton = new Button(CommandTracked.create("Completed", Icons.iconItemStatusDone,
+//                completedButton = new Button(CommandTracked.create("Completed", Icons.iconItemStatusDone,
+                completedButton = new Button(CommandTracked.create("Completed", Icons.iconItemStatusDoneCust, Icons.myIconFont,
                         (e) -> {
                             timedItemN.setStatus(ItemStatus.DONE);
                             timedItemN.setEditedDateToNow();

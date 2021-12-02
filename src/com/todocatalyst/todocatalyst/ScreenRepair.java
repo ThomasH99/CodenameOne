@@ -864,6 +864,12 @@ public class ScreenRepair extends MyForm {
             new ScreenRepairData(ScreenRepair.this).show();
         })));
 
+        content.add(new Button(new Command("Test stackTrace->Parse") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                StackTrace.test("text");
+            }
+        }));
         content.add(new Button(new Command("Refresh cache") {
             @Override
             public void actionPerformed(ActionEvent evt) {

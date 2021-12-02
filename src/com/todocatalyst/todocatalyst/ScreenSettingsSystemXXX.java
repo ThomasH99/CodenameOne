@@ -19,16 +19,19 @@ import com.codename1.ui.Container;
  *
  * @author Thomas
  */
-public class ScreenSettingsSystem extends ScreenSettingsCommon {
+public class ScreenSettingsSystemXXX extends ScreenSettingsCommon {
     
 //     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 
 
-    ScreenSettingsSystem(MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
+    ScreenSettingsSystemXXX(MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);
           super(mainScreen, doneAction);
           setUniqueFormId("ScreenItemSettings");
   }
+    
+            public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, MyForm.SCREEN_STATISTICS_TITLE);
+
 
     /**
      * This method shows the main user interface of the app

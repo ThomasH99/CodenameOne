@@ -59,15 +59,23 @@ public class ScreenStatistics2 extends MyForm {
     @Override
     public void refreshAfterEdit() {
 //        getContentPane().removeAll();
-        endDate = MyDate.getEndOfDay(new MyDate()); //end of interval is now (*end* of last day in interval)
-        Date newStartDate = MyDate.getStartOfDay(new MyDate(endDate.getTime() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS));
-        if (!Objects.equals(newStartDate, startDate)) {
-            startDate = newStartDate;
-            reloadData();
+        if (false) { //now moved to DAO.COMPLETION
+            endDate = MyDate.getEndOfDay(new MyDate()); //end of interval is now (*end* of last day in interval)
+            Date newStartDate = MyDate.getStartOfDay(new MyDate(endDate.getTime() - MyPrefs.statisticsScreenNumberPastDaysToShow.getInt() * MyDate.DAY_IN_MILLISECONDS));
+            if (!Objects.equals(newStartDate, startDate)) {
+                startDate = newStartDate;
+//            reloadData();
+//            doneItemsFromParseUnsorted = DAO.getInstance().getCompletedItems(startDate, endDate, true);
+            }
         }
+        doneItemsFromParseUnsorted = DAO.getInstance().getNamedItemList(DAO.SYSTEM_LIST_STATISTICS);
 //        SortStatsOnXXX sortOn = SortStatsOnXXX.valueOfDefault(MyPrefs.statisticsSortBy.getString());
 //        sortItems(doneItemsFromParseUnsorted, sortOn); //now done in buildStatisticsSortedByTime
 //        itemListStats = buildStatisticsSortedByTime(doneItemsFromParseUnsorted, workSlots);
+//        itemListStats.startTime = startDate;
+        startDate = DAO.getStatisticsStartDate();
+        endDate = DAO.getStatisticsEndDate();
+//        itemListStats.endTime = endDate;
         itemListStats = buildStatisticsSortedByTime(doneItemsFromParseUnsorted);
         itemListStats.startTime = startDate;
         itemListStats.endTime = endDate;
@@ -89,15 +97,14 @@ public class ScreenStatistics2 extends MyForm {
         super.refreshAfterEdit();
     }
 
-    private void reloadData() {
-
-//        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
-//        workSlots = new WorkSlotList(null, DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted
-//        workSlots = DAO.getInstance().getWorkSlots(startDate); //true=already sorted
-        doneItemsFromParseUnsorted = DAO.getInstance().getCompletedItems(startDate, endDate, true);
-//        sortItems(itemsSortedOnDate, SortStatsOn.valueOf(MyPrefs.statisticsSortBy.getString()) );
-    }
-
+//    private void reloadDataXXX() {
+//
+////        workSlots = DAO.getInstance().getWorkSlotsN(startDate, endDate);
+////        workSlots = new WorkSlotList(null, DAO.getInstance().getWorkSlots(startDate), true); //true=already sorted
+////        workSlots = DAO.getInstance().getWorkSlots(startDate); //true=already sorted
+//        doneItemsFromParseUnsorted = DAO.getInstance().getCompletedItems(startDate, endDate, true);
+////        sortItems(itemsSortedOnDate, SortStatsOn.valueOf(MyPrefs.statisticsSortBy.getString()) );
+//    }
     public void addCommandsToToolbar(Toolbar toolbar) {//, Resources theme) {
 
         super.addCommandsToToolbar(toolbar);
@@ -127,7 +134,8 @@ public class ScreenStatistics2 extends MyForm {
 
 //        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", "Settings", Icons.iconSettings, (e) -> {
 //        toolbar.addCommandToRightBar(MyReplayCommand.createKeep("Settings", "", Icons.iconSettings, (e) -> {
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", "", Icons.iconSettings, (e) -> {
+//        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", "Select view", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("Settings", ScreenSettingsStatistics.SETTINGS_MENU_TEXT, Icons.iconSettings, (e) -> {
             int daysInThePast = MyPrefs.statisticsScreenNumberPastDaysToShow.getInt();
             new ScreenSettingsStatistics(ScreenStatistics2.this, () -> {
                 //Everything below now done in refreshAfterEdit which is automatically called on return
@@ -272,7 +280,9 @@ public class ScreenStatistics2 extends MyForm {
                             bucket.hash = (item) -> MyDate.getStartOfDay(item.getCompletedDate());
                             bucket.endDateFct = (startDate) -> new MyDate(startDate.getTime() + MyDate.DAY_IN_MILLISECONDS);
                             bucket.name = (item) -> MyDate.formatDateNew(item.getCompletedDate(), true, true, false, true, false);
-                            bucket.comparator = (Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d1.hashValue).getTime(), ((Date) d2.hashValue).getTime()); //sort eg by dates, lists/categories
+                            bucket.comparator = mostMostRecentFirst
+                                    ?(Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d2.hashValue).getTime(), ((Date) d1.hashValue).getTime()) //sort eg by dates, lists/categories
+                                    :(Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d1.hashValue).getTime(), ((Date) d2.hashValue).getTime()); //sort eg by dates, lists/categories
                             bucket.icon = Icons.iconDateRange;
 //                            bucket.workSlots = (item) -> depth==2
 //                                    ?getWorkSlots((Date) hash.get((Item) item), endDateFct.get((Date) hash.get(item)))
@@ -284,7 +294,9 @@ public class ScreenStatistics2 extends MyForm {
                             bucket.hash = (item) -> MyDate.getStartOfWeek(item.getCompletedDate());
                             bucket.endDateFct = (startDate) -> new MyDate(startDate.getTime() + MyDate.DAY_IN_MILLISECONDS * 7);
                             bucket.name = (item) -> MyDate.getWeekStr(MyDate.getStartOfWeek(item.getCompletedDate()));
-                            bucket.comparator = (Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d1.hashValue).getTime(), ((Date) d2.hashValue).getTime()); //sort eg by dates, lists/categories
+                            bucket.comparator = mostMostRecentFirst
+                                    ?(Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d2.hashValue).getTime(), ((Date) d1.hashValue).getTime()) //sort eg by dates, lists/categories
+                            :(Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d1.hashValue).getTime(), ((Date) d2.hashValue).getTime()); //sort eg by dates, lists/categories
                             bucket.icon = Icons.iconDateRange;
 //                            bucket.workSlots = (item) -> getWorkSlots((Date) hash.get((Item) item), endDateFct.get((Date) hash.get(item)));
                             bucket.initialized = true;
@@ -294,7 +306,9 @@ public class ScreenStatistics2 extends MyForm {
                             bucket.hash = (item) -> MyDate.getStartOfMonth(item.getCompletedDate());
                             bucket.endDateFct = (startDate) -> MyDate.getEndOfMonth(startDate);
                             bucket.name = (item) -> MyDate.getMonthAndYear(item.getCompletedDate());
-                            bucket.comparator = (Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d1.hashValue).getTime(), ((Date) d2.hashValue).getTime()); //sort eg by dates, lists/categories
+                            bucket.comparator = mostMostRecentFirst
+                                    ?(Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d2.hashValue).getTime(), ((Date) d1.hashValue).getTime()) //sort eg by dates, lists/categories
+                            :(Comparator<ItemBucket>) (d1, d2) -> Long.compare(((Date) d1.hashValue).getTime(), ((Date) d2.hashValue).getTime()); //sort eg by dates, lists/categories
                             bucket.icon = Icons.iconDateRange;
 //                            bucket.workSlots = (item) -> getWorkSlots((Date) hash.get((Item) item), endDateFct.get((Date) hash.get(item)));
                             bucket.initialized = true;
@@ -1012,7 +1026,7 @@ public class ScreenStatistics2 extends MyForm {
     protected Container buildContentPane(ItemList itemListStats) {
         parseIdMap2.parseIdMapReset();
         if ((itemListStats != null && itemListStats.size() > 0)) {
-            MyTree2 cl = new MyTree2(this,itemListStats, expandedObjects, null, null) {
+            MyTree2 cl = new MyTree2(this, itemListStats, expandedObjects, null, null) {
                 @Override
                 protected Component createNode(Object node, int depth) {
                     Container cmp = null;
@@ -1021,7 +1035,7 @@ public class ScreenStatistics2 extends MyForm {
                         cmp = ScreenListOfItems.buildItemContainer(ScreenStatistics2.this, (Item) node, itemListStats);
                     } else if (node instanceof ItemList) {
 //                        cmp = ScreenListOfItemLists.buildItemListContainer((ItemList) node, null, true, expandedObjects);
-                        cmp = ScreenListOfItemLists.buildItemListContainer(ScreenStatistics2.this,(ItemList) node,  true);
+                        cmp = ScreenListOfItemLists.buildItemListContainer(ScreenStatistics2.this, (ItemList) node, true);
                     } else {
                         assert false : "should only be Item or ItemList";
                     }

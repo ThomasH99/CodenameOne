@@ -618,6 +618,13 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      */
     public boolean isNoSave();
 
+    /**
+     * marks this list as a temporary list that must not be dave do Parse
+     *
+     * @param temporaryNoSaveList
+     */
+    public void setNoSave(boolean doNotSaveThisElement);
+
     default public void setAllowAddingElements(boolean allowAddingTasks) {
 //        return false;
     }
@@ -1145,6 +1152,20 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        }
 //</editor-fold>
     }
+
+    default public boolean isAllWorkTimeFromList(ItemAndListCommonInterface currentList) {
+        boolean allWorkTimeComesFromCurrentList = true;
+        WorkTimeSlices workTimeSlicesN = getAllocatedWorkTimeN();
+        if (workTimeSlicesN != null) {
+            List<WorkSlotSlice> workslotSlices = workTimeSlicesN.getWorkSlotSlices();
+            WorkSlot workSlot;
+            allWorkTimeComesFromCurrentList = (workslotSlices.size() > 1 
+                    && (workSlot = workslotSlices.get(workslotSlices.size() - 1).getWorkSlot()) != null 
+                    && workSlot.getOwner() != currentList);
+        }
+        return allWorkTimeComesFromCurrentList;
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    default public long getFinishTimeOLD2() {
 ////        return getAllocatedWorkTimeN().getFinishTime();
@@ -1199,7 +1220,6 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //    }
 //</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
-
     /**
      * called to indicate the workTime needs to be udpated/refreshed. E.g. by an
      * Item if status or remaining time changes, or by a workslot if duration or
@@ -1270,13 +1290,17 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     }
 
     /**
+     * getDefaultFilterSortDef can be overridden by individual elements to
+     * control what kind of default filter is returned. If this it not done, the
+     * code here will always return the common standard filter
+     * (FilterSortDef.getDefaultFilter()).
      *
      * @return
      */
     default public FilterSortDef getDefaultFilterSortDef() {
 //            new FilterSortDef(Item.PARSE_DUE_DATE, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, true)
 //        FilterSortDef hardcodedFilter = new FilterSortDef(null, FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS + FilterSortDef.FILTER_SHOW_WAITING_TASKS, false); //no sorting, //TODO!! Move this filter to FilterSortDef.getDeafultFilter() and reuse everywhere
-        FilterSortDef hardcodedFilter = FilterSortDef.getDefaultFilter();
+        FilterSortDef hardcodedFilter = FilterSortDef.getDefaultItemListFilter(); //
         return hardcodedFilter;
     }
 
@@ -1316,7 +1340,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         }
         return filterSortDef;
     }
-    
+
     default public boolean isSortOn() {
         return getFilterSortDef().isSortOn();
     }
@@ -1535,10 +1559,12 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     default public String getSystemName() {
         return "";
     }
-    
+
     /**
-     * replayId will normally be the guid, except for systemLists where it will be the systemName (which takes precedence over guid)
-     * @return 
+     * replayId will normally be the guid, except for systemLists where it will
+     * be the systemName (which takes precedence over guid)
+     *
+     * @return
      */
     default public String getReplayId() {
         if (!getSystemName().isEmpty()) {
@@ -1574,9 +1600,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
     static String toIdString(Object elt) {
         if (elt instanceof ItemAndListCommonInterface) {
             return ((ItemAndListCommonInterface) elt).getObjectIdP() + "/" + ((ItemAndListCommonInterface) elt).getGuid();
-        }if (elt instanceof ParseObject) {
+        }
+        if (elt instanceof ParseObject) {
             return ((ParseObject) elt).getObjectIdP() + "/" + ((ParseObject) elt).getGuid();
-        }if (elt instanceof FilterSortDef) {
+        }
+        if (elt instanceof FilterSortDef) {
             return ((FilterSortDef) elt).getObjectIdP() + "/" + ((FilterSortDef) elt).getGuid();
         } else if (elt == null) {
             return "<null>";
@@ -2004,7 +2032,7 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return typeStr;
     }
 
-     /*
+    /*
      * return the task info on which to sort the task in the Today view.
      * If multiple aspects of tasks mean it should appear today (e.g. both Due, WaitingReminder and in WorkSlot"), 
     show the task under the first listed aspect (considered the main reason to show it in Today).

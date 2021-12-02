@@ -157,51 +157,50 @@ public class MyCacheMapHash {
 //            }
 //            Storage.getInstance().writeObject(CACHE_ID + cachePrefix + key.toString(), value); //MUST always save to persist changes on device between app activations
 //</editor-fold>
-        if (false && Config.TEST) {
-            ASSERT.that(key != null, () -> "key==null for value=" + value);
-            ASSERT.that(value != null, () -> "value==null for key=" + key);
-            Object oldVal = memoryCache.get(key);
-//            ASSERT.that(oldVal == null || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key
-//            ASSERT.that(oldVal == null || oldVal == value || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key //oldVal.equals(value) since value may be a String (named object)
-            ASSERT.that(oldVal == null || oldVal == value || (oldVal instanceof String && oldVal.equals(value)),
-                    () -> "Cache key already points to a different object. Key=" + key //oldVal.equals(value) since value may be a String (named object)
-                    + ", OLD= \"" + ItemAndListCommonInterface.toIdString(oldVal) + "\", NEW= \"" + ItemAndListCommonInterface.toIdString(value) + "\"");
-//            ASSERT.that(oldVal == null || oldVal == value, 
-//                    () -> "Cache key already points to a different object. Key=" + key ); //NB avoid object.toString since may create infinite loop
-            if (true || oldVal == null || oldVal != value) { //during testing, ignore overwrite which may be due to the debugger's use of toString which calls eg getListFull()-????
-                Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
-                memoryCache.put(key, value);
-            } else {
-                if (false) { //always only use first value
-                    Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
-                    memoryCache.put(key, value);
-                }
-            }
-        } else {
-            Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
-            Object oldVal = memoryCache.put(key, value);
-            ASSERT.that(oldVal == null || oldVal == value || (oldVal instanceof String && oldVal.equals(value)),
-                    () -> "Cache key already pointed to a different object. Key=" + key //oldVal.equals(value) since value may be a String (named object)
-                    + ", OLD= \"" + ItemAndListCommonInterface.toIdString(oldVal) + "\", NEW= \"" + ItemAndListCommonInterface.toIdString(value) + "\"");
-        }
+//        if (false && Config.TEST) {
+//            ASSERT.that(key != null, () -> "key==null for value=" + value);
+//            ASSERT.that(value != null, () -> "value==null for key=" + key);
+//            Object oldVal = memoryCache.get(key);
+////            ASSERT.that(oldVal == null || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key
+////            ASSERT.that(oldVal == null || oldVal == value || oldVal.equals(value), () -> "Cache key already points to a different object. Key=" + key //oldVal.equals(value) since value may be a String (named object)
+//            ASSERT.that(oldVal == null || oldVal == value || (oldVal instanceof String && oldVal.equals(value)),
+//                    () -> "Cache key already points to a different object. Key=" + key //oldVal.equals(value) since value may be a String (named object)
+//                    + ", OLD= \"" + ItemAndListCommonInterface.toIdString(oldVal) + "\", NEW= \"" + ItemAndListCommonInterface.toIdString(value) + "\"");
+////            ASSERT.that(oldVal == null || oldVal == value, 
+////                    () -> "Cache key already points to a different object. Key=" + key ); //NB avoid object.toString since may create infinite loop
+//            if (true || oldVal == null || oldVal != value) { //during testing, ignore overwrite which may be due to the debugger's use of toString which calls eg getListFull()-????
+//                Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
+//                memoryCache.put(key, value);
+//            } else {
+//                if (false) { //always only use first value
+//                    Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
+//                    memoryCache.put(key, value);
+//                }
+//            }
+//        } else {
+        Storage.getInstance().writeObject(cacheId + key.toString(), value); //MUST always save to persist changes on device between app activations
+        Object oldVal = memoryCache.put(key, value);
+        ASSERT.that(oldVal == null || oldVal == value || (oldVal instanceof String && oldVal.equals(value)),
+                () -> "Cache key already pointed to a different object. Key=" + key //oldVal.equals(value) since value may be a String (named object)
+                + ", OLD= \"" + ItemAndListCommonInterface.toIdString(oldVal) + "\", NEW= \"" + ItemAndListCommonInterface.toIdString(value) + "\"");
+//        }
     }
 
+//    public synchronized Object getNoPutXXX(Object key) {
+//        Object val = null;
+//        val = memoryCache.get(key);
+//        if (val == null) {
+////                val = Storage.getInstance().readObject(CACHE_ID + cachePrefix + key.toString());
+//            val = Storage.getInstance().readObject(cacheId + key.toString());
+//        }
+//        return val;
+//    }
     /**
      * Returns the object matching the given key
      *
      * @param key key object
      * @return value from a previous put or null
      */
-    public synchronized Object getNoPut(Object key) {
-        Object val = null;
-        val = memoryCache.get(key);
-        if (val == null) {
-//                val = Storage.getInstance().readObject(CACHE_ID + cachePrefix + key.toString());
-            val = Storage.getInstance().readObject(cacheId + key.toString());
-        }
-        return val;
-    }
-
     synchronized public Object get(Object key) {
         Object val = null;
 //        synchronized (LOCK) {
@@ -211,7 +210,8 @@ public class MyCacheMapHash {
             val = Storage.getInstance().readObject(cacheId + key.toString());
             if (val != null) {
 //                    put(key, val); //don't put, since it writes back to storage again, for no purpose
-                memoryCache.put(key, val);
+                Object oldVal = memoryCache.put(key, val);
+                ASSERT.that(oldVal == null);
             }
         }
 //        }

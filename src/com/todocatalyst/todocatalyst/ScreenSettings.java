@@ -77,51 +77,63 @@ public class ScreenSettings extends ScreenSettingsCommon {
             })), "**"));
         }
 
-        content.add(layoutN("", new Button(MyReplayCommand.createMaterial("Global Settings", Icons.iconSettings, (e) -> {
-            new ScreenGlobalSettings(this).show();
+//        content.add(layoutN("", new Button(MyReplayCommand.createMaterial("Global Settings", Icons.iconSettings, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.createMaterial(ScreenSettingsGlobal.SETTINGS_MENU_TEXT, Icons.iconSettings, (e) -> {
+            new ScreenSettingsGlobal(this).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("Account settings", Icons.iconEditAccount, (e) -> {
-            new ScreenAccount(this).show();
+//        content.add(layoutN("", new Button(MyReplayCommand.create("Account settings", Icons.iconEditAccount, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(ScreenSettingsAccount.SETTINGS_MENU_TEXT, Icons.iconEditAccount, (e) -> {
+            new ScreenSettingsAccount(this).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("Today view settings", Icons.iconMainToday, (e) -> {
+//        content.add(layoutN("", new Button(MyReplayCommand.create("Today view settings", Icons.iconMainToday, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(ScreenSettingsToday.SETTINGS_MENU_TEXT, Icons.iconMainToday, (e) -> {
             new ScreenSettingsToday(this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("Task settings", Icons.iconMainAllTasksCust, Icons.myIconFont, (e) -> {
+//        content.add(layoutN("", new Button(MyReplayCommand.create("Task settings", Icons.iconMainAllTasksCust, Icons.myIconFont, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(ScreenSettingsItem.SETTINGS_MENU_TEXT, Icons.iconMainAllTasksCust, Icons.myIconFont, (e) -> {
             new ScreenSettingsItem(null, this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("Task list settings", Icons.iconMainListsCust, Icons.myIconFont, (e) -> {
+//        content.add(layoutN("", new Button(MyReplayCommand.create("Task list settings", Icons.iconMainListsCust, Icons.myIconFont, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(ScreenSettingsListOfItems.SETTINGS_MENU_TEXT, Icons.iconMainListsCust, Icons.myIconFont, (e) -> {
             new ScreenSettingsListOfItems(this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("List settings", Icons.iconMainListsCust, Icons.myIconFont, (e) -> {
+//        content.add(layoutN("", new Button(MyReplayCommand.create("List settings", Icons.iconMainListsCust, Icons.myIconFont, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(ScreenSettingsListOfItemLists.SETTINGS_MENU_TEXT, Icons.iconMainListsCust, Icons.myIconFont, (e) -> {
             new ScreenSettingsListOfItemLists(this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("Category settings", Icons.iconMainCategories, (e) -> {
+//        content.add(layoutN("", new Button(MyReplayCommand.create("Category settings", Icons.iconMainCategories, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(ScreenSettingsListOfCategories.SETTINGS_MENU_TEXT, Icons.iconMainCategories, (e) -> {
             new ScreenSettingsListOfCategories(this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("Reminder settings", Icons.iconMainAlarms, (e) -> {
+//        content.add(layoutN("", new Button(MyReplayCommand.create("Reminder settings", Icons.iconMainAlarms, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(ScreenSettingsAlarms.SETTINGS_MENU_TEXT, Icons.iconMainAlarms, (e) -> {
             new ScreenSettingsAlarms(this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("Timer settings", Icons.iconTimerLaunch, (e) -> {
+//        content.add(layoutN("", new Button(MyReplayCommand.create("Timer settings", Icons.iconTimerLaunch, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(ScreenSettingsTimer.SETTINGS_MENU_TEXT, Icons.iconTimerLaunch, (e) -> {
             new ScreenSettingsTimer(this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("Template settings", Icons.iconMainTemplates, (e) -> {
+//        content.add(layoutN("", new Button(MyReplayCommand.create("Template settings", Icons.iconMainTemplates, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(ScreenSettingsTemplates.SETTINGS_MENU_TEXT, Icons.iconMainTemplates, (e) -> {
             new ScreenSettingsTemplates(this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create("Repeat settings", Icons.iconRepeat, (e) -> {
+//        content.add(layoutN("", new Button(MyReplayCommand.create("Repeat settings", Icons.iconRepeat, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(ScreenSettingsRepeatRules.SETTINGS_MENU_TEXT, Icons.iconRepeat, (e) -> {
             new ScreenSettingsRepeatRules(this, null).show();
         })), "**"));
 
-        content.add(layoutN("", new Button(MyReplayCommand.create(WorkSlot.WORKSLOT + " settings", Icons.iconMainWorkSlots, (e) -> {
+//        content.add(layoutN("", new Button(MyReplayCommand.create(WorkSlot.WORKSLOT + " settings", Icons.iconMainWorkSlots, (e) -> {
+        content.add(layoutN("", new Button(MyReplayCommand.create(ScreenSettingsWorkSlot.SETTINGS_MENU_TEXT, Icons.iconMainWorkSlots, (e) -> {
             new ScreenSettingsWorkSlot(this, null).show();
         })), "**"));
 

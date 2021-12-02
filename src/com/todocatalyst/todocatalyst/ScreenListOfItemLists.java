@@ -133,7 +133,7 @@ public class ScreenListOfItemLists extends MyForm {
         }
         Container cont = buildContentPaneForItemList(itemListList);
         getContentPane().add(BorderLayout.CENTER, cont);
-        if (false&&cont instanceof MyTree2) {
+        if (false && cont instanceof MyTree2) {
 //            setStartEditingAsync(((MyTree2)cont).getInlineInsertField().getTextArea());
 //            InsertNewElementFunc insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
             PinchInsertContainer insertNewElementFunc = ((MyTree2) cont).getInlineInsertField();
@@ -145,7 +145,6 @@ public class ScreenListOfItemLists extends MyForm {
 
         //check if there was an insertContainer active earlier
 //        recreateInlineInsertContainerAndReplayCmdIfNeeded(); //moved to MyForm.refreshAfterEdit()
-
 //        revalidate();
 //        revalidateWithAnimationSafety();
 ////        if (this.keepPos != null) {
@@ -246,7 +245,7 @@ public class ScreenListOfItemLists extends MyForm {
         //INTERRUPT TASK
         toolbar.addCommandToOverflowMenu(makeInterruptCommand(true));
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemListsSettings", "Settings", Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ListOfItemListsSettings", ScreenSettingsListOfItemLists.SETTINGS_MENU_TEXT, Icons.iconSettings, (e) -> {
             new ScreenSettingsListOfItemLists(ScreenListOfItemLists.this, () -> {
                 if (false) {
                     refreshAfterEdit();
@@ -292,8 +291,20 @@ public class ScreenListOfItemLists extends MyForm {
     }
 
 //    protected static Container buildItemListContainer(MyForm myForm,ItemList itemList, KeepInSameScreenPosition keepPos, boolean statisticsMode, ExpandedObjects expandedObjectsXXX) {
-    protected static Container buildItemListContainer(final MyForm myForm, final ItemList itemList,  boolean statisticsMode) {
-     
+    protected static Container buildItemListContainer(final MyForm myForm, final ItemList itemList, boolean statisticsMode) {
+        return buildItemListContainer(myForm, itemList, statisticsMode, false);
+    }
+
+    /**
+     *
+     * @param myForm
+     * @param itemList
+     * @param statisticsMode
+     * @param disableSwipeTimer don't show Timer eg for list of workslots
+     * @return
+     */
+    protected static Container buildItemListContainer(final MyForm myForm, final ItemList itemList, boolean statisticsMode, boolean disableSwipeTimer) {
+
 //        return buildItemListContainer(itemList, keepPos, statisticsMode, expandedObjects, null);
 //    }
 //
@@ -313,6 +324,7 @@ public class ScreenListOfItemLists extends MyForm {
         boolean showNumberDoneTasks;
         boolean showNumberLeafTasks;
         boolean showRemaining;
+        boolean showActual;
         boolean showTotal;
         boolean showWorkTime;
         if (false) {
@@ -320,6 +332,7 @@ public class ScreenListOfItemLists extends MyForm {
             showNumberDoneTasks = false;
             showNumberLeafTasks = false;
             showRemaining = false;
+            showActual = false;
             showTotal = false;
             showWorkTime = false;
         } else if (true) {
@@ -327,6 +340,7 @@ public class ScreenListOfItemLists extends MyForm {
             showNumberDoneTasks = itemList.getShowNumberDoneTasks();
             showNumberLeafTasks = itemList.getShowNumberLeafTasks();
             showRemaining = itemList.getShowRemaining();
+            showActual = itemList.getShowActual();
             showTotal = itemList.getShowTotal();
             showWorkTime = itemList.getShowWorkTime();
         } else {
@@ -334,6 +348,7 @@ public class ScreenListOfItemLists extends MyForm {
             showNumberDoneTasks = MyPrefs.listOfItemListsShowNumberDoneTasks.getBoolean();
             showNumberLeafTasks = MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean();
             showRemaining = MyPrefs.listOfItemListsShowRemainingEstimate.getBoolean();
+            showRemaining = MyPrefs.listOfItemListsShowActual.getBoolean();
             showTotal = MyPrefs.listOfItemListsShowTotalTime.getBoolean();
             showWorkTime = MyPrefs.listOfItemListsShowWorkTime.getBoolean();
         }
@@ -603,7 +618,8 @@ public class ScreenListOfItemLists extends MyForm {
 
 //        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW));
 //        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS_NO_GROW)); //NB. NO_GROW to avoid that eg expand sublist [3/5] grows in height
-        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS)); //NB. NO_GROW to avoid that eg expand sublist [3/5] grows in height
+//        Container east = new Container(new BoxLayout(BoxLayout.X_AXIS)); //NB. NO_GROW to avoid that eg expand sublist [3/5] grows in height
+        Container east = FlowLayout.encloseRightMiddle(); //NB. NO_GROW to avoid that eg expand sublist [3/5] grows in height
 //        Button subTasksButton = new Button();
 
         if (false && !itemList.getComment().equals("")) {
@@ -634,13 +650,13 @@ public class ScreenListOfItemLists extends MyForm {
 //         workTimeSumMillis = workSlots != null ? itemList.getWorkSlotListN().getWorkTimeSum() : 0;
             if (true || !statisticsMode) {
 //                numberItems = statisticsMode ? itemList.getNumberOfItems(false, true) : itemList.getNumberOfUndoneItems(false);
-                if (itemList.getShowActual()) {
+                if (showActual) {
                     numberItems = itemList.size(); //use size() for TemplateList to get all top-level items
                 } else {
                     numberItems = itemList == ItemListList.getInstance() ? ItemListList.getInstance().size() : (statisticsMode
                             ? itemList.getNumberOfItems(false, true)
                             //                                                        : itemList.getNumberOfUndoneItems(MyPrefs.listOfItemListsShowTotalNumberOfLeafTasks.getBoolean()));
-//                            : itemList.getNumberOfUndoneItems(itemList.getShowNumberUndoneTasks())); //don't use setting but list value
+                            //                            : itemList.getNumberOfUndoneItems(itemList.getShowNumberUndoneTasks())); //don't use setting but list value
                             : itemList.getNumberOfUndoneItems(showNumberLeafTasks)); //don't use setting but list value
                 }
                 ASSERT.that(!statisticsMode || numberItems > 0, "the list should only exist in statistics mode if it is not empty");
@@ -684,8 +700,11 @@ public class ScreenListOfItemLists extends MyForm {
 ////</editor-fold>
 //                }
             }
+        } else if (showNumberDoneTasks) {
+            numberItems = itemList.getNumberOfDoneItems();
         }
-        if (numberItems >= 0) {
+
+        if (numberItems > 0) {
             Command expandSubTasksCmd = CommandTracked.create("", null,
                     (e) -> {
                         expandItemListSubTasksButton.setUIID(expandItemListSubTasksButton.getUIID().equals("ListOfItemListsShowItemsExpandable")
@@ -695,7 +714,8 @@ public class ScreenListOfItemLists extends MyForm {
                     "ListOfItemListsExpandSubtasks");// {
             expandItemListSubTasksButton.setCommand(expandSubTasksCmd);
             String subTaskStr = numberItems + "";
-            if (!statisticsMode && showNumberDoneTasks && !itemList.getShowActual()) { //don't show total in statistics since ALL tasks are done
+//            if (!statisticsMode && showNumberDoneTasks && !itemList.getShowActual()) { //don't show total in statistics since ALL tasks are done
+            if (!statisticsMode && showNumberDoneTasks && !showActual) { //don't show total in statistics since ALL tasks are done
                 int totalNbTasks = itemList.getNumberOfItems(false, showNumberLeafTasks);
                 if (totalNbTasks != 0) {
                     subTaskStr += "/" + totalNbTasks;
@@ -704,6 +724,9 @@ public class ScreenListOfItemLists extends MyForm {
             expandItemListSubTasksButton.setText(subTaskStr);
             expandItemListSubTasksButton.setUIID(expandedObjects != null && expandedObjects.contains(itemList) ? "ListOfItemListsShowItemsExpanded" : "ListOfItemListsShowItemsExpandable");
             swipCont.putClientProperty(MyTree2.KEY_ACTION_ORIGIN, expandItemListSubTasksButton);
+        } else {
+            expandItemListSubTasksButton.setText("0");
+            expandItemListSubTasksButton.setUIID("ListOfItemListsShowItems");
         }
 
         if (itemList == TemplateList.getInstance()) {
@@ -715,8 +738,8 @@ public class ScreenListOfItemLists extends MyForm {
                 east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"east.addComponent(editItemListPropertiesButton);
                 east.addComponent(editItemListPropertiesButton);
             }
-                east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"east.addComponent(editItemListPropertiesButton);
-                east.addComponent(editItemListPropertiesButton);
+            east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"east.addComponent(editItemListPropertiesButton);
+            east.addComponent(editItemListPropertiesButton);
         } else if (!statisticsMode) {
             if (showRemaining) {
 
@@ -732,7 +755,7 @@ public class ScreenListOfItemLists extends MyForm {
 //        long workTimeSumMillis = WorkSlot.sumWorkSlotList(workslots);
 //</editor-fold>
                 String effortStr;
-                if (itemList.getShowActual()) {
+                if (showActual) {
                     effortStr = MyDate.formatDurationStd(itemList.getActualTotal());
                 } else {
                     effortStr = (remainingEffort != 0 || totalEffort != 0 ? MyDate.formatDurationStd(remainingEffort) : "")
@@ -747,6 +770,10 @@ public class ScreenListOfItemLists extends MyForm {
                 east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"
                 east.addComponent(editItemListPropertiesButton);
             } else {
+                if (showActual) {
+                    String effortStr = MyDate.formatDurationStd(itemList.getActualTotal());
+                    east.addComponent(new Label(effortStr, "ListOfItemListsRemainingTime")); //format: "remaining/workTime"
+                }
                 east.addComponent(expandItemListSubTasksButton); //format: "remaining/workTime"
                 east.addComponent(editItemListPropertiesButton);
             }
@@ -857,7 +884,8 @@ public class ScreenListOfItemLists extends MyForm {
 
         mainCont.addComponent(BorderLayout.CENTER, itemListLabel);
 
-        mainCont.addComponent(BorderLayout.EAST, BorderLayout.center(east));
+//        mainCont.addComponent(BorderLayout.EAST, BorderLayout.center(east));
+        mainCont.addComponent(BorderLayout.EAST, east);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        cont.setDraggable(true);
 //        cont.setDropTarget(true);
@@ -883,11 +911,11 @@ public class ScreenListOfItemLists extends MyForm {
 //            }, "InterruptInScreenListOfItemLists" //only push this command if we start with BigTimer (do NOT always start with smallTimer)
 //            )));
 //        }
-        if (!statisticsMode && itemList.getList().size() > 0) {
+        if (!disableSwipeTimer && !statisticsMode && itemList.getList().size() > 0) {
 //            rightSwipeContainer.add(makeTimerSwipeButton(swipCont, itemList, "InterruptInScreenListOfItemLists"));
             rightSwipeContainer.add(makeTimerSwipeButton(swipCont, null, itemList, "SwipeTimerOnListInScreenListOfItemLists"));
         }
-        
+
 //           itemList.addActionListener((e)->buildItemListContainer(myForm, itemList, statisticsMode));
         return swipCont;
     }
