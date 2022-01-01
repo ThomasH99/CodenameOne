@@ -551,45 +551,53 @@ public class FilterSortDef extends ParseObject {
     private static String[] sortOptions = new String[]{
         Item.DUE_DATE,
         Item.PRIORITY,
-        Item.EFFORT_REMAINING,
-        Item.EFFORT_ESTIMATE,
-        Item.EFFORT_ACTUAL,
+        Item.IMPORTANCE_URGENCY,
+        Item.IMPORTANCE,
+        Item.URGENCY,
+        
         Item.CHALLENGE,
         Item.DREAD_FUN,
         Item.EARNED_VALUE,
         Item.EARNED_VALUE_PER_HOUR,
+  
+        Item.EFFORT_REMAINING,
+        Item.EFFORT_ESTIMATE,
+        Item.EFFORT_ACTUAL,
+        
         Item.START_BY_TIME,
         Item.STARTED_ON_DATE,
-        Item.UPDATED_DATE,
+        Item.EDITED_DATE, //        Item.UPDATED_DATE,
         Item.CREATED_DATE,
         Item.COMPLETED_DATE,
         Item.WAIT_UNTIL_DATE,
+
         Item.DESCRIPTION,
-        Item.IMPORTANCE_URGENCY,
-        Item.IMPORTANCE,
-        Item.URGENCY,
         Item.STATUS};
 
     private static String[] sortFields = new String[]{
         Item.PARSE_DUE_DATE,
         Item.PARSE_PRIORITY,
-        Item.PARSE_REMAINING_EFFORT_TOTAL,
-        Item.PARSE_EFFORT_ESTIMATE,
-        Item.PARSE_ACTUAL_EFFORT,
+        Item.PARSE_IMPORTANCE_URGENCY_VIRT,
+        Item.PARSE_IMPORTANCE,
+        Item.PARSE_URGENCY,
+        
         Item.PARSE_CHALLENGE,
         Item.PARSE_DREAD_FUN_VALUE,
         Item.PARSE_EARNED_VALUE,
         Item.PARSE_EARNED_VALUE_PER_HOUR,
+ 
+        Item.PARSE_REMAINING_EFFORT_TOTAL,
+        Item.PARSE_EFFORT_ESTIMATE,
+        Item.PARSE_ACTUAL_EFFORT,
+
         Item.PARSE_START_BY_DATE,
         Item.PARSE_STARTED_ON_DATE,
-        Item.PARSE_UPDATED_AT,
+        Item.PARSE_EDITED_DATE, //        Item.PARSE_UPDATED_AT,
         Item.PARSE_CREATED_AT,
         Item.PARSE_COMPLETED_DATE,
         Item.PARSE_WAIT_UNTIL_DATE,
+        
         Item.PARSE_TEXT,
-        Item.PARSE_IMPORTANCE_URGENCY_VIRT,
-        Item.PARSE_IMPORTANCE,
-        Item.PARSE_URGENCY,
         Item.PARSE_STATUS};
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1668,6 +1676,7 @@ public class FilterSortDef extends ParseObject {
             case "":
                 return (i1, i2) -> 0; //no sorting
             case Item.PARSE_STATUS:
+                sortDescending = !sortDescending; //FIX for wrong logic for dates below
                 return sortDescending
                         ? (i1, i2) -> i1.getStatus().compareTo(i2.getStatus())
                         : (i1, i2) -> i2.getStatus().compareTo(i1.getStatus());
@@ -1676,6 +1685,7 @@ public class FilterSortDef extends ParseObject {
                         ? (i1, i2) -> compareInt(i1.getPriority(), i2.getPriority()) //show highest on top
                         : (i1, i2) -> compareInt(i2.getPriority(), i1.getPriority());
             case Item.PARSE_DUE_DATE:
+                sortDescending = !sortDescending; //FIX for wrong logic for dates below
                 return sortDescending
                         ? (i1, i2) -> compareDate(i2.getDueDate(), i1.getDueDate())
                         : (i1, i2) -> compareDate(i1.getDueDate(), i2.getDueDate());
@@ -1719,26 +1729,37 @@ public class FilterSortDef extends ParseObject {
                         ? (i1, i2) -> compareDouble(i1.getEarnedValuePerHour(), i2.getEarnedValuePerHour()) //show highest on top
                         : (i1, i2) -> compareDouble(i2.getEarnedValuePerHour(), i1.getEarnedValuePerHour());
             case Item.PARSE_START_BY_DATE:
+                sortDescending = !sortDescending; //FIX for wrong logic for dates below
                 return sortDescending
                         ? (i1, i2) -> compareLong(i2.getStartByDateD().getTime(), i1.getStartByDateD().getTime())
                         : (i1, i2) -> compareLong(i1.getStartByDateD().getTime(), i2.getStartByDateD().getTime());
             case Item.PARSE_STARTED_ON_DATE:
+                sortDescending = !sortDescending; //FIX for wrong logic for dates below
                 return sortDescending
                         ? (i1, i2) -> compareLong(i2.getStartedOnDate(), i1.getStartedOnDate())
                         : (i1, i2) -> compareLong(i1.getStartedOnDate(), i2.getStartedOnDate());
             case Item.PARSE_WAIT_UNTIL_DATE:
+                sortDescending = !sortDescending; //FIX for wrong logic for dates below
                 return sortDescending
                         ? (i1, i2) -> compareLong(i2.getWaitUntilDate().getTime(), i1.getWaitUntilDate().getTime())
                         : (i1, i2) -> compareLong(i1.getWaitUntilDate().getTime(), i2.getWaitUntilDate().getTime());
+            case Item.PARSE_EDITED_DATE:
+                sortDescending = !sortDescending; //FIX for wrong logic for dates below
+                return sortDescending
+                        ? (i1, i2) -> compareDate(i2.getEditedDate(), i1.getEditedDate())
+                        : (i1, i2) -> compareDate(i1.getEditedDate(), i2.getEditedDate());
             case Item.PARSE_UPDATED_AT:
+                sortDescending = !sortDescending; //FIX for wrong logic for dates below
                 return sortDescending
                         ? (i1, i2) -> compareDate(i2.getUpdatedAt(), i1.getUpdatedAt())
                         : (i1, i2) -> compareDate(i1.getUpdatedAt(), i2.getUpdatedAt());
             case Item.PARSE_CREATED_AT:
+                sortDescending = !sortDescending; //FIX for wrong logic for dates below
                 return sortDescending
                         ? (i1, i2) -> compareDate(i1.getCreatedAt(), i2.getCreatedAt()) //oldest first
                         : (i1, i2) -> compareDate(i2.getCreatedAt(), i1.getCreatedAt());
             case Item.PARSE_COMPLETED_DATE:
+                sortDescending = !sortDescending; //FIX for wrong logic for dates below
                 return sortDescending
                         //                        ? (i1, i2) -> compareLong(i1.getCompletedDate(), i2.getCompletedDate()) //oldest first
                         ? (i1, i2) -> compareDate(i1.getCompletedDate(), i2.getCompletedDate()) //oldest first

@@ -123,7 +123,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
         }
     }
-    
+
     public Item(boolean setDefaultRemainingIfActivated, boolean setEditedDate) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        this();
@@ -140,7 +140,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         this(setDefaultRemainingIfActivated, new MyDate());
     }
-    
+
     public Item(boolean setDefaultRemainingIfActivated) {
         this(setDefaultRemainingIfActivated, true);
     }
@@ -164,13 +164,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         setText(text);
 //        setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
     }
-    
+
     public Item(boolean setDefaultRemainingIfActivated, String text) {
         this(setDefaultRemainingIfActivated, true);
         setText(text);
 //        setRemainingDefaultValueIfNone(); //UI: only set remaining, NOT estimate, since this is only a default value (and it may be a way to distinguish default values from user-entered?!)
     }
-    
+
     public Item(boolean setDefaultRemainingIfActivated, String text, ItemAndListCommonInterface ownerN, ItemAndListCommonInterface defaultOwner) {
         this(setDefaultRemainingIfActivated, text);
         if (ownerN == null) {
@@ -180,7 +180,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             ownerN.addToList(this);
         }
     }
-    
+
     public Item(String text, boolean interpretTextValues) {
         this(true, true);
         if (interpretTextValues) {
@@ -199,7 +199,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public Item(String taskText, int remainingEffortInMinutes) {
         this(taskText, remainingEffortInMinutes, null);
     }
-    
+
     public Item(String taskText, int remainingEffortInMinutes, Date dueDate) {
 //        this(taskText, remainingEffortInMinutes, dueDate, false);
         this(true, true);
@@ -667,7 +667,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
 //    private long actualEffort;// = 0;
     interface UpdaterInterface {
-        
+
         Object getValue();
     }
 
@@ -949,7 +949,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PROJECT = "Project";
     final static String EARNED_VALUE_PER_HOUR = "Value/hour"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
     //Item.EARNED_POINTS_PER_HOUR + " is calculated as " + Item.EARNED_VALUE + " divided by " + Item.EFFORT_ESTIMATE + ", and once work has started by the sum of " + Item.EFFORT_REMAINING + " and " + Item.EFFORT_ACTUAL + "."
-    final static String EARNED_VALUE_PER_HOUR_HELP = "Value/hour**"; //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
+    final static String EARNED_VALUE_PER_HOUR_HELP
+            = Format.f("Value divided by time to complete the task ({1 remaining+actual} or {0 estimate})", EFFORT_ESTIMATE, EFFORT_REMAINING + "+" + EFFORT_ACTUAL); //"Value per hour (based on Estimated time)"; //"Value/Effort"; "Value per hour"
     final static String EARNED_VALUE = "Value"; //"Value"; Task worth
 //    final static String EARNED_VALUE_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate "+EARNED_POINTS_PER_HOUR+" which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
     final static String EARNED_VALUE_HELP = "Indicate any number that represents the value of this task or project. It can be a monetary value or your own scale for value. Used to calculate [EARNED_POINTS_PER_HOUR] which for example allows you to prioritize the tasks with the highest return on investment in terms of value by hour.";
@@ -962,7 +963,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    final static String DATE_WHEN_SET_WAITING_HELP = "The time when this task was set "+ItemStatus.WAITING+". Is automatically set. "; // + ItemStatus.WAITING.toString(); //referencing enum String not allowed "Wait until date" "Wait until" "Date when set Waiting"
     final static String DATE_WHEN_SET_WAITING_HELP = "The time when this task was set [WAITING]. Is automatically set. "; // + ItemStatus.WAITING.toString(); //referencing enum String not allowed "Wait until date" "Wait until" "Date when set Waiting", "Set automatically when a task is set Waiting"
     final static String WAITING_ALARM_DATE = "Waiting reminder"; // "Waiting alarm"
-    final static String WAITING_ALARM_DATE_HELP = "**Waiting alarm help"; // 
+    final static String WAITING_ALARM_DATE_HELP = Format.f("Set a special Reminder for a task which is set {0}", ItemStatus.WAITING.getVisibleName()); // 
+    final static String SNOOZE_DATE = "Snooze reminder"; // "Waiting alarm"
+    final static String WAITING_SNOOZE_DATE = "Snooze waiting"; // "Waiting alarm"
     final static String STARTED_ON_DATE = "Started"; //"Started",  "Date work on tasks started", "Task started on"
     final static String STARTED_ON_DATE_SUBTASKS = "Started (subtasks)"; //"Started",  "Date work on tasks started", "Task started on"
     final static String STARTED_ON_DATE_HELP = "The time this task was started. The Timer automatically sets this date the first time work starts, but it can also be set manually. Useful to track tasks that are not finished immediately or find tasks that have been left partially finished."; //"Started",  "Date work on tasks started", "Task started on", "Set automatically when using the timer"
@@ -970,7 +973,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String START_WORK_TIME = "Start work??used??**";
     final static String START_WORK_TIME_HELP = "??used??**Used to indicate the time when work on this task should start. Tasks can be automatically hidden until this date using Filters.";
     final static String FINISH_WORK_TIME = "Finish work";
-    final static String FINISH_WORK_TIME_HELP = "Finish work indicates when the task can be finished based on the indicated work time.**";
+    final static String FINISH_WORK_TIME_HELP = Format.f("{0} indicates when the task can be finished based on the {1 estimate} and defined {2 work time}. No check mark in the icon means there is not enough {2} to finish it.", FINISH_WORK_TIME, Item.EFFORT_REMAINING, WorkSlot.WORKSLOT);
     final static String TIMESPAN = "Timespan";
     final static String EFFORT_TOTAL = "Total effort";
     final static String CATEGORIES = "Categories";
@@ -1026,7 +1029,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String TEMPLATE_LIST = "Templates";
     final static String SUBTASKS = "Subtasks";
     final static String SUBTASKS_HELP = "**";
-    final static String WORKTIME = "blocked time";
+    final static String WORKTIME = "Blocked time";
     final static String WORKTIME_HELP = "**";
     final static String SYSTEM_NAME = "System name"; //system name for list (e.g. Today etc
     final static String SNOOZED_TILL = "Snoozed till";
@@ -1044,9 +1047,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String SHOW_WORK_TIME_HELP = "**";
     final static String OVERDUE = "Overdue";
     final static String EMPTY_TASK_TEXT = "<no text>";
-    
+
     final static int ITEM_CHANGED_ALARM_DATE = 0;
-    
+
     final static String PARSE_TEXT = "description";
     final static String PARSE_COMMENT = "comment";
     final static String PARSE_SUBTASKS = "subtasks";
@@ -1054,8 +1057,23 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_CHALLENGE = "challenge";
     final static String PARSE_EXPIRES_ON_DATE = "expiresOnDate"; //called autocancel before
     final static String PARSE_INTERRUPT_OR_INSTANT_TASK = "interuptTask";
+
     final static String PARSE_ALARM_DATE = "alarmDate";
+    final static String PARSE_ALARM_SNOOZE_DATE = "alarmSnooze"; //date until which the alarm is snoozed
+    final static String PARSE_ALARM_CANCELLED = "alarmCancelled"; //date until which the alarm is snoozed
+
+    final static String PARSE_ALARM2_DATE = "alarm2Date";
+    final static String PARSE_ALARM2_SNOOZE_DATE = "alarm2Snooze"; //date until which the alarm is snoozed
+    final static String PARSE_ALARM2_CANCELLED = "alarm2Cancelled"; //date until which the alarm is snoozed
+
     final static String PARSE_WAITING_ALARM_DATE = "waitingAlarmDate";
+    final static String PARSE_WAITING_SNOOZE_DATE = "waitingSnooze"; //date until which the alarm is snoozed
+    final static String PARSE_WAITING_CANCELLED = "waitingCancelled"; //date until which the alarm is snoozed
+
+//        final static String PARSE_SNOOZE_DATE = "snoozeDate"; //date until which the alarm is snoozed
+//    final static String PARSE_SNOOZED_TYPE = "snoozeType"; //type of snooze: **
+//    final static String PARSE_PENDING_ALARMS = "pendingAlarms"; //list of alarms (normal, waiting, normal-snoozed, waiting-snoozed) that user have not yet dealt with and that should be shown in AlarmScreen
+//    final static String PARSE_WAITING_SNOOZE_DATE = "waitingSnooze"; //date until which the alarm is snoozed
     final static String PARSE_REPEAT_RULE = "repeatRule";
     final static String PARSE_STARTED_ON_DATE = "startedOnDate";
     final static String PARSE_STARTED_ON_DATE_SUBTASKS_VIRT = "startedOnSubtasks";
@@ -1098,10 +1116,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String PARSE_CREATED_AT = "createdAt"; //cannot be edited (PARSE set field)
     final static String PARSE_IMPORTANCE_URGENCY_VIRT = "impUrgValue"; //VIRTual - not used in Parse, but only to eg sort on the combinatino of Imp+Urg, cannot be edited (PARSE set field)
     final static String PARSE_SOURCE = "source"; //for an interrupt task: which task was interrupted (taken from Timer)
-    final static String PARSE_NEXTCOMING_ALARM = "nextAlarm"; //first-coming/next-coming alarm (to allow easy search in Parse)
+//    final static String PARSE_NEXTCOMING_ALARM = "nextAlarm"; //first defined alarm date (may be in the past or future) - the earliest of all defined alarms for the task, used for querying to get tasks with relevant alarms)
+//    final static String PARSE_FIRST_ALARM = "firstAlarm"; //last defined alarm date (may be in the past or future). NB. FIRST AND LAST may potentially be the same date
+//    final static String PARSE_LAST_ALARM = "lastAlarm"; //first-coming/next-coming alarm (to allow easy search in Parse)
     final static String PARSE_DELETED_DATE = "deletedDate"; //has this object been deleted on some device?
-    final static String PARSE_SNOOZE_DATE = "snoozeDate"; //date until which the alarm is snoozed
-    final static String PARSE_SNOOZED_TYPE = "snoozeType"; //type of snooze: **
     final static String PARSE_FILTER_SORT_DEF = "filterSort";
     final static String PARSE_WORKSLOTS = "workslots";
     final static String PARSE_RESTART_TIMER = "restartTimer"; //should the Timer be re-started from first element if the currently timed is no longer in the list?
@@ -1272,10 +1290,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
     @Override
     public boolean isDone() {
+        //TODO: should check if softDeleted and return true? Hmm, softDeleted should never be included anywhere, but how reliable is the mechanism?!
         ItemStatus status = getStatus();
         return status == ItemStatus.DONE || status == ItemStatus.CANCELLED; // || getDeletedDateN() != null;  //CANCELLED since this makes a Cancelled task flip back to Created when clicked in a list
     }
-    
+
     public boolean areAnySubtasksOngoingOrDone() {
         return getCountOfSubtasksWithStatus(true, Arrays.asList(ItemStatus.DONE, ItemStatus.ONGOING)) > 0;
     }
@@ -1341,13 +1360,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 //        return ownerList;
     }
-    
+
     private TemplateList getOwnerTemplateList() {
         TemplateList ownerList = (TemplateList) getParseObject(PARSE_OWNER_TEMPLATE_LIST);
         ownerList = (TemplateList) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(ownerList);
         return ownerList;
     }
-    
+
     private void setOwnerTemplateList(TemplateList templateList) {
         if (templateList != null) {
             put(PARSE_OWNER_TEMPLATE_LIST, templateList);
@@ -1396,13 +1415,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return hierarchy;
     }
-    
+
     public List<Item> getOwnerHierarchy() {
         List<Item> hierarchy = new ArrayList<Item>();
         Item ownerItem = getOwnerItem();
         return getOwnerHierarchy(ownerItem, hierarchy);
     }
-    
+
     public List<ItemAndListCommonInterface> getOwnerHierarchyAsList() {
         List<ItemAndListCommonInterface> hierarchy = new ArrayList<ItemAndListCommonInterface>();
         ItemAndListCommonInterface owner = getOwner();
@@ -1425,7 +1444,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return null; //"";
         }
     }
-    
+
     private void getOwnerHierarchyImpl(List<Item> hierarchy) {
         Item ownerItem = getOwnerItem();
         if (ownerItem != null) {
@@ -1472,7 +1491,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     public ItemList getOwnerTopLevelList() {
         ItemAndListCommonInterface owner = getOwner();
-        
+
         if (owner instanceof ItemList) {
             return (ItemList) owner;
         } else if (owner instanceof Item) {
@@ -1532,7 +1551,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_OWNER_ITEM);
         }
     }
-    
+
     public void setOwnerItem(Item newOwnerItem, boolean updateInheritedValues) {
 //        setOwnerItem(newOwnerItem, updateInheritedValues, true);
         setOwnerItem(newOwnerItem, updateInheritedValues, false);
@@ -1588,11 +1607,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return (Category) getParseObject(PARSE_OWNER_CATEGORY);
 //    }
 //</editor-fold>
-    public void setOwner(ItemAndListCommonInterface newOwner, boolean updateInheritedValues) {
+    public void setOwner(ItemAndListCommonInterface newOwner, boolean updateInheritedValues, boolean removeFromOldOwnerList, boolean addToNewOwner) {
         if (false) {
             ASSERT.that(newOwner == null || (newOwner instanceof ParseObject && ((ParseObject) newOwner).getObjectIdP() != null), () -> "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + newOwner);
         }
         ItemAndListCommonInterface oldOwner = getOwner();
+
         if (Config.TEST) {// && !(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null))) {
             ASSERT.that((newOwner instanceof ItemList && !(newOwner instanceof Category)) || (newOwner instanceof Item), () -> "Setting owner that is neither Item/ItemList, owner=" + newOwner + "; for Item=" + this);
             ASSERT.that(!(newOwner instanceof ItemList) || !((ItemList) newOwner).isNoSave(), () -> "Setting owner that is noSave, owner=" + newOwner + "; for Item=" + this);
@@ -1601,13 +1621,36 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             } else {
 //                ASSERT.that(owner == null || (owner instanceof ParseObject && ((ParseObject) owner).getObjectIdP() != null),
 //                        () -> "Setting owner that is not ParseObject or without ObjectId for item=" + this + ", owner=" + owner);
-                ASSERT.that(newOwner == null || oldOwner == null || Objects.equals(newOwner, oldOwner)
+                ASSERT.that(newOwner == null || oldOwner == null || Objects.equals(newOwner, oldOwner) || removeFromOldOwnerList
                         || (newOwner != null && Objects.equals(newOwner.getObjectIdP(), oldOwner.getObjectIdP())),
                         () -> "overwriting non-null owner, oldOwner=" + oldOwner + ", newOwner=" + newOwner);
             }
         }
+
+        boolean changingOwner = !Objects.equals(newOwner, oldOwner);
+
+//        if (false) { //now done in setOwner()
+        if (changingOwner) {
+            if (oldOwner != null) {
+//                if (changingOwner && updateInheritedValues) {
+                if (updateInheritedValues) {
+                    removeValuesInheritedFromOwner(oldOwner); //nothing's done if oldOwner is null
+                }
+//                if (changingOwner && removeFromOldOwnerList) { //do this *after* setting newOwner to avoid infinite loop?!
+                if (removeFromOldOwnerList) { //do this *after* setting newOwner to avoid infinite loop?!
+                    oldOwner.removeFromList(this, false); //false since this.owner is set below when assigning the new owner
+                }
+            }
+
+//            if (newOwner != null && changingOwner && updateInheritedValues) { //YES, must update inherited values here (the individual fields will then be updated via the changes stored in opsOnSubtasks
+            if (newOwner != null && updateInheritedValues) { //YES, must update inherited values here (the individual fields will then be updated via the changes stored in opsOnSubtasks
+                updateValuesInheritedFromOwner(newOwner);
+            }
+//        }
+
 //        ASSERT.that(!Objects.equals(owner, oldOwner) || !Objects.equals(owner.getObjectIdP(), oldOwner.getObjectIdP()));
-        if (!Objects.equals(newOwner, oldOwner)) { //        if (owner instanceof Category) {
+//        if (!Objects.equals(newOwner, oldOwner)) { //        if (owner instanceof Category) {
+//            if (changingOwner) { //        if (owner instanceof Category) {
             //            setOwnerCategory((Category) owner);
             //        } else 
             if (newOwner instanceof TemplateList) {
@@ -1633,14 +1676,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             //if an owner has been set, then execute the repeatRule if necessary
             //        if (oldOwner == null && newOwner != null) {
             if (newOwner != null) {
+                if (addToNewOwner) {
+                    newOwner.addToList(this); //add to default position
+                }                //UI: when *changing* owner: already generated repeat instances will remain with old owner, but new ones will be generated in new owner. 
                 updateRepeatRule(); //NO, changing owner is not the right place since owner may change for other reasons than inserting into a new owner list (e.g. if moving
             }
+//            }
         }
     }
-    
+
     @Override
     public void setOwner(ItemAndListCommonInterface owner) {
-        setOwner(owner, true); //be default, update inherited values
+        setOwner(owner, true, true, true); //by default, update inherited values and remove from previous owner (and remove previously inherited values), and add to new owner at default insert-position
     }
 
 //    public ParseObject getOwner() {
@@ -1742,7 +1789,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     text = Util.xorDecode(text);
                 }
             }
-            
+
             String oldVal = getString(PARSE_TEXT);
 //        boolean textChanged = !getText().equals(text);
             if (text != null && !text.equals("")) { //don't test for val != null to avoid silent failure on this error condition
@@ -1761,12 +1808,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         }
     }
-    
+
     @Override
     public void setText(String text) {
         setText(text, true);
     }
-    
+
     @Override
     public String getComment() {
         String s = getString(PARSE_COMMENT);
@@ -1777,7 +1824,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 //        return comment;
     }
-    
+
     @Override
     public void setComment(String comment) {
 //        if (val != null && (has("comment") || !val.equals(""))) {
@@ -1791,7 +1838,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         } else {
             remove(PARSE_COMMENT);
-            
+
         }
 //        if (!this.comment.equals(val)) {
 //            this.comment = val;
@@ -1865,15 +1912,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return newCopy;
         return cloneMe(CopyMode.COPY_TO_COPY_PASTE, 0);
     }
-    
+
     public Item cloneMe(CopyMode copyFieldDefintion) {
         return cloneMe(copyFieldDefintion, 0);
     }
-    
+
     public Item cloneMe(CopyMode copyFieldDefintion, int copyExclusions) {
         return cloneMe(copyFieldDefintion, copyExclusions, false);
     }
-    
+
     public Item cloneMe(CopyMode copyFieldDefintion, int copyExclusions, boolean setRepeatRuleWithoutUpdate) {
         Item newCopy = new Item(false);
         copyMeInto(newCopy, copyFieldDefintion, copyExclusions, setRepeatRuleWithoutUpdate);
@@ -1888,7 +1935,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public void copyMeInto(ItemAndListCommonInterface destiny) {
         copyMeInto((Item) destiny, CopyMode.COPY_ALL_FIELDS);
     }
-    
+
     Item copyMeInto(Item destination, CopyMode copyFieldDefintion) {
         return copyMeInto(destination, copyFieldDefintion, 0);
     }
@@ -1907,9 +1954,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     Item copyMeInto(Item destination, CopyMode copyFieldDefintion, int copyExclusions) {
         return copyMeInto(destination, copyFieldDefintion, copyExclusions, false);
     }
-    
+
     Item copyMeInto(Item destination, CopyMode copyFieldDefinition, int copyExclusions, boolean setRepeatRuleWithoutUpdateXXX) {
-        
+
         boolean save = false; //save de-activated in copy since copies will be saved explicitly 
         /**
          * copy for all types of copies
@@ -2058,7 +2105,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     }
                 }
             }
-            
+
         }
 
         //don't set owner here, should be done when adding the copy to its owner
@@ -2077,7 +2124,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            destination.setCreatedDate(getCreatedDate());
 
             destination.setWaitUntilDate(getWaitUntilDate());
-            
+
             destination.setDateWhenSetWaiting(getDateWhenSetWaiting());
 
 //            destination.setLastModifiedDate(getLastModifiedDate());
@@ -2276,11 +2323,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             }
         }
-        
+
         if (defCopyPaste || defToRepeatInst || defToTempl || defToTemplInst) {
             destination.setEditedDateToNow(); //always set edited date on creation of new instance (also a 'user-edited action)
         }
-        
+
         return destination;
     }
 
@@ -2291,7 +2338,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     private void setRepeatInstanceRelativeDates(Item referenceItem, Date newDueDateTime) {
         long delta = 0;
-        
+
         setDueDate(newDueDateTime); ///only set a new due date if one was already set
         if (referenceItem.getDueDate().getTime() != 0) { //only update if a value is already defined (also for due date since it may not be set, eg for repeat on completed)
             delta = newDueDateTime.getTime() - referenceItem.getDueDate().getTime(); //how much later is the referenceTime than the referenceItem's dueDate?
@@ -2323,7 +2370,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
     }
-    
+
     public boolean hasDatesDependingOnDue() {
 //        boolean templFieldsDependOnDue = getDueDate().getTime() != 0 || getAlarmDate().getTime() != 0 || getStartByDateD().getTime() != 0
         boolean templFieldsDependOnDue = getAlarmDate().getTime() != 0 || getStartByDateD().getTime() != 0
@@ -2362,7 +2409,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        Date oldDueDate = getDueDate();
 //        ASSERT.that(oldDueDate.getTime() != 0);
         ASSERT.that(delta > 0, "normally delta should be positive (a later date than template), delta=" + delta);
-        
+
         if (delta != 0) { //only do updates if new due date is different from old one
 //            Date newDueDate = new MyDate(oldDueDate.getTime() + delta);
 //            setDueDate(newDueDate);xxx;
@@ -2397,7 +2444,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        Date oldDueDate = getDueDate();
 //        ASSERT.that(oldDueDate.getTime() != 0);
         ASSERT.that(delta > 0, "normally delta should be positive (a later date than template), delta=" + delta);
-        
+
         if (delta != 0) { //only do updates if new due date is different from old one
 //            Date newDueDate = new MyDate(oldDueDate.getTime() + delta);
 //            setDueDate(newDueDate);xxx;
@@ -2421,7 +2468,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
     }
-    
+
     @Override
     public void updateRelativeDates(Date newDueDateTime) {
 //        updateRelativeDates(newDueDateTime, getDueDate());
@@ -2430,7 +2477,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             updateRelativeDates(delta);
         }
     }
-    
+
     public void updateRelativeDatesXXX(Date newReferenceDate, Date oldReferenceDueDate) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long delta;
@@ -2488,13 +2535,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return newRepeatCopy;
     }
-    
+
     @Override
 //    public void setRepeatStartTime(long repeatStartTime) {
     public void setRepeatStartTime(Date repeatStartTime) {
         setDueDate(repeatStartTime);
     }
-    
+
     @Override
     public Date getRepeatStartTime(boolean fromCompletedDate) {
         if (fromCompletedDate) {
@@ -2509,7 +2556,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return getDueDate();
         }
     }
-    
+
     static int compareDate(Date d1, Date d2) {
 //        if (d1.getTime() < d2.getTime()) {
 //            return -1;
@@ -2519,7 +2566,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return 0;
         return compareLong(d1.getTime(), d2.getTime());
     }
-    
+
     static int compareInt(int d1, int d2) {
         if (d1 < d2) {
             return -1;
@@ -2528,7 +2575,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return 0;
     }
-    
+
     static int compareLong(long d1, long d2) {
         if (d1 < d2) {
             return -1;
@@ -2672,7 +2719,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 myRepeatRule.updateItemsOnDoneCancelOrDelete(this); //UI: if you delete (like if you cancel) a repeating task, new instances will be generated as necessary (just like if it is marked done) - NB. Also necessary to ensure that the repeatrule 'stays alive' and doesn't go stall because all previously generated instances were cancelled/deleted...
             }//            DAO.getInstance().saveNew(myRepeatRule, false);
         }
-        
+
         FilterSortDef filter = getFilterSortDefN();
         if (filter != null) {
             filter.setDeletedDate(deleteDate);
@@ -2686,8 +2733,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         //or better simply to leave them and add a mechanism to ignore soft-deleted sources?? The mechanism would likely have to check the server each time, so 
         //this could make it very slow!!!!
         //ALARMS remove any active alarms
-        AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //may have to be called *after* deleting the item from Parse to remove any scheduled app alarms
-
+//        AlarmHandler.getInstance().deleteAllAlarmsForItem(this); //may have to be called *after* deleting the item from Parse to remove any scheduled app alarms
         setSoftDeletedDate(deleteDate);
 
 //        listeners.fireActionEvent(new ActionEvent(this, ACTION_EVENT_REMOVED));//inform the stack
@@ -2771,15 +2817,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 setRepeatRule(null);
             }
         }
-        
+
         FilterSortDef filter = getFilterSortDefN();
         if (filter != null && filter.getDeletedDateN() != null) {
             filter.setDeletedDate(null);
             DAO.getInstance().saveNew(filter);
         }
-        
+
         setSoftDeletedDate(null);
-        
+
         return true;
     }
 
@@ -2929,7 +2975,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
         List<ItemAndListCommonInterface> oldSubtaskList = getListFull();
-        
+
         boolean firstTimeAddOfSubtasks = false;
         if (listOfSubtasks == null || listOfSubtasks.isEmpty()) {// this test is also done in updateListWithDifferences,but here it uses getItemListSize() to avoid creating a new list
 //            if (!getList().isEmpty()) { //if no more subtasks, then switch actual back again
@@ -2955,7 +3001,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 subtask.updateRepeatRule(); //
             }
         }
-        
+
         if (MyPrefs.estimateRemainingOnlyUseSubtasksRemaining.getBoolean()) { //TODO, 
             if (oldSubtaskList.size() == 0 && listOfSubtasks.size() > 0) {
                 setRemainingForTaskItself(0);
@@ -2978,15 +3024,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        getItemList().updateListWithDifferences(itemList);
 //</editor-fold>
     }
-    
+
     @Override
 //    public List<Item> getList() {
     public List getListFull() {
-        
+
         if (cachedList == null) {
 //            List<Item> list = getList(PARSE_SUBTASKS);
             cachedList = getList(PARSE_SUBTASKS);
-            
+
             if (cachedList != null) {
                 DAO.getInstance().fetchListElementsIfNeededReturnCachedIfAvail(cachedList);
 //            if (Config.CHECK_OWNERS && list != null) {
@@ -3036,7 +3082,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     @Override
-     public FilterSortDef getDefaultFilterSortDef() {
+    public FilterSortDef getDefaultFilterSortDef() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        FilterSortDef filter = new FilterSortDef();
 //        if (false) {
@@ -3055,7 +3101,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         return FilterSortDef.getDefaultItemSubtaskFilter();
     }
-    
+
     @Override
 //    public List<Item> getList() {
     public List getList() {
@@ -3068,7 +3114,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             return list;
         }
-        
+
     }
 
     /**
@@ -3130,15 +3176,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return status;
     }
-    
+
     private boolean addToList(int index, ItemAndListCommonInterface itemOrListToAdd) {
         return addToList(index, itemOrListToAdd, true);
     }
-    
+
     public boolean addToList(ItemAndListCommonInterface itemOrListToAdd, boolean addToEndOfList, boolean addAsOwner) {
         return addToList(addToEndOfList ? getSize() : 0, itemOrListToAdd, addAsOwner);
     }
-    
+
     @Override
     public boolean addToList(ItemAndListCommonInterface itemOrListToAdd, boolean addToEndOfList) {
         List listFull = getListFull();
@@ -3147,7 +3193,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return addToList(addToEndOfList ? listFull.size() : 0, itemOrListToAdd);
 //        return true;
     }
-    
+
     @Override
     public boolean addToList(ItemAndListCommonInterface itemOrListToAdd) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3307,7 +3353,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return 0;
         }
     }
-    
+
     void addTimerStartTimestamp(Date startTime) {
 //        if (isTimerRunning()) {
 //            ASSERT.that("Timer for this item should not have a startTime already set, adding stopStamp, list=" + (getTimerTimeStampListN() != null ? getTimerTimeStampListN() + "" : "<null>"));
@@ -3331,7 +3377,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            put(PARSE_TIMER_STARTED_XXX, true); //set timer 
 //        }
     }
-    
+
     void addTimerStopTimestamp(Date stopTime) {
         if (false) {
             ASSERT.that(isTimerRunning());
@@ -3345,12 +3391,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            remove(PARSE_TIMER_STARTED_XXX);
         }
     }
-    
+
     List<Date> getTimerTimeStampListN() {
         List<Date> timerStartStopDates = getList(PARSE_TIMER_TIMESTAMPS);
         return timerStartStopDates;
     }
-    
+
     void setTimerTimeStampListN(List<Date> timerStartStopDates) {
         if (timerStartStopDates != null && !timerStartStopDates.isEmpty()) {
             put(PARSE_TIMER_TIMESTAMPS, timerStartStopDates);
@@ -3358,15 +3404,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_TIMER_TIMESTAMPS);
         }
     }
-    
+
     public void addTimerStartTimestampXXX() { //DON'T use since local use of 'now' could lead to differences with timer 
         addTimerStartTimestamp(new MyDate());
     }
-    
+
     public void addTimerStopTimestampXXX() {
         addTimerStopTimestamp(new MyDate());
     }
-    
+
     public long getTotalTimerDurationOfTimedIntervals(boolean includeRunningTimerUpToNow) {
         if (false) {
             ASSERT.that(isTimerRunning());
@@ -3387,7 +3433,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return duration;
     }
-    
+
     public long getTotalTimerDurationOfTimedIntervals() {
         return getTotalTimerDurationOfTimedIntervals(true); //by default, include time up to now if timer is still running
     }
@@ -3426,7 +3472,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
     }
-    
+
     public void setStarred(boolean starred) {
         boolean oldStarred = isStarred();
 //        if (MyPrefs.itemInheritOwnerProjectStarred.getBoolean() && starred != oldStarred) {
@@ -3441,7 +3487,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 return false;
             });
         }
-        
+
         if (starred) {
             if (!oldStarred) {
                 put(PARSE_STARRED, true);
@@ -3450,7 +3496,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_STARRED); //no value set means not starred
         }
     }
-    
+
     public boolean isStarInheritedFrom(Boolean potentiallyInheritedValue) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        Boolean starred = getBoolean(PARSE_STARRED);
@@ -3467,7 +3513,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return false;
         }
     }
-    
+
     public boolean isStarInherited() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 ////        Boolean starred = getBoolean(PARSE_STARRED);
@@ -3479,7 +3525,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getOwnerItem() != null ? isStarInheritedFrom(getOwnerItem().isStarred()) : false;
         return isStarInheritedFrom(isStarred());
     }
-    
+
     public boolean isStarred() {
 //        return isStarred(true);
 //    }
@@ -3493,11 +3539,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         return getBoolean(PARSE_STARRED) != null;
     }
-    
+
     public boolean isStarredInheritanceOn() {
         return MyPrefs.itemInheritOwnerProjectStarred.getBoolean();
     }
-    
+
     public int getPriority() {
 //        return getPriority(true);
 //    }
@@ -3532,9 +3578,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             return false;
         }
-        
+
     }
-    
+
     public boolean isPriorityInherited() {
 //        Integer i = getInt(PARSE_PRIORITY);
 //        Integer i = getPriority();
@@ -3545,11 +3591,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getOwnerItem() != null ? isPriorityInheritedFrom(getOwnerItem().getPriority()) : false;
         return isPriorityInherited(getPriority());
     }
-    
+
     public boolean isPriorityInheritanceOn() {
         return MyPrefs.itemInheritOwnerProjectPriority.getBoolean();
     }
-    
+
     public Priority getPriorityObject() {
 //        return getPriorityObject(true);
 //    }
@@ -3559,7 +3605,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return new Priority(getPriority(useInheritedValue));
         return new Priority(getPriority());
     }
-    
+
     public void setPriority(int prio) {
 //        if (prio != 0
 //                && (!(MyPrefs.itemInheritOwnerProjectProperties.getBoolean() && MyPrefs.itemInheritOwnerProjectPriority.getBoolean())
@@ -3637,9 +3683,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         } else {
             return false;
         }
-        
+
     }
-    
+
     public boolean isChallengeInherited() {
 ////        String challenge = getString(PARSE_CHALLENGE);
 //        Challenge challenge = getChallengeN();
@@ -3649,7 +3695,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getOwnerItem() != null ? isChallengeInheritedFrom(getOwnerItem().getChallengeN()) : false;
         return isChallengeInherited(getChallengeN());
     }
-    
+
     public boolean isChallengeInheritanceOn() {
         return MyPrefs.itemInheritOwnerProjectChallenge.getBoolean();
     }
@@ -3711,7 +3757,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             //     getOwnerItem() == null || getOwnerItem().getChallengeN() != challenge
             remove(PARSE_CHALLENGE);
         }
-        
+
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -3773,11 +3819,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return false;
         }
     }
-    
+
     public boolean isDreadFunInherited() {
         return isDreadFunInherited(getDreadFunValueN());
     }
-    
+
     public boolean isDreadFunInheritanceOn() {
         return MyPrefs.itemInheritOwnerProjectDreadFun.getBoolean();
     }
@@ -3829,12 +3875,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         } else {
             remove(PARSE_DREAD_FUN_VALUE);
-            
+
         }
     }
-    
+
     interface UpdateItem {
-        
+
         boolean update(Item item); //, Object oldValue, Object newValue);
     }
 
@@ -3924,11 +3970,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return false;
         }
     }
-    
+
     public boolean isImportanceInherited() {
         return isImportanceInherited(getImportanceN());
     }
-    
+
     public boolean isImportanceInheritanceOn() {
         return MyPrefs.itemInheritOwnerProjectImportance.getBoolean();
     }
@@ -4011,11 +4057,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return false;
         }
     }
-    
+
     public boolean isUrgencyInherited() {
         return isUrgencyInherited(getUrgencyN());
     }
-    
+
     public boolean isUrgencyInheritanceOn() {
         return MyPrefs.itemInheritOwnerProjectUrgency.getBoolean();
     }
@@ -4146,7 +4192,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return "";
         }
     }
-    
+
     public Character getImpUrgIcon() {
         HighMediumLow importance = getImportanceN();
         HighMediumLow urgency = getUrgencyN();
@@ -4164,14 +4210,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
     }
-    
+
     public double getEarnedValue() {
         Double earnedVal = getDouble(PARSE_EARNED_VALUE); //Parse doesn't store doubles, //TODO!!!! fix issue in parse to store reals
 //        Double earnedVal = getInt(PARSE_EARNED_VALUE);
         return (earnedVal == null) ? 0 : earnedVal;
 //        return earnedValue;
     }
-    
+
     public void setEarnedValue(double earnedVal) {
 //        double oldVal = getDouble(PARSE_EARNED_VALUE);
         double oldVal = getEarnedValue();
@@ -4184,11 +4230,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         updateEarnedValuePerHour();
     }
-    
+
     private void updateEarnedValuePerHour() {
         setEarnedValuePerHour(calculateEarnedValuePerHour(getTotalExpectedEffort(), getEarnedValue()));
     }
-    
+
     private void setEarnedValuePerHour(double earnedValPerHour) { //private since set automatically
 //        double oldVal = getDouble(PARSE_EARNED_VALUE_PER_HOUR);
         double oldVal = getEarnedValuePerHour();
@@ -4263,11 +4309,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         Date date = getDate(PARSE_EXPIRES_ON_DATE);
         return (date == null) ? new MyDate(0) : date;
     }
-    
+
     public void setExpiresOnDate(Date expiresOnDate) {
         setExpiresOnDateInParse(expiresOnDate);
     }
-    
+
     public void setExpiresOnDateInParse(Date expiresOnDate) {
 //        if (isProject()) {
 //            Date oldDate = getDate(PARSE_EXPIRES_ON_DATE);
@@ -4321,7 +4367,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 //        update();
     }
-    
+
     public void setExpiresOnDate(long expiresOnDate) {
         setExpiresOnDate(new MyDate(expiresOnDate));
 //        if (has(PARSE_EXPIRES_ON_DATE) || expiresOnDate != 0) {
@@ -4337,7 +4383,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return (interruptTask == null) ? false : interruptTask;
 //        return interuptTask;
     }
-    
+
     public void setInteruptOrInstantTask(boolean interuptOrInstantTask) {
 //        if (has(PARSE_INTERRUPT_TASK) || interuptTask) {
 //            put(PARSE_INTERRUPT_TASK, interuptTask); //only store true values (null corresponds to False)
@@ -4353,13 +4399,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_INTERRUPT_OR_INSTANT_TASK);
         }
     }
-    
+
     public Item getTaskInterrupted() {
 //        return (Item) getParseObject(PARSE_INTERRUPTED_TASK);       
         Item interrupted = (Item) getParseObject(PARSE_INTERRUPTED_TASK);
 //        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
         return (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(interrupted);
-        
+
     }
 
     /**
@@ -4377,7 +4423,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         Item oldVal = (Item) getParseObject(PARSE_INTERRUPTED_TASK);//fetch
         oldVal = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(oldVal);
-        
+
         if (taskThatThisInterruptTaskInterrupted != null) {
             if (!Objects.equals(oldVal, taskThatThisInterruptTaskInterrupted)) {
                 put(PARSE_INTERRUPTED_TASK, taskThatThisInterruptTaskInterrupted);
@@ -4386,13 +4432,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_INTERRUPTED_TASK);
         }
     }
-    
+
     public Item getDependingOnTask() {
 //        return (Item) getParseObject(PARSE_DEPENDS_ON_TASK);
         Item dependingOn = (Item) getParseObject(PARSE_DEPENDS_ON_TASK);
 //        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
         return (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(dependingOn);
-        
+
     }
 
     /**
@@ -4411,7 +4457,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         Item oldVal = (Item) getParseObject(PARSE_DEPENDS_ON_TASK);
         oldVal = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(oldVal);
-        
+
         if (taskThatThisTaskDependsOn != null) {
             if (!Objects.equals(oldVal, taskThatThisTaskDependsOn)) {
                 put(PARSE_DEPENDS_ON_TASK, taskThatThisTaskDependsOn);
@@ -4420,7 +4466,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_DEPENDS_ON_TASK);
         }
     }
-    
+
     public Item getSource() {
         Item source = (Item) getParseObject(PARSE_SOURCE);
 //        return (Item) getParseObject(PARSE_ORIGINAL_SOURCE);
@@ -4443,7 +4489,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         Item oldVal = (Item) getParseObject(PARSE_SOURCE);
         oldVal = (Item) DAO.getInstance().fetchIfNeededReturnCachedIfAvail(oldVal);
-        
+
         if (originalTaskThisOneIsACopyOf != null) {
             if (!Objects.equals(oldVal, originalTaskThisOneIsACopyOf)) {
                 put(PARSE_SOURCE, originalTaskThisOneIsACopyOf);
@@ -4465,89 +4511,246 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     }
 //  
 
-    public Date getAlarmDate() {
-        Date date = getDate(PARSE_ALARM_DATE);
-//        return (date == null || isDone()) ? new Date(0) : date; //WHY? return no AlarmDate when Done? May prevent canceleling of alarms?
-        return (date == null) ? new MyDate(0) : date;
-//        return alarmDate;
+    public static void sortAlarmRecords(List<AlarmRecord> alarmRecords) {
+        if (alarmRecords.size() > 1) {
+            Collections.sort(alarmRecords, (object1, object2) -> {
+                return FilterSortDef.compareDate(object2.alarmTime, object1.alarmTime); //show most recent alarm on top of list
+            });
+        }
     }
 
-//    public long getAlarmDateXXX() {
-////        Date date = getDate(PARSE_ALARM_DATE);
-////        return (date == null) ? 0 : date.getTime();
-//        return getAlarmDate().getTime();
-////        return alarmDate;
-//    }
     /**
-     * returns all alarms, after or equal afterDate (if defined, otherwise all),
-     * sorted by date if sorted is true. Returns empty list if no alarms defined
-     * after onOrAfterDate. Returns dates whether Item is Done or not.
+     * returns all alarms, after or equal afterDate, sorted by date if sorted is
+     * true. Returns empty list if no alarms defined after onOrAfterDate.
+     * Returns dates whether Item is Done or not.
      *
      * @return
      */
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public List<AlarmRecord> getAllAlarmRecordsOLD(Date onOrAfterDate, boolean sorted) {
+//        //TODO //optimization: keep track of whether alarms have been changed to avoid recalculating this at every  call of getNextcomingAlarm() //NO, probably very little to be gained
+//        List<AlarmRecord> list = new ArrayList();
+//        AlarmRecord alarmRecord;
+//        Date date;
+////        if ((date = getSnoozeDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
+//        if ((alarmRecord = getSnoozeAlarmRecordN()) != null && (alarmRecord == null || alarmRecord.alarmTime.getTime() >= onOrAfterDate.getTime())) {
+////            list.add(new AlarmRecord(date, com.todocatalyst.todocatalyst.AlarmType.snooze));
+//            list.add(alarmRecord);
+//        }
+////        }
+////        if ((date = getAlarmDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
+//        if ((date = getAlarmDate()).getTime() != 0 && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
+//            list.add(new AlarmRecord(date, notification,this));
+//        }
+////        if ((date = getWaitingAlarmDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
+//        if ((date = getWaitingAlarmDate()).getTime() != 0 && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
+//            list.add(new AlarmRecord(date, waiting,this));
+//        }
+//        if (sorted && list.size() > 1) {
+//            Collections.sort(list, (object1, object2) -> {
+//                return FilterSortDef.compareDate(object1.alarmTime, object2.alarmTime);
+//            });
+//        }
+//        return list;
+//    }
+//</editor-fold>
     public List<AlarmRecord> getAllAlarmRecords(Date onOrAfterDate, boolean sorted) {
         //TODO //optimization: keep track of whether alarms have been changed to avoid recalculating this at every  call of getNextcomingAlarm() //NO, probably very little to be gained
         List<AlarmRecord> list = new ArrayList();
-        AlarmRecord alarmRecord;
         Date date;
-//        if ((date = getSnoozeDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
-        if ((alarmRecord = getSnoozeAlarmRecordN()) != null && (alarmRecord == null || alarmRecord.alarmTime.getTime() >= onOrAfterDate.getTime())) {
-//            list.add(new AlarmRecord(date, com.todocatalyst.todocatalyst.AlarmType.snooze));
-            list.add(alarmRecord);
+
+        //get normal alarms - if snoozed only that, if not snoozed, only normal alarm time if not cancelled
+        if ((date = getSnoozeAlarm()).getTime() != 0 && (date.getTime() >= onOrAfterDate.getTime())) {
+            list.add(new AlarmRecord(date, AlarmType.snoozedNotif, this));
+        } else if (!isAlarmCancelledOrSnoozed() && (date = getAlarmDate()).getTime() != 0 && (date.getTime() >= onOrAfterDate.getTime())) {
+            list.add(new AlarmRecord(date, AlarmType.notification, this));
         }
-//        if ((date = getAlarmDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
-        if ((date = getAlarmDate()).getTime() != 0 && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
-            list.add(new AlarmRecord(date, notification));
+
+        //get waiting alarms - if snoozed only that, if not snoozed, only normal waiting alarm time if not cancelled
+        if ((date = getSnoozeWaitingAlarm()).getTime() != 0 && date.getTime() >= onOrAfterDate.getTime()) {
+            list.add(new AlarmRecord(date, AlarmType.snoozedWaiting, this));
+        } else if (!isWaitingAlarmCancelledOrSnoozed() && (date = getWaitingAlarmDate()).getTime() != 0 && date.getTime() >= onOrAfterDate.getTime()) {
+            list.add(new AlarmRecord(date, AlarmType.waiting, this));
         }
-//        if ((date = getWaitingAlarmDateD()) != null && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
-        if ((date = getWaitingAlarmDate()).getTime() != 0 && (onOrAfterDate == null || date.getTime() >= onOrAfterDate.getTime())) {
-            list.add(new AlarmRecord(date, waiting));
-        }
-        if (sorted && list.size() > 1) {
-            Collections.sort(list, (object1, object2) -> {
-                return FilterSortDef.compareDate(object1.alarmTime, object2.alarmTime);
-            });
+
+        //SORT
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (sorted && list.size() > 1) {
+//            Collections.sort(list, (object1, object2) -> {
+//                return FilterSortDef.compareDate(object1.alarmTime, object2.alarmTime);
+//            });
+//        }
+//</editor-fold>
+        if (sorted) {
+            sortAlarmRecords(list);
         }
         return list;
     }
-    
+
     public List<AlarmRecord> getAllFutureAlarmRecordsSorted() {
-        return getAllAlarmRecords(new MyDate(), true);
-    }
-    
-    public AlarmRecord getNextcomingAlarmRecordN() {
-        List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
-        return list.isEmpty() ? null : list.get(0);
+        return getAllFutureAlarmRecordsSorted(false);
     }
 
+    public List<AlarmRecord> getAllFutureAlarmRecordsSorted(boolean evenIfDone) {
+        if (!evenIfDone && isDone()) {
+            return new ArrayList();
+        }
+        return getAllAlarmRecords(new MyDate(), true);
+    }
+
+    public List<AlarmRecord> getAllFutureAlarmRecordsUnsorted(Date afterDate) {
+        if (isDone()) {
+            return new ArrayList();
+        }
+        return getAllAlarmRecords(afterDate == null ? new MyDate() : afterDate, false);
+    }
+
+    public List<AlarmRecord> getAllFutureAlarmRecordsUnsorted() {
+        return getAllFutureAlarmRecordsUnsorted(new MyDate());
+    }
+
+    /**
+     * return alarm records for expired and yet unprocessed alarms, ie either a
+     * snoozed alarm in the past (which needs to be deleted when cancelled), or
+     * if no snooze, an alarm in the past which is not yet cancelled
+     *
+     * @param firstDate only return alarms after this date (ignore very old
+     * alarms)
+     * @param beforeDate only return alarms before this date (typically 'now')
+     * @param sorted
+     * @return
+     */
+    public List<AlarmRecord> getUnprocessedAlarmRecordsXXX(Date firstDate, Date beforeDate, boolean sorted) {
+        //TODO //optimization: keep track of whether alarms have been changed to avoid recalculating this at every  call of getNextcomingAlarm() //NO, probably very little to be gained
+        List<AlarmRecord> list = new ArrayList();
+        Date date;
+
+        //if snoozed, return snooze if expired, if no snooze return normal alarms if expired AND cancelled
+        //NB. If snooze is in the future, must not return the cancelled alarm date
+        if ((date = getSnoozeAlarm()).getTime() != 0) {
+            if (date.getTime() <= beforeDate.getTime() && date.getTime() >= firstDate.getTime()) {
+                list.add(new AlarmRecord(date, AlarmType.snoozedNotif, this));
+            }
+        } else if (!isAlarmCancelledOrSnoozed() && (date = getAlarmDate()).getTime() != 0
+                && date.getTime() <= beforeDate.getTime() && date.getTime() >= firstDate.getTime()) {
+            list.add(new AlarmRecord(date, AlarmType.notification, this));
+        }
+
+        //if snoozed, return snooze if expired, if no snooze return normal waiting alarm if expired AND cancelled
+        //NB. If snooze is in the future, must not return the cancelled alarm date
+        if (((date = getSnoozeWaitingAlarm()).getTime()) != 0) {
+            if (date.getTime() <= beforeDate.getTime() && date.getTime() >= firstDate.getTime()) {
+                list.add(new AlarmRecord(date, AlarmType.snoozedWaiting, this));
+            }
+        } else if (!isWaitingAlarmCancelledOrSnoozed() && (date = getWaitingAlarmDate()).getTime() != 0
+                && date.getTime() <= beforeDate.getTime() && date.getTime() >= firstDate.getTime()) {
+            list.add(new AlarmRecord(date, AlarmType.waiting, this));
+        }
+
+        //SORT
+        if (sorted) {
+            sortAlarmRecords(list);
+        }
+
+        return list;
+    }
+
+    /**
+     * get the list of unprocessed alarms for this task (expired and not (yet)
+     * cancelled or snoozed). Returns empty list for Completed/Cancelled tasks.
+     *
+     * @return
+     */
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public List<AlarmRecord> getUnprocessedAlarms() {
+//        List<AlarmRecord> unprocessedAlarms = new ArrayList();
+//        String flags = getString(PARSE_PENDING_ALARMS);
+//        if (flags != null && flags.length() > 0) {
+//            if (flags.indexOf(ALARM_NOTIF_UNPROCESSED) != -1) {
+//                if (getSnoozeAlarm().getTime() != 0) {
+//                    unprocessedAlarms.add(new AlarmRecord(getSnoozeAlarm(), notification));
+//                } else if (getAlarmDate().getTime() != 0) {
+//                    unprocessedAlarms.add(new AlarmRecord(getAlarmDate(), notification));
+//                }
+//            }
+//            if (flags.indexOf(ALARM_WAITING_UNPROCESSED) != -1) {
+//                if (getSnoozeWaitingAlarm().getTime() != 0) {
+//                    unprocessedAlarms.add(new AlarmRecord(getSnoozeWaitingAlarm(), notification));
+//                } else if (getWaitingAlarmDate().getTime() != 0) {
+//                    unprocessedAlarms.add(new AlarmRecord(getWaitingAlarmDate(), notification));
+//                }
+//            }
+//        }
+//        return unprocessedAlarms;
+//    }
+//</editor-fold>
+    public List<AlarmRecord> getUnprocessedAlarms() {
+        return getUnprocessedAlarms(new MyDate());
+    }
+
+    public List<AlarmRecord> getUnprocessedAlarms(Date now) {
+//        return getUnprocessedAlarms(new MyDate(), false);
+//        Date now = new MyDate();
+        Date last = DAO.getLastUnprocessedAlarmDate(now);
+        return getUnprocessedAlarms(DAO.getFirstUnprocessedAlarmDate(last), last, false);
+    }
+
+    public List<AlarmRecord> getUnprocessedAlarms(Date firstDate, Date lastDate, boolean sorted) {
+        List<AlarmRecord> unprocessedAlarms = new ArrayList();
+        if (isDone()) {
+            return unprocessedAlarms;
+        }
+//        Date oldestDateToFetch = new MyDate(lastDate.getTime() - MyPrefs.alarmPastDaysToFetchUncancelledAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//        Date firstDate = firstDate;
+        {
+            Date date;
+            if (MyDate.isAfter(date = getSnoozeAlarm(), firstDate) && MyDate.isBefore(date, lastDate)) {// &&!isAlarmCancelled()) { //NO don't check for Cancelled since Alarm is cancelled first time alarm is snoozed and Snnoze is deleted when cancelled
+                unprocessedAlarms.add(new AlarmRecord(date, AlarmType.snoozedNotif, this)); //snooze alarm has priority over alarm
+            } else if (!isAlarmCancelledOrSnoozed() && MyDate.isAfter(date = getAlarmDate(), firstDate) && MyDate.isBefore(date, lastDate)) {
+                unprocessedAlarms.add(new AlarmRecord(date, AlarmType.notification, this));
+            }
+        }
+        {
+            Date date;
+            if (MyDate.isAfter(date = getSnoozeWaitingAlarm(), firstDate) && MyDate.isBefore(date, lastDate)) {
+                unprocessedAlarms.add(new AlarmRecord(date, AlarmType.snoozedWaiting, this));
+            } else if (!isWaitingAlarmCancelledOrSnoozed() && MyDate.isAfter(date = getWaitingAlarmDate(), firstDate) && MyDate.isBefore(date, lastDate)) {
+                unprocessedAlarms.add(new AlarmRecord(date, AlarmType.waiting, this));
+            }
+        }
+//SORT
+        if (sorted) {
+            sortAlarmRecords(unprocessedAlarms);
+        }
+
+        return unprocessedAlarms;
+    }
+
+//    public List<AlarmRecord> getUnprocessedAlarmRecordsUnosrted() {
+//        Date now = new MyDate();
+//        Date first = new MyDate(now.getTime() - MyPrefs.)
+//        return getUnprocessedAlarmRecords(firstDate,, false)
+//    }
+//
+//    public AlarmRecord getNextcomingAlarmRecordN() {
+//        List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
+//        return list.isEmpty() ? null : list.get(0);
+//    }
     /**
      * returns first-coming future alarm (larger than or equal to now) or null
      * if no alarms are defined.
      *
      * @return
      */
-    public Date getNextcomingAlarmN() {
+    public Date getNextFutureAlarmN() {
 //        return getAllAlarmRecords(new Date(), true).get(0).alarmTime;
         List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
         return list.isEmpty() ? null : list.get(0).alarmTime;
     }
-    
-    public void updateNextcomingAlarmOLD() {
-        Date date = getNextcomingAlarmN(); //List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
-        setNextcomingAlarmDate(date);
-        Date oldVal = getDate(PARSE_NEXTCOMING_ALARM);
-        if (date != null && date.getTime() != 0) { //list.isEmpty()) {
-            if (!Objects.equals(oldVal, date)) {
-                put(PARSE_NEXTCOMING_ALARM, date); //list.get(0).alarmTime);
-            }
-        } else {
-            remove(PARSE_NEXTCOMING_ALARM);
-        }
-    }
-    
-    public void updateNextcomingAlarm() {
-        Date date = getNextcomingAlarmN(); //List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
-        setNextcomingAlarmDate(date);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public void updateNextcomingAlarmOLD() {
+//        Date date = getNextcomingAlarmN(); //List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
+//        setNextcomingAlarmDate(date);
 //        Date oldVal = getDate(PARSE_NEXTCOMING_ALARM);
 //        if (date != null && date.getTime() != 0) { //list.isEmpty()) {
 //            if (!Objects.equals(oldVal, date)) {
@@ -4556,7 +4759,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        } else {
 //            remove(PARSE_NEXTCOMING_ALARM);
 //        }
-    }
+//    }
+//</editor-fold>
+//    public void updateNextcomingAlarmXXX() {
+//        Date date = getNextcomingAlarmN(); //List<AlarmRecord> list = getAllFutureAlarmRecordsSorted();
+//        setNextcomingAlarmDate(date);
+////        Date oldVal = getDate(PARSE_NEXTCOMING_ALARM);
+////        if (date != null && date.getTime() != 0) { //list.isEmpty()) {
+////            if (!Objects.equals(oldVal, date)) {
+////                put(PARSE_NEXTCOMING_ALARM, date); //list.get(0).alarmTime);
+////            }
+////        } else {
+////            remove(PARSE_NEXTCOMING_ALARM);
+////        }
+//    }
 ///<editor-fold defaultstate="collapsed" desc="comment">
 //    private void updateFirstAlarmOLD() {
 //        Date alarm = getDate(PARSE_ALARM_DATE);
@@ -4582,51 +4798,137 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     /**
      * returns null if no date is defined
      */
-    public Date getNextcomingAlarmFromParseN() {
-        Date date = getDate(PARSE_NEXTCOMING_ALARM);
-        return date; //(date == null) ? new Date(0) : date;
-    }
-    
-    public void setNextcomingAlarmDate(Date firstAlarmDate) {
-        Date oldVal = getDate(PARSE_NEXTCOMING_ALARM);
-        if (firstAlarmDate != null && firstAlarmDate.getTime() != 0) {
-            if (!Objects.equals(oldVal, firstAlarmDate)) {
-                put(PARSE_NEXTCOMING_ALARM, firstAlarmDate);
-            }
-        } else {
-            remove(PARSE_NEXTCOMING_ALARM);
-        }
-    }
-    
+//    public Date getNextcomingAlarmFromParseN() {
+//        Date date = getDate(PARSE_NEXTCOMING_ALARM);
+//        return date; //(date == null) ? new Date(0) : date;
+//    }
+//    public void setNextcomingAlarmDate(Date firstAlarmDate) {
+//        Date oldVal = getDate(PARSE_NEXTCOMING_ALARM);
+//        if (firstAlarmDate != null && firstAlarmDate.getTime() != 0) {
+//            if (!Objects.equals(oldVal, firstAlarmDate)) {
+//                put(PARSE_NEXTCOMING_ALARM, firstAlarmDate);
+//            }
+//        } else {
+//            remove(PARSE_NEXTCOMING_ALARM);
+//        }
+//    }
+    /**
+     * call on every change to any alarms. NB. No need to have getters for
+     * First/Last since we'll always access the alarms via
+     * getAllFutureAlarmRecordsSorted(). And First/Last are only used to query
+     * Parse for items which may have relevant alarms
+     *
+     * @param firstAlarmDate
+     */
+//    private void updateFirstAndLastAlarm() {
+//        List<AlarmRecord> allAlarms = getAllFutureAlarmRecordsSorted();
+//        if (allAlarms.size() > 0) {
+//            put(PARSE_FIRST_ALARM, allAlarms.get(0).alarmTime);
+//            put(PARSE_LAST_ALARM, allAlarms.get(allAlarms.size() - 1).alarmTime);
+//        }
+//    }
     public void setAlarmDate(Date alarmDate) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (has(PARSE_ALARM_DATE) || alarmDate.getTime() != 0) {
 //            AlarmHandler.getInstance().updateReminderAlarm(this, getAlarmDateD(), alarmDate);
 //            put(PARSE_ALARM_DATE, alarmDate);
 //        }
 //        Date oldAlarmDate = getAlarmDateD();
 //        Date oldAlarmDate = getDate(PARSE_ALARM_DATE);
+//</editor-fold>
         Date oldAlarmDate = getAlarmDate();
         if (alarmDate != null && alarmDate.getTime() != 0) {
             if (!Objects.equals(oldAlarmDate, alarmDate)) {
                 put(PARSE_ALARM_DATE, alarmDate);
+                //if new alarmDate is in the past, then automatically Cancel the alarm and cancel any pending Snooze
+                if (alarmDate.getTime() <= System.currentTimeMillis()) {
+                    setSnoozeAlarm(null);
+                    cancelOrSnoozeAlarm(true);
+                } else { //if new date is in the future, then remove any Cancel status as well as any pending Snooze
+                    setSnoozeAlarm(null);
+                    cancelOrSnoozeAlarm(false);
+                }
             }
         } else {
             remove(PARSE_ALARM_DATE);
+            setSnoozeAlarm(null);
+            cancelOrSnoozeAlarm(false); //remove any cancel flag if alarm is removed (shouldn't be necessary, but better to clean up)
         }
-        if (true) {
-            updateNextcomingAlarm(); //done in save() now
-        }//        if (!isTemplate() && oldAlarmDate != null && alarmDate.getTime() != 0) {
-        if (!isTemplate() && !oldAlarmDate.equals(alarmDate)) {
-//            afterSaveActions.put(AFTER_SAVE_ALARM_UPDATE, () -> AlarmHandler.getInstance().updateReminderAlarm(this, oldAlarmDate, alarmDate));
-            mustUpdateAlarmsXXXNotUsed = true;
-        }
-//        AlarmServer.getInstance().update(this);
-////        this.alarmDate = alarmDate;
-//        if (this.alarmDate != alarmDate) {
-//            this.alarmDate = alarmDate;
-//            AlarmServer.getInstance().update(this);
-////            changed(ChangeValue.CHANGED_XX_ITEM_CHANGED_ALARM_DATE);
+    }
+
+    public Date getAlarmDate() {
+        Date date = getDate(PARSE_ALARM_DATE);
+        return (date == null) ? new MyDate(0) : date;
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+    //    public Date getSnoozeDateD() {
+//        Date date = getDate(PARSE_SNOOZE_DATE);
+//        return (date == null) ? new Date(0) : date;
+//    }
+//
+//    public void setSnoozeDate(Date snoozeUntilDate) {
+//        if (snoozeUntilDate != null && snoozeUntilDate.getTime() != 0) {
+//            put(PARSE_SNOOZE_DATE, snoozeUntilDate);
+//        } else {
+//            remove(PARSE_SNOOZE_DATE);
 //        }
+//    }
+//    public AlarmRecord getSnoozeAlarmRecordN() {
+////        Date date = getDate(PARSE_SNOOZE_DATE);
+//        Date date = getSnoozeAlarm();
+////        String type = getString(PARSE_SNOOZED_TYPE);
+//        if (Config.TEST && type == null) {
+//            type = AlarmType.snoozedNotif.toString();
+//        }
+//        return (date != null) ? new AlarmRecord(date, AlarmType.valueOf(type)) : null;
+//    }
+//    public void setSnoozeAlarmRecordXXX(AlarmRecord snooze) {
+////        if (snooze.alarmTime != null && snooze.alarmTime.getTime() != 0) {
+////            put(PARSE_SNOOZE_DATE, snooze.alarmTime);
+////            put(PARSE_SNOOZED_TYPE, snooze.type.toString());
+////        } else {
+////            remove(PARSE_SNOOZE_DATE);
+////            remove(PARSE_SNOOZED_TYPE);
+////        }
+//        if (snooze.alarmTime != null && snooze.alarmTime.getTime() != 0) {
+//            setSnoozeAlarm(snooze.alarmTime);
+//        } else {
+//            setSnoozeAlarm(null);
+//        }
+//    }
+//</editor-fold>
+    public void setSnoozeAlarm(Date snoozeTillDate) {
+        Date oldSnoozeDate = getSnoozeAlarm();
+        if (snoozeTillDate != null && snoozeTillDate.getTime() != 0) {
+            if (!Objects.equals(oldSnoozeDate, snoozeTillDate)) {
+                put(PARSE_ALARM_SNOOZE_DATE, snoozeTillDate);
+                //if new alarmDate is in the past, then automatically Cancel the alarm and cancel any pending Snooze
+                ASSERT.that(snoozeTillDate.getTime() > System.currentTimeMillis(), "snooze date should always be in the future");
+            }
+            cancelOrSnoozeAlarm(true); //whenever an alarm is snoozed (or snooze is deleted), this overrides and cancels the normal alarm (which will only become active again if updated to a future date)
+        } else {
+            remove(PARSE_ALARM_SNOOZE_DATE);
+        }
+    }
+
+    public Date getSnoozeAlarm() {
+        Date date = getDate(PARSE_ALARM_SNOOZE_DATE);
+        return (date != null) ? date : new MyDate(0);
+    }
+
+    public void cancelOrSnoozeAlarm(boolean cancel) {
+        if (cancel) {
+            put(PARSE_ALARM_CANCELLED, cancel);
+//            remove(PARSE_ALARM_SNOOZE_DATE); //remove snooze date when alarm is cancelled //NO, don't remove snooze, Alarm will be cancelled when setting a Snooze
+        } else {
+            remove(PARSE_ALARM_CANCELLED);
+        }
+    }
+
+    public boolean isAlarmCancelledOrSnoozed() {
+        Boolean cancelled = getBoolean(PARSE_ALARM_CANCELLED);
+        return cancelled != null; //by default (empty value), means NOT cancelled, so empty or TRUE mean cancelled
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -4791,50 +5093,65 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return false;
 //    }
 //</editor-fold>
-//    public long getWaitingAlarmDate() {
-////        return waitingAlarmDate;
-////        Date waitingAlarmDate = getDate(PARSE_WAITING_ALARM_DATE);
-////        return (waitingAlarmDate == null) ? 0 : waitingAlarmDate.getTime();
-//        return getWaitingAlarmDateD().getTime();
-//    }
     public Date getWaitingAlarmDate() {
-//        return new Date(getWaitingAlarmDate());
         Date waitingAlarmDate = getDate(PARSE_WAITING_ALARM_DATE);
-//        return (waitingAlarmDate == null || isDone()) ? new Date(0) : waitingAlarmDate; //return 0 is task is Done
         return waitingAlarmDate == null ? new MyDate(0) : waitingAlarmDate; //return 0 is task is Done -NO, this prevents seeing alarmDates when editing a done task!! And maybe if copying done tasks. Instead, test on Done must be done at a higher level!!
     }
 
-//    public void setWaitingAlarmDateXXX(long waitingAlarmDate) {
-//        setWaitingAlarmDate(new MyDate(waitingAlarmDate));
-//    }
     public void setWaitingAlarmDate(Date waitingAlarmDate) {
-//        if (has(PARSE_WAITING_ALARM_DATE) || waitingAlarmDate != 0) {
-//            AlarmHandler.getInstance().updateWaitingAlarm(this, new Date(getWaitingAlarmDate()), new Date(waitingAlarmDate));
-//            put(PARSE_WAITING_ALARM_DATE, new Date(waitingAlarmDate));
-//        }
         Date oldAlarmDate = getWaitingAlarmDate();
-        
+
         if (waitingAlarmDate != null && waitingAlarmDate.getTime() != 0) {
             if (!Objects.equals(oldAlarmDate, waitingAlarmDate)) {
                 put(PARSE_WAITING_ALARM_DATE, waitingAlarmDate);
+                //if new alarmDate is in the past, then automatically Cancel the alarm and cancel any pending Snooze
+                if (waitingAlarmDate.getTime() <= System.currentTimeMillis()) {
+                    setSnoozeWaitingAlarm(null);
+                    cancelOrSnoozeWaitingAlarm(true);
+                } else { //if new date is in the future, then remove any Cancel status as well as any pending Snooze
+                    setSnoozeWaitingAlarm(null);
+                    cancelOrSnoozeWaitingAlarm(false);
+                }
             }
         } else if (oldAlarmDate.getTime() != 0) {
             remove(PARSE_WAITING_ALARM_DATE);
+            setSnoozeWaitingAlarm(null); //renove any pending snooze
+            cancelOrSnoozeWaitingAlarm(false); //renove any cancel state (clean up, not fonctionally needed)
         }
-        if (true) {
-            updateNextcomingAlarm(); //done in save() now
-        }
-        if (!isTemplate() && !oldAlarmDate.equals(waitingAlarmDate)) {
-//            afterSaveActions.put("WaitingAlarmDate", () -> AlarmHandler.getInstance().updateWaitingAlarm(this, oldAlarmDate, waitingAlarmDate));
-            mustUpdateAlarmsXXXNotUsed = true;
-//            AlarmHandler.getInstance().updateAlarmsOrTextForItem(this); //update any existing alarms to the new value
-        }
+    }
 
-//        this.alarmDate = alarmDate;
-//        if (this.waitingAlarmDate != waitingAlarmDate) {
-//            this.waitingAlarmDate = waitingAlarmDate;
-////            AlarmServer.getInstance().update(this);
-//        }
+    public void setSnoozeWaitingAlarm(Date snoozeWaitingDate) {
+        Date oldSnoozeDate = getSnoozeWaitingAlarm();
+        if (snoozeWaitingDate != null && snoozeWaitingDate.getTime() != 0) {
+            if (!Objects.equals(oldSnoozeDate, snoozeWaitingDate)) {
+                put(PARSE_WAITING_SNOOZE_DATE, snoozeWaitingDate);
+                //if new alarmDate is in the past, then automatically Cancel the alarm and cancel any pending Snooze
+                ASSERT.that(snoozeWaitingDate.getTime() > System.currentTimeMillis(), "snooze date should always be in the future");
+                cancelOrSnoozeWaitingAlarm(true); //whenever an alarm is snoozed (or snooze is deleted), this overrides and cancels the normal alarm (which will only become active again if updated to a future date)
+            }
+        } else {
+            remove(PARSE_WAITING_SNOOZE_DATE);
+            //don't cancelWaitingAlarm(true) here since setSnooze might be called without having set a snooze
+        }
+    }
+
+    public Date getSnoozeWaitingAlarm() {
+        Date date = getDate(PARSE_WAITING_SNOOZE_DATE);
+        return (date != null) ? date : new MyDate(0);
+    }
+
+    public void cancelOrSnoozeWaitingAlarm(boolean cancel) {
+        if (cancel) {
+            put(PARSE_WAITING_CANCELLED, cancel);
+//            remove(PARSE_WAITING_SNOOZE_DATE); //remove snooze date when alarm is cancelled //NO, don't remove snooze, Alarm will be cancelled when setting a Snooze
+        } else {
+            remove(PARSE_WAITING_CANCELLED);
+        }
+    }
+
+    public boolean isWaitingAlarmCancelledOrSnoozed() {
+        Boolean cancelled = getBoolean(PARSE_WAITING_CANCELLED);
+        return cancelled != null; //by default (empty value), means NOT cancelled, so empty or TRUE mean cancelled
     }
 
     /**
@@ -4851,7 +5168,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return (repeatRule == null) ? new RepeatRuleParseObject() : repeatRule;
 //        return (repeatRule == null) ? null : repeatRule;
         return repeatRule;
-        
+
     }
 
     /**
@@ -4948,10 +5265,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
     }
-    
+
     public void setRepeatRule2OLD(RepeatRuleParseObject newRepeatRuleN) {
         RepeatRuleParseObject oldRepeatRule = getRepeatRuleN();
-        
+
         if (oldRepeatRule == null) { //setting a RR for the first time
             if (newRepeatRuleN != null && newRepeatRuleN.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
                 newRepeatRuleN.addOriginatorToRule(this);
@@ -4987,10 +5304,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
     }
-    
+
     public void setRepeatRule(RepeatRuleParseObject newRepeatRuleN) {
         RepeatRuleParseObject oldRepeatRule = getRepeatRuleN();
-        
+
         if (oldRepeatRule == null) { //setting a RR for the first time
             if (newRepeatRuleN != null && newRepeatRuleN.getRepeatType() != RepeatRuleParseObject.REPEAT_TYPE_NO_REPEAT) {
                 newRepeatRuleN.addOriginatorToRule(this);
@@ -5046,14 +5363,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public void setRepeatRuleForRepeatInstance(RepeatRuleParseObject repeatRule) {
         setRepeatRuleInParse(repeatRule);
     }
-    
+
     public long getStartedOnDate() {
 //        return startedOnDate;
 //        Date date = getDate(PARSE_STARTED_ON_DATE);
 //        return (date == null) ? 0L : date.getTime();
         return getStartedOnDateD().getTime();
     }
-    
+
     protected static Date getSubtasksStartedOnDateD(Item item) {
         List<Item> subtasks = item.getListFull(); //full to include even done/filtered tasks
         long startTime = 0;
@@ -5064,7 +5381,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (startT.getTime() != 0) {
                 startTime = Math.min(startTime, startT.getTime());
             }
-            
+
         }
 //            if (startTime != 0) {
 //                return new Date(startTime);
@@ -5072,7 +5389,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return null;
         return new MyDate(startTime);
     }
-    
+
     public Date getStartedOnDateD() {
         Date date = getStartedOnDateDInParse();
 //        if (date.getTime() == 0 && MyPrefs.itemProjectPropertiesDerivedFromSubtasks.getBoolean()) { //UI: for projects, startedOn date is the date the first subtask was started (if any), the date can be overwritten by setting any desired date for the mother project
@@ -5080,7 +5397,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         return date;
     }
-    
+
     private Date getStartedOnDateDInParse() {
 //        return new Date(getStartedOnDate());
         Date date = getDate(PARSE_STARTED_ON_DATE);
@@ -5121,7 +5438,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
     }
-    
+
     public void setStartedOnDate(Date startedOnDate, boolean forceToNewValue) {
         if (startedOnDate == null || getStartedOnDate() == 0 || forceToNewValue) { //only set it once, don't overwrite it later (but reset if null (eg status set back to Created
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -5167,7 +5484,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return startedOn;
         }
     }
-    
+
     private void setStartedOnDateInParse(Date startedOnDate) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (false && isProject()) { //subtasks should never inherit their project's start date??
@@ -5215,7 +5532,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 //        update();
     }
-    
+
     private void refreshStartedOnDateFromSubtasks() {
         Date subtaskStartedOn = getStartedOnDateFromSubtasksN();
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -5325,7 +5642,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public Item getNextLeafItemNXXX(Item previousItem) {
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
         List<Item> leafTaskList = getLeafTasksAsListN(null);
-        
+
         int nextIndex;
         if (previousItem == null) {
             nextIndex = 0;
@@ -5350,7 +5667,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getNextLeafItemMeetingConditionImpl(previousItem, excludeWaiting, false);
 //        return getNextLeafItemMeetingConditionImpl(previousItem, condition, new boolean[]{previousItem == null});
         return getNextLeafItemMeetingConditionImplXXX(previousItem, condition, new Boolean(previousItem == null));
-        
+
     }
 
 //    interface Condition {
@@ -5502,7 +5819,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return isDone() ? 0 : 1;
         }
     }
-    
+
     @Override
     public int getNumberOfItems(boolean onlyUndone, boolean countLeafTasks) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -5533,7 +5850,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         //!(onlyUndone && isDone()) <=> !onlyUndone || !isDone()
     }
-    
+
     public static int getNumberOfSubtasks(List<Item> subtasks, boolean onlyUndone, boolean countLeafTasks) {
         int count = 0;
         for (Object obj : subtasks) { //full: count every subtask
@@ -5541,7 +5858,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return count; //if !countLeafTasks, then add 1 for this Item
     }
-    
+
     @Override
     public int getNumberOfSubtasks(boolean onlyUndone, boolean countLeafTasks) {
 //        int count = 0;
@@ -5668,7 +5985,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return ItemList.getNumberOfItemsThatWillChangeStatus(list, recurse, newStatus, changingFromDone);
         }
     }
-    
+
     @Override
     public int getCountOfSubtasksWithStatus(boolean recurse, List statuses) {
         List list = getListFull();
@@ -5747,7 +6064,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 //        update();
     }
-    
+
     private static void updateFieldsDependingOnStatus(Item item, ItemStatus previousStatus, ItemStatus newStatus, Date now) {
         //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (false) {
@@ -5815,17 +6132,20 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         //WaitingActivatedDate:
         if (previousStatus != ItemStatus.WAITING && newStatus == ItemStatus.WAITING) { //UI: always only save the last time the task was set Waiting //-only save the first setWaitingDate (TODO!!!: or is it more intuitive that it's the last, eg it set waiting by mistake?)
-            item.setDateWhenSetWaiting(now); //always save
+            item.setDateWhenSetWaiting(now, false); //always save. false: don't auto-update add'l dependent fields
         }
         //reset waiting alarm and waitingTill dates to 0 when leavning Waiting status
         if (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING) { //UI: always only save the last time the task was set Waiting //-only save the first setWaitingDate (TODO!!!: or is it more intuitive that it's the last, eg it set waiting by mistake?)
-            item.setWaitingAlarmDate(null); //always save
             item.setWaitUntilDate(null); //always save
+            item.setWaitingAlarmDate(null); //always save
+            if (newStatus == ItemStatus.CREATED || newStatus != ItemStatus.ONGOING) {
+                item.setDateWhenSetWaiting(null, false); //reset the date if task is set back to Created/Ongoing, but NOT if set directly to Completed
+            }
         }
 //<editor-fold defaultstate="collapsed" desc="deactivated updates">
         if (false && (previousStatus == ItemStatus.WAITING && newStatus != ItemStatus.WAITING && item.getWaitUntilDate().getTime() != 0L)) { //reset WaitingTillDate
             //UI: KEEP setWaitingDate as a marker the task was set waiting sometime and to keep the date WHEN it was said waiting. TODO: must never use waitingDate!=0 as indication task is waiting
-            item.setWaitUntilDate(0); //reset waitingTill date
+            item.setWaitUntilDate(null); //reset waitingTill date
             if (item.getWaitingAlarmDate().getTime() != 0) { //automatically turn off
                 item.setWaitingAlarmDate(null);
             }
@@ -6093,9 +6413,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         boolean doneProject = (oldStatus == ItemStatus.DONE);
         int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
         return (nbChgStatus <= MyPrefs.itemMaxNbSubTasksToChangeStatusForWithoutConfirmation.getInt()
-                || Dialog.show("INFO", "Change status to " + newStatus.getName() + " for " + nbChgStatus + " subtasks in project \"" + getText() + "\"?", "OK", "Cancel"));
+                //                || Dialog.show("INFO", "Change status to " + newStatus.getName() + " for " + nbChgStatus + " subtasks in project \"" + getText() + "\"?", "OK", "Cancel"));
+                || Dialog.show("INFO",
+                        Format.f("This will change status to {0 newstatus} for {1 nbTasksChanged} subtasks in project \"{2 prjName}\"", newStatus.getVisibleName(), "" + nbChgStatus, getText()),
+                        "OK", "Cancel"));
     }
-    
+
     public void refreshStatusFromSubtasks() {
         ItemStatus subtaskStatus = getStatusFromSubtasksN();
         if (subtaskStatus != null) {
@@ -6115,33 +6438,48 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public boolean setStatus(ItemStatus newStatus) {
         return setStatus(newStatus, true, true, true, new MyDate(), true, true, false);
     }
-    
+
     public boolean setStatus(ItemStatus newStatus, boolean updateDependentFields) {
         return setStatus(newStatus, true, true, updateDependentFields, new MyDate(), false);
     }
-    
+
     public boolean setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now) {
         return setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, now, false);
     }
-    
+
     public boolean setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now,
             boolean executeRepeat) {
         return setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, now, executeRepeat, true, false);
     }
-    
+
     public boolean setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, boolean executeRepeat) {
         return setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, new MyDate(), executeRepeat, true, false);
     }
-    
+
     public boolean setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now,
             boolean executeRepeat, boolean askToUpdateWaitingDateAndAlarm) {
         return setStatus(status, updateSubtasks, updateSupertasks, updateDependentFields, now, executeRepeat, askToUpdateWaitingDateAndAlarm, false);
     }
-    
+
+    /**
+     *
+     * @param status
+     * @param updateSubtasks
+     * @param updateSupertasks
+     * @param updateDependentFields
+     * @param now
+     * @param executeRepeat
+     * @param askToUpdateWaitingDateAndAlarm
+     * @param forceUpdateOfSubtasksZZZ no reason to use this, subtasks should
+     * always be updated when updateSubtasks is true. Old use: override the
+     * confirmation dialog when changing many subtasks in one go, currently if
+     * marking an entire list of tasks completed.
+     * @return
+     */
     public boolean setStatus(final ItemStatus status, boolean updateSubtasks, boolean updateSupertasks, boolean updateDependentFields, Date now,
-            boolean executeRepeat, boolean askToUpdateWaitingDateAndAlarm, boolean forceUpdateOfSubtasks) {
+            boolean executeRepeat, boolean askToUpdateWaitingDateAndAlarm, boolean forceUpdateOfSubtasksZZZ) {
         ItemStatus oldStatus = getStatusFromParse();
-        
+
         ItemStatus newStatus = (status == ItemStatus.CREATED && getActualTotal() > 0) ? ItemStatus.ONGOING : status; //convert CREATED to ONGOING if actual effort is recorded
         if (newStatus == oldStatus) {
             return false;
@@ -6149,7 +6487,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (false && isProject() && !confirmUpdateOfSubtasks(oldStatus, newStatus)) { //false: too late to make decision here, move to statusChangeHandlers
             return false;
         }
-        
+
         if (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED) {
             mustUpdateAlarmsXXXNotUsed = true; //update alarms
         }
@@ -6162,7 +6500,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            setStatusInParse(newStatus); //must set *before* updating supertasks
 //        } else {
         if (isProject() && updateSubtasks) {
-            if (forceUpdateOfSubtasks || confirmUpdateOfSubtasks(oldStatus, newStatus)) {
+            if (true || forceUpdateOfSubtasksZZZ || confirmUpdateOfSubtasks(oldStatus, newStatus)) { //true: de-activated the confirmation call (and then forceUpdateOfSubtasks also!)
                 //when changing the status of a project, only the status of the subtasks are changed(??)
 //            boolean doneProject = (oldStatus == ItemStatus.DONE);
 //            int nbChgStatus = getNumberOfItemsThatWillChangeStatus(true, newStatus, doneProject);
@@ -6173,7 +6511,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     ItemStatus oldSubtaskStatus = subtask.getStatus();
                     if (shouldTaskStatusChange(newStatus, oldSubtaskStatus, oldStatus == ItemStatus.DONE) && subtask.updateInheritedValuesFor(PARSE_STATUS)) { //only change status when transition is allowed
 //                    subtask.setStatus(newStatus, true, false, true, now); //always update dependent fields for subtasks
-                        subtask.setStatus(newStatus, true, true, true, now, true); //always update dependent fields for subtasks. MUST also update supertask so that e.g. the completedDate of project is updated with latest subtask date, must update subtask repeatRules!
+                        //askToUpdateWaitingDateAndAlarm==false here to avoid asking to set waiting alarms etc for each subtask!!
+//                        subtask.setStatus(newStatus, true, true, true, now, true, false, false); //always update dependent fields for subtasks. MUST also update supertask so that e.g. the completedDate of project is updated with latest subtask date, must update subtask repeatRules!
+/* Always update subtasks (further down the hierarchy). 
+Always update dependent fields for subtasks. 
+DON'T update supertasks (since this is being done here, below). 
+Always update dependent fields of subtasks (eg dateCompleted). 
+now: use same now value everywhere. 
+Always update subtask repeatRules (e.g. create new instances if marked complete). 
+Do'nt ask to update waiting fields of subtasks, only do this once at the highest level project set waiting.
+MUST also update supertask so that e.g. the completedDate of project is updated with latest subtask date*/
+                        subtask.setStatus(newStatus, true, false, true, now, true, false, false);
                         return true;
                     } else {
                         return false; //UI: do nothing it user does not want to change all subtasks!
@@ -6184,8 +6532,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 return false;
             }
         }
-        
-        if (newStatus == ItemStatus.WAITING && askToUpdateWaitingDateAndAlarm && MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting.getBoolean()) {
+
+        if (askToUpdateWaitingDateAndAlarm && newStatus == ItemStatus.WAITING && MyPrefs.waitingAskToSetWaitingDateWhenMarkingTaskWaiting.getBoolean()) {
             MyForm.showDialogSetWaitingDateAndAlarmIfAppropriate(this); //only call if we're changing TO Waiting status
         }
 
@@ -6193,6 +6541,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                setStatusInParse(newStatus); //if not updating subtasks, then set projet status itself
 //            }
         setStatusInParse(newStatus); //if not updating subtasks, then set projet status itself
+
         if (updateSupertasks) {
             Item itemOwner = getOwnerItem();
             if (itemOwner != null) { //                itemOwner.setStatus(itemOwner.getStatusFromSubtasksN());
@@ -6207,7 +6556,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            updateFieldsDependingOnStatus(this, oldStatus, newStatus, now);
             updateFieldsDependingOnStatus(this, oldStatus, newStatus, now);
         }
-        
+
         if (getRepeatRuleN() != null
                 && (oldStatus != ItemStatus.DONE && oldStatus != ItemStatus.CANCELLED)
                 && (newStatus == ItemStatus.DONE || newStatus == ItemStatus.CANCELLED)) {
@@ -6278,7 +6627,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public ItemStatus getStatusFromSubtasksN() {
         return getStatusN(getListFull());
     }
-    
+
     public static ItemStatus getStatusN(List<Item> list) {
         if (list == null || list.size() == 0) {
             return null;
@@ -6289,7 +6638,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
 //        getStatusImplProjectLeaftasks(list, statusCount);
         getStatusImplDirectSubTasksOnly(list, statusCount);
-        
+
         if (statusCount.getCount(ItemStatus.CANCELLED) == listSize) {//all subtasks are cancelled
             return ItemStatus.CANCELLED;
 //        if (statusCount[BaseItemOrList.STATUS_CREATED] == listSize) {//all subtasks are created
@@ -6367,7 +6716,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         String status = getString(PARSE_STATUS);
         return (status == null) ? ItemStatus.CREATED : ItemStatus.valueOf(status); //Created is initial value
     }
-    
+
     public ItemStatus getStatus() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (isProject()) {
@@ -6652,7 +7001,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
         if (newOwnerN instanceof Item && MyPrefs.itemInheritOwnerProjectProperties.getBoolean()) {
-            
+
             Item newOwnerItem = (Item) newOwnerN;
             if (!isDone() || MyPrefs.itemInheritEvenDoneSubtasksInheritOwnerValues.getBoolean()) { //don't update inherited values for subtasks that are DONE
 
@@ -6660,7 +7009,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (isDueDateInheritanceOn() && getDueDate().getTime() == 0) { //getDueDateD().getTime() == 0 =>> only set inherited value if no value has been set manually already
                     setDueDate(newOwnerItem.getDueDate());
                 }
-                
+
                 if (MyPrefs.itemInheritOwnerProjectExpiresOnDateXXX.getBoolean() && getExpiresOnDate().getTime() == 0) {
                     setExpiresOnDate(newOwnerItem.getExpiresOnDate());
                 }
@@ -6674,7 +7023,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (isHideUntilDateInheritanceOn() && getHideUntilDateD().getTime() == 0) {
                     setHideUntilDate(newOwnerItem.getHideUntilDateD());
                 }
-                
+
                 if (MyPrefs.itemInheritOwnerProjectDateWhenSetWaitingZZZ.getBoolean() && getDateWhenSetWaiting().getTime() == 0) {
                     setDateWhenSetWaiting(newOwnerItem.getDateWhenSetWaiting());
                 }
@@ -6708,7 +7057,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 if (isStartByInheritanceOn() && getStartByDateD().getTime() == 0) {
                     setStartByDate(newOwnerItem.getStartByDateD());
                 }
-                
+
                 if (true || MyPrefs.itemInheritOwnerProjectTemplateXXX.getBoolean()) {
                     setTemplate(newOwnerItem.isTemplate());
                 }
@@ -6737,28 +7086,28 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
         //NB!! we need to distinguish when an owner has changed value (so need before/after value!) => the subtasks must be updated
         if (previousOwnerN instanceof Item && MyPrefs.itemInheritOwnerProjectProperties.getBoolean()) {
-            
+
             Item previousOwnerItem = (Item) previousOwnerN;
 
 //            if (MyPrefs.itemInheritOwnerProjectDueDate.getBoolean() && getDueDateD().equals(previousOwnerItem.getDueDateD())) { //getDueDateD().getTime() == 0 =>> only set inherited value if no value has been set manually already
             if (isDueDateInheritanceOn() && getDueDate().equals(previousOwnerItem.getDueDate())) { //getDueDateD().getTime() == 0 =>> only set inherited value if no value has been set manually already
                 setDueDate(new MyDate(0));
             }
-            
+
             if (MyPrefs.itemInheritOwnerProjectExpiresOnDateXXX.getBoolean() && getExpiresOnDate().equals(previousOwnerItem.getExpiresOnDate())) {
                 setExpiresOnDate(0);
             }
 
 //            if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean() && getWaitingTillDate().equals(previousOwnerItem.getWaitingTillDate())) {
             if (isWaitUntilInheritanceOn() && getWaitUntilDate().equals(previousOwnerItem.getWaitUntilDate())) {
-                setWaitUntilDate(0);
+                setWaitUntilDate(null);
             }
 
 //            if (MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean() && getHideUntilDateD().equals(previousOwnerItem.getHideUntilDateD())) {
             if (isHideUntilDateInheritanceOn() && getHideUntilDateD().equals(previousOwnerItem.getHideUntilDateD())) {
                 setHideUntilDate(0);
             }
-            
+
             if (MyPrefs.itemInheritOwnerProjectDateWhenSetWaitingZZZ.getBoolean() && getDateWhenSetWaiting().equals(previousOwnerItem.getDateWhenSetWaiting())) {
                 setDateWhenSetWaiting(0);
             }
@@ -6792,22 +7141,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             if (isStartByInheritanceOn() && MyUtil.eql(getStartByDateD(), previousOwnerItem.getStartByDateD())) {
                 setStartByDate(0);
             }
-            
+
             if (MyPrefs.itemInheritOwnerProjectTemplateXXX.getBoolean()) {//&&previousOwner.isTemplate()) {
                 setTemplate(false);
             }
         }
     }
-    
+
     void removeValuesInheritedFromOwner() {
         removeValuesInheritedFromOwner(getOwnerItem());
     }
-    
+
     public boolean isInheritFromOwnerZZZ() {
         Boolean inherit = getBoolean(PARSE_INHERIT_ENABLED);
         return inherit != null;
     }
-    
+
     public void setInheritFromOwnerZZZ(boolean enableInherit) {
         if (enableInherit) {
             put(PARSE_INHERIT_ENABLED, true);
@@ -6815,12 +7164,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_INHERIT_ENABLED);
         }
     }
-    
+
     public boolean isSubtasksInheritZZZ() {
         Boolean inherit = getBoolean(PARSE_INHERIT_ENABLED);
         return inherit != null;
     }
-    
+
     public void setSubtasksInheritZZZ(boolean enableInherit) {
         if (enableInherit) {
             put(PARSE_INHERIT_ENABLED, true);
@@ -6828,12 +7177,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_INHERIT_ENABLED);
         }
     }
-    
+
     boolean updateInheritedValuesZZZ() {
 //        return isInheritFromOwner()&&!isDone();
         return !isDone();
     }
-    
+
     boolean updateInheritedValuesFor(String parseIdOfField) {
         return !isDone() || parseIdOfField.equals(PARSE_STATUS); //always allow update of Status
     }
@@ -6932,7 +7281,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         Date date = getDate(PARSE_DUE_DATE);
         return (date == null) ? new MyDate(0) : date;
     }
-    
+
     public Date getDueDate() {
 //        return getDueDateD(true);
 //    }
@@ -6977,7 +7326,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return false;
         }
     }
-    
+
     public boolean isDueDateInherited() {
 ////        Date date = getDate(PARSE_DUE_DATE);
 //        Date date = getDueDateD();
@@ -6988,7 +7337,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            return getOwnerItem() != null ? isStarInheritedFrom(getOwnerItem().getDueDateD()) : false;
         return isDueDateInherited(getDueDate());
     }
-    
+
     public boolean isDueDateInheritanceOn() {
         return MyPrefs.itemInheritOwnerProjectDueDate.getBoolean();
     }
@@ -7111,11 +7460,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         Date date = getDate(PARSE_HIDE_UNTIL_DATE);
         return (date == null) ? new MyDate(0) : date;
     }
-    
+
     public void setHideUntilDate(long hideUntil) {
         setHideUntilDate(new MyDate(hideUntil));
     }
-    
+
     public void setHideUntilDate(Date hideUntil) {
 //        if (has(PARSE_HIDE_UNTIL_DATE) || hideUntil.getTime() != 0) {
 //            put(PARSE_HIDE_UNTIL_DATE, hideUntil);
@@ -7141,7 +7490,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_HIDE_UNTIL_DATE);
         }
     }
-    
+
     public boolean isHideUntilDateInherited(Date potentiallyInheritedValue) {
         if (getOwnerItem() != null) {
 //            return isInherited(getOwnerItem().getHideUntilDateD(), potentiallyInheritedValue, MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean());
@@ -7150,7 +7499,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return false;
         }
     }
-    
+
     public boolean isHideUntilDateInheritanceOn() {
         return MyPrefs.itemInheritOwnerProjectHideUntilDate.getBoolean();
     }
@@ -7197,7 +7546,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return false;
         }
     }
-    
+
     public boolean isStartByDateInherited() {
 ////        Date date = getDate(PARSE_START_BY_DATE);
 //        Date date = getStartByDateD();
@@ -7208,11 +7557,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getOwnerItem() != null ? isStartByDateInheritedFrom(getOwnerItem().isStarred()) : false;
         return isStartByDateInherited(getStartByDateD());
     }
-    
+
     public boolean isStartByInheritanceOn() {
         return MyPrefs.itemInheritOwnerProjectStartByDate.getBoolean();
     }
-    
+
     public void setStartByDate(long startByDate) {
 //        this.dueDate = val;
 //        if (this.startByDate != startByDate) {
@@ -7223,7 +7572,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         setStartByDate(new MyDate(startByDate));
     }
-    
+
     public void setStartByDate(Date startByDate) {
 //        setStartByDate(startByDate.getTime());
 //        if (startByDate != null && startByDate.getTime() != 0
@@ -7250,11 +7599,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_START_BY_DATE);
         }
     }
-    
+
     @Override
     public void setEditedDate(Date editedDate) {
         Date oldVal = getEditedDate();
-        
+
         if (editedDate != null && editedDate.getTime() != 0) {
             if (!Objects.equals(oldVal, editedDate)) {
                 put(PARSE_EDITED_DATE, editedDate);
@@ -7263,45 +7612,50 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_EDITED_DATE);
         }
     }
-    
+
     @Override
     public Date getEditedDate() {
         Date date = getDate(PARSE_EDITED_DATE);
         return (date == null) ? new MyDate(0) : date;
     }
 
-//    public Date getSnoozeDateD() {
-//        Date date = getDate(PARSE_SNOOZE_DATE);
-//        return (date == null) ? new Date(0) : date;
-//    }
+//    final static char ALARM_NOTIF_UNPROCESSED = 'A'; //flag 
+//    final static int ALARM_WAITING_UNPROCESSED = 'W';
+//list of alarms (normal, waiting, normal-snoozed, waiting-snoozed) that user have not yet dealt with and that should be shown in AlarmScreen
+    /**
+     * store this alarm has expired on a device and should be shown in
+     * AlarmScreen until the user has either Cancelled it, or Snoozed it.
+     *
+     * @param alarmType
+     */
+//    public void setUnprocessedAlarm(AlarmType alarmType, boolean set) {
+//        String unprocessedFlags = getString(PARSE_PENDING_ALARMS);
+//        if (unprocessedFlags == null) {
+//            unprocessedFlags = "";
+//        }
 //
-//    public void setSnoozeDate(Date snoozeUntilDate) {
-//        if (snoozeUntilDate != null && snoozeUntilDate.getTime() != 0) {
-//            put(PARSE_SNOOZE_DATE, snoozeUntilDate);
+//        char flag = alarmType == notification ? ALARM_NOTIF_UNPROCESSED : ALARM_WAITING_UNPROCESSED;
+//
+//        if (set) {
+//            int idx = unprocessedFlags.indexOf(flag);
+//            ASSERT.that(idx == -1, "alarmFlag shouldn't already be set, flags=" + unprocessedFlags + "; new flag=" + flag);
+//            if (idx != -1) {
+//                unprocessedFlags += alarmType == notification ? ALARM_NOTIF_UNPROCESSED : ALARM_WAITING_UNPROCESSED;
+//            }
 //        } else {
-//            remove(PARSE_SNOOZE_DATE);
+//            unprocessedFlags = MyUtil.replaceSubstring(unprocessedFlags, "" + flag, "");
+//        }
+//        if (unprocessedFlags.length() > 0) {
+//            put(PARSE_PENDING_ALARMS, unprocessedFlags);
+//        } else {
+//            remove(PARSE_PENDING_ALARMS);
 //        }
 //    }
-    public AlarmRecord getSnoozeAlarmRecordN() {
-        Date date = getDate(PARSE_SNOOZE_DATE);
-        String type = getString(PARSE_SNOOZED_TYPE);
-        if (Config.TEST && type == null) {
-            type = AlarmType.snoozedNotif.toString();
-        }
-        return (date != null) ? new AlarmRecord(date, AlarmType.valueOf(type)) : null;
-    }
-    
-    public void setSnoozeAlarmRecord(AlarmRecord snooze) {
-        if (snooze.alarmTime != null && snooze.alarmTime.getTime() != 0) {
-            put(PARSE_SNOOZE_DATE, snooze.alarmTime);
-            put(PARSE_SNOOZED_TYPE, snooze.type.toString());
-            
-        } else {
-            remove(PARSE_SNOOZE_DATE);
-            remove(PARSE_SNOOZED_TYPE);
-        }
-    }
-    
+//
+//    public String getUnprocessedAlarmFlags() {
+//        String unprocessedFlags = getString(PARSE_PENDING_ALARMS);
+//        return unprocessedFlags == null ? "" : unprocessedFlags;
+//    }
     public Date getWaitUntilDate() {
 //        return getWaitingTillDateD(true);
 //    }
@@ -7337,7 +7691,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return false;
         }
     }
-    
+
     public boolean isWaitUntilInherited() {
 ////        Date date = getDate(PARSE_WAITING_TILL_DATE);
 //        Date date = getWaitingTillDateD();
@@ -7348,7 +7702,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getOwnerItem() != null ? isWaitingTillInherited(getOwnerItem().getWaitingTillDateD()) : false;
         return isWaitUntilInherited(getWaitUntilDate());
     }
-    
+
     public boolean isWaitUntilInheritanceOn() {
         return MyPrefs.itemInheritOwnerProjectWaitUntilDate.getBoolean();
     }
@@ -7361,24 +7715,27 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return getWaitingAlarmDateD().getTime();
 //    }
 //</editor-fold>
-    public void setWaitUntilDate(long waitingTillDate) {
-//<editor-fold defaultstate="collapsed" desc="comment">
-//        this.dueDate = val;
-//        if (this.waitingTillDate != val) {
-//            this.waitingTillDate = val;
-////            setWaitingLastActivatedDate(MyDate.getNow()); //automatically
-//        }
-//        if (has(PARSE_WAITING_TILL_DATE) || waitingTillDate != 0) {
-//            put(PARSE_WAITING_TILL_DATE, new Date(waitingTillDate));
-//        }
-//        if (has(PARSE_WAITING_TILL_DATE) || waitingTillDate != 0) {
-//            put(PARSE_WAITING_TILL_DATE, new Date(waitingTillDate));
-//        }
-//</editor-fold>
-        setWaitUntilDate(new MyDate(waitingTillDate));
-    }
-    
+//    public void setWaitUntilDate(long waitingTillDate) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        this.dueDate = val;
+////        if (this.waitingTillDate != val) {
+////            this.waitingTillDate = val;
+//////            setWaitingLastActivatedDate(MyDate.getNow()); //automatically
+////        }
+////        if (has(PARSE_WAITING_TILL_DATE) || waitingTillDate != 0) {
+////            put(PARSE_WAITING_TILL_DATE, new Date(waitingTillDate));
+////        }
+////        if (has(PARSE_WAITING_TILL_DATE) || waitingTillDate != 0) {
+////            put(PARSE_WAITING_TILL_DATE, new Date(waitingTillDate));
+////        }
+////</editor-fold>
+//        setWaitUntilDate(new MyDate(waitingTillDate));
+//    }
     public void setWaitUntilDateInParse(Date waitUntilDate) {
+        setWaitUntilDateInParse(waitUntilDate, false, true, true);
+    }
+
+    public void setWaitUntilDateInParse(Date waitUntilDate, boolean updateWaitingAlarm, boolean updateItemStatus, boolean updateDateWhenSetWaiting) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (isProject()) {
 //            Date oldDate = getDate(PARSE_WAITING_TILL_DATE);
@@ -7413,50 +7770,57 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
         Date oldVal = getWaitUntilDate();
-        if (false) { //NO, don't ripple this value down, it a proejct is set Waiting, waitingTill is set when status of subtasks are set Waiting
-            oldVal = getWaitUntilDate();
-//            if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean() && MyUtil.neql(waitingTillDate, oldVal)) {
-            if (isWaitUntilInheritanceOn() && MyUtil.neql(waitUntilDate, oldVal)) {
-//                opsUpdateInheritedValues.put(PARSE_WAITING_TILL_DATE, (subtask) -> {
-                opsUpdateInheritedValues(PARSE_WAIT_UNTIL_DATE, (subtask) -> {
-//                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                    if (MyUtil.eql(subtask.getWaitUntilDate(), oldVal) && subtask.updateInheritedValuesFor(PARSE_WAIT_UNTIL_DATE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
-                        subtask.setWaitUntilDate(waitUntilDate);
-                        return true;
-                    }
-                    return false;
-                });
-            }
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) { //NO, don't ripple this value down, it a proejct is set Waiting, waitingTill is set when status of subtasks are set Waiting
+//            oldVal = getWaitUntilDate();
+////            if (MyPrefs.itemInheritOwnerProjectWaitingTillDate.getBoolean() && MyUtil.neql(waitingTillDate, oldVal)) {
+//            if (isWaitUntilInheritanceOn() && MyUtil.neql(waitUntilDate, oldVal)) {
+////                opsUpdateInheritedValues.put(PARSE_WAITING_TILL_DATE, (subtask) -> {
+//                opsUpdateInheritedValues(PARSE_WAIT_UNTIL_DATE, (subtask) -> {
+////                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
+//                    if (MyUtil.eql(subtask.getWaitUntilDate(), oldVal) && subtask.updateInheritedValuesFor(PARSE_WAIT_UNTIL_DATE)) { //if old project value equals current subtask value, then update subtasks value to project's new value
+//                        subtask.setWaitUntilDate(waitUntilDate);
+//                        return true;
+//                    }
+//                    return false;
+//                });
+//            }
+//        }
+//</editor-fold>
         ItemStatus oldStatus = getStatus();
         if (waitUntilDate != null && waitUntilDate.getTime() != 0) {
             if (!Objects.equals(oldVal, waitUntilDate)) {
                 put(PARSE_WAIT_UNTIL_DATE, waitUntilDate);
-                if (MyPrefs.waitingSetStatusEtcWhenSettingWaitingUntilDate.getBoolean() && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING)) { //only update if created or ongoing (not cancelled, Done)
-                    setStatus(ItemStatus.WAITING);
+
+                if (updateItemStatus && MyPrefs.waitingSetStatusEtcWhenSettingWaitingUntilDate.getBoolean()
+                        && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING)) { //only update if created or ongoing (not cancelled, Done)
+//                    setStatus(ItemStatus.WAITING);
+                    setStatus(ItemStatus.WAITING, true, true, true, new MyDate(), true, false, false); //only update status and other dependent field, but don't show dialog to update waiting
+                }
 
 //                    if (getWaitingAlarmDate().getTime() == 0 && MyPrefs.waitingSetStatusEtcWhenSettingWaitingUntilDate.getBoolean()) {
-                    if (getWaitingAlarmDate().getTime() == 0
-                            && MyPrefs.waitingSetWaitingAlarmWhenSettingWaitingUntilDate.getBoolean()
-                            && MyPrefs.waitingSetWaitingAlarmMinutesBeforeWaitingUntilDate.getInt() != 0) {
-                        setWaitingAlarmDate(new MyDate(waitUntilDate.getTime() - MyPrefs.waitingSetWaitingAlarmMinutesBeforeWaitingUntilDate.getInt() * MyDate.MINUTE_IN_MILLISECONDS));
-                    }
-                    
-                    setDateWhenSetWaiting(new MyDate()); //set waiting now
+                if (updateWaitingAlarm && getWaitingAlarmDate().getTime() == 0
+                        && MyPrefs.waitingSetWaitingAlarmWhenSettingWaitingUntilDate.getBoolean()
+                        && MyPrefs.waitingSetWaitingAlarmMinutesBeforeWaitingUntilDate.getInt() != 0) {
+                    setWaitingAlarmDate(new MyDate(waitUntilDate.getTime() - MyPrefs.waitingSetWaitingAlarmMinutesBeforeWaitingUntilDate.getInt() * MyDate.MINUTE_IN_MILLISECONDS));
+                }
+
+                if (updateDateWhenSetWaiting) {
+                    setDateWhenSetWaiting(new MyDate(), false); //set waiting now, false=>
                 }
             }
         } else if (oldVal != null) {
             remove(PARSE_WAIT_UNTIL_DATE);
-            if (MyPrefs.waitingSetStatusEtcWhenDeletingWaitingUntilDate.getBoolean() && oldStatus == ItemStatus.WAITING) { //only update if created or ongoing (not cancelled, Done)
+            if (updateItemStatus && MyPrefs.waitingSetStatusEtcWhenDeletingWaitingUntilDate.getBoolean() && oldStatus == ItemStatus.WAITING) { //only update if created or ongoing (not cancelled, Done)
                 setStatus(getActualTotal() != 0 ? ItemStatus.ONGOING : ItemStatus.CREATED); //UI: if deleting setWaitingDate, then reset status to whatever it was before
-                if (false) {
-                    setDateWhenSetWaiting(new MyDate()); //leave this date for history
+                if (false && updateDateWhenSetWaiting) { //UI: leave first setWaiting date for history
+                    setDateWhenSetWaiting(null);
                 }
             }
         }
 //        update();
     }
-    
+
     public void setWaitUntilDate(Date waitingTillDate) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (has(PARSE_WAITING_TILL_DATE) || waitingTillDate != 0) {
@@ -7472,7 +7836,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         setWaitUntilDateInParse(waitingTillDate);
     }
-    
+
     public Date getDateWhenSetWaiting() {
         Date date = getDate(PARSE_DATE_WHEN_SET_WAITING);
         return (date == null) ? new MyDate(0) : date;
@@ -7494,11 +7858,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         setDateWhenSetWaiting(new MyDate(waitingLastActivatedDate));
     }
-    
+
     public void setDateWhenSetWaiting(Date waitingLastActivatedDate) {
         setDateWhenSetWaiting(waitingLastActivatedDate, true);
     }
-    
+
     public void setDateWhenSetWaiting(Date waitingLastActivatedDate, boolean autoUpdateDependentFields) {
 //        this.dueDate = val;
 //        if (this.waitingLastActivatedDate != val) {
@@ -7506,7 +7870,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //TODO!!! check that date is set when status is set Waiting
         Date oldVal = getDateWhenSetWaiting();
-        if (MyPrefs.itemInheritOwnerProjectDateWhenSetWaitingZZZ.getBoolean() && MyUtil.neql(waitingLastActivatedDate, oldVal)) {
+        if (MyPrefs.itemInheritOwnerProjectDateWhenSetWaitingZZZ.getBoolean() && !Objects.equals(waitingLastActivatedDate, oldVal)) {
 //            opsUpdateInheritedValues.put(PARSE_DATE_WHEN_SET_WAITING, (subtask) -> {
             opsUpdateInheritedValues(PARSE_DATE_WHEN_SET_WAITING, (subtask) -> {
 //                if (eql(getImportanceN(), subtask.getImportanceN())) { //if old project value equals current subtask value, then update subtasks value to project's new value
@@ -7517,18 +7881,19 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 return false;
             });
         }
+
         ItemStatus oldStatus = getStatus();
         if (waitingLastActivatedDate != null && waitingLastActivatedDate.getTime() != 0) {
             if (!Objects.equals(oldVal, waitingLastActivatedDate)) {
                 put(PARSE_DATE_WHEN_SET_WAITING, waitingLastActivatedDate);
-                if (MyPrefs.waitingSetStatusWaitingWhenSettingDateWhenWaiting.getBoolean() && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING)) { //only update if created or ongoing (not cancelled, Done)
-                    setStatus(ItemStatus.WAITING);
+                if (autoUpdateDependentFields && MyPrefs.waitingSetStatusWaitingWhenSettingDateWhenWaiting.getBoolean() && (oldStatus == ItemStatus.CREATED || oldStatus == ItemStatus.ONGOING)) { //only update if created or ongoing (not cancelled, Done)
+                    setStatus(ItemStatus.WAITING, autoUpdateDependentFields);
                 }
             }
         } else {
             remove(PARSE_DATE_WHEN_SET_WAITING);
-            if (MyPrefs.waitingSetStatusAwayFromWaitingWhenRemovingSettingDateWhen.getBoolean() && oldStatus == ItemStatus.WAITING) { //only update if created or ongoing (not cancelled, Done)
-                setStatus(getActualTotal() != 0 ? ItemStatus.ONGOING : ItemStatus.CREATED); //UI: if deleting setWaitingDate, then reset status to whatever it was before
+            if (autoUpdateDependentFields && MyPrefs.waitingSetStatusAwayFromWaitingWhenRemovingSettingDateWhen.getBoolean() && oldStatus == ItemStatus.WAITING) { //only update if created or ongoing (not cancelled, Done)
+                setStatus(getActualTotal() != 0 ? ItemStatus.ONGOING : ItemStatus.CREATED, autoUpdateDependentFields); //UI: if deleting setWaitingDate, then reset status to whatever it was before
             }
         }
     }
@@ -7552,10 +7917,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            ownerItem.setEstimateTotal(ownerItem.getEstimateTotal() + effortEstimateTotalMillis - oldEffortTotal);
                 ownerItem.updateEstimateOnChangeInSubtasks();
             }
-            
+
         }
     }
-    
+
     private void setEstimateForTaskInParse(long effortForTaskEstimateMillis) {
         long oldVal = getEstimateForTask();
         if (effortForTaskEstimateMillis != 0) {
@@ -7566,7 +7931,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_EFFORT_ESTIMATE_PROJECT_TASK_ITSELF);
         }
     }
-    
+
     private void setEstimateTotal(long effortEstimateTotalMillis) {
         long oldEffortTotal = getEstimateTotal();
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -7618,7 +7983,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //</editor-fold>
     }
-    
+
     private long getEstimateForSubtaskAndTaskItself() {
         long effortEstimateSubtasks = getEstimateForSubtasks();
         long totalEffortEstimate;
@@ -7641,7 +8006,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
 //    public void setEstimate(long effortEstimateMillis, boolean autoUpdateRemainingEffort, boolean forProjectTaskItself) {
     public void setEstimateForTask(long effortEstimateProjectTaskItselfMillis, boolean autoUpdateRemainingEffort) {
-        
+
         ASSERT.that(effortEstimateProjectTaskItselfMillis >= 0, "EffortEstimate cannot be negative");
 
 //                long oldEffortTotalSubtasks = getEffortEstimateForSubtasks();
@@ -7675,7 +8040,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 setRemainingForTaskItself(Math.max(0, effortEstimateProjectTaskItselfMillis - getActualTotal()), false); //false to avoid circular updates between setEstimate() and setRemaining()
             }
         }
-        
+
         setEstimateForTaskInParse(effortEstimateProjectTaskItselfMillis);
 
         //calc new total
@@ -7710,7 +8075,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         }
     }
-    
+
     public void setEstimateForTask(long effortEstimateProjectTaskItselfMillis) {
         setEstimateForTask(effortEstimateProjectTaskItselfMillis, false); //false=> don't update the other field by default, only if explicitly defined
     }
@@ -7749,9 +8114,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         Long effortEstimate = getLong(PARSE_EFFORT_ESTIMATE);
         return (effortEstimate == null) ? 0L : effortEstimate;
-        
+
     }
-    
+
     public long getEstimateForTask() {
         Long effortEstimate = getLong(PARSE_EFFORT_ESTIMATE_PROJECT_TASK_ITSELF);
         return (effortEstimate == null) ? 0L : effortEstimate;
@@ -7811,7 +8176,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return subItemSum;
     }
-    
+
     public long getEstimateForSubtasks() {
 //        long subItemSum = 0;
 //        for (Item item : (List<Item>) getListFull()) { //full to avoid that hidden (but not done) subtasks are not counted
@@ -7855,7 +8220,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private void setRemainingTotalInParse(long remainingEffortTotalMillis) {
         long oldVal = getRemainingTotalFromParse();
         if (remainingEffortTotalMillis != oldVal) {
-            
+
             if (remainingEffortTotalMillis > 0) {
                 put(PARSE_REMAINING_EFFORT_TOTAL, remainingEffortTotalMillis); //update first 
             } else {
@@ -7864,14 +8229,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
 //            updateRemainingForTaskItself(oldVal, remainingEffortTotalMillis);
             updateEarnedValuePerHour();
-            
+
             Item ownerItem = getOwnerItem();
             if (ownerItem != null) {
 //            ownerItem.setRemainingTotalInParse(ownerItem.getRemainingTotal() + remainingEffortTotalMillis - oldVal);
                 ownerItem.updateRemainingOnSubtaskChange(); //NB! remaining for task itself MUST be updated before this call!
             }
         }
-        
+
     }
 
     /**
@@ -8396,7 +8761,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return effort;
     }
-    
+
     public long getRemainingForSubtasks() {
 //        long effort = 0;
 //        for (Item item : (List<Item>) getListFull()) {
@@ -8405,11 +8770,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return effort;
         return getRemainingForSubtasks(getListFull()); //UI: listFull => subtasks are NOT filtered when calculating time
     }
-    
+
     public static boolean isRemainingDefaultValue(long remaining) {
         return remaining == getRemainingDefaultValue();
     }
-    
+
     public boolean isRemainingDefaultValue() {
 //        return getRemainingForProjectTaskItself() == getRemainingDefaultValue();
         return isRemainingDefaultValue(getRemainingForTaskItself());
@@ -8458,11 +8823,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 ownerItem.updateActualOnSubtaskChange();
             }
         }
-        
+
     }
-    
+
     private void setActualTotal(long actualEffortTotalMillis, boolean autoUpdateStatusAndStartedOnDate) {
-        
+
         long oldActualTotal = getActualTotal();
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long actualEffortSubtasks = getActualEffortFromSubtasks();
@@ -8502,7 +8867,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 }
             }
         }
-        
+
         setActualTotalInParse(actualEffortTotalMillis, autoUpdateStatusAndStartedOnDate);
 
 //        Item ownerItem = getOwnerItem();
@@ -8584,7 +8949,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //</editor-fold>
         long oldActualThisTask = getActualForTaskItself(); //adjust totoal effort, avoids recalculating sum of subtasks
         long oldActualTotal = getActualTotal();
-        
+
         if (autoUpdateStatusAndStartedOnDate) {
             if (actualEffortTaskItselfMillis > 0) { //if user has changed actual
                 if (getStatus() == ItemStatus.CREATED) { //only if Created, otherwiwe e.g. DONE may get set back to Ongoing!
@@ -8614,7 +8979,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                    }
             }
         }
-        
+
         setActualForTaskItselfInParse(actualEffortTaskItselfMillis);
 //        setActualTotal(oldActualTotal + (actualEffortTaskItselfMillis - oldActualThisTask), autoUpdateStatusAndStartedOnDate); //NB: Only works if already initiated
         setActualTotal(actualEffortTaskItselfMillis + getActualForSubtasks(), true); //adjust totoal effort, avoids recalculating sum of subtasks
@@ -8658,13 +9023,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public long getActualForTaskItself() {
         return getActualForTaskItself(false);
     }
-    
+
     public long getActualForTaskItself(boolean includeRunningTimer) {
         Long actualEffort = getLong(PARSE_ACTUAL_EFFORT_TASK_ITSELF);
 //        return (actualEffort == null ? 0L : actualEffort) + (isTimerRunning() ? getTimerOngoingDuration() : 0);
         return (actualEffort == null ? 0L : actualEffort) + (includeRunningTimer ? TimerStack2.getInstance().getOngoingTimerDurationFor(this) : 0);
     }
-    
+
     @Override
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public long getActual() {
@@ -8677,7 +9042,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public long getActualTotal() {
         return getActualTotal(false);
     }
-    
+
     public long getActualTotal(boolean includeRunningTimer) {
         Long actualEffort = getLong(PARSE_ACTUAL_EFFORT);
 //        return (actualEffort == null ? 0L : actualEffort) + (includeRunningTimer&&isTimerRunning() ? getTimerOngoingDuration() : 0);
@@ -8727,7 +9092,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return actual;
     }
-    
+
     public long getActualForSubtasks() {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long actual = 0;//getActualEffortProjectTaskItselfFromParse();
@@ -9050,7 +9415,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                removedCats.add(cat);
 //            }
         }
-        
+
         List<Category> addedCats = new ArrayList(categories); //categories removed (previously set, but not in (new) categories list
         addedCats.removeAll(previousCats);
         for (Category cat : addedCats) {
@@ -9066,7 +9431,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         setCategoriesInParse(categories);
         return removedCats;
     }
-    
+
     public List<Category> setCategories(List<Category> categories) {
         return setCategories(categories, true);
     }
@@ -9157,7 +9522,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             setCategoriesInParse(categories); //set the item's categories as the old ones + newly added ones
             return new ArrayList();
         } else {
-            
+
             boolean updateCatsImmediately = true; //if false, categories are updated with item on save
             List<Category> addedCats = new ArrayList(categories);//make a copy of the edited set of categories
             addedCats.removeAll(getCategories()); //remove all that were already set of the item to get only the newly added categories
@@ -9166,7 +9531,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     cat.addItemToCategory(this, false);
                 }
             }
-            
+
             List<Category> unSelectedCats = new ArrayList();
             List<Category> existingCatsPlusAdded = new ArrayList();
             if (!onlyAddNewCatsDontRemoveAny) {
@@ -9192,7 +9557,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
             //add the unselected categories to the list of added to get a list of all categories changed
             addedCats.addAll(unSelectedCats);
-            
+
             if (!updateCatsImmediately) {
 //                opsUpdateInheritedValues.put(PARSE_CATEGORIES, (subtask) -> {
                 opsUpdateInheritedValues(PARSE_CATEGORIES, (subtask) -> {
@@ -9205,7 +9570,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     return !addedCats.isEmpty() || !unSelectedCats.isEmpty(); //subtask was changed if cats were added, removed or both
                 });
             }
-            
+
             return addedCats;
         }
     }
@@ -9256,7 +9621,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return successfullyAdded;
 //        this.addUniqueToArrayField(PARSE_CATEGORIES, category); //TODO: will addUniqueToArrayField create the list if not already existing?
     }
-    
+
     public List<Category> addCategories(List<Category> categories, boolean addItemToCategory) {
         List<Category> changedCats = new ArrayList();
         for (Category cat : categories) {
@@ -9268,7 +9633,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        setCategoriesInParse(categories);
         return changedCats;
     }
-    
+
     public List<Category> addCategories(List<Category> categories) {
         return addCategories(categories, true);
     }
@@ -9291,7 +9656,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 //        this.removeFromArrayField(PARSE_CATEGORIES, category);
     }
-    
+
     private static <T> Set<T> diff(final Set<? extends T> s1, final Set<? extends T> s2) {
         Set<T> symmetricDiff = new HashSet<T>(s1);
         symmetricDiff.addAll(s2);
@@ -9352,11 +9717,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     static public String addToCommentDefaultPosition(String comment, String addString) {
         return addToComment(comment, addString, !MyPrefs.getBoolean(MyPrefs.commentsAddToBeginningOfComment));
     }
-    
+
     public String addToCommentDefaultPosition(String addString) {
         return addToCommentDefaultPosition(getComment(), addString);
     }
-    
+
     static public String addTimeToComment(String comment) {
 //        return addToComment(comment, MyDate.formatDateL10NShort(System.currentTimeMillis(), 
 //                MyPrefs.getBoolean(MyPrefs.commentsAddTimedEntriesWithDateANDTime)) + ": ", !MyPrefs.getBoolean(MyPrefs.commentsAddToBeginningOfComment));
@@ -9470,12 +9835,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return completedOn;
         }
     }
-    
+
     private void refreshCompletedDateFromSubtasks() {
         Date subtaskCompletedOn = getLastCompletedOnDateFromSubtasksN();
         setCompletedDateInParse(subtaskCompletedOn);
     }
-    
+
     public void setCompletedDate(Date completedDate, boolean forceToThisInsteadOfLastSubtaskCompletedDate, boolean updateStatus) {
         //UI: unless you manually edit (and force set) a completedDate, it will be set to the last completedDate of its subtasks
         Date lastCompletedDate = completedDate;//new Date(0);
@@ -9483,7 +9848,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            lastCompletedDate = getLatestSubtaskCompleteDate();
             lastCompletedDate = getLastCompletedOnDateFromSubtasksN();
         }
-        
+
         setCompletedDateInParse(lastCompletedDate); //set the date *before* updating status to ensure status update doesn't set its own date
 
         Item itemOwner = getOwnerItem();
@@ -9636,7 +10001,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             remove(PARSE_DELETED_DATE); //delete when setting to default value
         }
     }
-    
+
     @Override
     public Date getSoftDeletedDateN() {
         Date date = getDate(PARSE_DELETED_DATE);
@@ -9781,11 +10146,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
         return totEff;
     }
-    
+
     long getTotalExpectedEffort() {
         return getTotalExpectedEffort(getRemainingTotal(), getActualTotal(), getEstimateTotal());
     }
-    
+
     public static long getTotalExpectedEffortOfLeafTasks(List<Item> subtasks) {
         long totalExpectedEffortOfLeafTasks = 0;
         for (Item subtask : subtasks) {
@@ -9797,7 +10162,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return totalExpectedEffortOfLeafTasks;
     }
-    
+
     public long getTotalExpectedEffortOfLeafTasks() {
         return getTotalExpectedEffortOfLeafTasks(getListFull());
     }
@@ -10125,7 +10490,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public String toString() {
         return toString(true);
     }
-    
+
     public String toString(boolean showSubtasks) {
 //        return getText();
 //        return getText().length() != 0 ? getText()+" ("+getObjectId()+")" : getObjectId();
@@ -10257,7 +10622,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return;
         }
         if (!updateSubtaskOngoing) {
-            
+
             updateSubtaskOngoing = true;
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        List<Item> subtasks = getListFull();
@@ -10345,7 +10710,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     /**
      * update (execute) the repeatRule, e.g. when a new created item is inserted
-     * into its owner. Called after inserting new instances with repeatRules**
+     * into its owner. Called after inserting new instances with
+     * repeatRules**??. Also called when *changing* owner: already generated
+     * repeat instances will remain with old owner, but new ones will be
+     * generated in new owner.
      */
     public void updateRepeatRule() {
         //2. Once subtasks' inherited values or pushed values (eg Status) are updated, calculate the repeatRule
@@ -10380,6 +10748,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 ////        updateOwnerWithValuesDerivedFromSubtasks();
 //        updateOwnerWithValuesDerivedFromSubtasks();
 //    }
+    @Override
+    public void fireChangeEvent(ActionEvent evt) {
+        List<Category> categories = getCategories();
+        for (Category category : categories) {
+            category.actionPerformed(evt);
+        }
+        ItemAndListCommonInterface.super.fireChangeEvent(evt);
+    }
+
     @Override
     public void onSave() {
 //        if (false) {
@@ -10462,7 +10839,8 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            }
 //        }
 //</editor-fold>
-//        AlarmHandler.getInstance().updateOnItemChange(this);
+        AlarmHandler.getInstance().update(this);
+
         if (getOwner() == null && !isTemplate()) { //UI: if a task does not have an owner, then always add it to inbox (also if eg created inline in a Category list of items!)
             ASSERT.that("possible to avoid setting owner here in onSave()??, item=" + this);
             Inbox.getInstance().addToList(this);
@@ -10471,7 +10849,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 DAO.getInstance().saveNew((ParseObject) Inbox.getInstance()); //no trigger, will be saved together with new item
             }
         }
-        
+
         if (isDirty()) { //if anything has changed
 //            Item ownerItem = getOwnerItem();
 //            if (ownerItem != null) {
@@ -10484,17 +10862,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        }
 //        fireChangeEvent();
     }
-    
+
     @Override
     public void onDelete() {
         fireDeleteEvent(); //only fire if changed
     }
-    
+
     @Override
     public void updateAfterSave() {
-        AlarmHandler.getInstance().updateOnItemChange(this);
+//        AlarmHandler.getInstance().updateOnItemChange(this);
     }
-    
+
     @Override
     public void save() throws ParseException {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -10713,7 +11091,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
         }
     }
-    
+
     public boolean isTemplate() {
         Boolean template = getBoolean(PARSE_TEMPLATE);
 //        return (template == null) ? false : template;
@@ -10927,7 +11305,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      * @return
      */
     public boolean hasUserModifiedData() {
-        
+
         boolean userModifiedData
                 = isDirty(PARSE_TEXT)
                 || isDirty(PARSE_COMMENT)
@@ -10965,22 +11343,22 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return userModifiedData; //just setting ACL or guid (~system data) should not set item dirty
 
     }
-    
+
     static class EstimateResult {
-        
+
         int minutes;
         String cleaned;
-        
+
         public EstimateResult(int minutes, String cleaned) {
             this.minutes = minutes;
             this.cleaned = cleaned;
         }
     }
-    
+
     static EstimateResult getEffortEstimateFromTaskText(String t) {
         return getEffortEstimateFromTaskText(t, false);
     }
-    
+
     final static RE minutes_hours_RE = new RE("\\b([0-9]+)(?:h|\\:)([0-5][0-9]|[0-9])(?:m(in)?)?\\b"); //HHhMM. OK: 0h17, 10h00 2h17m, 199h. NOK: 1h65, Not allowed to start with '0' 
     final static RE minutes_RE = new RE("\\s*\\b(([1-9][0-9]+)|([0-9]))m(?:in)?\\b"); //MINUTES can be 0 or start with 0 //NO: not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
     final static RE hours_RE = new RE("\\b(([1-9][0-9]+)|([1-9]))h(our(s)?)?\\b"); //not allowed to start with '0' //issues: "7min" gives "7m", "07m" gives "7m"
@@ -11136,42 +11514,54 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
      */
     String makeNotificationBodyText(AlarmType alarmType) {
         String s = "";
-        
-        if (alarmType.isReminder() && MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean() && getDueDate().getTime() != 0) {
-            s += (s.isEmpty() ? "" : "\n") + Item.DUE_DATE + ": " + MyDate.formatDateTimeNew(getDueDate());
-        }
-        
-        if (alarmType.isReminder() && MyPrefs.alarmShowAlarmTimeAtEndOfNotificationText.getBoolean() && getAlarmDate().getTime() != 0) {
-            s += (s.isEmpty() ? "" : "\n") + Item.ALARM_DATE + ": " + MyDate.formatDateTimeNew(getAlarmDate());
-        }
-        
-        if (alarmType.isWaitingReminder()) {
+
+        if (alarmType.isReminder()) {
+            if (MyPrefs.alarmShowDueTimeAtEndOfNotificationText.getBoolean() && getDueDate().getTime() != 0) {
+                s += (s.isEmpty() ? "" : "\n") + Item.DUE_DATE + ": " + MyDate.formatDateTimeNew(getDueDate());
+            }
+            if (MyPrefs.alarmShowAlarmTimeAtEndOfNotificationText.getBoolean() && getAlarmDate().getTime() != 0) {
+                s += (s.isEmpty() ? "" : "\n") + Item.ALARM_DATE + ": " + MyDate.formatDateTimeNew(getAlarmDate());
+            }
+            if (MyPrefs.alarmShowSnoozeUntilTimeAtEndOfNotificationText.getBoolean() && getSnoozeAlarm().getTime() != 0) {
+                s += (s.isEmpty() ? "" : "\n") + Item.SNOOZED_TILL + ": " + MyDate.formatDateTimeNew(getSnoozeAlarm().getTime());
+            }
+        } else if (alarmType.isWaitingReminder()) {
             if (MyPrefs.alarmShowWaitingTimeAtEndOfNotificationText.getBoolean() && getWaitUntilDate().getTime() != 0) {
                 s += (s.isEmpty() ? "" : "\n") + Item.WAIT_UNTIL_DATE + ": " + MyDate.formatDateTimeNew(getWaitUntilDate());
             }
             if (MyPrefs.alarmShowWaitingAlarmTimeAtEndOfNotificationText.getBoolean() && getWaitingAlarmDate().getTime() != 0) {
                 s += (s.isEmpty() ? "" : "\n") + Item.WAIT_UNTIL_DATE + ": " + MyDate.formatDateTimeNew(getWaitingAlarmDate());
             }
+            if (MyPrefs.alarmShowSnoozeWaitingUntilTimeAtEndOfNotificationText.getBoolean() && getSnoozeWaitingAlarm().getTime() != 0) {
+                s += (s.isEmpty() ? "" : "\n") + Item.SNOOZED_TILL + ": " + MyDate.formatDateTimeNew(getSnoozeWaitingAlarm().getTime());
+            }
         }
-        
-        if (alarmType.isSnooze() && MyPrefs.alarmShowSnoozeUntilTimeAtEndOfNotificationText.getBoolean()
-                && getSnoozeAlarmRecordN() != null && getSnoozeAlarmRecordN().alarmTime.getTime() != 0) {
-            s += (s.isEmpty() ? "" : "\n") + Item.SNOOZED_TILL + ": " + MyDate.formatDateTimeNew(getSnoozeAlarmRecordN().alarmTime.getTime());
-        }
-        
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (alarmType.isSnooze() && MyPrefs.alarmShowSnoozeUntilTimeAtEndOfNotificationText.getBoolean()
+//                && getSnoozeAlarmRecordN() != null && getSnoozeAlarmRecordN().alarmTime.getTime() != 0) {
+//        if (alarmType == AlarmType.snoozedNotif && MyPrefs.alarmShowSnoozeUntilTimeAtEndOfNotificationText.getBoolean()
+//                && getSnoozeAlarm().getTime() != 0) {
+//            s += (s.isEmpty() ? "" : "\n") + Item.SNOOZED_TILL + ": " + MyDate.formatDateTimeNew(getSnoozeAlarm().getTime());
+//        }
+//
+//        if (alarmType == AlarmType.snoozedWaiting && MyPrefs.alarmShowSnoozeWaitingUntilTimeAtEndOfNotificationText.getBoolean()
+//                && getSnoozeWaitingAlarm().getTime() != 0) {
+//            s += (s.isEmpty() ? "" : "\n") + Item.SNOOZED_TILL + ": " + MyDate.formatDateTimeNew(getSnoozeWaitingAlarm().getTime());
+//        }
+//</editor-fold>
         return s;
     }
-    
+
     @Override
     public int getVersion() {
         return 0;
     }
-    
+
     @Override
     public String getObjectId() {
         return CLASS_NAME;
     }
-    
+
     private final static String csvFormatStringFull = "yyyy-MM-dd'T'HH:mm:ss.SSS";
     private final static String csvFormatStringDateOnly = "yyyy-MM-dd";
     private final static String csvFormatStringDateHhMmSsOnly = "yyyy-MM-dd'T'HH:mm:ss";
@@ -11180,7 +11570,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private final static SimpleDateFormat csvDateDateOnlyFormatter = new SimpleDateFormat(csvFormatStringDateOnly);
     private final static SimpleDateFormat csvDateTimeHhMmOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmOnly);
     private final static SimpleDateFormat csvDateTimeHhMmSsOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmSsOnly);
-    
+
     private Date csvStringToDate(String dateStr) { // throws com.codename1.l10n.ParseException {
 //        YYYY-MM-DDThh:mm:ss.sssZ
 //        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
@@ -11205,7 +11595,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return date;
     }
-    
+
     private String csvDateToString(Date date, SimpleDateFormat formatter) {
         if (date != null && date.getTime() != 0) {
             return formatter.format(date);
@@ -11213,7 +11603,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return "";
         }
     }
-    
+
     private String csvDurationToString(long duration, SimpleDateFormat formatter) {
         if (duration != 0) {
             return formatter.format(duration);
@@ -11221,7 +11611,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return "";
         }
     }
-    
+
     private String csvBoolToString(boolean b, String trueString) {
         if (b) {
             return trueString != null ? trueString : "TRUE";
@@ -11229,11 +11619,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return "";
         }
     }
-    
+
     private String csvBoolToString(boolean b) {
         return csvBoolToString(b, "TRUE");
     }
-    
+
     private String csvSubtasksToString(List<ItemAndListCommonInterface> subtasks) {
         if (subtasks == null || subtasks.size() == 0) {
             return "";
@@ -11248,12 +11638,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return s;
     }
-    
+
     private final static String csvFormatStringDuratioHhMmSs = "HH:mm:ss";
     private final static String csvFormatStringDuratioHhMm = "HH:mm";
     private final static SimpleDateFormat csvDurationHhMmS = new SimpleDateFormat(csvFormatStringDuratioHhMmSs);
     private final static SimpleDateFormat csvDurationHhM = new SimpleDateFormat(csvFormatStringDuratioHhMm);
-    
+
     private long csvStringToDuration(String durationStr) {
         long duration = 0;
         Date durationDate = null;
@@ -11291,21 +11681,21 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     private boolean csvStringToBool(String boolStr) {
         return boolStr != null && (boolStr.equals("True") || (!boolStr.equals("False") && !boolStr.isEmpty()));
     }
-    
+
     private String csvNullString(Object boolStr, MyForm.GetString s) {
         return boolStr != null ? s.get() : "";
     }
-    
+
     private static String csvElementId(ItemAndListCommonInterface element) {
         return element != null ? element.getGuid() : "";
     }
-    
+
     private static List<Category> csvCategories(String categories) {
 //        ItemAndListCommonInterface element = DAO.getInstance().fetchElement(elementId);
         Log.p("ERROR - categories not parsed in CSV: " + categories);
         return new ArrayList();
     }
-    
+
     private static ItemAndListCommonInterface csvElement(String elementId) {
         ItemAndListCommonInterface element = DAO.getInstance().fetchElement(elementId);
         if (element != null) {
@@ -11372,7 +11762,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         convertToFromCSV(csvFieldList, csvValues, true);
         return csvValues;
     }
-    
+
     public boolean convertFromCSV(String[] csvFieldList, String[] cvsValues) {
         String[] csvValues = new String[csvFieldList.length];
         convertToFromCSV(csvFieldList, csvValues, false);
@@ -11555,7 +11945,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                     } else {
                         setPriority(Integer.parseInt((String) val)); //TODO!!! more resistant parsing of val (illegal formats, null values)
                     }
-                    
+
                     break;
                 case PARSE_PRIORITY:
                     if (toCSV) {
@@ -11726,7 +12116,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public boolean isNoSave() {
         return noSave;
     }
-    
+
     public void setNoSave(boolean temporaryNoSaveList) {
         noSave = temporaryNoSaveList;
     }
@@ -11780,7 +12170,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             }
             potentialProvidersN.add(owner);
         }
-        
+
         List<Category> categories = getCategories();
         for (Category cat : categories) {
             if (cat.mayProvideWorkTime()) {
@@ -11790,14 +12180,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
                 potentialProvidersN.add(cat);
             }
         }
-        
+
         if (owner != null && MyPrefs.workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime.getBoolean() && owner.mayProvideWorkTime()) {
             if (potentialProvidersN == null) {
                 potentialProvidersN = new ArrayList(); //only allocate if/when actually needed (likely to be relatively rare)
             }
             potentialProvidersN.add(owner);
         }
-        
+
         return potentialProvidersN; //potentialProviders.size()>=0?potentialProviders:null;
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -11889,9 +12279,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (Config.WORKTIME_DETAILED_LOG) {
             Log.p("-> .getWorkTimeRequiredFromProvider(" + provider + ") for Item \"" + this + "\"");
         }
-        
+
         long requiredCalc = 0;
-        if (Config.TEST) {
+        if (false && Config.TEST) {
             //get the amount of worktime the subtasks require from this (their mother project)
             if (isProject()) {
                 List<ItemAndListCommonInterface> subtasks = getList(); //getListFull(); //NOT full list since elsewhere we only calculate finishTime for what is seen!
@@ -11911,12 +12301,12 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             ASSERT.that(required == requiredCalc, this + " -getWorkTimeRequiredFromProvider(): wrong Remaining, calculated="
                     + MyDate.formatDurationShort(requiredCalc, true) + ", getRemaining()=" + MyDate.formatDurationShort(required, true));
         }
-        
+
         WorkSlotList ownWorkSlotsN = getWorkSlotListN();
         if (ownWorkSlotsN != null) {
             required -= ownWorkSlotsN.getWorkTimeSum(); //deduct own worktime since that's always used first
         }
-        
+
         if (required > 0) {
             //process workTimeProviders in priority order to allocate as much time as possible from higher prioritized provider
             List<ItemAndListCommonInterface> providers = getOtherPotentialWorkTimeProvidersInPrioOrderN();
@@ -12215,7 +12605,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return false;
 //        return getPotentialWorkTimeProvidersInPrioOrder() != null; //TODO optimization - is there a more efficient way?
     }
-    
+
     public WorkTimeSlices getAllocatedWorkTimeN() {
         return getAllocatedWorkTimeN(this);
     }
@@ -12344,13 +12734,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //        return null;
 //    }
 //</editor-fold>
+    @Override
     public WorkTimeAllocator getWorkTimeAllocatorN() {
         if (workTimeAllocator == null && mayProvideWorkTime()) {
             workTimeAllocator = new WorkTimeAllocator(this);
         }
         return workTimeAllocator;
     }
-    
+
     public void setWorkTimeAllocator(WorkTimeAllocator workTimeAllocator) {
         this.workTimeAllocator = workTimeAllocator;
     }
@@ -12618,22 +13009,31 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //    public void setAllocatedWorkTime(WorkTimeSlices workTime) {
 //        this.workTime = workTime;
 //    }
+    /**
+     * will return MyDate.MAX_DATE if any subtask does not have a finishTime,
+     * otherwise the latest of all the finishTimes
+     *
+     * @return
+     */
     private long getLatestSubtaskFinishTime() {
-        long latestFinishTime = MyDate.MIN_DATE;
+        long latestFinishTime = MyDate.MIN_DATE; //return MIN_DATE if no later finishTime is found
+        boolean someSubtasksHaveNoFinishTime = false;
         Item subtask;
         for (Object subt : getListFull()) {
             if (subt instanceof Item && !(subtask = (Item) subt).isDone()) { //AndListCommonInterface) {
 //                     subtask = (Item) subt;
                 long finishT = subtask.getFinishTime();
 //                    if (finishT > latestFinishTime && !subtask.isDone()) {
-                if (finishT > latestFinishTime) {
+                if (finishT == MyDate.MAX_DATE) {
+                    someSubtasksHaveNoFinishTime = true;
+                } else if (finishT > latestFinishTime) {
                     latestFinishTime = finishT;
                 }
             }
         }
-        return latestFinishTime;
+        return someSubtasksHaveNoFinishTime ? MyDate.MAX_DATE : latestFinishTime;
     }
-    
+
     @Override
     public long getFinishTime() {
 //        long latestFinishTime = MyDate.MIN_DATE;
@@ -12651,13 +13051,17 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                }
 //            }
 //</editor-fold>
-            long latestFinishTime = getLatestSubtaskFinishTime(); //super.getFinishTime() is the project task's own finishTime in case it has its own Remaining
+            long latestSubtaskFinishTime = getLatestSubtaskFinishTime(); //super.getFinishTime() is the project task's own finishTime in case it has its own Remaining
             long projTaskFinishTime = ItemAndListCommonInterface.super.getFinishTime(); //super.getFinishTime() is the project task's own finishTime in case it has its own Remaining
-            if (projTaskFinishTime != MyDate.MAX_DATE && projTaskFinishTime > latestFinishTime) {
-                latestFinishTime = projTaskFinishTime;
+
+            if (latestSubtaskFinishTime != MyDate.MAX_DATE && projTaskFinishTime != MyDate.MAX_DATE) {
+                if (projTaskFinishTime > latestSubtaskFinishTime) {
+                    latestSubtaskFinishTime = projTaskFinishTime;
+                }
             }
 //            if (latestFinishTime != MyDate.MIN_DATE) { //only return if we actually have a date (all subtasks may be Done)
-            return latestFinishTime == MyDate.MIN_DATE ? MyDate.MAX_DATE : latestFinishTime;
+//            return latestFinishTime == MyDate.MIN_DATE ? MyDate.MAX_DATE : latestFinishTime;
+            return latestSubtaskFinishTime;
 //            }
         } else {
             return ItemAndListCommonInterface.super.getFinishTime();
@@ -12685,7 +13089,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         return new MyDate(lastSubtaskUpdate);
 //        return getUpdatedAt();
     }
-    
+
     public Date getEditedDateProjectOrSubtasks() {
         long lastSubtaskEditedDate = getEditedDate().getTime(); //if ever project task itself is updated the last, return that date. 
         long temp;
@@ -12800,7 +13204,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             put(PARSE_FILTER_SORT_DEF, filterSortDef);
         }
     }
-    
+
     @Override
     public FilterSortDef getFilterSortDefN() {
         FilterSortDef filterSortDef = (FilterSortDef) getParseObject(PARSE_FILTER_SORT_DEF);
@@ -12841,13 +13245,13 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public String hasReferencesToUnsavedParseObjects() {
         String str = "";
         String sep = "";
-        
+
         if (getOwner() == null) {
             str += "No Owner";
         } else if (getOwner().getObjectIdP() == null) {
             str += " | No ObjId for owner:" + getOwner();
         }
-        
+
         if (getCategories() != null && getCategories().size() > 0) {
             for (Category cat : getCategories()) {
                 if (cat.getObjectIdP() == null) {
@@ -12871,10 +13275,10 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (getSource() != null && getSource().getObjectIdP() == null) {
             str += " | No ObjId for Source:" + getSource();
         }
-        
+
         return str;
     }
-    
+
     @Override
     public boolean update(RepeatRuleObjectInterface refElt) {
         assert false;
@@ -12921,11 +13325,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public void setEditByForm(MyForm myFormEditingItem) {
         this.formEditingThisItem = myFormEditingItem;
     }
-    
+
     public MyForm isEditOngoing() {
         return formEditingThisItem;
     }
-    
+
     private static int countIndentChars(String s, String indentChars) {
         int indent = 0;
         if (s == null || s.isEmpty()) {
@@ -13001,7 +13405,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return success;
     }
-    
+
     public String getDebugTextInfo(boolean getInfo) {
         Item item = this;
         if (getInfo) {
@@ -13022,10 +13426,11 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             return "";
         }
     }
-    
+
     @Override
     public Date[] getTodayDates() {
-        return new Date[]{getDueDate(), getStartByDateD(), getAlarmDate(), getWaitUntilDate(), getWaitingAlarmDate()};
+//        return new Date[]{getDueDate(), getStartByDateD(), getAlarmDate(), getWaitUntilDate(), getWaitingAlarmDate()};
+        return new Date[]{getDueDate(), getStartByDateD(), getAlarmDate(), getWaitUntilDate(), getWaitingAlarmDate(), getSnoozeAlarm(), getSnoozeWaitingAlarm()};
     }
 
     /**
@@ -13047,14 +13452,14 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
         return nextComingDate;
     }
-    
+
     public boolean isValidItemForTimer() {
         return ((!isDone() && !isWaitingAndSetWaitUntilDateNotReached()) //valid if not done and not waiting (so this expr is true for all other status values!)
                 //TODO!!!! in Timer: check waiting date when skipping, or not, waiting tasks
                 || (isWaitingAndSetWaitUntilDateNotReached() && MyPrefs.timerIncludeWaitingTasks.getBoolean()) ////or if waiting, but settings allow to time waiting tasks
                 || (isDone() && MyPrefs.timerIncludeDoneTasks.getBoolean())); //or if done, but settings allow to time done tasks
     }
-    
+
     final static int ACTION_EVENT_REMOVED = DataChangedListener.REMOVED; //meaning DELETED
     final static int ACTION_EVENT_CHANGED = DataChangedListener.CHANGED;
 //    final static int ACTION_EVENT_DELETED = DataChangedListener.CHANGED + 10;
@@ -13086,18 +13491,18 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
             listeners.removeListener(l);
         }
     }
-    
+
     @Override
 //    public List<ActionListener> getActionListeners() {
     public EventDispatcher getActionListeners() {
         return listeners;
     }
-    
+
     @Override
     public void update(ActionEvent evt) {
-        
+
     }
-    
+
     @Override
     public void actionPerformed(ActionEvent evt) {
 
@@ -13109,7 +13514,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         }
 //        ((ItemAndListCommonInterface)this).fireActionEvent(evt);
         ItemAndListCommonInterface.super.fireEvent(evt);
-        
+
     }
 
     /**
@@ -13127,7 +13532,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public void insertTemplate(final Item templateOrg) {
         insertTemplate(templateOrg, new MyDate());
     }
-    
+
     public void insertTemplate(final Item templateOrg, Date editedDate) {
 //        Item itemOrg=this;
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -13188,7 +13593,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //            setDueDate(templateOrg.getDueDate());
             setDueDate(newDueDate);
         }
-        
+
         if (templateOrg.getDueDateReference().getTime() != 0 && templateOrg.hasDatesDependingOnDue()) { //only if there are any fields in the template that depend on due date:
 //            Date newDueDate;
 //            if (getDueDate().getTime() != 0) {
@@ -13204,15 +13609,15 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 //                }
 //            }
         }
-        
+
         if (!isStarred() && templateOrg.isStarred()) {
             setStarred(true);
         }
-        
+
         if (getPriority() == 0 && templateOrg.getPriority() > 0) {
             setPriority(templateOrg.getPriority());//NB. We store the actual value of Priority locally and adjust when setting the picker
         }
-        
+
         if (getImportanceN() == null && templateOrg.getImportanceN() != null) {
             setImportance(templateOrg.getImportanceN());
         }
@@ -13225,7 +13630,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         if (getDreadFunValueN() == null && templateOrg.getDreadFunValueN() != null) {
             setDreadFunValue(templateOrg.getDreadFunValueN());
         }
-        
+
         if (getEarnedValue() == 0 && templateOrg.getEarnedValue() > 0) {
             setEarnedValue(templateOrg.getEarnedValue());
         }
@@ -13318,7 +13723,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     public Item createAndInsertTemplateCopy(ItemAndListCommonInterface newOwner) {
         return createAndInsertTemplateCopy(newOwner, new MyDate());
     }
-    
+
     public Item createAndInsertTemplateCopy(ItemAndListCommonInterface newOwner, Date editedDate) {
         ASSERT.that(isTemplate(), () -> "trying to create a template copy from a non-template = " + this);
         Item templateCopy = new Item(false, true);
@@ -13326,9 +13731,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
         templateCopy.insertTemplate(this, editedDate);
         return templateCopy;
     }
-    
-   public static Date getDefaultDueDate() {
-        return  new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS);
+
+    public static Date getDefaultDueDate() {
+        return new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemDueDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS);
     }
 
 //    static public Item createTemplateCopy(List<Item> templates) {

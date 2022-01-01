@@ -121,6 +121,7 @@ public class Icons {
 
     //ALARM
     final static char iconSnooze = FontImage.MATERIAL_SNOOZE;
+    final static char iconSnoozed = FontImage.MATERIAL_SNOOZE;
 //    final static Image iconSnoozeLabelStyle = FontImage.createMaterial(iconSnooze, labelStyle);
     final static char iconAlarmOff = FontImage.MATERIAL_ALARM_OFF;
 //    final static Image iconAlarmOffLabelStyle = FontImage.createMaterial(iconAlarmOff, labelStyle);

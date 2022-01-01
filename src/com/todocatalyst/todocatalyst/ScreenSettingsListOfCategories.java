@@ -24,7 +24,8 @@ public class ScreenSettingsListOfCategories extends ScreenSettingsCommon {
 //     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     ScreenSettingsListOfCategories(MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);
-        super("task lists", mainScreen, doneAction);
+//        super("task lists", mainScreen, doneAction);
+        super(SETTINGS_MENU_TEXT, mainScreen, doneAction);
         setUniqueFormId("ScreenListOfItemsSettings");
     }
     

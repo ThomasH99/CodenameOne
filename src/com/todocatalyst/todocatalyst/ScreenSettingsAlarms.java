@@ -26,8 +26,8 @@ public class ScreenSettingsAlarms extends ScreenSettingsCommon {
     ScreenSettingsAlarms(MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
         super(mainScreen, doneAction);
     }
-    
-    public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE,MyForm.SCREEN_ALARM_TITLE);
+
+    public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, MyForm.SCREEN_ALARM_TITLE);
 
     /**
      * This method shows the main user interface of the app
@@ -39,22 +39,27 @@ public class ScreenSettingsAlarms extends ScreenSettingsCommon {
 //        addSettingBoolean(cont, parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice).addActionListener((e) -> {
 //            AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(); //enable/disable all alarms
 //        });
-        content.add(makeEditBooleanSetting(  parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice,
-                () -> AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(), //enable/disable all alarms
-                () -> AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled() //enable/disable all alarms
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice,
+//                () -> AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(), //enable/disable all alarms
+//                () -> AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled() //enable/disable all alarms
+                () -> AlarmHandler.getInstance().updateLocalNotificationsOnChange(), //enable/disable all alarms
+                () -> AlarmHandler.getInstance().updateLocalNotificationsOnChange()//enable/disable all alarms
         ));
+
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.alarmSoundActivated));
+
         content.add(makeEditIntSetting(parseIdMap2, MyPrefs.alarmDefaultSnoozeTimeInMinutes, 0, 120, 1));
-        content.add(makeEditIntSetting( parseIdMap2, MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutes, 0, 120, 1));
-        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText));
-        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.alarmReuseIndividuallySetSnoozeDurationForLongPress));
-        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.alarmReuseIndividuallySetSnoozeDurationForNormalSnooze));
-        content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.alarmPlayBuiltinAlarmSound));
+        content.add(makeEditIntSetting(parseIdMap2, MyPrefs.alarmIntervalBetweenAlarmsRepeatsMillisInMinutesXXX, 0, 120, 1));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.alarmReuseIndividuallySetSnoozeDurationForLongPress));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.alarmReuseIndividuallySetSnoozeDurationForNormalSnooze));
+        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.alarmPlayBuiltinAlarmSound));
 
         if (false) {
             //Examples:
-            content.add(makeEditBooleanSetting( parseIdMap2, MyPrefs.timerShowEffortEstimateDetails));
-            content.add(makeEditIntSetting( parseIdMap2, MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds, 0, 30, 1));
-         }
+            content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.timerShowEffortEstimateDetails));
+            content.add(makeEditIntSetting(parseIdMap2, MyPrefs.timerMinimumTimeRequiredToSetTaskOngoingAndToUpdateActualsInSeconds, 0, 30, 1));
+        }
 
     }
 }

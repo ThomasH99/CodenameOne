@@ -3,6 +3,7 @@ package com.codename1.ui.spinner;
 import com.codename1.components.SpanLabel;
 import com.codename1.components.Switch;
 import com.codename1.io.Log;
+import com.codename1.io.Preferences;
 import com.codename1.ui.Button;
 import com.codename1.ui.Command;
 import com.codename1.ui.Component;
@@ -29,7 +30,7 @@ public class PickerDialog {
     public static String DONE_BUTTON_TEXT = "Done";
     public static String CANCEL_BUTTON_TEXT = "Cancel";
 
-    public PickerDialog(String title, String text, Object value,  String doneText, String cancelText,int type) {
+    public PickerDialog(String title, String text, Object value, String doneText, String cancelText, int type) {
         this.type = type;
 
         dlg = new Dialog();
@@ -79,8 +80,8 @@ public class PickerDialog {
         dlg.getContentPane().add(BorderLayout.CENTER, cont);
 
     }
-    
-        /**
+
+    /**
      * return the value of the picker of the defined type (Date or
      *
      * @return
@@ -100,7 +101,6 @@ public class PickerDialog {
         }
         return null;
     }
-
 
     public interface SetDate {
 
@@ -133,29 +133,32 @@ public class PickerDialog {
             SetDate setWaitingDate, SetDate setWaitingAlarm, GetDate defaultWaitingAlarmDate) {
 
         dlg = new Dialog();
-        dlg.setDialogUIID("PickerDialog");
+//        dlg.setDialogUIID("PickerDialog");
+        dlg.setDialogUIID("Dialog");
         dlg.setTitle(title);
         dlg.setLayout(BorderLayout.center());
         dlg.setScrollableY(true); //scrollable in case of small screens
+        dlg.setDisposeWhenPointerOutOfBounds(true); //=> 'cancel' dialog by clicking outside its bounds
 
 //        spinner3D.getPreferredSize();
         Container cont = new Container(BoxLayout.y());
-        SpanLabel textSpanLabel = new SpanLabel(text);
-        textSpanLabel.setTextUIID("PickerDialogText");
-        cont.add(textSpanLabel);
+        cont.add(new SpanLabel(text, "PickerDialogText"));
 
         DateSpinner3D waitingDateSpinner = new DateSpinner3D();
         waitingDateSpinner.setValue(waitingDate);
-        waitingDateSpinner.setHidden(waitingDate.getTime()==0); //hide by default unless a value is defined
+//        waitingDateSpinner.setHidden(waitingDate.getTime()==0); //hide by default unless a value is defined
 
         Switch waitingDateSwitch = new Switch();
+//        waitingDateSwitch.setValue(MyPrefs.);
         waitingDateSwitch.setValue(waitingDate.getTime() != 0); //shown by default if a value is already defined, otherwise hidden by default
+        waitingDateSpinner.setHidden(waitingDateSwitch.isOff()); //hide by default unless a value is defined
+        //TODO: save switch status as a preference for next time
         waitingDateSwitch.addActionListener((e) -> {
 //            waitingDateSwitch.setValue(!waitingDateSwitch.isValue());
 //            if(waitingDateSwitch.isValue()) 
             waitingDateSpinner.setHidden(waitingDateSwitch.isOff());
-            long test = ((Date)waitingDateSpinner.getValue()).getTime();
-            if (waitingDateSwitch.isOn() && ((Date)waitingDateSpinner.getValue()).getTime() == 0) { //if WatitingDate spinner has a date, use it to calculate appropriate alarmdate
+            long test = ((Date) waitingDateSpinner.getValue()).getTime();
+            if (waitingDateSwitch.isOn() && ((Date) waitingDateSpinner.getValue()).getTime() == 0) { //if WatitingDate spinner has a date, use it to calculate appropriate alarmdate
                 waitingDateSpinner.setValue(defaultWaitingDate);
             }
 ////            dlg.getParent().animateHierarchy(300); //getParent==NPE
@@ -169,17 +172,18 @@ public class PickerDialog {
 
         DateTimeSpinner3D waitingAlarmSpinner = new DateTimeSpinner3D();
         waitingAlarmSpinner.setValue(waitingAlarmDate);
-        waitingAlarmSpinner.setHidden(waitingAlarmDate.getTime()==0); //hide by default, unless a value is already defined
+        waitingAlarmSpinner.setHidden(waitingAlarmDate.getTime() == 0); //hide by default, unless a value is already defined
 
         Switch waitingAlarmSwitch = new Switch();
 //        waitingAlarmSwitch.setValue(false);
         waitingAlarmSwitch.setValue(waitingAlarmDate.getTime() != 0);
         waitingAlarmSwitch.addActionListener((e) -> {
             waitingAlarmSpinner.setHidden(waitingAlarmSwitch.isOff());
-            long test = ((Date)waitingAlarmSpinner.getValue()).getTime();
+            long test = ((Date) waitingAlarmSpinner.getValue()).getTime();
 //            if (waitingDateSwitch.isOn() && ((Date) watingDateSpinner.getValue()).getTime() == 0) { //if WatitingDate spinner has a date, use it to calculate appropriate alarmdate
-            if (waitingDateSwitch.isOn() && ((Date)waitingAlarmSpinner.getValue()).getTime() == 0) { //if WatitingDate spinner has a date, use it to calculate appropriate alarmdate
-                waitingAlarmSpinner.setValue(defaultWaitingAlarmDate.get(((Date) waitingDateSpinner.getValue())));
+            if (waitingAlarmSwitch.isOn() && ((Date) waitingAlarmSpinner.getValue()).getTime() == 0) { //UI: default value only set first time switch is activated (when date.getTime==0)
+//if WatitingDate spinner has a date, use it to calculate appropriate alarmdate, otherwise use predefine default alarm date (via null)
+                waitingAlarmSpinner.setValue(defaultWaitingAlarmDate.get(waitingDateSwitch.isOn() ? ((Date) waitingDateSpinner.getValue()) : null));
             }
 //            dlg.animateHierarchy(300);
             dlg.growOrShrink();
@@ -188,7 +192,8 @@ public class PickerDialog {
         cont.add(BorderLayout.centerEastWest(null, waitingAlarmSwitch, new SpanLabel(waitingAlarmOnOffText)));
         cont.add(waitingAlarmSpinner);
 
-        Command doneCmd = Command.create(DONE_BUTTON_TEXT, null, (e) -> {
+//        Command doneCmd = Command.create(DONE_BUTTON_TEXT, null, (e) -> {
+        doneCmd = Command.create(DONE_BUTTON_TEXT, null, (e) -> {
             if (waitingDateSwitch.isOn()) {
                 setWaitingDate.set((Date) waitingDateSpinner.getValue());
             }
@@ -200,8 +205,7 @@ public class PickerDialog {
         Button doneButton = new Button(doneCmd);
         Button cancelButton = new Button(Command.create(CANCEL_BUTTON_TEXT, null, (e) -> dlg.dispose()));
 
-        Container buttonBar;
-        buttonBar = BorderLayout.centerEastWest(null, doneButton, cancelButton);
+        Container buttonBar = BorderLayout.centerEastWest(null, doneButton, cancelButton);
         dlg.getContentPane().add(BorderLayout.SOUTH, buttonBar);
         dlg.getContentPane().add(BorderLayout.CENTER, cont);
     }
@@ -214,10 +218,11 @@ public class PickerDialog {
     public PickerDialog(String title, String text, long value) {
         this(title, text, value, DONE_BUTTON_TEXT, CANCEL_BUTTON_TEXT, Display.PICKER_TYPE_DURATION);
     }
-    
+
     public void setMeridiem(boolean on) {
-         if( dateTimeSpinner!=null)
-             dateTimeSpinner.setShowMeridiem(on);
+        if (dateTimeSpinner != null) {
+            dateTimeSpinner.setShowMeridiem(on);
+        }
 //         if( dateSpinner!=null)
 //             dateSpinner.setShowMeridiem(on);
     }

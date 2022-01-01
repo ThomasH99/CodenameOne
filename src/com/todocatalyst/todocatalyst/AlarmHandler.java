@@ -39,53 +39,54 @@ public class AlarmHandler {
     private final static String NOTIF_LIST_FILE_ID = "$$notificationList";
     private final static String EXPIRED_ALARMS_FILE_ID = "$$expiredAlarmsList";
 
-    static final int MAX_NUMBER_LOCAL_NOTIFICATIONS = 64;
-
+//    static final int MAX_NUMBER_LOCAL_NOTIFICATIONS = 64;
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    private final static String WAITING_KEY = "-[WAITING]";     // postfix to identify a waiting alarm
 //    private final static String ALARM_KEY = "-[ALARM]"; // postfix to identify an alarm
 //    private final static String WAITING_ALARM_TEXT = "WAITING: ";// reminder for: \n"; "[Waiting]"
 //    private final static String ALARM_TEXT = "";//Reminder for: \n";
 //    private final static String ALARM_REPEAT_STR = "-REP";//Used to create a separate notification ID for a repeat reminder (must also be used to cancel)
-    /**
-     * keep a copy of all local notifications set
-     */
-    private LocalNotificationsShadowList notificationList; // = new LocalNotificationsShadowList();
+//</editor-fold>
     /**
      * list of already expired alarms not yet processed by the end-user, to show
      * in AlarmScreen to snooze, cancel etc
      */
-    private List<ExpiredAlarm> expiredAlarms;
-    private AlarmInAppAlarmHandler inAppTimer; // = new AlarmInAppAlarmHandler(notificationList);
+//    private List<ExpiredAlarm> expiredAlarms; //saved in file $$expiredAlarmsList
+//    private List<AlarmRecord> expiredAlarms; //saved in file $$expiredAlarmsList
+    /**
+     * latest list of future alarms
+     */
+//    private List<AlarmRecord> futureAlarms; // = new LocalNotificationsShadowList();
+    /**
+     * keep a copy of all local notifications set. Needed to be able to
+     * cancel/update local notifications.
+     */
+//    private LocalNotificationsShadowList notificationList; // = new LocalNotificationsShadowList();
+//    private List<String> notificationList; // = new LocalNotificationsShadowList();
+    private LocalNotificationsShadowList notificationList; // = new LocalNotificationsShadowList();
+//    private AlarmInAppAlarmHandler inAppTimer; // = new AlarmInAppAlarmHandler(notificationList);
 
     private Media alarmSound;
+    private boolean multipleUpdatesOngoing; //prevent multiple refresh if snoozing/cancelling more than one alarm at once
 
     private AlarmHandler() {
-        if (true || Storage.getInstance().exists(NOTIF_LIST_FILE_ID)) { //readObject below return null if no file exists
-            //TODO: catch any reading/format problems and recreate the file
-            notificationList = (LocalNotificationsShadowList) Storage.getInstance().readObject(NOTIF_LIST_FILE_ID);
-        } else {
-            notificationList = null;
-        }
-        if (notificationList == null) { //whatever happens, if previouslyRunningTimers==null, then create a new one
-//            notificationList = new LocalNotificationsShadowList(this); //create if none existed before
-            notificationList = new LocalNotificationsShadowList(); //create if none existed before
-//                save(); //DON'T save before something is added
-        }
+//        notificationList = readActiveLocaleNotifications();
+//        ItemList expiredItems = DAO.getInstance().fetchDynamicNamedItemList(DAO.SYSTEM_LIST_UNPROCESSED_ALARM_ITEMS);
+//        List<Item> l = expiredItems.getListFull();
+//        for (int i = 0, size = l.size(); i < size; i++) {
+//            expiredAlarms.addAll(l.get(i).getAllFutureAlarmRecordsUnsorted());
+//        }
+//        Item.sortAlarmRecords(expiredItems); //show most recently expired alarm first
+//        expiredAlarms = DAO.getInstance().getUnprocessedAlarmRecords(false);
 
-        notificationList.setAlarmHandler(this);
-
-        if (Storage.getInstance().exists(EXPIRED_ALARMS_FILE_ID)) {
-            //TODO: catch any reading/format problems and recreate the file
-            expiredAlarms = (List<ExpiredAlarm>) Storage.getInstance().readObject(EXPIRED_ALARMS_FILE_ID);
-        }
-        if (expiredAlarms == null) { //whatever happens, if previouslyRunningTimers==null, then create a new one
-            expiredAlarms = new ArrayList<ExpiredAlarm>(); //create if none existed before
-//                save(); //DON'T save before something is added
-        }
-//        inAppTimer = new AlarmInAppAlarmHandler(notificationList);
-        inAppTimer = new AlarmInAppAlarmHandler();
-//        inAppTimer.startInAppTimerOnNextcomingAlarm(notificationList.getNextFutureAlarmN());
-//        inAppTimer.updateInAppTimerOnNextcomingAlarm();
+//        ItemList futureItems = DAO.getInstance().fetchDynamicNamedItemList(DAO.SYSTEM_LIST_FUTURE_ALARM_ITEMS);
+//        l = futureItems.getListFull();
+//        for (int i = 0, size = l.size(); i < size; i++) {
+//            futureAlarms.addAll(l.get(i).getAllFutureAlarmRecordsUnsorted());
+//        }
+//        Item.sortAlarmRecords(futureAlarms);
+//        futureAlarms = DAO.getInstance().fetchFutureAlarmRecords(false);
+        notificationList = new LocalNotificationsShadowList(); //initialize inAppTimer and setup/refresh local notifications
     }
 
     private static AlarmHandler INSTANCE;
@@ -93,45 +94,63 @@ public class AlarmHandler {
     public static AlarmHandler getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new AlarmHandler();
-            INSTANCE.inAppTimer.updateInAppTimerOnNextcomingAlarm(); //MUST do here and not in singleton instantiation of AlarmHandler() above to avoid infinite loop
+//            INSTANCE.inAppTimer.updateInAppTimerOnNextcomingAlarm(); //MUST do here and not in singleton instantiation of AlarmHandler() above to avoid infinite loop
         }
         return INSTANCE;
     }
 
-    private void expiredAlarmSave() {
-        Storage.getInstance().writeObject(EXPIRED_ALARMS_FILE_ID, expiredAlarms);
-    }
-
-    static void alarmLog(String s) {
-        Log.p("ALARM: " + s);
-    }
-
+//    public void setListOfItemWithFutureAlarms(List<Item> items) {
+//        futureAlarms = new ArrayList();
+//        Date now = new MyDate();
+//        for (Item i : items) {
+//            List<AlarmRecord> alarmRecords = i.getAllAlarmRecords(now, false);
+//            for (AlarmRecord alarmRecord : alarmRecords) {
+//                futureAlarms.add(alarmRecord);
+//            }
+//        }
+//        Item.sortAlarmRecords(futureAlarms);
+//    }
+//    public void setListOfItemsWithUncancelledAlarms(List<Item> items) {
+//        expiredAlarms = new ArrayList();
+//        Date now = new MyDate();
+//        for (Item i : items) {
+//            List<AlarmRecord> alarmRecords = i.getUnprocessedAlarms();
+//            for (AlarmRecord alarmRecord : alarmRecords) {
+//                expiredAlarms.add(alarmRecord);
+//            }
+//        }
+//        Item.sortAlarmRecords(expiredAlarms);
+//    }
     /**
-     * sets a local notification
+     * read from local storage
      *
-     * @param item
-     * @param notificationText
-     * @param alarmDate
+     * @return
      */
-    static void scheduleLocalNotification(String notificationId, String titleText, String bodyText, Date alarmDate) {
-        Display.getInstance().cancelLocalNotification(notificationId); //always cancel any previous set local notifs, just in case
-        alarmLog("Set local notification " + notificationId + " alarm=" + MyDate.formatDateTimeNew(alarmDate) + " for \"" + titleText + "\" (" + bodyText + ")");
-        if (alarmDate.getTime() < MyDate.currentTimeMillis()) {
-            return;
+//    private List<String> readActiveLocaleNotifications() {
+//        List<String> notificationList;
+//        notificationList = (List<String>) Storage.getInstance().readObject(NOTIF_LIST_FILE_ID);
+//        if (notificationList == null) {
+//            notificationList = new ArrayList<String>();
+//        }
+//        return notificationList;
+//    }
+//
+//    private void saveActiveLocaleNotifications(List<String> notificationList) {
+//        Storage.getInstance().writeObject(NOTIF_LIST_FILE_ID, notificationList);
+//    }
+//    private void expiredAlarmSaveXXX() {
+//        Storage.getInstance().writeObject(EXPIRED_ALARMS_FILE_ID, expiredAlarms);
+//    }
+    static void alarmLog(String s) {
+        if (Config.TEST) {
+            Log.p("ALARM: " + s);
         }
-        LocalNotification n = new LocalNotification();
-        n.setId(notificationId);
-        n.setAlertTitle(titleText);
-        n.setAlertBody(bodyText);
-        n.setAlertSound("/" + MyPrefs.alarmSoundFileLocalNotif.getString());
-        Display.getInstance().scheduleLocalNotification(n, alarmDate.getTime(), LocalNotification.REPEAT_NONE);
     }
 
-    static void cancelLocalNotification(String notificationId) {
-        AlarmHandler.alarmLog("Local notifiation cancelled: \"" + notificationId + "\"");
-        Display.getInstance().cancelLocalNotification(notificationId);
-    }
-
+//    static void cancelLocalNotificationXXX(String notificationId) {
+//        AlarmHandler.alarmLog("Local notifiation cancelled: \"" + notificationId + "\"");
+//        Display.getInstance().cancelLocalNotification(notificationId);
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public static void setPreferredBackgroundFetchIntervalXXX() {
 //        Display.getInstance().setPreferredBackgroundFetchInterval(Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * 3600 / 2, 3600 / 4)); //max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
@@ -146,69 +165,81 @@ public class AlarmHandler {
      * (???).
      */
 //    private void setAlarmsForNewIntervalBackgroundFetch() {
-    public void updateLocalNotificationsOnBackgroundFetch() {
-        if (false && !MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) { //DONE: optimization: rather not *schedule* this if setting is deactivate and avoid need to reload preferences
+    public void updateLocalNotificationsOnChange() { //MOVE to DAO. Refresh if items edited on another device, or say 24h before the last previously fetched alarmRecord
+        updateLocalNotificationsOnChange(new MyDate(), false);
+    }
+
+    public void updateLocalNotificationsOnChange(Date now) { //MOVE to DAO. Refresh if items edited on another device, or say 24h before the last previously fetched alarmRecord
+        updateLocalNotificationsOnChange(now, false);
+    }
+
+    public void updateLocalNotificationsOnChange(Date now, boolean forceRefresh) { //MOVE to DAO. Refresh if items edited on another device, or say 24h before the last previously fetched alarmRecord
+        if (multipleUpdatesOngoing) {
             return;
         }
-
-        //optimization: check if there are active alarms within the next 60min (fetch interval) and if yes, waith with fetching till next time
-        //TODO!!!! how to set alarms for alarms edited on other devices? Still via push?!
-//        int maxNbFreeNotifications = notificationList.getNumberAvailableLocalNotificationSlots();
-//        List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
-        List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS);
-        if (newAlarmsList != null && newAlarmsList.size() > 0) { //only do something if we successfully got the list (avoid cancelling alarms if anything went wrong with the fetch)
-
-            notificationList.cancelAndRemoveAllAvailableLocalNotifications();
-            Log.p("updateLocalNotificationsOnBackgroundFetch():cancelling local notifications");
-
-            Item item;
-            while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
-                item = newAlarmsList.remove(0);
-                if (item.getNextcomingAlarmRecordN() == null) {
-                    Log.p("updateLocalNotificationsOnBackgroundFetch(): getNextcomingAlarmRecordN()==null!!! for item=" + item);
-                } else {
-                    Log.p("updateLocalNotificationsOnBackgroundFetch(): setting notification for Item=" + item + "; alarmTime=" + MyDate.formatDateNew(item.getNextcomingAlarmRecordN().alarmTime));
-                }
-                notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecordN());
-            }
-            refreshInAppTimerAndSaveNotificationList();
-        } else {
-            Log.p("updateLocalNotificationsOnBackgroundFetch(): DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS) returned empty list!");
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false && !MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) { //DONE: optimization: rather not *schedule* this if setting is deactivate and avoid need to reload preferences
+//            return;
+//        }
+//
+//        //optimization: check if there are active alarms within the next 60min (fetch interval) and if yes, waith with fetching till next time
+//        //TODO!!!! how to set alarms for alarms edited on other devices? Still via push?!
+////        int maxNbFreeNotifications = notificationList.getNumberAvailableLocalNotificationSlots();
+////        List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
+//        List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS);
+//        if (newAlarmsList != null && newAlarmsList.size() > 0) { //only do something if we successfully got the list (avoid cancelling alarms if anything went wrong with the fetch)
+//
+//            notificationList.cancelAndRemoveAllAvailableLocalNotifications();
+//            Log.p("updateLocalNotificationsOnBackgroundFetch():cancelling local notifications");
+//
+//            Item item;
+//            while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
+//                item = newAlarmsList.remove(0);
+//                if (item.getNextcomingAlarmRecordN() == null) {
+//                    Log.p("updateLocalNotificationsOnBackgroundFetch(): getNextcomingAlarmRecordN()==null!!! for item=" + item);
+//                } else {
+//                    Log.p("updateLocalNotificationsOnBackgroundFetch(): setting notification for Item=" + item + "; alarmTime=" + MyDate.formatDateNew(item.getNextcomingAlarmRecordN().alarmTime));
+//                }
+//                notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecordN());
+//            }
+//            refreshInAppTimerAndSaveNotificationList();
+//        } else {
+//            Log.p("updateLocalNotificationsOnBackgroundFetch(): DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS) returned empty list!");
+//        }
+//</editor-fold>
+        notificationList.updateWithFutureAlarms(now, forceRefresh);
     }
 
     /**
      * Called on app start or if alarms are globally enabled or disabled (via
      * settings)
      */
-    public void updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled() {
-        if (!MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) {
-            //disable all
-            notificationList.cancelAndRemoveAllAvailableLocalNotifications();
-            refreshInAppTimerAndSaveNotificationList();
-            return;
-        } else {
-            //update, or set from scratch, all alarms
-//        int maxNbFreeNotifications = notificationList.getNumberAvailableLocalNotificationSlots();
-//            List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
-            List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS);
-            if (newAlarmsList != null && newAlarmsList.size() > 0) { //only do something if we successfully got the list (avoid cancelling alarms if anything went wrong with the fetch)
-                notificationList.cancelAndRemoveAllAvailableLocalNotifications();
-                Item item;
-                while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
-                    item = newAlarmsList.remove(0);
-//                    notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecordN());
-                    notificationList.addAlarmAndRepeat(item);
-                }
-                refreshInAppTimerAndSaveNotificationList();
-            }
-        }
-    }
-
-    private void saveNotificationList() {
-        Storage.getInstance().writeObject(AlarmHandler.NOTIF_LIST_FILE_ID, notificationList);
-    }
-
+//    public void updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabledXXX() {
+//        if (!MyPrefs.alarmsActivatedOnThisDevice.getBoolean()) {
+//            //disable all
+//            notificationList.cancelAndRemoveAllAvailableLocalNotifications();
+//            refreshInAppTimerAndSaveNotificationList();
+//            return;
+//        } else {
+//            //update, or set from scratch, all alarms
+////        int maxNbFreeNotifications = notificationList.getNumberAvailableLocalNotificationSlots();
+////            List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(LocalNotificationsShadowList.MAX_NUMBER_LOCAL_NOTIFICATIONS);
+//            List<Item> newAlarmsList = DAO.getInstance().getItemsWithNextcomingAlarms(MAX_NUMBER_LOCAL_NOTIFICATIONS);
+//            if (newAlarmsList != null && newAlarmsList.size() > 0) { //only do something if we successfully got the list (avoid cancelling alarms if anything went wrong with the fetch)
+//                notificationList.cancelAndRemoveAllAvailableLocalNotifications();
+//                Item item;
+//                while (notificationList.getNumberAvailableLocalNotificationSlots() >= 2 && !(newAlarmsList.isEmpty())) {
+//                    item = newAlarmsList.remove(0);
+////                    notificationList.addAlarmAndRepeat(item, item.getNextcomingAlarmRecordN());
+//                    notificationList.addAlarmAndRepeat(item);
+//                }
+//                refreshInAppTimerAndSaveNotificationList();
+//            }
+//        }
+//    }
+//    private void saveNotificationListXXX() {
+//        Storage.getInstance().writeObject(AlarmHandler.NOTIF_LIST_FILE_ID, notificationList);
+//    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void updateLocalNotificationsOnBackgroundFetchOrAppStartOLD() {
 //        if (!MyPrefs.getBoolean(MyPrefs.alarmsActivatedOnThisDevice)) {
@@ -280,38 +311,35 @@ public class AlarmHandler {
 ////        performBackgroundFetch(getNextUpdateTime(), updater);
 //    }
 //</editor-fold>
-    private void refreshInAppTimerAndSaveNotificationList() {
-        inAppTimer.updateInAppTimerOnNextcomingAlarm();
-//        notificationList.save();
-        saveNotificationList();
-    }
-
-    private void updateAlarmsOrTextForItem(Item item) {
-//        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getAlarmDate(), AlarmType.notification,
-        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getGuid(), item.getAlarmDate(), AlarmType.notification,
-                item.makeNotificationTitleText(AlarmType.notification), item.makeNotificationBodyText(AlarmType.notification));
-
-//        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getWaitingAlarmDate(), AlarmType.waiting,
-        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getGuid(), item.getWaitingAlarmDate(), AlarmType.waiting,
-                item.makeNotificationTitleText(AlarmType.waiting), item.makeNotificationBodyText(AlarmType.waiting));
-
-        if (false) {
-            removeExpiredAlarm(null);
-        }
-//        inAppTimer.refreshInAppTimer();
-//        notificationList.save();
-        refreshInAppTimerAndSaveNotificationList();
-    }
-
-    public void updateOnItemChange(Item item) {
-        if (item.isDone()) {
-            deleteAllAlarmsForItem(item); //remove any future alarms for a Done/Cancelled task
-        } else {
-            updateAlarmsOrTextForItem(item);
-            cancelExpiredAlarmsOnItemUpdate(item);
-        }
-    }
-
+//    private void refreshInAppTimerAndSaveNotificationList() {
+//        inAppTimer.updateInAppTimerOnNextcomingAlarm();
+////        notificationList.save();
+//        saveNotificationListXXX();
+//    }
+//    private void updateAlarmsOrTextForItemXXX(Item item) {
+////        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getAlarmDate(), AlarmType.notification,
+//        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getGuid(), item.getAlarmDate(), AlarmType.notification,
+//                item.makeNotificationTitleText(AlarmType.notification), item.makeNotificationBodyText(AlarmType.notification));
+//
+////        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getObjectIdP(), item.getWaitingAlarmDate(), AlarmType.waiting,
+//        notificationList.addOrUpdateOrDeleteAlarmAndRepeat(item.getGuid(), item.getWaitingAlarmDate(), AlarmType.waiting,
+//                item.makeNotificationTitleText(AlarmType.waiting), item.makeNotificationBodyText(AlarmType.waiting));
+//
+////        if (false) {
+////            removeExpiredAlarm(null);
+////        }
+////        inAppTimer.refreshInAppTimer();
+////        notificationList.save();
+//        refreshInAppTimerAndSaveNotificationList();
+//    }
+//    public void updateOnItemChangeXXX(Item item) {
+//        if (item.isDone() || item.isSoftDeleted()) {
+//            deleteAllAlarmsForItemXXX(item); //remove any future alarms for a Done/Cancelled task
+//        } else {
+//            updateAlarmsOrTextForItemXXX(item);
+//            cancelExpiredAlarmsOnItemUpdateXXX(item);
+//        }
+//    }
     //NORMAL (REMINDER) ALARMS
     /**
      * called when user cancels an alarm in the popup dialog. Will also cancel
@@ -319,39 +347,39 @@ public class AlarmHandler {
      *
      * @param notificationId
      */
-    public void cancelAlarm(String notificationId) {
-//        String objId = NotificationType.getNotifIdStrWithoutTypeStr(notificationId);
-//        NotificationType type = NotificationType.getTypeContainedInStr(objId);
-//        notificationList.removeAlarm(notificationId);
-//        //if the user cancels the first alarm, we must cancel any repeat alarms
-//        if (type == NotificationType.notification || type == NotificationType.waiting) {
-//            notificationList.removeAlarm(type.addTypeStrToStr(objId));
-//        }
-//        inAppTimer.refreshInAppTimer();
-        notificationList.removeAlarmAndRepeatAlarm(notificationId);
-//        inAppTimer.refreshInAppTimer();
-//        notificationList.save();
-        refreshInAppTimerAndSaveNotificationList();
-    }
-
+//    public void cancelAlarmXXX(String notificationId) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        String objId = NotificationType.getNotifIdStrWithoutTypeStr(notificationId);
+////        NotificationType type = NotificationType.getTypeContainedInStr(objId);
+////        notificationList.removeAlarm(notificationId);
+////        //if the user cancels the first alarm, we must cancel any repeat alarms
+////        if (type == NotificationType.notification || type == NotificationType.waiting) {
+////            notificationList.removeAlarm(type.addTypeStrToStr(objId));
+////        }
+////        inAppTimer.refreshInAppTimer();
+////</editor-fold>
+//        notificationList.removeAlarmAndRepeatAlarm(notificationId);
+////        inAppTimer.refreshInAppTimer();
+////        notificationList.save();
+//        refreshInAppTimerAndSaveNotificationList();
+//    }
     /**
      * deletes all the alarms (both local notifications and app alarms and
-     * snooze) that may have been set for an Item, e.g. if the item is cancelled
-     * or deleted.
+     * snooze) that may have been set for an Item, e.g. if the item is
+     * completed, cancelled or deleted.
      *
      * @param item
      */
-    public void deleteAllAlarmsForItem(Item item) {
-        //delete all possible alarms set for this item
-//        notificationList.removeAllAlarms(item.getObjectId());
-//        notificationList.removeALLAlarmsForItem(item.getObjectIdP());
-        notificationList.removeALLAlarmsForItem(item.getGuid());
-        cancelAllExpiredAlarms(item); //remove any already expired alarms
-//        inAppTimer.refreshInAppTimer();
-//        notificationList.save();
-        refreshInAppTimerAndSaveNotificationList();
-    }
-
+//    public void deleteAllAlarmsForItemXXX(Item item) {
+//        //delete all possible alarms set for this item
+////        notificationList.removeAllAlarms(item.getObjectId());
+////        notificationList.removeALLAlarmsForItem(item.getObjectIdP());
+//        notificationList.removeALLAlarmsForItemXXX(item.getGuid());
+//        cancelAllExpiredAlarms(item); //remove any already expired alarms
+////        inAppTimer.refreshInAppTimer();
+////        notificationList.save();
+//        refreshInAppTimerAndSaveNotificationList();
+//    }
     /**
      * initialization of the alarm handling. Called on each start up of the app.
      * Will update local notifications. Also launches timer to handle in-app
@@ -359,20 +387,48 @@ public class AlarmHandler {
      * fetchFromCacheOnly task to update local notifications regularly even if
      * app is not activated is done in the main start().
      */
-    public void setupAlarmHandlingOnAppStart() {
-        updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled();
-        //remove any snoozed alarms in the past (since they have been handled by local notifications)
-//        long now = System.currentTimeMillis();
+//    public void setupAlarmHandlingOnAppStart() {
+//        updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled();
+//        //remove any snoozed alarms in the past (since they have been handled by local notifications)
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        long now = System.currentTimeMillis();
+////        if (false) {
+////            notificationList.removeExpiredAlarmsXXX(); //ScreenListOfAlarms will show expired alarms until they're dealt with
+////        }//        inAppTimer.refreshInAppTimer();
+////        notificationList.save();
+////</editor-fold>
 //        if (false) {
-//            notificationList.removeExpiredAlarmsXXX(); //ScreenListOfAlarms will show expired alarms until they're dealt with
-//        }//        inAppTimer.refreshInAppTimer();
-//        notificationList.save();
-        if (false) {
-            refreshInAppTimerAndSaveNotificationList(); // done in updateLocalNotificationsOnBackgroundFetchOrAppStart()
-        }//        while (alarmData.getSnoozeTimeForItemWithSmallestTime()!=null && alarmData.getSnoozeTimeForItemWithSmallestTime().getTime() < now) {
-//            alarmData.removeSnoozeForItemWithSmallestTime();
+//            refreshInAppTimerAndSaveNotificationList(); // done in updateLocalNotificationsOnBackgroundFetchOrAppStart()
 //        }
-//        setInAppTimerForItemsWithAlarmOrSnoozed();
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        while (alarmData.getSnoozeTimeForItemWithSmallestTime()!=null && alarmData.getSnoozeTimeForItemWithSmallestTime().getTime() < now) {
+////            alarmData.removeSnoozeForItemWithSmallestTime();
+////        }
+////        setInAppTimerForItemsWithAlarmOrSnoozed();
+////</editor-fold>
+//    }
+    /**
+     * called whenever item has changed to update inAppTimer and local
+     * notifications
+     *
+     * @param item
+     */
+    public void update(Item item) {
+        notificationList.updateAlarmNotifications(item);
+        Form f = MyForm.getCurrentFormAfterClosingDialogOrMenu();
+        if (f instanceof MyForm) {
+            ((MyForm) f).refreshAfterEdit();
+        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (item.getUnprocessedAlarms().isEmpty()) {
+//            cancelExpiredAlarm(expiredAlarm)
+//
+//        }
+//        notificationList.add(item.get);
+//        refreshInAppTimerAndSaveNotificationList();
+//        //save snooze time
+//        DAO.getInstance().saveToParseNow(item);
+//</editor-fold>
     }
 
     /**
@@ -381,35 +437,85 @@ public class AlarmHandler {
      * @param snoozeExpireTime
      */
 //    public void snoozeAlarm(String notificationId, Date snoozeExpireTime) {
-    public void snoozeAlarm(ExpiredAlarm expiredAlarm, Date snoozeExpireTime) {
-//        AlarmType type = AlarmType.getTypeContainedInStr(notificationId);
-//        String objId = AlarmType.getObjectIdStrWithoutTypeStr(notificationId, type);
-        Item item = DAO.getInstance().fetchItemN(expiredAlarm.guid);
-        expiredAlarms.remove(expiredAlarm);
-        expiredAlarmSave();
-        item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type))); //Update *before* creating reminder to get right snooze time
-        notificationList.removeAlarmAndRepeatAlarm(expiredAlarm.guid, expiredAlarm.type); //on snooze, remove any still active alarms of the same type as the snoozed one
-//        notificationList.snoozeAlarm(notificationId, snoozeExpireTime, item.makeNotificationTitleText(type), item.makeNotificationBodyText(type));
-        notificationList.addAlarmAndRepeat(expiredAlarm.guid, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type),
-                item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
-//        notificationList.save();
-        refreshInAppTimerAndSaveNotificationList();
-        //save snooze time
-//        item.setSnoozeDate(snoozeExpireTime);
-//        item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type)));
-//        DAO.getInstance().saveNew(item, true);
-//        DAO.getInstance().saveNew(item);
-//        DAO.getInstance().saveItem3(item);xxx;
-//        DAO.getInstance().saveNewTriggerUpdate3();
-        DAO.getInstance().saveToParseNow(item);
+//    public void snoozeAlarmOLD(ExpiredAlarm expiredAlarm, Date snoozeExpireTime) {
+////        AlarmType type = AlarmType.getTypeContainedInStr(notificationId);
+////        String objId = AlarmType.getObjectIdStrWithoutTypeStr(notificationId, type);
+//        Item item = DAO.getInstance().fetchItemN(expiredAlarm.guid);
+//        expiredAlarms.remove(expiredAlarm);
+//        expiredAlarmSaveXXX();
+//        item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type))); //Update *before* creating reminder to get right snooze time
+//        notificationList.removeAlarmAndRepeatAlarm(expiredAlarm.guid, expiredAlarm.type); //on snooze, remove any still active alarms of the same type as the snoozed one
+////        notificationList.snoozeAlarm(notificationId, snoozeExpireTime, item.makeNotificationTitleText(type), item.makeNotificationBodyText(type));
+//        notificationList.addAlarmAndRepeat(expiredAlarm.guid, snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type),
+//                item.makeNotificationTitleText(expiredAlarm.type), item.makeNotificationBodyText(expiredAlarm.type)); //UI: snooze also has localNotification repeat, NO, finally disabled
+////        notificationList.save();
+//        refreshInAppTimerAndSaveNotificationList();
+//        //save snooze time
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        item.setSnoozeDate(snoozeExpireTime);
+////        item.setSnoozeAlarmRecord(new AlarmRecord(snoozeExpireTime, AlarmType.getSnoozedN(expiredAlarm.type)));
+////        DAO.getInstance().saveNew(item, true);
+////        DAO.getInstance().saveNew(item);
+////        DAO.getInstance().saveItem3(item);xxx;
+////        DAO.getInstance().saveNewTriggerUpdate3();
+////</editor-fold>
+//        DAO.getInstance().saveToParseNow(item);
+//    }
+    public void snoozeAlarm(AlarmRecord expiredAlarm, Date snoozeExpireTime) {
+        snoozeAlarm(expiredAlarm, snoozeExpireTime, true);
+    }
+
+    public void snoozeAlarm(AlarmRecord expiredAlarm, Date snoozeExpireTime, boolean save) {
+        snoozeAlarm(expiredAlarm.item, expiredAlarm.type, snoozeExpireTime, save);
+    }
+
+    public void snoozeAlarm(Item item, AlarmType alarmType, Date snoozeExpireTime) {
+        snoozeAlarm(item, alarmType, snoozeExpireTime, true);
+    }
+
+    public void snoozeAlarm(Item item, AlarmType alarmType, Date snoozeExpireTime, boolean saveImmediately) {
+//        Item item = DAO.getInstance().fetchItemN(expiredAlarm.guid);
+        if (Config.TEST) {
+            ASSERT.that(item.getAlarmDate().getTime() < System.currentTimeMillis(), "trying to snooze alarm NOT in the past");
+        }
+//        notificationList.remove(expiredAlarm.getNotificationId()); //now done in AlarmHandler.update()
+        switch (alarmType) {
+            case notification:
+            case snoozedNotif:
+                item.setSnoozeAlarm(snoozeExpireTime);
+                break;
+            case waiting:
+            case snoozedWaiting:
+                item.setSnoozeWaitingAlarm(snoozeExpireTime);
+                break;
+            case notificationRepeat:
+            case waitingRepeat:
+            default:
+                if (Config.TEST) {
+                    ASSERT.that("Unhandled alarmType=" + alarmType);
+                }
+        }
+        if (saveImmediately) {
+            DAO.getInstance().saveToParseNow(item);
+        } else {
+            DAO.getInstance().saveToParseLater(item);
+        }
     }
 
     public void snoozeAllExpiredAlarms(Date snoozeExpireTime) {
-        while (!expiredAlarms.isEmpty()) {
-            ExpiredAlarm expiredAlarm = expiredAlarms.get(0); //get() here, since snoozeAlarm() will remove it once snoozed
-            snoozeAlarm(expiredAlarm, snoozeExpireTime);
+        Date now = new MyDate();
+        List<AlarmRecord> expired = DAO.getInstance().getUnprocessedAlarmRecords(now, false);
+        if (expired.size() > 1) {
+            multipleUpdatesOngoing = true;
         }
-        expiredAlarmSave();
+        for (AlarmRecord alarmRecord : expired) {
+            snoozeAlarm(alarmRecord, snoozeExpireTime, false);
+        }
+        if (multipleUpdatesOngoing) {
+            multipleUpdatesOngoing = false;
+            updateLocalNotificationsOnChange(now);
+        }
+        DAO.getInstance().triggerParseUpdate();
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void snoozeAllExpiredAlarmsOLD(Date snoozeExpireTime) {
@@ -432,65 +538,89 @@ public class AlarmHandler {
 //</editor-fold>
 
     /**
-     * called when user canels an expired alarm
+     * called when user cancels an expired alarm
      *
      * @param expiredAlarm
      */
 //    public void removeExpiredAlarm(String objId, AlarmType type) {
-    public void removeExpiredAlarm(ExpiredAlarm expiredAlarm) {
-//        for (int i=0, size=expiredAlarms.size(); i<size; i++) {
-//            if (expiredAlarms.get(i).objectId.equals(objId)&&expiredAlarms.get(i).type==type) {
-//                expiredAlarms.re
-//            }
-//        }
-        expiredAlarms.remove(expiredAlarm);
-        expiredAlarmSave();
+//    public void cancelExpiredAlarm(ExpiredAlarm expiredAlarm) {
+    public void cancelExpiredAlarm(AlarmRecord expiredAlarm) {
+        cancelExpiredAlarm(expiredAlarm, true);
+    }
+
+    public void cancelExpiredAlarm(AlarmRecord expiredAlarm, boolean saveImmediately) {
+//        Item expiredItem = DAO.getInstance().fetchItemN(expiredAlarm.guid);
+        Item expiredItem = expiredAlarm.item;
+//        if (expiredAlarm.type == AlarmType.notification || expiredAlarm.type == AlarmType.notificationRepeat) {
+//        if (expiredAlarm.type == AlarmType.notification) {
+        if (expiredAlarm.type.isReminder()) {
+            expiredItem.cancelOrSnoozeAlarm(true);
+//        } else if (expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.waitingRepeat) {
+//        } else if (expiredAlarm.type == AlarmType.waiting) {
+        } else if (expiredAlarm.type.isWaitingReminder()) {
+            expiredItem.cancelOrSnoozeWaitingAlarm(true);
+        }
+        if (saveImmediately) {
+            DAO.getInstance().saveToParseNow(expiredItem);
+        } else {
+            DAO.getInstance().saveToParseLater(expiredItem);
+        }
     }
 
     public void cancelAllExpiredAlarms() {
 //                    AlarmHandler.getInstance().removeExpiredAlarm(expired);
-        while (!expiredAlarms.isEmpty()) {
-            expiredAlarms.remove(0);
+        Date now = new MyDate();
+        List<AlarmRecord> expired = DAO.getInstance().getUnprocessedAlarmRecords(now, false);
+        if (expired.size() > 1) {
+            multipleUpdatesOngoing = true;
         }
-        expiredAlarmSave();
+//        List<AlarmRecord> expiredAlarms = DAO.getInstance().getUnprocessedAlarmRecords(false);
+        while (!expired.isEmpty()) {
+            cancelExpiredAlarm(expired.remove(0), false);
+//            processExpiredAlarm(NOTIF_LIST_FILE_ID, true);
+        }
+        if (multipleUpdatesOngoing) {
+            updateLocalNotificationsOnChange(now);
+            multipleUpdatesOngoing = false;
+        }
+        DAO.getInstance().triggerParseUpdate();
+//        expiredAlarmSaveXXX();
     }
 
-    private void cancelAllExpiredAlarms(Item item) {
-        Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
-        while (it.hasNext()) {
-            ExpiredAlarm expiredAlarm = it.next();
-//            if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
-            if (item.getGuid().equals(expiredAlarm.guid)) {
-//                expiredAlarms.remove(expiredAlarm);
-                it.remove();
-            }
-        }
-        expiredAlarmSave();
-    }
-
-    private void cancelExpiredAlarmsOnItemUpdate(Item item) {
-//        if (item.getObjectIdP() != null) { //can't have any alarms for an not yet saved item
-        long now = MyDate.currentTimeMillis();
-        boolean normalAlarmUpdatedToFuture = item.getAlarmDate().getTime() > now;
-        boolean waitingAlarmUpdatedToFuture = item.getWaitingAlarmDate().getTime() > now;
-//        AlarmType normalAlarmUpdated = item.getAlarmDate().getTime()>now;
-//        boolean waitingAlarmUpdated = item.getWaitingAlarmDate().getTime()>now;
-        Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
-        while (it.hasNext()) {
-            ExpiredAlarm expiredAlarm = it.next();
-//                if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
-            if (item.getGuid().equals(expiredAlarm.guid)) {
-                if (((expiredAlarm.type == AlarmType.notification || expiredAlarm.type == AlarmType.snoozedNotif) && normalAlarmUpdatedToFuture)
-                        || ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.snoozedWaiting) && waitingAlarmUpdatedToFuture)) {
-                    it.remove();
-                }
-            }
-        }
-        expiredAlarmSave();
-//        }
-    }
 //<editor-fold defaultstate="collapsed" desc="comment">
-
+//    private void cancelAllExpiredAlarms(Item item) {
+//        Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
+//        while (it.hasNext()) {
+//            ExpiredAlarm expiredAlarm = it.next();
+////            if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
+//            if (item.getGuid().equals(expiredAlarm.guid)) {
+////                expiredAlarms.remove(expiredAlarm);
+//                it.remove();
+//            }
+//        }
+//        expiredAlarmSaveXXX();
+//    }
+//    private void cancelExpiredAlarmsOnItemUpdateXXX(Item item) {
+////        if (item.getObjectIdP() != null) { //can't have any alarms for an not yet saved item
+//        long now = MyDate.currentTimeMillis();
+//        boolean normalAlarmUpdatedToFuture = item.getAlarmDate().getTime() > now;
+//        boolean waitingAlarmUpdatedToFuture = item.getWaitingAlarmDate().getTime() > now;
+////        AlarmType normalAlarmUpdated = item.getAlarmDate().getTime()>now;
+////        boolean waitingAlarmUpdated = item.getWaitingAlarmDate().getTime()>now;
+//        Iterator<ExpiredAlarm> it = expiredAlarms.iterator();
+//        while (it.hasNext()) {
+//            ExpiredAlarm expiredAlarm = it.next();
+////                if (item.getObjectIdP().equals(expiredAlarm.objectId)) {
+//            if (item.getGuid().equals(expiredAlarm.guid)) {
+//                if (((expiredAlarm.type == AlarmType.notification || expiredAlarm.type == AlarmType.snoozedNotif) && normalAlarmUpdatedToFuture)
+//                        || ((expiredAlarm.type == AlarmType.waiting || expiredAlarm.type == AlarmType.snoozedWaiting) && waitingAlarmUpdatedToFuture)) {
+//                    it.remove();
+//                }
+//            }
+//        }
+//        expiredAlarmSaveXXX();
+////        }
+//    }
     /**
      * eg when an Item is Done/Cancelled
      */
@@ -519,50 +649,89 @@ public class AlarmHandler {
      * called by inApp timer or from local notification when an alarm expires
      *
      * @param notificationId
-     * @param localNotificationReceived a local (system/iOS) notification was
+     * @param localOSNotificationReceived a local (system/iOS) notification was
      * received, otherwise, if false, call was made for an inApp timer
      */
-    void processExpiredAlarm(String notificationId, boolean localNotificationReceived) {
-        AlarmHandler.alarmLog("processExpiredAlarm called with: \"" + notificationId + "\"");
-//        Display.getInstance().callSerially(() -> {
-//        Display.getInstance().callSeriallyOnIdle(() -> { //onIdle may ensure that the alarm only gets processed after Replay and load of data
-        Display.getInstance().callSerially(() -> { //onIdle may ensure that the alarm only gets processed after Replay and load of data
-            if (localNotificationReceived) {
-                AlarmHandler.alarmLog("Local notifiation received: \"" + notificationId + "\"");
-            } else {
-                AlarmHandler.alarmLog("InApp alarm expired: \"" + notificationId + "\"");
-            }
-            if (notificationList != null && !notificationList.isEmpty()) { //shouldn't happen, but in case desync between notificationList and iOS notifications can happen
-                NotificationShadow notif = notificationList.getNotification(notificationId);
-                if (notif != null) {
-                    ASSERT.that(notif != null, "ALARM: NotifShadow==null for notificationId=" + notificationId + " notificationList=" + notificationList);
-//        AlarmType type = AlarmType.getTypeContainedInStr(notificationId);
-//        String objId = AlarmType.getObjectIdStrWithoutTypeStr(notificationId, type);
-                    notificationList.removeAlarmAndRepeatAlarm(notificationId);
-//                    notificationList.save();
-                    saveNotificationList();
-//        expiredAlarms.add(0, new ExpiredAlarm(notif.getObjectIdStr(), notif.alarmTime, notif.type));
-                    expiredAlarms.add(0, new ExpiredAlarm(notif)); //TODO!!!!! only add each item ONCE, to avoid seeing multiple expired alarms/snoozes?
-                    expiredAlarmSave();
-
-                    inAppTimer.updateInAppTimerOnNextcomingAlarm();
-//        if (notif != null) {
-//        Display.getInstance().callSerially(() -> {
-                    Display.getInstance().callSerially(() -> playAlarm()); //try to play 
-//                    ScreenListOfAlarms.getInstance().show(); //will check if already visible
-                    MyForm myForm = MyForm.getCurrentFormAfterClosingDialogOrMenu();
-//                    if ((Config.PRODUCTION_RELEASE && myForm != null) || !Config.PRODUCTION_RELEASE)
-                    if (myForm instanceof ScreenListOfAlarms) {
-                        myForm.refreshAfterEdit();
-                    } else if ((!Config.PRODUCTION_RELEASE || myForm != null) && (myForm != null && myForm.getMyShowAlarmsReplayCmd() != null)) { //don't risk crash in production release
-                        myForm.getMyShowAlarmsReplayCmd().actionPerformed(null);
-                    }
-                }
-            }
-        });
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    void processExpiredAlarmOLD(String notificationId, boolean localNotificationReceived) {
+//        alarmLog("processExpiredAlarm called with: \"" + notificationId + "\"");
+////        Display.getInstance().callSerially(() -> {
+////        Display.getInstance().callSeriallyOnIdle(() -> { //onIdle may ensure that the alarm only gets processed after Replay and load of data
+//        Display.getInstance().callSerially(() -> { //onIdle may ensure that the alarm only gets processed after Replay and load of data
+//            if (localNotificationReceived) {
+//                alarmLog("Local notifiation received: \"" + notificationId + "\"");
+//            } else {
+//                alarmLog("InApp alarm expired: \"" + notificationId + "\"");
+//            }
+//            if (notificationList != null && !notificationList.isEmpty()) { //shouldn't happen, but in case desync between notificationList and iOS notifications can happen
+//                NotificationShadow notif = notificationList.getNotification(notificationId);
+//                if (notif != null) {
+//                    ASSERT.that(notif != null, "ALARM: NotifShadow==null for notificationId=" + notificationId + " notificationList=" + notificationList);
+////        AlarmType type = AlarmType.getTypeContainedInStr(notificationId);
+////        String objId = AlarmType.getObjectIdStrWithoutTypeStr(notificationId, type);
+//                    notificationList.removeAlarmAndRepeatAlarm(notificationId);
+////                    notificationList.save();
+//                    saveNotificationListXXX();
+////        expiredAlarms.add(0, new ExpiredAlarm(notif.getObjectIdStr(), notif.alarmTime, notif.type));
+//                    expiredAlarms.add(0, new ExpiredAlarm(notif)); //TODO!!!!! only add each item ONCE, to avoid seeing multiple expired alarms/snoozes?
+//                    expiredAlarmSaveXXX();
+//
+//                    inAppTimer.updateInAppTimerOnNextcomingAlarm();
+////        if (notif != null) {
+////        Display.getInstance().callSerially(() -> {
+//                    Display.getInstance().callSerially(() -> playAlarm()); //try to play
+////                    ScreenListOfAlarms.getInstance().show(); //will check if already visible
+//                    MyForm myForm = MyForm.getCurrentFormAfterClosingDialogOrMenu();
+////                    if ((Config.PRODUCTION_RELEASE && myForm != null) || !Config.PRODUCTION_RELEASE)
+//                    if (myForm instanceof ScreenListOfAlarms) {
+//                        myForm.refreshAfterEdit();
+//                    } else if ((!Config.PRODUCTION_RELEASE || myForm != null) && (myForm != null && myForm.getMyShowAlarmsReplayCmd() != null)) { //don't risk crash in production release
+//                        myForm.getMyShowAlarmsReplayCmd().actionPerformed(null);
+//                    }
+//                }
+//            }
+//        });
+////        }
+//        //get next alarm in line and schedule it //UI: will only schedule one alarm at a time (not relevant for user?!)
+//    }
+//</editor-fold>
+    void processExpiredAlarm(String notificationId, boolean localOSNotificationReceived) {
+        alarmLog("processExpiredAlarm called with: \"" + notificationId + "\"");
+        if (localOSNotificationReceived) {
+            alarmLog("Local notifiation received: \"" + notificationId + "\"");
+        } else {
+            alarmLog("InApp alarm expired: \"" + notificationId + "\"");
+        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false&&notificationList != null && !notificationList.isEmpty()) { //shouldn't happen, but in case desync between notificationList and iOS notifications can happen
+//            NotificationShadow notif = notificationList.getNotification(notificationId);
+//            if (notif != null) {
+////                ASSERT.that(notif != null, "ALARM: NotifShadow==null for notificationId=" + notificationId + " notificationList=" + notificationList);
+//                notificationList.removeAlarmAndRepeatAlarm(notificationId);
+//                saveNotificationListXXX();
+//                expiredAlarms.add(0, new ExpiredAlarm(notif)); //TODO!!!!! only add each item ONCE, to avoid seeing multiple expired alarms/snoozes?
+//                expiredAlarmSaveXXX();
+//
+//                inAppTimer.updateInAppTimerOnNextcomingAlarm();
+//                Display.getInstance().callSerially(() -> playAlarm()); //try to play
+////                    ScreenListOfAlarms.getInstance().show(); //will check if already visible
+//            }
 //        }
-        //get next alarm in line and schedule it //UI: will only schedule one alarm at a time (not relevant for user?!)
+//</editor-fold>
+        if (!localOSNotificationReceived) {
+            Display.getInstance().callSerially(() -> playAlarm()); //try to play 
+//            playAlarm(); //make sure it plays immediately, not e.g. after displaying the alarmscreen
+        }
+//        notificationList.updateInAppTimerOnNextcomingAlarm(); 
+        MyForm myForm = MyForm.getCurrentFormAfterClosingDialogOrMenu();
+//                    if ((Config.PRODUCTION_RELEASE && myForm != null) || !Config.PRODUCTION_RELEASE)
+        if (myForm instanceof ScreenListOfAlarms) {
+            myForm.refreshAfterEdit();
+        } else if ((!Config.PRODUCTION_RELEASE || myForm != null) && (myForm != null && myForm.getMyShowAlarmsReplayCmd() != null)) { //don't risk crash in production release
+            myForm.getMyShowAlarmsReplayCmd().actionPerformed(null);
+        }
     }
+//<editor-fold defaultstate="collapsed" desc="comment">
 
     /**
      * show the dialog when clicking on a received local notification. Options
@@ -572,7 +741,6 @@ public class AlarmHandler {
      * cancel, startTimer+cancelAlarm (assuming whatevery was waited for got
      * done), editItem.
      */
-//<editor-fold defaultstate="collapsed" desc="comment">
 //    void showNotificationReceivedDialogXXX(String notificationId) {
 //        showNotificationReceivedDialogXXX(notificationList.getNotification(notificationId));
 //    }
@@ -700,57 +868,67 @@ public class AlarmHandler {
 //        });
 //    }
 //</editor-fold>
-    public void localNotificationReceived(String notificationId) {
-//        Display.getInstance().callSerially(() -> {
-//            AlarmHandler.alarmLog("Local notifiation received: \"" + notificationId + "\"");
-//        });
-//        Display.getInstance().callSerially(() -> {
-        //DONE show as modal dialog to ensure user deals with the alarm (not Toastbar which may disappear)
-//            showNotificationReceivedDialog(notificationId);
-//            ScreenListOfAlarms.getInstance().show();
-
-        processExpiredAlarm(notificationId, true);
-//        });
-    }
-
+//    public void localNotificationReceivedXXX(String notificationId) {
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        Display.getInstance().callSerially(() -> {
+////            AlarmHandler.alarmLog("Local notifiation received: \"" + notificationId + "\"");
+////        });
+////        Display.getInstance().callSerially(() -> {
+////DONE show as modal dialog to ensure user deals with the alarm (not Toastbar which may disappear)
+////            showNotificationReceivedDialog(notificationId);
+////            ScreenListOfAlarms.getInstance().show();
+////</editor-fold>
+//        processExpiredAlarm(notificationId, true);
+////        });
+//    }
     /**
      * return list of already expired alarms (but not yet processed by the
-     * end-user)
+     * end-user). Used eg by ScreenMain to show the number of expired alarms and
+     * by SCreenAlarm to get the alarms to display
      *
      * @return
      */
-    public List<ExpiredAlarm> getExpiredAlarms() {
-        return expiredAlarms;
+    public List<AlarmRecord> getUnprocessedAlarms() {
+        return getUnprocessedAlarms(new MyDate());
     }
 
-    public ItemList getExpiredAlarmsItemList() {
-        return new ItemList(getExpiredAlarms()); //need a copy of the list to avoid java.util.ConcurrentModificationException in CancellAll/SnoozeAll loops below
-
+    public List<AlarmRecord> getUnprocessedAlarms(Date now) {
+//        return expiredAlarms;
+        return DAO.getInstance().getUnprocessedAlarmRecords(now, false);
     }
 
-    public LocalNotificationsShadowList getLocalNotificationsTEST() {
-        return notificationList;
+//    public ItemList getExpiredAlarmsItemList() {
+//        return new ItemList(getExpiredAlarms()); //need a copy of the list to avoid java.util.ConcurrentModificationException in CancellAll/SnoozeAll loops below
+//    }
+//    public LocalNotificationsShadowList getLocalNotificationsTEST() {
+    public List<NotificationShadow> getLocalNotificationsTEST() {
+//        updateLocalNotificationsOnChange();
+//        notificationList.updateWithFutureAlarms(false);
+//        return notificationList;
+        return notificationList.getUpdatedListOfAlarmRecords();
     }
-
-    NotificationShadow getNextFutureAlarmN() {
-//        return notificationList.getNextFutureAlarm();
-        NotificationShadow notif;
-        Long now = MyDate.currentTimeMillis();
-        //remove expired alarms and add them to expiredAlarms
-        if (false) { //now done in processExpiredAlarm()
-            while ((notif = notificationList.getNextFutureAlarmN()) != null && notif.alarmTime.getTime() <= now) {
-                notificationList.removeAlarmAndRepeatAlarm(notif.notificationId);
-                expiredAlarms.add(0, new ExpiredAlarm(notif)); //UI: add most recent alarms to start
-            }
-//            notificationList.save();
-            saveNotificationList();
-            expiredAlarmSave();
-        } else {
-            notif = notificationList.getNextFutureAlarmN();
-        }
-//        return notificationList.getNextFutureAlarm();
-        return notif;
-    }
+////<editor-fold defaultstate="collapsed" desc="comment">
+//    NotificationShadow getNextFutureAlarmN() {
+////        return notificationList.getNextFutureAlarm();
+//        NotificationShadow notif;
+//        Long now = MyDate.currentTimeMillis();
+////remove expired alarms and add them to expiredAlarms
+////        if (false) { //now done in processExpiredAlarm()
+////            while ((notif = notificationList.getNextFutureAlarmN()) != null && notif.alarmTime.getTime() <= now) {
+////                notificationList.removeAlarmAndRepeatAlarm(notif.notificationId);
+////                expiredAlarms.add(0, new ExpiredAlarm(notif)); //UI: add most recent alarms to start
+////            }
+//////            notificationList.save();
+////            saveNotificationList();
+////            expiredAlarmSave();
+////        } else {
+////            notif = notificationList.getNextFutureAlarmN();
+//        notif = getNotificationList().getNextFutureAlarmN();
+////        }
+////        return notificationList.getNextFutureAlarm();
+//        return notif;
+//    }
+////</editor-fold>
 
     public void simulateNotificationReceived_TEST(int secondsFromNow) {
         String notificationId;
@@ -776,59 +954,81 @@ public class AlarmHandler {
         simulateNotificationReceived_TEST(taskText, due, new MyDate(MyDate.currentTimeMillis() + alarmInSecondsFromNow * 1000), new MyDate(MyDate.currentTimeMillis() + waitingAlarmInSecondsFromNow * 1000));
     }
 
-    public static void setPreferredBackgroundFetchInterval() {
-//max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
-//int fetchIntervalSeconds = Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * 3600 / 2, 3600 / 4);
-        int fetchIntervalSeconds = Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * 3600 / 2, 3600 / 4);
-        Display.getInstance().setPreferredBackgroundFetchInterval(fetchIntervalSeconds); //max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
-    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public static void setPreferredBackgroundFetchIntervalXXX() {
+////max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
+////int fetchIntervalSeconds = Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * 3600 / 2, 3600 / 4);
+//        int fetchIntervalSeconds = Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * 3600 / 2, 3600 / 4);
+//        Display.getInstance().setPreferredBackgroundFetchInterval(fetchIntervalSeconds); //max(.., 1): ensure that interval never gets 0 after division by 2, 3600: sec/hour, 3600/4: never more often than every 15 minutes
+//    }
+//    public void receivePushUpdateXXX() {
+//        switch ("") {
+//            case "alarmSnoozed": //snooze expiredAlarm (move expired alarm back to snoozed)
+//            case "alarmCancelled": //cancel expiredAlarm (cancel local alarm and remove from expiredAlarms)
+//            case "changedItem": //refresh alarms (update alarms as if item was edited locally)
+//            case "newItem": //update with alarms (ditto)
+//            case "itemDeletedCancelled": //cancel alarms (ditto)
+//        }
+//    }
+//</editor-fold>
 
-    public void receivePushUpdate() {
-        switch ("") {
-            case "alarmSnoozed": //snooze expiredAlarm (move expired alarm back to snoozed)
-            case "alarmCancelled": //cancel expiredAlarm (cancel local alarm and remove from expiredAlarms)
-            case "changedItem": //refresh alarms (update alarms as if item was edited locally)
-            case "newItem": //update with alarms (ditto)
-            case "itemDeletedCancelled": //cancel alarms (ditto)
-        }
+    private String mediaToString( Media alarmSound) {
+        String s="dur(ms)="+alarmSound.getDuration()+"; time(s)="+alarmSound.getTime()+"; vol(%)="+alarmSound.getVolume();
+        return s;
     }
-
+    
     /*static*/ void playAlarm() {
         if (false && MyPrefs.alarmPlayBuiltinAlarmSound.getBoolean()) {
             Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM); //work-around but sound doesn't seem to work on iOS, nor on simulator
         } else {
-            // https://www.codenameone.com/manual/files-storage-networking.html#_file_system
-            // CN1 doc: https://www.codenameone.com/javadoc/com/codename1/media/Media.html
-            // https://www.codenameone.com/blog/open-file-rendering.html
-            // https://www.codenameone.com/manual/components.html#sharebutton-section
-            // https://stackoverflow.com/questions/48076190/codename-one-play-a-sound
+//<editor-fold defaultstate="collapsed" desc="comment">
+// https://www.codenameone.com/manual/files-storage-networking.html#_file_system
+// CN1 doc: https://www.codenameone.com/javadoc/com/codename1/media/Media.html
+// https://www.codenameone.com/blog/open-file-rendering.html
+// https://www.codenameone.com/manual/components.html#sharebutton-section
+// https://stackoverflow.com/questions/48076190/codename-one-play-a-sound
+//</editor-fold>
+            alarmLog("alarmSound.play() start");
             FileSystemStorage fs = FileSystemStorage.getInstance();
             String soundDir = fs.getAppHomePath(); // + "recordings/"; on simulator="file://home/" 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        fs.mkdir(soundDir);
 //        Media media = MediaManager.createBackgroundMedia("file://"+);
-            try {
 //            Media m = MediaManager.createMedia(soundDir + "/" + MyPrefs.getString(MyPrefs.alarmSoundFile), false);
 //            Media m = MediaManager.createMedia("file://" + "/" + MyPrefs.getString(MyPrefs.alarmSoundFile), false);
 //            Media m = MediaManager.createMedia( MyPrefs.getString(MyPrefs.alarmSoundFile), false);
 //                Media m = MediaManager.createMedia(soundDir + MyPrefs.getString(MyPrefs.alarmSoundFile), false); //in SImulator: put mp3 file in .cn1!
-                //https://stackoverflow.com/questions/48076190/codename-one-play-a-sound
+//https://stackoverflow.com/questions/48076190/codename-one-play-a-sound
 //                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/notification_sound_bell.mp3")), "audio/mpeg");
 //                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/"+MyPrefs.alarmSoundFile)), "audio/mpeg"); //doesn't work in static
 //                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/notification_sound_bell.mp3")), "audio/mpeg");
 //                Media m = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(),"/" + MyPrefs.getString(MyPrefs.alarmSoundFile))), "audio/mpeg"); //in SImulator: put mp3 file in .cn1!
+//</editor-fold>
+            //https://stackoverflow.com/questions/48076190/codename-one-play-a-sound
+            try {
                 if (alarmSound == null) {
+//                    alarmSound = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/" + MyPrefs.getString(MyPrefs.alarmSoundFileXXX))), "audio/mpeg"); //in SImulator: put mp3 file in .cn1!
+                    alarmLog("alarmSound==null, calling createMedia()");
                     alarmSound = MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), "/" + MyPrefs.getString(MyPrefs.alarmSoundFile))), "audio/mpeg"); //in SImulator: put mp3 file in .cn1!
                 }
                 if (!alarmSound.isPlaying()) { //uI: two alarms at almost same time will only play if first is finished, avoid overlapping/interrupting sounds
+                    alarmLog("alarmSound.play() - " + "/" + MyPrefs.getString(MyPrefs.alarmSoundFile)+"; alarmSound="+mediaToString(alarmSound));
                     alarmSound.play();
+                    alarmLog("alarmSound.play() finished ");
+                } else {
+                    alarmLog("alarmSound ALREADY playing - IGNORED");
                 }
             } catch (Exception err) {
                 if (true) {
-                    Log.e(err);
+//                    Log.e(err);
+                    ASSERT.that("\"ALARM: Exception in MediaManager.createMedia((Display.getInstance().getResourceAsStream(getClass(), \"/\" + MyPrefs.getString(MyPrefs.alarmSoundFile))), \"audio/mpeg\"). Exception=" + err);
                 }
 //                Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_INFO);
-                Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
+                if (false) {
+                    Display.getInstance().playBuiltinSound(Display.SOUND_TYPE_ALARM);
+                }
             }
+            alarmLog("alarmSound.play() end");
         }
     }
 }

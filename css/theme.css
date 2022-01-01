@@ -337,6 +337,8 @@ MyIcon {
     tabsFillRowsBool:true; /*ensures tabs in ScreenItem2 fill out the row*/
 
     lightweightPickerBool:true; /*always use lightweight pickers for now (at least until CN1 fixes the duration picker)*/
+    hideEmptyTitleBool:true;
+    popupNoTitleAddPaddingInt:0;
 
     /*https://stackoverflow.com/questions/19032940/how-can-i-get-the-ios-7-default-blue-color-programmatically/19033326*/
     /* use as var(--left-padding)*/
@@ -387,7 +389,7 @@ MyIcon {
     --nativeFontMainRegular: "native:MainRegular";
     --nativeFontMainBold: "native:MainBold";
     --nativeFontMainBlack: "native:MainBlack";
-    
+
     backGestureThresholdInt: 20; /*The threshold for the back gesture in the SwipeBackSupport class, defaults to 5. THJ: will this change the side-swipe sensitivity?? */
 }
 
@@ -591,6 +593,10 @@ WideButton {  /*button stretching the screen, e.g. to [Reset password]*/
     border-top: 1px solid darkgray;
     border-bottom: 1px solid darkgray;
 }
+WideButtonDisabled {  /*button stretching the screen, e.g. to [Reset password]*/
+    cn1-derive: WideButton;
+    color:grey;
+}
 
 WideButtonWarning {  /*a wide 'warning' button with a potentially risky actioon, e.g. shown in red'*/
     cn1-derive: WideButton;
@@ -727,6 +733,7 @@ DialogTitle {
     background: darkgray;
     border-radius: 2mm 2mm 0 0;
     padding: 1mm 0;
+    /*margin: 0mm 0;*/
     /*    border-bottom: 1px solid darkgray;
         border-left: 1mm solid darkgray;
         border-right: 1mm solid darkgray;
@@ -734,6 +741,8 @@ DialogTitle {
 }
 DialogContentPane {
     /*cn1-derive: Title;*/
+    cn1-derive: Container;
+    background:white;
     margin: 1mm;
     padding: 1mm;
 }
@@ -755,6 +764,17 @@ DialogCommandArea {
         border-bottom: 1mm solid darkgray;
         border-radius: 0 0 2mm 2mm ;*/
 }
+
+/*PickerDialog{
+    cn1-derive: Dialog;
+    color: red;
+    background-color: lightpink;
+}
+PickerDialogText{
+    cn1-derive: Label;
+    text-align:center;
+    color: green;
+}*/
 
 
 /****************** Form Title / Titlebar + Tool icons *******************/
@@ -784,7 +804,7 @@ StatusBarZeroSize { /*not currently used*/
 
 StatusBarButton { /*the 'virtual' button in the statusbar that catches clicks to scroll to top/bottom/swithc position */
     cn1-derive: StatusBar;
-/*   padding: 0; /*1.5mm 0 0 1mm; /*try without any sizing to see if default size makes it work on iPhone*/
+    /*   padding: 0; /*1.5mm 0 0 1mm; /*try without any sizing to see if default size makes it work on iPhone*/
     padding: 1.5mm 0 0 1mm; /*try without any sizing to see if default size makes it work on iPhone*/
     margin:0;
     background-color: lightgray;
@@ -883,7 +903,7 @@ Command { /* the overflow menu commands */
     cn1-derive: Label; /*Button;/**/
     text-align: left;
     margin: 0mm 0 0 0 ;
-    padding: 0.4mm 1mm 1mm 1mm; /*white space btw menu icons and border of */
+    padding: 1.5mm 1.5mm 1.5mm 2mm; /*white space btw menu icons and border of */
     border-bottom: 1px solid darkgray;
     /*color: blue; /*text color of each menu item */
     /*border-bottom-width: 1px;*/
@@ -1006,11 +1026,15 @@ ScreenAlarmsCancelAll { /*icon for cancelling a single alarm*/
     cn1-derive: Button;
     text-align: center;
     /*background: burlywood; /**/
-    background-color: white;
-    color: orange;
-    /*margin: 0;
+    /*    background-color: white;
+        color: orange;*/
+    background-color: orange;
+    color: white;
+    margin: 1mm;
+    /*cn1-round-border:1mm;*/
+    border-radius: 2mm;
     /*padding: 0; /**/
-    /*border: 6pt solid orange;/**/
+    /*border: 6pt solid orange;*/
 }
 ScreenAlarmsSnoozeAll { /*icon for snoozing a single alarm*/
     cn1-derive: ScreenAlarmsCancelAll;
@@ -1149,7 +1173,7 @@ EditFieldContainer { /*encapsulates each edit field in ScreenItem and adds left/
 EditFieldContainerEditable { /*encapsulates each edit field *with edit arrow* in ScreenItem and adds left/right margins*/
     cn1-derive: EditFieldContainer;
     /*padding: 2mm 0mm 2mm 2mm;*/
-/*    padding: var(--top-padding) 0mm var(--bottom-padding) var(--left-padding);*/
+    /*    padding: var(--top-padding) 0mm var(--bottom-padding) var(--left-padding);*/
 }
 
 /*LabelFieldXXX { used for (uneditable) field *labels* on the left of the screen 
@@ -1367,9 +1391,9 @@ IconEdit {
     /*color: black;*/
     /*    font-size: 100%;*/
     /*padding: 0 0mm 0mm 2.7mm;*/
-/*    padding-right:1mm;
-    padding-top:0;
-    padding-bottom:0;*/
+    /*    padding-right:1mm;
+        padding-top:0;
+        padding-bottom:0;*/
     /*padding:0 1.5mm 0 0;*/
     padding:0 0 0 0;
     margin: 0 0mm 0 0;
@@ -1450,8 +1474,12 @@ SettingContainer { /*container for each Setting */
 }
 SettingSectionLabel { /*label with explanation of following Settings */
     cn1-derive: Label;
+    padding-top: 3mm;
+    padding-bottom: 1mm;
+    /*font: var(--nativeFontMainRegular);*/
+    font-family: "native:MainRegular";
     text-align: center;
-    color: lightslategrey;
+    color: black; /*lightslategrey*/
 }
 
 SettingIndividualLabel { /*label with explanation of following Settings */
@@ -1549,13 +1577,13 @@ TimerContainer {
 TimerEltContainer { /*make timer elements white on top of the timer form background color */
     cn1-derive: Container;
     background: white;
-/*    border: 1pt solid lightgray;
-    border-radius: 2mm;
-    padding: 2mm;
-    margin-top: 3mm;
-    margin: 0mm;
-    margin-bottom: 2mm;
-    margin: 1mm 2mm;*/
+    /*    border: 1pt solid lightgray;
+        border-radius: 2mm;
+        padding: 2mm;
+        margin-top: 3mm;
+        margin: 0mm;
+        margin-bottom: 2mm;
+        margin: 1mm 2mm;*/
 }
 
 BigTimerForm {
@@ -1675,10 +1703,10 @@ TimerStartStop {
 }
 TimerStartStopSmall {
     cn1-derive: TimerStartStop;
-    font-size: 100%; /*large; /*use large as suggested here: https://stackoverflow.com/questions/62119533/how-to-set-a-specific-font-size-on-devices-using-css 15mm; /*34pt; 200%;/**56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
-    /*    padding: 0.5mm; 
-        margin-top: 0.5mm; 
-        margin-bottom: 0.5mm;*/
+    font-size: 140%; /*large; /*use large as suggested here: https://stackoverflow.com/questions/62119533/how-to-set-a-specific-font-size-on-devices-using-css 15mm; /*34pt; 200%;/**56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
+    padding: 0.5mm;
+    margin-top: 0.5mm;
+    margin-bottom: 0.5mm;
 }
 
 TimerStartStopPaused {
@@ -1686,7 +1714,7 @@ TimerStartStopPaused {
 }
 TimerStartStopPausedSmall {
     cn1-derive: TimerStartStopSmall;
-    font-size: 120%;  /*large; /*use large as suggested here: https://stackoverflow.com/questions/62119533/how-to-set-a-specific-font-size-on-devices-using-css 15mm; /*34pt; 200%;/**56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
+    /*font-size: 120%;  large; /*use large as suggested here: https://stackoverflow.com/questions/62119533/how-to-set-a-specific-font-size-on-devices-using-css 15mm; /*34pt; 200%;/**56pt; /*xx-large; /*in CSSElement.java: x-large = FONT_SIZE_LARGE+4 = 19+4 = 23 (pt?) )*/
 }
 
 BigTimerTimerSecondsXXX {
@@ -1820,7 +1848,7 @@ BigTimerCompleted {
     /*border-radius:  1mm;*/
     /*color: limegreen;/**/
 }
-BigTimerNextItemWithText {
+BigTimerNextItemWithTextXXX {
     cn1-derive: Label; /*BigTimerCmdButton;*/
     /*color: limegreen;/**/
     text-align: left; /*center; /*left;*/
@@ -1832,6 +1860,9 @@ BigTimerNextItemWithText {
     /*    margin: 1mm;
         padding: 1mm;*/
     /*border: 1pt lightskyblue solid;*/
+}
+BigTimerNextItemWithText {
+    cn1-derive: Label; /*BigTimerCmdButton;*/
 }
 
 TimerSwitch{ /*Switch used in Timer to avoid having the Green disturbing the visuals */
@@ -2578,8 +2609,8 @@ StickyHeader {
     background-color:var(--stickyHeaderBackground);
     text-align: center;
     /*padding: 0mm 0mm; was h=0.5mm*/
-/*    padding-top: 1mm; was h=0.5mm
-    padding-bottom: 1mm; was h=0.5mm*/
+    /*    padding-top: 1mm; was h=0.5mm
+        padding-bottom: 1mm; was h=0.5mm*/
     padding: 1mm 0 1mm 0; /*was h=0.5mm*/
     margin-right: 0 0 0 0mm;
     /*foreground-color: #268b04;*/
@@ -3207,6 +3238,23 @@ GroupElementOnly{
 
 }
 
+SpinnerRendererXXX {
+    color: red;
+    background-color: green;
+}
+SceneXXX {
+    color: red;
+    background-color: green;
+}
+ScrollerXXX {
+    color: red;
+    background-color: green;
+}
+PickerButtonXXX {
+    color: red;
+    background-color: green;
+}
+
 
 MyComponentGroupxx {
     margin:1mm 1mm;
@@ -3232,18 +3280,84 @@ ItemStatusPopup {
     color:green;
     background: lightgray;
 }
-MyPopupContentPane {
-    cn1-derive: Dialog;
-/*    font-size: var(--font-size-normal); 180%;
-        margin: 0 0 0 2mm;
-        padding: 0 0 0 2mm;
-    margin: 4mm;
-    padding: 2mm;
-    text-align: right;
-    color:green;
-    background: lightgray;
-    border-radius: 2mm ;TEMP DISABLED*/
+
+ButtonLeftAlign {
+    cn1-derive: Button;
+    text-align: left;
+    background: white;
+    margin:0.25mm 1mm 0.25mm 1mm;
+    border-radius: 1mm;
+    padding:1mm;
+    /*border-bottom: 1px solid darkgray;*/
 }
+
+
+PopupDialogXXX {
+    cn1-derive: Container;
+    padding: 1mm;/* 2mm 2mm 2mm;*/
+    /*        padding-right: 2mm;*/
+    /*margin:1mm;*/
+    border: 0pt solid; 
+    border-radius: 2mm;
+    border-color: lightgray;
+    background:lightgray;
+    color:violet;
+    /*    color:green;
+        background: red;
+        border: 1mm solid;  #007AFF;/*
+        border-color: darkgray;
+        border-radius: 2mm;*/
+}
+PopupDialog {
+    cn1-derive: Container;
+    padding: 1mm;/* 2mm 2mm 2mm;*/
+    /*        padding-right: 2mm;*/
+    /*margin:1mm;*/
+/*    border: 0pt solid; 
+    border-radius: 2mm;
+    border-color: lightgray;*/
+    background:darkgray;
+    color:violet;
+    /*    color:green;
+        background: red;
+        border: 1mm solid;  #007AFF;/*
+        border-color: darkgray;
+        border-radius: 2mm;*/
+}
+PopupDialogTitleXXX {
+    cn1-derive:Container;
+}
+PopupContentPaneXXX {
+    cn1-derive:Container;
+}
+
+MyPopupContentPane {
+    /*cn1-derive: PopupDialog;*/
+    cn1-derive: Container;
+    padding:1mm 0 1mm 0; 
+    margin:1mm;
+    background: lightgray;
+    border-radius: 1.5mm;
+    /*padding: 0mm 3mm 3mm 3mm;*/
+    /*background: lightgrey;*/
+    /*color:green;*/
+    /*background: red;*/
+    /* #007AFF;/**/
+    /*    border-color: darkgray;*/
+    /*    border-radius: 2mm;
+        padding:1mm;
+        margin:1mm;*/
+    /*    font-size: var(--font-size-normal); 180%;
+            margin: 0 0 0 2mm;
+            padding: 0 0 0 2mm;
+        margin: 4mm;
+        padding: 2mm;
+        text-align: right;
+        color:green;
+        background: lightgray;
+        border-radius: 2mm ;TEMP DISABLED*/
+}
+
 ButtonGroup { /*popup menu to select item status */
     cn1-derive: Label;
     /*font-family :  "native:MainRegular";*/
@@ -3291,17 +3405,6 @@ Switch {
     padding: 0mm 0mm 0mm 1mm;
 }
 
-PickerDialog{
-    cn1-derive: Dialog;
-    color: red;
-    background-color: lightpink;
-}
-PickerDialogText{
-    cn1-derive: Label;
-    text-align:center;
-    color: green;
-}
-
 /*Used in CN1 LookAndFeel.initScroll*/
 
 Scroll{ /*also HorizontalScroll*/
@@ -3309,7 +3412,7 @@ Scroll{ /*also HorizontalScroll*/
     /*    background: white; used for background of scrollable section*/
     background: transparent; /*used for background of scrollable section*/
     color:transparent;
-    
+
     /*    margin:0.2mm;
         padding: 0.4mm;*/
     margin:0 0mm 0 0mm; /*the *static* scrollbar size and its placement/closeness to top/bottom/sides of scrollable container- all Form components stay outside of it*/

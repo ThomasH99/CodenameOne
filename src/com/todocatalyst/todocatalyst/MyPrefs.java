@@ -16,7 +16,7 @@ import java.util.Date;
  */
 public class MyPrefs {
 
-    static boolean prod = Config.PRODUCTION_RELEASE ;
+    static boolean prod = Config.PRODUCTION_RELEASE;
     //TODAY view
     static PrefEntry todayViewIncludeWaitingExpiringToday
             = new PrefEntry("In Today, include tasks until today", "todayViewIncludeWaitingExpiringToday", prod ? true : true, "**"); //UI: 1 day allows you to deal with overdune/undone the next day (or leave them)
@@ -285,20 +285,24 @@ public class MyPrefs {
     static PrefEntry alarmsActivatedOnThisDevice
             = new PrefEntry("Enable Reminders on this device", "alarmsActivatedOnThisDevice", prod ? true : true, "**"); //alarms activated by default
 
-    static PrefEntry alarmSoundFile
+    static PrefEntry alarmSoundFile //NB. Even if same sound file as alarmSoundFileLocalNotif, the file must not contain 'notification_sound'
             //            = new PrefEntry("**", "alarmSoundFile", "notification_sound_Cuckoo_bird_sound.mp3", "**");
-            //            = new PrefEntry("**", "alarmSoundFile", "notification_sound_bbm.mp3", "**");
+            //                        = new PrefEntry("**", "alarmSoundFile", "notification_sound_bbm.mp3", "**");
             = new PrefEntry("**", "alarmSoundFile", "bbm_reminder_active.mp3", "**");
-    static PrefEntry alarmSoundFileLocalNotif
+    static PrefEntry alarmSoundFileLocalNotif //NB!! file must contain 'notification_sound'
             //            = new PrefEntry("**", "alarmSoundFile", "notification_sound_Cuckoo_bird_sound.mp3", "**");
             //            = new PrefEntry("**", "alarmSoundFile", "c.mp3", "**");
+            //            = new PrefEntry("**", "alarmSoundFileLocalNotif", "notification_sound_bbm.mp3", "**");
+            //            = new PrefEntry("**", "alarmSoundFileLocalNotif", alarmSoundFile.getString(), "**");
             = new PrefEntry("**", "alarmSoundFileLocalNotif", "notification_sound_bbm.mp3", "**");
+
     static PrefEntry alarmPlayBuiltinAlarmSound
             = new PrefEntry("Use built in alarm sound", "alarmPlayBuiltinAlarmSound", prod ? true : true, "When adjusting the snooze time of a task manually, the value is kept as default for other tasks, making it easy to snooze several tasks with the same duration. When not set, the Picker is initialized with the default value"); //alarms activated by default
+
     static PrefEntry alarmSoundActivated
             = new PrefEntry("Reminder sound enabled", "alarmSoundActivated", prod ? true : true, "**"); //alarms activated by default
 
-    static PrefEntry alarmIntervalBetweenAlarmsRepeatsMillisInMinutes
+    static PrefEntry alarmIntervalBetweenAlarmsRepeatsMillisInMinutesXXX
             = new PrefEntry("Minutes between reminder notifications", "alarmIntervalBetweenAlarmsRepeatsMillisInMinutes", prod ? 5 : 1, "Defines the minutes between the repeats of a reminder. Chose 0 to not repeat."); //alarms activated by default
 
     static PrefEntry alarmDefaultSnoozeTimeInMinutes
@@ -316,7 +320,7 @@ public class MyPrefs {
             = new PrefEntry("**", "alarmMaxNumberItemsForWhichToSetupAlarms", 32, "Maximum number of tasks for which to set up alarms for the period alarmFutureIntervalInWhichToSetAlarmsInDays. Used to limit how many Items are fetched in background from"); //alarms activated by default
 
     static PrefEntry alarmTimeOfDayWhenToUpdateAlarmsInMinutes
-            = new PrefEntry("**", "alarmTimeOfDayWhenToUpdateAlarmsInMinutes", 10, "How many days ahead are alarmsminutes should an alarm snooze"); //10 = 10 minutes after midnight
+            = new PrefEntry("**", "alarmTimeOfDayWhenToUpdateAlarmsInMinutes", 10, "How many minutes after midnight should local notifications be updated"); //10 = 10 minutes after midnight
 
     static PrefEntry alarmShowDueTimeAtEndOfNotificationText
             = new PrefEntry(Format.f("Include {0} in notifications", Item.DUE_DATE), "alarmShowDueTimeAtEndOfNotificationText", prod ? true : true,
@@ -328,17 +332,23 @@ public class MyPrefs {
             = new PrefEntry(Format.f("Include {0} in notifications", Item.WAIT_UNTIL_DATE), "alarmShowWaitingTimeAtEndOfNotificationText", prod ? true : true,
                     "**");
     static PrefEntry alarmShowLastCommentLineInWaitingNotificationsZZZ //TODO: //UI
-            = new PrefEntry(Format.f("Show last {0} line in {1} notifications", Item.COMMENT, ItemStatus.WAITING.getName()), "alarmShowLastCommentLineInWaitingNotifications",
+            = new PrefEntry(Format.f("Show last {0} line in {1} notifications", Item.COMMENT, ItemStatus.WAITING.getVisibleName()), "alarmShowLastCommentLineInWaitingNotifications",
                     prod ? true : true, "**");
     static PrefEntry alarmShowWaitingAlarmTimeAtEndOfNotificationText
             = new PrefEntry(Format.f("Include {0} in notifications", Item.WAITING_ALARM_DATE), "alarmShowWaitingAlarmTimeAtEndOfNotificationText",
                     prod ? false : true, "**");
     static PrefEntry alarmShowSnoozeUntilTimeAtEndOfNotificationText
-            = new PrefEntry(Format.f("Include {0} in notifications", Item.WAITING_ALARM_DATE), "alarmShowSnoozeUntilTimeAtEndOfNotificationText",
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.SNOOZE_DATE), "alarmShowSnoozeUntilTimeAtEndOfNotificationText",
+                    prod ? false : true, "**");
+    static PrefEntry alarmShowSnoozeWaitingUntilTimeAtEndOfNotificationText
+            = new PrefEntry(Format.f("Include {0} in notifications", Item.WAITING_SNOOZE_DATE), "alarmShowSnoozeWaitingUntilTimeAtEndOfNotificationText",
                     prod ? false : true, "**");
 
     static PrefEntry alarmDaysAheadToFetchFutureAlarms
             = new PrefEntry("**", "alarmDaysAheadToFetchFutureAlarms", 30, "**"); //10 = 10 minutes after midnight
+    static PrefEntry alarmPastDaysToFetchUncancelledAlarms
+            = new PrefEntry(Format.f("Do not show reminders older than this in {0 alarmscreen}", ScreenListOfAlarms.SCREEN_ALARM_TITLE),
+                    "alarmPastDaysToFetchUncancelledAlarms", 30, "**"); //10 = 10 minutes after midnight
     static PrefEntry alarmRoundSnoozeTimeDownToMinutes //probably not useful?! you won't notice for long snoozes and short (eg 1-2min) become of unpredictable length
             = new PrefEntry("", "alarmDaysAheadToFetchFutureAlarms", prod ? false : false, "**"); //mainly for testing?! to have snooze expire on the top of the minute
 
@@ -399,10 +409,10 @@ public class MyPrefs {
                     prod ? 2 : 2, "For a project, ask for confirmation when changing the status of this many subtasks");
 
     static PrefEntry askToEnterActualIfMarkingTaskDoneOutsideTimer
-            = new PrefEntry(Format.f("Enter {0 Actual effort} on {1 task status}", Item.EFFORT_ACTUAL, ItemStatus.DONE.getName()), "askToEnterActualIfMarkingTaskDoneOutsideTimer",
+            = new PrefEntry(Format.f("Enter {0 Actual effort} on {1 task status}", Item.EFFORT_ACTUAL, ItemStatus.DONE.getVisibleName()), "askToEnterActualIfMarkingTaskDoneOutsideTimer",
                     prod ? false : true, "When marking a task Done outside the timer, show popup to enter Actual effort");
     static PrefEntry askToEnterActualIfMarkingTaskWaitingOutsideTimer
-            = new PrefEntry(Format.f("Enter {0 Actual effort} on {1 task status}", Item.EFFORT_ACTUAL, ItemStatus.WAITING.getName()), "askToEnterActualIfMarkingTaskWaitingOutsideTimer",
+            = new PrefEntry(Format.f("Enter {0 Actual effort} on {1 task status}", Item.EFFORT_ACTUAL, ItemStatus.WAITING.getVisibleName()), "askToEnterActualIfMarkingTaskWaitingOutsideTimer",
                     prod ? false : true, "When marking a task Done outside the timer, show popup to enter Actual effort");
 //    static PrefEntry askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZeroXXX
 //            = new PrefEntry("Enter Actual effort when none was set", "askToEnterActualIfMarkingTaskDoneOutsideTimerOnlyWhenActualIsZero",
@@ -544,12 +554,17 @@ public class MyPrefs {
     static PrefEntry workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime
             = new PrefEntry(Format.f("Prioritize {0} from Categories", Item.WORKTIME), "workTimePrioritizeWorkTimeInCategoriesOverOwnerWorkTime",
                     prod ? true : true, "If one of a tasks categories has work time, use that to calculate the finish time instead of the work time of the Porject or List the task belongs to");
+    static PrefEntry workTimeAllocateProjectsOwnRemainingBeforeSubtasks
+            = new PrefEntry(Format.f("Allocate {0} to a project's {1} before its subtasks", Item.WORKTIME, Item.EFFORT_REMAINING), "workTimeAllocateProjectsOwnRemainingBeforeSubtasks",
+//                    prod ? false : false, "**");
+                    prod ? true : true, "**");
 
     //INTERNAL / TECHNICAL / CACHE
     static PrefEntry backgroundFetchIntervalInSeconds = new PrefEntry("**", "backgroundFetchIntervalInSeconds",
             1 * MyDate.HOUR_IN_MILISECONDS / 1000, "interval for updating eg local notifications and badge count when app is in background**");
-    static PrefEntry badgeCountShowsNbLeaftasks = new PrefEntry(Format.f("Show number of leaf tasks and tasks in {0}", WorkSlot.WORKSLOT),
-            "badgeCountShowsNbLeaftasks", true, "interval for updating eg local notifications and badge count when app is in background**");
+//    static PrefEntry badgeCountShowsNbLeaftasks = new PrefEntry(Format.f("Show show number of leaf tasks and tasks in {0}", WorkSlot.WORKSLOT),
+    static PrefEntry badgeCountShowsNbLeaftasks = new PrefEntry(Format.f("App icon shows number of subtasks {0 Today}", DAO.SYSTEM_LIST_TODAY),
+            "badgeCountShowsNbLeaftasks", prod ? false : true, "**");
 
     static PrefEntry cacheDynamicSize = new PrefEntry("**", "cacheDynamicSize", 100000, "number of tasks, lists, categories etc cached**");
     static PrefEntry cacheDynamicSizeWorkSlots = new PrefEntry("**", "cacheDynamicSizeWorkSlots", 100000, "number of WorkSlots cached**");
@@ -607,7 +622,8 @@ public class MyPrefs {
                     prod ? true : true, "**");
     static PrefEntry listDefaultHeaderForUndefinedValue //default StickyHeader to show when no value is defined
             = new PrefEntry("By default, hide Done and Cancelled tasks in lists", "listDefaultHeaderForUndefinedValue",
-                    prod ? "No value" : "No value", "**");
+//                    prod ? "No value" : "No value", "**");
+                    prod ? " not set" : " not set", "**");
 
     //LOOK AND FEEL
     static PrefEntry themeNameWithoutBackslash
@@ -657,6 +673,8 @@ public class MyPrefs {
             = new PrefEntry("Enable more frequent saving to speed up the application responsiveness", "backgroundSave", prod ? false : false, "**");
     static PrefEntry cacheDynamicLists
             = new PrefEntry("Cache dynamic lists (pull to refresh) - NOT supported by app yet", "cacheDynamicLists", prod ? false : false, "**");
+    static PrefEntry onlyAllowOneDeviceToEdit
+            = new PrefEntry("Only one device is allowed to edit user's data", "onlyAllowOneDeviceToEdit", prod ? true : false, "**");
     //TESTING settings
     static PrefEntry testPickersOnDevice
             = new PrefEntry("Activate different pickers in ScreenItem2 to test pickers on iOS", "testPickersOnDevice", prod ? false : false, "**");
@@ -746,7 +764,7 @@ public class MyPrefs {
             prod ? false : false, "**");
     static PrefEntry itemListShowActualEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ACTUAL),
             "itemListShowActualEvenIfZero", prod ? false : true, "**");
-    static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry(Format.f("Show {0} for tasks not {1}", Item.EFFORT_ACTUAL, ItemStatus.DONE.getName()),
+    static PrefEntry itemListShowActualIfNonZeroEvenIfNotDone = new PrefEntry(Format.f("Show {0} for tasks not {1}", Item.EFFORT_ACTUAL, ItemStatus.DONE.getVisibleName()),
             "itemListShowActualIfNonZeroEvenIfNotDone", prod ? false : true, "**");
     static PrefEntry itemListShowEffortEstimateEvenIfZero = new PrefEntry(Format.f("Show {0} even when 0", Item.EFFORT_ESTIMATE), "itemListShowEffortEstimateEvenIfZero",
             prod ? false : true, "**");
@@ -771,10 +789,10 @@ public class MyPrefs {
     static PrefEntry overdueLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_OVERDUE_TITLE, "overdueLogInterval",
             prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_OVERDUE_TITLE);
 
-    static PrefEntry touchedLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_TOUCHED_TITLE, "touchedLogInterval",
-            prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED_TITLE);
+//    static PrefEntry touchedLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_TOUCHED_TITLE, "touchedLogInterval",
+//            prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED_TITLE);
     static PrefEntry editedLogInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_EDITED_TITLE, "editedLogInterval",
-            prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_TOUCHED_TITLE);
+            prod ? 30 : 30, "How many days back in time are included in " + ScreenMain.SCREEN_EDITED_TITLE);
     static PrefEntry nextInterval = new PrefEntry("Number of past days included in " + ScreenMain.SCREEN_NEXT_TITLE, "nextInterval",
             prod ? 30 : 30, "How many days ahead in time are included in " + ScreenMain.SCREEN_NEXT_TITLE);
 

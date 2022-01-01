@@ -1090,7 +1090,8 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 
     /**
      * returns the calculated finishTime for this item or MyDate.MAX_DATE if
-     * none
+     * none. For a project where not all subtasks has a finishTime, will return
+     * MAX_DATE!
      *
      * @return finishTime or MyDate.MAX_DATE if no workTime was
      * available/allocated, or if or insufficient workTime to finish the task
@@ -1114,13 +1115,12 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //        else
 //            return MyDate.MAX_DATE;
 //</editor-fold>
-        WorkTimeSlices workTimeSlices = getAllocatedWorkTimeN();
-        if (workTimeSlices != null && workTimeSlices.getAllocatedDuration() >= getRemainingTotal()) { //only return a finishTime if the full duration has been allocated
-            return workTimeSlices.getFinishTime();
+        WorkTimeSlices workTimeSlicesN = getAllocatedWorkTimeN();
+        if (workTimeSlicesN != null && workTimeSlicesN.getAllocatedDuration() >= getRemainingTotal()) { //only return a finishTime if the full duration has been allocated
+            return workTimeSlicesN.getFinishTime();
         } else {
             return MyDate.MAX_DATE;
         }
-
 //        } 
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        else {
@@ -1153,17 +1153,34 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
 //</editor-fold>
     }
 
-    default public boolean isAllWorkTimeFromList(ItemAndListCommonInterface currentList) {
+    //no longer used (actual use case was isAllRemainingAllocated() below), could be useful?!
+    default public boolean isAllWorkTimeFromListZZZ(ItemAndListCommonInterface currentList) {
         boolean allWorkTimeComesFromCurrentList = true;
         WorkTimeSlices workTimeSlicesN = getAllocatedWorkTimeN();
         if (workTimeSlicesN != null) {
             List<WorkSlotSlice> workslotSlices = workTimeSlicesN.getWorkSlotSlices();
             WorkSlot workSlot;
-            allWorkTimeComesFromCurrentList = (workslotSlices.size() > 1 
-                    && (workSlot = workslotSlices.get(workslotSlices.size() - 1).getWorkSlot()) != null 
+            allWorkTimeComesFromCurrentList = (workslotSlices.size() > 1
+                    && (workSlot = workslotSlices.get(workslotSlices.size() - 1).getWorkSlot()) != null
                     && workSlot.getOwner() != currentList);
         }
         return allWorkTimeComesFromCurrentList;
+    }
+
+    /**
+     * has all the required (Remaining) time been allocated via workslots so
+     * that the task can be finished (and the CompletedFinishTime icon can be
+     * shown)?
+     *
+     * @param currentList
+     * @return
+     */
+//    default public boolean isAllRemainingAllocated(ItemAndListCommonInterface currentList) {
+    default public boolean isAllRemainingAllocated() {
+        boolean allWorkTimeComesFromCurrentList = true;
+        WorkTimeSlices workTimeSlicesN = getAllocatedWorkTimeN();
+        boolean workTimeEqualToRemaining = workTimeSlicesN != null && workTimeSlicesN.getAllocatedDuration() >= getRemainingTotal();
+        return workTimeEqualToRemaining;
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -2026,10 +2043,14 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         return getHierarchyAsStringN(projectHierarchyList, this, addQuotationMarks, includeLeafElement);
     }
 
-    static public String getTypeString(ItemAndListCommonInterface element) {
+    static public String getTypeString(ItemAndListCommonInterface element, boolean lowerCase) {
         String typeStr = (element instanceof Category ? Category.CATEGORY : (element instanceof ItemList
-                ? ItemList.ITEM_LIST : ((Item) element).isProject() ? Item.PROJECT : Item.ITEM)).toLowerCase();
-        return typeStr;
+                ? ItemList.ITEM_LIST : ((Item) element).isProject() ? Item.PROJECT : Item.ITEM));
+        return lowerCase ? typeStr.toLowerCase() : typeStr;
+    }
+
+    static public String getTypeString(ItemAndListCommonInterface element) {
+        return getTypeString(element, true);
     }
 
     /*
@@ -2069,8 +2090,11 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * @return
      */
     default public boolean hasTodayDates() {
+        Date startOfToday = MyDate.getStartOfToday();
+        Date oldestDateToIncludeInTodayView = new MyDate(startOfToday.getTime() - MyPrefs.todayViewIncludeOverdueFromThisManyPastDays.getInt() * MyDate.DAY_IN_MILLISECONDS);
         for (Date d : getTodayDates()) {
-            if (MyDate.isToday(d)) {
+            if (d != null && d.getTime() != 0 && (MyDate.isToday(d)
+                    || MyDate.isBetweenDates(d, oldestDateToIncludeInTodayView, startOfToday))) {
                 return true;
             }
         }
@@ -2105,7 +2129,12 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
      * trigger a change event (used by
      */
     default public void fireChangeEvent() {
-        ActionEvent evt = null;
+//        fireChangeEvent(null);
+        fireChangeEvent(new ActionEvent(this, ACTION_EVENT_CHANGED));
+    }
+
+    default public void fireChangeEvent(ActionEvent evt) {
+//        ActionEvent evt = null;
         ItemAndListCommonInterface owner = getOwner();
         if (owner != null) {
             evt = new ActionEvent(this, ACTION_EVENT_CHANGED);

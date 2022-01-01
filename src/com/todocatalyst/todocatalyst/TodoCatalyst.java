@@ -809,7 +809,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
         com.codename1.io.Util.register(ParseConstants.CLASS_NAME_USER, ParseUser.class); //register Externalizable class
         com.codename1.io.Util.register(NotificationShadow.CLASS_NAME_NOTIFICATION_SHADOW, NotificationShadow.class); //register Externalizable class
         com.codename1.io.Util.register(LocalNotificationsShadowList.CLASS_NAME_NOTIFICATION_LIST, LocalNotificationsShadowList.class); //register Externalizable class
-        com.codename1.io.Util.register(ExpiredAlarm.CLASS_NAME_EXPIRED_ALARM, ExpiredAlarm.class); //register Externalizable class
+//        com.codename1.io.Util.register(ExpiredAlarm.CLASS_NAME_EXPIRED_ALARM, ExpiredAlarm.class); //register Externalizable class
         com.codename1.io.Util.register(ParseACL.CLASS_NAME, ParseACL.class); //register Externalizable class
 //        MyUtil.register(ParseACL.Permissions.CLASS_NAME_PARSE_PERMISSIONS, ParseACL.Permissions.class); //register Externalizable class
         com.codename1.io.Util.register(Permissions.CLASS_NAME_PARSE_PERMISSIONS, Permissions.class); //register Externalizable class
@@ -912,11 +912,11 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 //int fetchIntervalSeconds = Math.max(MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() *3600 / 2, 3600 / 4);
 //            Display.getInstance().setPreferredBackgroundFetchInterval(fetchIntervalSeconds); 
 //</editor-fold>
-            if (false) {
-                AlarmHandler.setPreferredBackgroundFetchInterval();
-            } else {
-                Display.getInstance().setPreferredBackgroundFetchInterval(60 * 60); //every hour
-            }
+//            if (false) {
+//                AlarmHandler.setPreferredBackgroundFetchInterval();
+//            } else {
+            Display.getInstance().setPreferredBackgroundFetchInterval(60 * 60); //every hour
+//            }
             Log.p("Background Fetch IS Supported");
         } else {
             Log.p("Background Fetch is NOT Supported");
@@ -1097,11 +1097,13 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
             }
             current.show();
         }
+
         //handle reminders received while starting up the app:
         if (storedNotificationId != null) {
             String temp = new String(storedNotificationId);
             storedNotificationId = null; //reset
-            AlarmHandler.getInstance().localNotificationReceived(temp);
+//            AlarmHandler.getInstance().localNotificationReceived(temp);
+            AlarmHandler.getInstance().processExpiredAlarm(temp, true);
         }
 
         DAO.getInstance().savePendingParseUpdatesToParse(); //if aany pending saves (not saved due to network pbs), save them as the app is brought up to foreground again
@@ -1331,12 +1333,16 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
 
     private void updateBadgeCountAtStartOfNewDay() {
         Date lastBadgeUpdate = (Date) Storage.getInstance().readObject(LAST_BADGE_UPDATE_TIME_FILENAME);
-        Log.p("performBackgroundFetch-updateBadgeCountAtStartOfNewDay() - lastBadgeUpdate=" + MyDate.formatDateTimeNew(lastBadgeUpdate));
+        if (Config.TEST) {
+            Log.p("performBackgroundFetch-updateBadgeCountAtStartOfNewDay() - lastBadgeUpdate=" + MyDate.formatDateTimeNew(lastBadgeUpdate));
+        }
 
         Date now = new MyDate();
         if (lastBadgeUpdate == null || MyDate.getStartOfDay(now).getTime() > MyDate.getStartOfDay(lastBadgeUpdate).getTime()) {
             Storage.getInstance().writeObject(LAST_BADGE_UPDATE_TIME_FILENAME, now);
-            Log.p("performBackgroundFetch-refreshBadgeCount()" + MyDate.formatDateTimeNew(lastBadgeUpdate));
+            if (Config.TEST) {
+                Log.p("performBackgroundFetch-refreshBadgeCount()" + MyDate.formatDateTimeNew(lastBadgeUpdate));
+            }
             refreshBadgeCount();
         }
     }
@@ -1368,15 +1374,19 @@ Consider situations: phone's been off for some time (days/weeks); change of time
          */
 
         long t1 = System.currentTimeMillis();
-        Log.p("performBackgroundFetch called, time=" + MyDate.formatDateTimeNew(new Date()) + ", deadline=" + MyDate.formatDuration(deadline) + ", date(deadline)="
-                + new MyDate(deadline) + "; deadline value=" + deadline + "ms; deadline-now=" + (deadline - System.currentTimeMillis()));
-        Log.p("Calling AlarmHandler.updateLocalNotificationsOnBackgroundFetch() from backgroundFetch");
-        AlarmHandler.getInstance().updateLocalNotificationsOnBackgroundFetch();
+        if (Config.TEST) {
+            Log.p("performBackgroundFetch called, time=" + MyDate.formatDateTimeNew(new Date()) + ", deadline=" + MyDate.formatDuration(deadline) + ", date(deadline)="
+                    + new MyDate(deadline) + "; deadline value=" + deadline + "ms; deadline-now=" + (deadline - System.currentTimeMillis()));
+            Log.p("Calling AlarmHandler.updateLocalNotificationsOnBackgroundFetch() from backgroundFetch");
+        }
+        AlarmHandler.getInstance().updateLocalNotificationsOnChange(new MyDate(), true);
 //        System.out.println("performBackgroundFetch/deadline=" + deadline);
         onComplete.onSucess(Boolean.TRUE);
 //        Log.p("performBackgroundFetch finished=");
 
-        Log.p("performBackgroundFetch calling updateBadgeCountAtStartOfNewDay()");
+        if (Config.TEST) {
+            Log.p("performBackgroundFetch calling updateBadgeCountAtStartOfNewDay()");
+        }
         updateBadgeCountAtStartOfNewDay();
 
         Log.p("performBackgroundFetch finished, time=" + MyDate.formatDateTimeNew(new Date()) + "; duration in ms=" + (System.currentTimeMillis() - t1));
@@ -1495,8 +1505,7 @@ Consider situations: phone's been off for some time (days/weeks); change of time
      * @see LocalNotification
      */
     @Override
-    public void localNotificationReceived(String notificationId
-    ) {
+    public void localNotificationReceived(String notificationId) {
         //https://www.codenameone.com/blog/local-notifications.html
 //        AlarmHandler.getInstance().localNotificationReceived(notificationId);
         storedNotificationId = notificationId; //processed in start()

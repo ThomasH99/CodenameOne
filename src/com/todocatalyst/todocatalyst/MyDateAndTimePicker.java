@@ -23,7 +23,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
 //    private String DEFAULT_ZERO_VALUE_PATTERN = "0";
     private String zeroValuePattern;
     private GetVal getDefaultValue;
-    private boolean inputValidated=true; //true by default, until pressed and a default value is set, then true again if the user explicitely validated the value by pressing Done?
+    private boolean inputValidated = true; //true by default, until pressed and a default value is set, then true again if the user explicitely validated the value by pressing Done?
 //    private Button clearButton = null;
 
     MyDateAndTimePicker() {
@@ -77,7 +77,7 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
 
 //    @Override
     protected void updateValue() {
-        Date date = (Date)getValue();
+        Date date = (Date) getValue();
         if ((date == null || date.getTime() == 0) && zeroValuePattern != null) {
             setText(zeroValuePattern); // return zeroValuePattern when value of date is 0 (not defined)
         } else {
@@ -113,10 +113,8 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
 //                () -> set.accept(this.getDate()));
 //    }
 //</editor-fold>
-    @Override
-    public void pressed() {
-        //set date to Now if empty when button is clicked
-        if (getValue() == null || ((Date)getValue()).getTime() == 0) {
+    private void setToDefaultValue() {
+        if (getValue() == null || ((Date) getValue()).getTime() == 0) {
             inputValidated = false;
 //                setDate(new Date());
             if (getValue() == null) {
@@ -124,13 +122,37 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
             }
             if (getDefaultValue != null) { //                getDate().setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
 //                setDate(((Date) getDefaultValue.getVal())); //use this instead of setDate to set date to avoid updating label before showing picker
-                ((Date)getValue()).setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
-            } else { //                getDate().setTime(MyDate.roundUpToNextMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+                ((Date) getValue()).setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+            } else {
+//                getDate().setTime(MyDate.roundUpToNextMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
                 //                getDate().setTime(MyDate.roundToNearestMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
 //                setDate(MyDate.roundToNearestMinute(new MyDate())); //use this instead of setDate to set date to avoid updating label before showing picker
-                ((Date)getValue()).setTime(MyDate.roundToNearestMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+                ((Date) getValue()).setTime(MyDate.roundToNearestMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
             }
         }
+    }
+
+    @Override
+    public void pressed() {
+        //set date to Now if empty when button is clicked
+        if (false) {
+            if (getValue() == null || ((Date) getValue()).getTime() == 0) {
+                inputValidated = false;
+//                setDate(new Date());
+                if (getValue() == null) {
+                    setDate(new MyDate(0));
+                }
+                if (getDefaultValue != null) { //                getDate().setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+//                setDate(((Date) getDefaultValue.getVal())); //use this instead of setDate to set date to avoid updating label before showing picker
+                    ((Date) getValue()).setTime(((Date) getDefaultValue.getVal()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+                } else { //                getDate().setTime(MyDate.roundUpToNextMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+                    //                getDate().setTime(MyDate.roundToNearestMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+//                setDate(MyDate.roundToNearestMinute(new MyDate())); //use this instead of setDate to set date to avoid updating label before showing picker
+                    ((Date) getValue()).setTime(MyDate.roundToNearestMinute(new MyDate()).getTime()); //use this instead of setDate to set date to avoid updating label before showing picker
+                }
+            }
+        }
+        setToDefaultValue();
         super.pressed();
     }
 
@@ -163,14 +185,22 @@ public class MyDateAndTimePicker extends Picker implements SwipeClear {
 //            return null;
 //        }
 //    }
-
-    @Override
-    public Date getDate() {
+    public Date getDateOLD() {
         if (inputValidated) {
             return super.getDate();
         } else {
+            //set date to Now if empty when button is clicked
+            setToDefaultValue();
             return null;
         }
+    }
+
+    @Override
+    public Date getDate() {
+        if (!inputValidated) {
+            setToDefaultValue();
+        }
+        return super.getDate();
     }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

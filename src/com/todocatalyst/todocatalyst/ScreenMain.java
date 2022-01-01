@@ -236,7 +236,7 @@ public class ScreenMain extends MyForm {
         toolbar.addCommandToOverflowMenu(makeCommandNewItemSaveToInbox());
         toolbar.addCommandToOverflowMenu(makeInterruptCommand(true));
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.create("Settings", ScreenSettings.SCREEN_TITLE, Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.create("MainAllSettings", ScreenSettings.SCREEN_TITLE, Icons.iconSettings, (e) -> {
 //                new ScreenListOfCategories("Categories", new ItemList(DAO.getInstance().getAllCategories()), ScreenMain.this, (i)->{}).show();
             new ScreenSettings(ScreenMain.this).show();
         }
@@ -253,7 +253,9 @@ public class ScreenMain extends MyForm {
 //            makeAndAddButtons(repair, toolbar, cont, "**");
         }
 
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.create("HomePage", "Home page"/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainWeb, (e) -> {
+//        toolbar.addCommandToOverflowMenu(MyReplayCommand.create("HomePage", "Home page"/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainWeb, (e) -> {
+//Don't use Replay here, blocks the UI if restarted
+        toolbar.addCommandToOverflowMenu(Command.createMaterial("Home page"/*FontImage.create(" \ue838 ", iconStyle)*/, Icons.iconMainWeb, (e) -> {
                     Display.getInstance().execute("https://todocatalyst.com");
                 }
         ));
@@ -280,7 +282,7 @@ public class ScreenMain extends MyForm {
 //                    new ScreenListOfAlarms(myForm).show();
 //                }
 //        ), ALARMS.getHelpText());
-        int nbAlarms = AlarmHandler.getInstance().getExpiredAlarms().size();
+        int nbAlarms = AlarmHandler.getInstance().getUnprocessedAlarms().size();
         Component listOfAlarms = new MainItemListButton(ALARMS.getTitle(), ALARMS.getIcon(), ALARMS.getFont(),
                 "", nbAlarms > 0 ? "" + nbAlarms : "0", (e) -> {
 //                    setKeepPos();
@@ -786,7 +788,7 @@ public class ScreenMain extends MyForm {
 
         cont.addAll(new StickyHeader("Check", "MainStickyHeader", true),
                 new MainItemListButton(STATISTICS.getTitle(), STATISTICS.getIcon(), STATISTICS.getFont(),
-                        "", "", (e) -> new ScreenStatistics2(myForm, () -> {
+                        "", ""+DAO.getInstance().getNamedItemList(DAO.SYSTEM_LIST_STATISTICS).size(), (e) -> new ScreenStatistics2(myForm, () -> {
                 }).show(), "Statistics"),
                 //                    completionLog, creationLog, touched, 
                 //                    allTasks, projects,
@@ -796,7 +798,7 @@ public class ScreenMain extends MyForm {
 //                new MyTree2(myForm, DAO.getInstance().getNamedItemList(COMPLETION_LOG), true),
                 new MyTree2(myForm, DAO.getInstance().getNamedItemList(COMPLETION_LOG), null,true,false,false,true),
                 new MyTree2(myForm, DAO.getInstance().getNamedItemList(CREATION_LOG), true),
-                new MyTree2(myForm, DAO.getInstance().getNamedItemList(TOUCHED), true),
+                new MyTree2(myForm, DAO.getInstance().getNamedItemList(EDITED), true),
                 //                    new MyTree2(this, DAO.getInstance().getNamedItemList(ALL_TASKS),  true, false),
                 //                    new MyTree2(this, new ItemList(ALL_TASKS.getTitle(), DAO.getInstance().getAllItems(false, false, true, false, false), DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString(), FilterSortDef.getDefaultFilter()), true), true, false),
                 //                    new MyTree2(this, new ItemList(ALL_TASKS.getTitle(), DAO.getInstance().getAllItems(false, false, true, false, false), DAO.getInstance().getSystemFilterSortFromParse(ALL_TASKS.toString(), FilterSortDef.getDefaultFilter()), true)),

@@ -301,13 +301,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         return cloneMe();
     }
 
+    @Override
     public WorkTimeAllocator getWorkTimeAllocatorN() {
-        if (workTimeAllocator == null && mayProvideWorkTime()) {
+        if (true || workTimeAllocator == null && mayProvideWorkTime()) { //true:disable caching to force refresh in all cases!!
             workTimeAllocator = new WorkTimeAllocator(this);
         }
         return workTimeAllocator;
     }
 
+    @Override
     public void setWorkTimeAllocator(WorkTimeAllocator workTimeAllocator) {
         this.workTimeAllocator = workTimeAllocator;
     }
@@ -1298,7 +1300,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     }
 
     @Override
-    public boolean removeFromList(ItemAndListCommonInterface itemOrListToAdd, boolean removeReferences) {
+    public boolean removeFromList(ItemAndListCommonInterface itemOrListToAdd, boolean removeOldOwnerFromAddedElt) {
 //        List subtasks = getList();
 //        boolean status = subtasks.remove(subtask);
 //        setList(subtasks);
@@ -1306,7 +1308,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         boolean removed = removeItem(itemOrListToAdd); //TODO: update removeItem to return boolean
 //        assert subItemOrList.getOwner() == this : "list not owner of removed subtask, subItemOrList=" + subItemOrList + ", owner=" + getOwner() + ", list=" + this;
         ASSERT.that(!(this instanceof ItemList) || itemOrListToAdd.getOwner() == this, () -> "list not owner of removed subItemOrList (" + itemOrListToAdd + "), owner=" + getOwner() + ", list=" + this); //
-        if (removed && removeReferences) {
+        if (removed && removeOldOwnerFromAddedElt) {
             itemOrListToAdd.setOwner(null);
         }
         return removed;
@@ -1826,11 +1828,11 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
                 return new FilterSortDef(systemName, Item.PARSE_COMPLETED_DATE, FilterSortDef.FILTER_SHOW_DONE_TASKS, true, false, false, false, false);
             case DAO.SYSTEM_LIST_DIARY:
 //                return new FilterSortDef(systemName, Item.PARSE_CREATED_AT, FilterSortDef.FILTER_SHOW_ALL, true, false, false, false, true);
-                return new FilterSortDef(systemName, Item.PARSE_CREATED_AT, 
+                return new FilterSortDef(systemName, Item.PARSE_CREATED_AT,
                         FilterSortDef.FILTER_SHOW_NEW_TASKS + FilterSortDef.FILTER_SHOW_ONGOING_TASKS
-                        + FilterSortDef.FILTER_SHOW_WAITING_TASKS + FilterSortDef.FILTER_SHOW_DONE_TASKS + FilterSortDef.FILTER_SHOW_CANCELLED_TASKS, 
-                        true, false, false, false, true);
-            case DAO.SYSTEM_LIST_TOUCHED:
+                        + FilterSortDef.FILTER_SHOW_WAITING_TASKS + FilterSortDef.FILTER_SHOW_DONE_TASKS + FilterSortDef.FILTER_SHOW_CANCELLED_TASKS,
+                        true, true, false, false, true);
+            case DAO.SYSTEM_LIST_EDITED:
                 return new FilterSortDef(systemName, Item.PARSE_EDITED_DATE, FilterSortDef.FILTER_SHOW_ALL, true, true, false, false, true); //true => show most recent first
             case DAO.SYSTEM_LIST_TODAY:
                 return new FilterSortDef(systemName, FilterSortDef.FILTER_SORT_TODAY_VIEW, FilterSortDef.FILTER_SHOW_ALL, true, true, false, false, false); //true => show most recent first
@@ -2627,13 +2629,15 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //                countUndone += ((ItemAndListCommonInterface) elt).getNumberOfUndoneItems(countLeafTasks);
 //            }
 //</editor-fold>
-            if (elt instanceof WorkSlot) {
+            if (elt instanceof WorkSlot) { //for the TODAY list!
                 if (countLeafTasks) {
-                    countUndone += ((WorkSlot) elt).getItemsInWorkSlot().size();
+                    countUndone += getNumberOfUndoneItems(((WorkSlot) elt).getItemsInWorkSlot(), countLeafTasks);
                 } else {
-                    countUndone += 1;
+//                    countUndone += 1;
+                    //TODO: add option to cound leaf-tasks (to stay consistent with this option for tasks)
+                    countUndone += ((WorkSlot) elt).getItemsInWorkSlot().size(); //always count number of tasks inside workslots, counting workslot itself has no meaning
                 }
-            } else if (elt instanceof ItemList) {
+            } else if (elt instanceof ItemList) { //for list of ItemLists or Categories (Hack)
                 countUndone += 1;
             } else {
                 countUndone += ((ItemAndListCommonInterface) elt).getNumberOfUndoneItems(countLeafTasks);
@@ -3666,6 +3670,17 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         for (ItemAndListCommonInterface itemOrList : getListFull()) { //full to set for every subtask, even hidden ones
 //            ((ItemAndListCommonInterface) itemOrList).setStatus(newStatus);
             if (itemOrList instanceof Item) {
+                /* 
+                    Always update subtasks (further down the hierarchy). 
+                    Always update dependent fields for subtasks. 
+                    DON'T update supertasks (since this is being done here, below). 
+                    Always update dependent fields of subtasks (eg dateCompleted). 
+                    now: use same now value everywhere. 
+                    Always update subtask repeatRules (e.g. create new instances if marked complete). 
+                    Do'nt ask to update waiting fields of subtasks, only do this once at the highest level project set waiting.
+                    MUST also update supertask so that e.g. the completedDate of project is updated with latest subtask date
+                 */
+
                 result = result && ((Item) itemOrList).setStatus(itemStatus, true, true, true, new MyDate(), true, true, true); //only one false result will give a false return (but not currently used for lists, only for projects where user can cancel if changing too many subtasks)
             }
         }
@@ -4175,7 +4190,9 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
 //        throw new Error("Not supported yet."); //should not be called for ItemLists and Categories (or WorkSlots)
 //    }
     /**
-     * forces a recalculation of workTime
+     * forces a recalculation of workTime (for now forced to always recalculate
+     * ('true'in getWorkTimeDefinition) to ensure finishTime is updated, since
+     * some changes like drag&drop, etc don't force an update!
      */
     @Override
     public void resetWorkTimeDefinition() {
@@ -4513,6 +4530,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
         resetWorkTimeDefinition();
     }
 
+    @Override
     public void pullToRefresh() {
 
     }

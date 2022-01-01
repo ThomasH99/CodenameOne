@@ -23,7 +23,7 @@ enum AlarmType {
         this.text = text;
     }
 
-    boolean isSnooze() {
+    boolean isSnoozeXXX() {
         return this == snoozedNotif || this == snoozedWaiting;
     }
 
@@ -40,37 +40,43 @@ enum AlarmType {
      * of the the type. For example str="er82kn?,kjsfd-[ALARM]" will return
      * NotificationType.notification.
      *
-     * @param str
+     * @param notificationIdStr
      * @return
      */
-    static AlarmType getTypeContainedInStr(String str) {
-//            if (str.indexOf(notification.text)!=-1) return notification;
-//            if (str.indexOf(waiting.text)!=-1) return waiting;
-//            if (str.indexOf(notificationRepeat.text)!=-1) return notificationRepeat;
-//            if (str.indexOf(waitingRepeat.text)!=-1) return waitingRepeat;
-//            if (str.indexOf(snooze.text)!=-1) return snooze;
-        if (str.endsWith(notification.text)) {
+    static AlarmType getAlarmTypeFromNotifStr(String notificationIdStr) {
+        if (notificationIdStr.endsWith(notification.text)) {
             return notification;
         }
-        if (str.endsWith(waiting.text)) {
+        if (notificationIdStr.endsWith(waiting.text)) {
             return waiting;
         }
-        if (str.endsWith(notificationRepeat.text)) {
+        if (notificationIdStr.endsWith(notificationRepeat.text)) {
             return notificationRepeat;
         }
-        if (str.endsWith(waitingRepeat.text)) {
+        if (notificationIdStr.endsWith(waitingRepeat.text)) {
             return waitingRepeat;
         }
-//        if (str.endsWith(snooze.text)) {
-//            return snooze;
-//        }
-        if (str.endsWith(snoozedWaiting.text)) {
+        if (notificationIdStr.endsWith(snoozedWaiting.text)) {
             return snoozedWaiting;
         }
-        if (str.endsWith(snoozedNotif.text)) {
+        if (notificationIdStr.endsWith(snoozedNotif.text)) {
             return snoozedNotif;
         }
         return null;
+    }
+
+    static boolean isForItem(String notification, String guid) {
+        return notification.startsWith(guid);
+    }
+
+    static boolean isNotifAlarm(String notification) {
+        AlarmType alarmType = getAlarmTypeFromNotifStr(notification);
+        return alarmType == AlarmType.notification || alarmType == snoozedNotif|| alarmType ==notificationRepeat;
+    }
+
+    static boolean isWaitingAlarm(String notification) {
+        AlarmType alarmType = getAlarmTypeFromNotifStr(notification);
+        return alarmType == AlarmType.waiting || alarmType == snoozedWaiting|| alarmType == notificationRepeat;
     }
 
     /**

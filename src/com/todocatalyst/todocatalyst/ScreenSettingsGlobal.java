@@ -117,8 +117,8 @@ public class ScreenSettingsGlobal extends ScreenSettingsCommon {
         content.add(makeSpacer());
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.enableShowingSystemInfo));
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.showObjectIdsInEditScreens));
-        content.add(makeSpacer());
-        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice, () -> AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled()));
+//        content.add(makeSpacer());
+//        content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.alarmsActivatedOnThisDevice, () -> AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled()));
 //        addSettingInt(content, parseIdMap2, MyPrefs.alarmDefaultSnoozeTimeInMinutes, 0, 120, 1);
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.alarmShowDueTimeAtEndOfNotificationText);
 //        addSettingBoolean(content, parseIdMap2, MyPrefs.commentsAddToBeginningOfComment);

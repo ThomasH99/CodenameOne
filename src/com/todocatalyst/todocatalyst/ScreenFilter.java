@@ -280,17 +280,17 @@ public class ScreenFilter extends MyForm {
         content.add(layoutSetting("Show tasks with status:", null, ""));
 //        content.add(new SpanLabel(ItemStatus.CREATED.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2,
 //        content.add(layoutN(ItemStatus.CREATED.getName(), new MyOnOffSwitch(parseIdMap2,
-        content.add(layoutSetting("Show " + ItemStatus.CREATED.getName() + " tasks", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Show " + ItemStatus.CREATED.getVisibleName() + " tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> filterSortDef.isShowNewTasks(),
                 (b) -> filterSortDef.setShowNewTasks(b)), "**"));
 //                content.add(new SpanLabel(ItemStatus.ONGOING.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
 //        content.add(layoutN(ItemStatus.ONGOING.getName(), new MyOnOffSwitch(parseIdMap2,
-        content.add(layoutSetting("Show " + ItemStatus.ONGOING.getName() + " tasks", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Show " + ItemStatus.ONGOING.getVisibleName() + " tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> filterSortDef.isShowOngoingTasks(),
                 (b) -> filterSortDef.setShowOngoingTasks(b)), "**"));
 //                content.add(new SpanLabel(ItemStatus.WAITING.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
 //        content.add(layoutN(ItemStatus.WAITING.getName(), new MyOnOffSwitch(parseIdMap2,
-        content.add(layoutSetting("Show " + ItemStatus.WAITING.getName() + " tasks", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Show " + ItemStatus.WAITING.getVisibleName() + " tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> filterSortDef.isShowWaitingTasks(),
                 (b) -> filterSortDef.setShowWaitingTasks(b)), "**"));
 //                content.add(new SpanLabel(ItemStatus.DONE.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
@@ -299,7 +299,7 @@ public class ScreenFilter extends MyForm {
         MyOnOffSwitch showDone = new MyOnOffSwitch(parseIdMap2,
                 () -> filterSortDef.isShowDoneTasks(),
                 (b) -> filterSortDef.setShowDoneTasks(b));
-        content.add(layoutSetting("Show " + ItemStatus.DONE.getName() + " tasks", showDone, "**"));
+        content.add(layoutSetting("Show " + ItemStatus.DONE.getVisibleName() + " tasks", showDone, "**"));
 
 //        Container c = new Container();
 //        c.setHidden(filterSortDef.isShowDoneTasks());
@@ -312,7 +312,7 @@ public class ScreenFilter extends MyForm {
                 () -> filterSortDef.isShowDoneTillMidnight(),
                 (b) -> filterSortDef.setShowDoneTillMidnight(b));
 //        Component showTillMidnight = layoutSetting("Show " + ItemStatus.DONE.getName() + " tasks", showDoneTillMidnight, "**");
-        Component showTillMidnight = layoutSetting(Format.f("Show {0} tasks until midnight", ItemStatus.DONE.getName()), showDoneTillMidnight, "**");
+        Component showTillMidnight = layoutSetting(Format.f("Show {0} tasks until midnight", ItemStatus.DONE.getVisibleName()), showDoneTillMidnight, "**");
         showTillMidnight.setHidden(filterSortDef.isShowDoneTasks());
         content.add(showTillMidnight);
 
@@ -322,7 +322,7 @@ public class ScreenFilter extends MyForm {
         });
 
 //                content.add(new SpanLabel(ItemStatus.CANCELLED.getName())).add(rightAdj, new MyOnOffSwitch(parseIdMap2, () -> {
-        content.add(layoutSetting("Show " + ItemStatus.CANCELLED.getName() + " tasks", new MyOnOffSwitch(parseIdMap2,
+        content.add(layoutSetting("Show " + ItemStatus.CANCELLED.getVisibleName() + " tasks", new MyOnOffSwitch(parseIdMap2,
                 () -> filterSortDef.isShowCancelledTasks(),
                 (b) -> filterSortDef.setShowCancelledTasks(b)), "**"));
 
@@ -378,7 +378,7 @@ public class ScreenFilter extends MyForm {
             filterSortDef.setShowWithActualsOnly(b);
         }), "**"));
 
-        content.add(layoutSetting(Format.f("Show only tasks with {0}", Item.EFFORT_REMAINING), new MyOnOffSwitch(parseIdMap2, () -> {
+        content.add(layoutSetting(Format.f("Show only tasks with defined {0}", Item.EFFORT_REMAINING), new MyOnOffSwitch(parseIdMap2, () -> {
             return filterSortDef.isShowWithRemainingOnly();
         }, (b) -> {
             filterSortDef.setShowWithRemainingOnly(b);

@@ -368,8 +368,8 @@ public class ScreenListOfItems extends MyForm {
                 case DAO.SYSTEM_LIST_TODAY:
                     s = TODAY;
                     break;
-                case DAO.SYSTEM_LIST_TOUCHED:
-                    s = TOUCHED;
+                case DAO.SYSTEM_LIST_EDITED:
+                    s = EDITED;
                     break;
             }
             return s;
@@ -1446,8 +1446,8 @@ public class ScreenListOfItems extends MyForm {
 //                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg);
 //                        DAO.getInstance().saveNew((ParseObject) itemListOrItemOrg);
 //                        DAO.getInstance().saveNewTriggerUpdate();
-                            DAO.getInstance().saveToParseNow((ParseObject) itemListOrItemOrg);
                             setTitle(itemListOrItemOrg.getText()); //refrehs title of screen after edit of list name
+                            DAO.getInstance().saveToParseNow((ParseObject) itemListOrItemOrg);
 //                    previousForm.revalidate(); //refresh list to show new items(??)
                         }).show();
                     } else {
@@ -1455,8 +1455,8 @@ public class ScreenListOfItems extends MyForm {
 //                        DAO.getInstance().saveNew(true, (ParseObject) itemListOrg);
 //                        DAO.getInstance().saveNew((ParseObject) itemListOrItemOrg);
 //                        DAO.getInstance().saveNewTriggerUpdate();
-                            DAO.getInstance().saveToParseNow((ParseObject) itemListOrItemOrg);
                             setTitle(itemListOrItemOrg.getText()); //refrehs title of screen after edit of list name
+                            DAO.getInstance().saveToParseNow((ParseObject) itemListOrItemOrg);
 //                    previousForm.revalidate(); //refresh list to show new items(??)
                         }).show();
                     }
@@ -1559,7 +1559,7 @@ public class ScreenListOfItems extends MyForm {
 //                        return Format.f("Show {0}", ItemStatus.DONE.getName());
 //                    }
 //</editor-fold>
-                        return Format.f(itemListOrItemOrg.getFilterSortDef(true).isShowDoneTasks() ? "Hide {0 completed}" : "Show {0 completed}", ItemStatus.DONE.getName());
+                        return Format.f(itemListOrItemOrg.getFilterSortDef(true).isShowDoneTasks() ? "Hide {0 completed}" : "Show {0 completed}", ItemStatus.DONE.getVisibleName());
                     }
 
                 };
@@ -1810,7 +1810,7 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command selectionMarkCompleted = new CommandTracked(ItemStatus.DONE.getName(), Icons.iconItemStatusDoneCust, Icons.myIconFont) { //"Completed"
+            Command selectionMarkCompleted = new CommandTracked(ItemStatus.DONE.getVisibleName(), Icons.iconItemStatusDoneCust, Icons.myIconFont) { //"Completed"
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
@@ -1821,7 +1821,7 @@ public class ScreenListOfItems extends MyForm {
                 }
             };
 
-            Command selectionSetWaiting = new CommandTracked(ItemStatus.WAITING.getName(), Icons.iconItemStatusWaitingCust, Icons.myIconFont) { //"Waiting"
+            Command selectionSetWaiting = new CommandTracked(ItemStatus.WAITING.getVisibleName(), Icons.iconItemStatusWaitingCust, Icons.myIconFont) { //"Waiting"
                 @Override
                 public void actionPerformed(ActionEvent evt) {
                     if (isSelectionMode()) {
@@ -2526,6 +2526,22 @@ public class ScreenListOfItems extends MyForm {
 
         void action();
     }
+
+    static public char getFinishTimeIcon(Item item) {
+        if (item.isAllRemainingAllocated()) {
+            return Icons.iconFinishDate;
+        } else {
+            return Icons.iconFinishDateStartOnly;
+        }
+    }
+
+    static public void setFinishTimeIconXXX(Item item, Label finishTimeLabel) {
+        if (item.isAllRemainingAllocated()) {
+            finishTimeLabel.setMaterialIcon(Icons.iconFinishDate);
+        } else {
+            finishTimeLabel.setMaterialIcon(Icons.iconFinishDateStartOnly);
+        }
+    }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public static Button makeSubtaskButton(Item item, Container swipCont) {
 
@@ -2882,7 +2898,7 @@ public class ScreenListOfItems extends MyForm {
         //ITEM TEXT
 //        WorkSlotList wSlotsN = item.getWorkSlotListN();
         MyButtonInitiateDragAndDrop itemLabel = new MyButtonInitiateDragAndDrop(
-                (item.getText().isEmpty()&&MyPrefs.showEmptyTaskText.getBoolean()?Item.EMPTY_TASK_TEXT:item.getText())
+                (item.getText().isEmpty() && MyPrefs.showEmptyTaskText.getBoolean() ? Item.EMPTY_TASK_TEXT : item.getText())
                 + (Config.TEST ? (item.getDebugTextInfo(Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean())
                         + ("/" + item.getGuid()) + (item.getObjectIdP() == null ? "!!" : "")) : ""),
                 //                + ((Config.TEST && MyPrefs.showDebugInfoInLabelsEtc.getBoolean()) && item.getObjectIdP() == null ? "-ID" : "")
@@ -3238,10 +3254,14 @@ public class ScreenListOfItems extends MyForm {
 //                finishTimeLabel = new Label(MyDate.formatDateTimeNew(new Date(finishTime)),
                 finishTimeLabel = new Label(MyDate.formatDateSmart(finishTimeD),
                         due != 0 && finishTime > due ? "ListOfItemsFinishTimeOverdue" : "ListOfItemsFinishTime");
-                if(item.isAllWorkTimeFromList(ownerItemOrItemListOrCategory))
-                finishTimeLabel.setMaterialIcon(Icons.iconFinishDate);
-                else
-                finishTimeLabel.setMaterialIcon(Icons.iconFinishDateStartOnly);
+//                if (item.isAllWorkTimeFromList(ownerItemOrItemListOrCategory)) {
+//                if (item.isAllRemainingAllocated(ownerItemOrItemListOrCategory)) {
+//                if (item.isAllRemainingAllocated(ownerItemOrItemListOrCategory)) {
+//                    finishTimeLabel.setMaterialIcon(Icons.iconFinishDate);
+//                } else {
+//                    finishTimeLabel.setMaterialIcon(Icons.iconFinishDateStartOnly);
+//                };
+                finishTimeLabel.setMaterialIcon(getFinishTimeIcon(item));
                 finishTimeLabel.setGap(GAP_LABEL_ICON);
 //                if (Config.TEST) {
 //                } else
@@ -3783,7 +3803,8 @@ public class ScreenListOfItems extends MyForm {
             } else if (finishTimeLabel != null) {
                 westCont.add(finishTimeLabel);
                 if (dueDateLabel != null) {
-                    southDetailsContainer.add(dueDateLabel);
+//                    southDetailsContainer.add(dueDateLabel);
+                    westCont.add(dueDateLabel);
                 }
             } else if (dueDateLabel != null) {
                 westCont.add(dueDateLabel);

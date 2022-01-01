@@ -1060,7 +1060,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 ////        return getStartAdjusted(new Date().getTime());
 //        return getStartAdjusted(MyDate.currentTimeMillis());
 //    }
-    public long getStartAdjusted(long now) {
+    public Date getStartAdjusted(long now) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        long start = getStart();
 //        long now = MyDate.getNow();
@@ -1076,9 +1076,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //}
 //</editor-fold>
         if (getStartTimeD().getTime() > now) { //|| getEndTimeD().getTime()> now)
-            return getStartTimeD().getTime(); //"start + (initialDuration - duration)" add the difference btw initialDuration and current duration (=time consumed) to original start, return the latest time of this new start, and NOW
+//            return getStartTimeD().getTime(); //"start + (initialDuration - duration)" add the difference btw initialDuration and current duration (=time consumed) to original start, return the latest time of this new start, and NOW
+            return getStartTimeD(); //"start + (initialDuration - duration)" add the difference btw initialDuration and current duration (=time consumed) to original start, return the latest time of this new start, and NOW
         } else {
-            return Math.min((getEndTimeD().getTime()), now); //"start + (initialDuration - duration)" add the difference btw initialDuration and current duration (=time consumed) to original start, return the latest time of this new start, and NOW
+            return MyDate.roundUpToNextMinute(new MyDate(Math.min((getEndTimeD().getTime()), now))); //"start + (initialDuration - duration)" add the difference btw initialDuration and current duration (=time consumed) to original start, return the latest time of this new start, and NOW
         }//        }
     }
 
@@ -1333,16 +1334,32 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //                inactive //always inactive if inactive is set
 //                || (!inactive && start!=0 && getEnd()<=MyDate.getNow()) //inactive even if !inactive, iff it is dated and end date is in the past
 //                || (!inactive && consumedDuration>=duration) //inactive if time has been consumed// </editor-fold>
-        long startTime = getStartTimeD().getTime();
+//        long startTime = getStartTimeD().getTime();
+////        long now = new Date().getTime();
+//        long durationInMillis = getDurationInMillis();
+//        if (startTime + durationInMillis < now) {
+//            return 0; //workslot is entirely in the past
+//        } else if (now > startTime) { //part of workslot is in the past
+//            return durationInMillis - (now - startTime); //workslot starttime is already passed so deduct the already passed part of the workslot
+//        } else { //workslot in the future
+//            return durationInMillis;
+//        }
+        long startTime = getStartAdjusted(now).getTime();
+        long endTime = getEndTimeD().getTime();
 //        long now = new Date().getTime();
-        long durationInMillis = getDurationInMillis();
-        if (startTime + durationInMillis < now) {
-            return 0; //workslot is entirely in the past
-        } else if (now > startTime) { //part of workslot is in the past
-            return durationInMillis - (now - startTime); //workslot starttime is already passed so deduct the already passed part of the workslot
-        } else { //workslot in the future
-            return durationInMillis;
+        if (false&&Config.TEST) {
+            long durationInMillis = getDurationInMillis();
+            long oldDurationForTest;
+            if (startTime + durationInMillis < now) {
+                oldDurationForTest = 0; //workslot is entirely in the past
+            } else if (now > startTime) { //part of workslot is in the past
+                oldDurationForTest = durationInMillis - (now - startTime); //workslot starttime is already passed so deduct the already passed part of the workslot
+            } else { //workslot in the future
+                oldDurationForTest = durationInMillis;
+            }
+            ASSERT.that(Math.min(0, endTime - startTime) == oldDurationForTest, "Error in WorkSlot.getDurationAdjusted, new algo giving different result!");
         }
+        return Math.min(0, endTime - startTime);
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        return inactive ? 0
 //        return !isActive() ? 0
@@ -1375,9 +1392,14 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             long duration = actualEnd.getTime() - actualStart.getTime(); //get the duration (may be negative)
             long finalDuration = Math.max(0, duration);
         }
+//        return Math.max(0,
+//                Math.min(getStartTimeD().getTime() + getDurationInMillis(), toTime)
+//                - Math.max(getStartTimeD().getTime(), fromTime)
+//        );
         return Math.max(0,
-                Math.min(getStartTimeD().getTime() + getDurationInMillis(), toTime)
-                - Math.max(getStartTimeD().getTime(), fromTime)
+                //                Math.min(getStartAdjusted(fromTime).getTime(), toTime)
+                Math.min(getEndTimeD().getTime(), toTime)
+                - getStartAdjusted(fromTime).getTime() //use getStartAdjusted() to round up to next minute
         );
     }
 
@@ -1399,7 +1421,8 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 
     /**
      * true if the workslot is currently active (overlaps with 'now')
-     * @return 
+     *
+     * @return
      */
     public boolean hasActiveDuration() {
         return getDurationAdjusted(new MyDate().getTime(), MyDate.MAX_DATE) > 0;
@@ -1804,25 +1827,17 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
     }
 
     /**
-     * returns the first tasks in the list or project that can fit into this
-     * workslot. Used in Today view to show today's workslots and which tasks
-     * fit into them.
-     *
-     * @return
-     */
-    public List<Item> getItemsInWorkSlot() {
-        return getItemsInWorkSlot(false);
-    }
-
-    /**
      * return the top-level tasks that this workslot has allocated time to (not
      * lower-level subtasks that the top-level tasks has subsequently allocated
      * their time to)
      *
      * @param includeDoneTasks
+     * @param includeIncompleteTask include the possible last task that gets
+     * some time from the workslot but not enough to complete the task (such
+     * tasks should be excluded from e.g. Today view and badge count)
      * @return
      */
-    public List<Item> getItemsInWorkSlot(boolean includeDoneTasks) {
+    public List<Item> getItemsInWorkSlot(boolean includeDoneTasks, boolean includeIncompleteTask) {
         ItemAndListCommonInterface owner = getOwner();
         List<Item> items = new ArrayList<>();
         if (owner != null) {
@@ -1838,7 +1853,7 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //                                if (slice.workSlot == this && !items.contains(item)) {
                                 //if slice is from this workslot, and item not already added (necessary??!) and slice is non-zero duration (to exclude house-keeping allocations) and task is not done
 //                                if (slice.workSlot == this && !items.contains(item) && slice.getDuration() > 0 && (!item.isDone() || includeDoneTasks)) {
-                                if (slice.workSlot == this && (slice.getDurationInMillis() > 0 || includeDoneTasks)) {// || Config.TEST)) {
+                                if (slice.workSlot == this && (slice.getDurationInMillis() > 0 || (!item.isDone() && item.getRemainingTotal() == 0) || includeDoneTasks)) {// || Config.TEST)) {
                                     items.add(item);
                                 }
                             }
@@ -1848,6 +1863,21 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
             }
         }
         return items;
+    }
+
+    /**
+     * returns the first tasks in the list or project that can fit into this
+     * workslot. Used in Today view to show today's workslots and which tasks
+     * fit into them.
+     *
+     * @return
+     */
+    public List<Item> getItemsInWorkSlot() {
+        return getItemsInWorkSlot(false);
+    }
+
+    public List<Item> getItemsInWorkSlot(boolean includeDoneTasks) {
+        return getItemsInWorkSlot(includeDoneTasks, true);
     }
 
     public String getWorkSlotAllocationsAsStringForTEST() {
@@ -2442,10 +2472,10 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
                     getMultipleComparator(new Comparator[]{
                 (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareDate(i1.getStartTimeD(), i2.getStartTimeD()),
                 (Comparator<WorkSlot>) (i1, i2) -> FilterSortDef.compareLong(i2.getDurationInMillis(), i1.getDurationInMillis()), //longest slots first
-//                (Comparator<WorkSlot>) (i1, i2) -> i1.getObjectIdP() == null
-//                ? (i2.getObjectIdP() == null ? 0 : -1)
-//                : (i2.getObjectIdP() == null ? 1 : i1.getObjectIdP().compareTo(i2.getObjectIdP())), //sort equal workslots on objectId to make it deterministic
-                (Comparator<WorkSlot>) (i1, i2) -> i1.getGuid()== null
+                //                (Comparator<WorkSlot>) (i1, i2) -> i1.getObjectIdP() == null
+                //                ? (i2.getObjectIdP() == null ? 0 : -1)
+                //                : (i2.getObjectIdP() == null ? 1 : i1.getObjectIdP().compareTo(i2.getObjectIdP())), //sort equal workslots on objectId to make it deterministic
+                (Comparator<WorkSlot>) (i1, i2) -> i1.getGuid() == null
                 ? (i2.getGuid() == null ? 0 : -1)
                 : (i2.getGuid() == null ? 1 : i1.getGuid().compareTo(i2.getGuid())), //sort equal workslots on -objectId- ->Guid to make it deterministic
             }));
@@ -2635,5 +2665,4 @@ public class WorkSlot extends ParseObject /*extends BaseItem*/
 //    public TodaySortOrder getTodaySortOrder() {
 //        return TodaySortOrder.TODAY_OTHER;
 //    }
-
 }

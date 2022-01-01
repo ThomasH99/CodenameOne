@@ -765,7 +765,7 @@ public class ScreenItem2 extends MyForm {
         }, "DeleteItem"));
 
 //        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", "Task settings", Icons.iconSettings, (e) -> {
-        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", ScreenSettingsItem.SETTINGS_MENU_TEXT_BASE, Icons.iconSettings, (e) -> {
+        toolbar.addCommandToOverflowMenu(MyReplayCommand.createKeep("ItemSettings", Format.f(ScreenSettingsItem.SETTINGS_MENU_TEXT_BASE, "Task"), Icons.iconSettings, (e) -> {
             new ScreenSettingsItem("Settings tasks", ScreenItem2.this, () -> {
 //                if (false) {
 //                    refreshAfterEdit();
@@ -2527,7 +2527,8 @@ public class ScreenItem2 extends MyForm {
                     new ScreenListOfWorkTime(itemOrg, itemOrg.getAllocatedWorkTimeN(), ScreenItem2.this).show();
                 }));
 //                mainCont.add(layoutN(Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true));
-                mainCont.add(layoutN(Item.PARSE_FINISH_TIME, Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true, hideIcons ? null : Icons.iconFinishDate));
+                mainCont.add(layoutN(Item.PARSE_FINISH_TIME, Item.FINISH_WORK_TIME, showWorkTimeDetails, Item.FINISH_WORK_TIME_HELP, null, true, true, true,
+                        hideIcons ? null : ScreenListOfItems.getFinishTimeIcon(itemOrg)));
 
 //                mainCont.add(initField(Item.FINISH_WORK_TIME, Item.FINISH_WORK_TIME_HELP, showWorkTimeDetails, "finishTime", () -> item.getFinishTime(), null,
                 initField("finishTime", showWorkTimeDetails,
@@ -3171,14 +3172,16 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (!isTemplate) {
             if (isProject) {
 //            mainCont.addComponent(remainingIndex, layoutN(Item.EFFORT_REMAINING_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getRemainingEffort()), "LabelFixed"),
-                timeCont.addComponent(layoutN(Item.PARSE_REMAINING_EFFORT_FOR_SUBTASKS_VIRT, Item.EFFORT_REMAINING_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getRemainingForSubtasks()), "ScreenItemValueUneditable"),
+                timeCont.addComponent(layoutN(Item.PARSE_REMAINING_EFFORT_FOR_SUBTASKS_VIRT, Item.EFFORT_REMAINING_SUBTASKS,
+                        isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getRemainingForSubtasks()), "ScreenItemValueUneditable"),
                         Item.EFFORT_REMAINING_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconRemainingSubCust, Icons.myIconFont)); //hack to insert after alarmDate field
             }
 //TODO: makes no sense to show remaining for project itself, just confusing??
             String remainingTxt = isProject ? Item.EFFORT_REMAINING_PROJECT : Item.EFFORT_REMAINING;
             String remainingHelpTxt = isProject ? Item.EFFORT_REMAINING_PROJECT_HELP : Item.EFFORT_REMAINING_HELP;
             String remainingParseId = isProject ? Item.PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF : Item.PARSE_REMAINING_EFFORT_TOTAL;
-            timeCont.add(layoutN(remainingParseId, remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hideIcons ? null : (isProject ? Icons.iconRemainingPrjCust : Icons.iconRemainingCust), Icons.myIconFont));
+            timeCont.add(layoutN(remainingParseId, remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt,
+                    hideIcons ? null : (isProject ? Icons.iconRemainingPrjCust : Icons.iconRemainingCust), Icons.myIconFont));
 //        timeCont.add(layoutN(remainingTxt, isTemplate ? null : remainingEffort, remainingHelpTxt, hideIcons ? null : (isProject ? Icons.iconRemainingPrjCust : Icons.iconRemainingCust)));
             if (MyPrefs.useEstimateDefaultValueForZeroEstimatesInMinutes.getBoolean()) { //only show format as inherited if default value is turned on
                 updateUIIDForInherited(remainingEffort, Item.isRemainingDefaultValue(remainingEffort.getDuration()));
@@ -3191,7 +3194,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         if (!isTemplate) { //don't even show non-editable actual in template, confusing
             //if project, show actual for subtasks
             if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
-                timeCont.add(layoutN(Item.PARSE_ACTUAL_EFFORT_SUBTASKS_VIRT, Item.EFFORT_ACTUAL_SUBTASKS, isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getActualForSubtasks()), "ScreenItemValueUneditable"),
+                timeCont.add(layoutN(Item.PARSE_ACTUAL_EFFORT_SUBTASKS_VIRT, Item.EFFORT_ACTUAL_SUBTASKS,
+                        isTemplate ? null : new Label(MyDate.formatDurationStd(itemOrg.getActualForSubtasks()), "ScreenItemValueUneditable"),
                         Item.EFFORT_ACTUAL_SUBTASKS_HELP, true, true, false, hideIcons ? null : Icons.iconActualCurrentSubCust, Icons.myIconFont));
             }
 
@@ -3262,7 +3266,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
         //ESTIMATE************
         if (isProject) { //true: makes sense if work was done on project *before* subtasks were added! false: makes no sense to show actual for project itself, just confusing
 //            timeCont.add(layoutN(Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatTimeDuration(itemLS.getEffortEstimateForSubtasks() / MyDate.MINUTE_IN_MILLISECONDS), "LabelFixed"),
-            timeCont.add(layoutN(Item.PARSE_EFFORT_ESTIMATE_SUBTASKS_VIRT, Item.EFFORT_ESTIMATE_SUBTASKS, new Label(MyDate.formatDurationStd(itemOrg.getEstimateForSubtasks()), "ScreenItemValueUneditable"),
+            timeCont.add(layoutN(Item.PARSE_EFFORT_ESTIMATE_SUBTASKS_VIRT, Item.EFFORT_ESTIMATE_SUBTASKS,
+                    new Label(MyDate.formatDurationStd(itemOrg.getEstimateForSubtasks()), "ScreenItemValueUneditable"),
                     Item.EFFORT_ESTIMATE_SUBTASKS_HELP, true, true, false, Icons.iconEstimateSubCust, Icons.myIconFont));
         }
         String estimateTxt = isProject ? Item.EFFORT_ESTIMATE_PROJECT : Item.EFFORT_ESTIMATE;
@@ -3424,6 +3429,16 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
 //        timeCont.add(new Label(Item.HIDE_UNTIL)).add(hideUntil.makeContainerWithClearButton());
 //        timeCont.add(layout(Item.HIDE_UNTIL, hideUntil.makeContainerWithClearButton(), "**"));
         timeCont.add(layoutN(Item.PARSE_HIDE_UNTIL_DATE, Item.HIDE_UNTIL, hideUntil, Item.HIDE_UNTIL_HELP, hideIcons ? null : Icons.iconHideUntilDateCust, Icons.myIconFont));
+
+        if (Config.TEST) {
+            Label snoozeDate = new Label(itemOrg.getSnoozeAlarm().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getSnoozeAlarm())); //NOT use itemLS since CreatedDate is not saved locally
+            timeCont.add(layoutN("Snooze time TST", "Snooze time TST", snoozeDate, "**", true, true, false, Icons.iconSnooze, null));
+            timeCont.add(layoutN("Snooze time TST", "Alarm Cancelled", new Label("" + itemOrg.isAlarmCancelledOrSnoozed()), "**", true, true, false, Icons.iconSnooze, null));
+
+            Label snoozeWaitingDate = new Label(itemOrg.getSnoozeWaitingAlarm().getTime() == 0 ? "" : MyDate.formatDateTimeNew(itemOrg.getSnoozeWaitingAlarm())); //NOT use itemLS since CreatedDate is not saved locally
+            timeCont.add(layoutN("SnoozeWait time TST", "SnoozeWait time TST", snoozeWaitingDate, "**", true, true, false, Icons.iconSnooze, null));
+            timeCont.add(layoutN("Snooze time TST", "WaitAlarm Cancelled", new Label("" + itemOrg.isWaitingAlarmCancelledOrSnoozed()), "**", true, true, false, Icons.iconSnooze, null));
+        }
 
         if (false) { //De-activated for now
 //            MyDatePicker expireByDate = new MyDatePicker(parseIdMap2, () -> itemLS.getExpiresOnDateD(), (d) -> item.setExpiresOnDateD(d)); // "<auto-cancel on date>", 
@@ -3962,8 +3977,8 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 hideIcons ? null : (status.getStatus() == ItemStatus.CANCELLED ? Icons.iconItemStatusCancelledCust : Icons.iconItemStatusDoneCust),
                 Icons.myIconFont)); //"click to set a completed date"
 
-//<editor-fold defaultstate="collapsed" desc="old setStatusChangeHandler">
         if (false) {
+//<editor-fold defaultstate="collapsed" desc="old setStatusChangeHandler">
             status.setStatusChangeHandler((oldStatus, newStatus) -> {
                 //if status is set Ongoing and startedOnDate is not set and has not been set explicitly
                 //if status is changed
@@ -4045,13 +4060,13 @@ Meaning of previousValues.get(Item.PARSE_REPEAT_RULE):
                 }
                 return true;
             });
+//</editor-fold>
         } else {
             status.setStatusChangeHandler((oldStatus, newStatus) -> {
                 itemOrg.setStatus(newStatus);
                 return true;
             });
         }
-//</editor-fold>
 //<editor-fold defaultstate="collapsed" desc="comment">
 //              status.addActionListener(statusListener);
 //        status.addActionListener((evt) -> {

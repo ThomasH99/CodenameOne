@@ -27,11 +27,12 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
 //     protected static String FORM_UNIQUE_ID = "ScreenTimerSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     ScreenSettingsListOfItems(MyForm mainScreen, Runnable doneAction) { // throws ParseException, IOException {
 //        super(mainScreen.SCREEN_TITLE + " settings", mainScreen, doneAction);
-        super("Task lists", mainScreen, doneAction);
+//        super("Task lists", mainScreen, doneAction);
+        super(SETTINGS_MENU_TEXT, mainScreen, doneAction);
         setUniqueFormId("ScreenListOfItemsSettings");
     }
 
-    public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, MyForm.SCREEN_TASK_LIST_TITLE);
+    public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, MyForm.SCREEN_ALL_TASK_LISTS_TITLE);
 
     /**
      * This method shows the main user interface of the app
@@ -76,10 +77,10 @@ public class ScreenSettingsListOfItems extends ScreenSettingsCommon {
                 content.add(makeSpacer());
                 break;
             }
-            case TOUCHED: {
+            case EDITED: {
                 content.add(makeSectionTitle(Format.f("Settings for {0}:", screenType.getTitle())));
 //                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.touchedLogInterval, 1, 365, 1,(e) -> DAO.getInstance().reloadTouched()));
-                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.touchedLogInterval, 1, 365, 1, (e) -> DAO.getInstance().reloadSystemList(screenType.getSystemName())));
+                content.add(makeEditIntSetting(parseIdMap2, MyPrefs.editedLogInterval, 1, 365, 1, (e) -> DAO.getInstance().reloadSystemList(screenType.getSystemName())));
                 content.add(makeSpacer());
                 break;
             }

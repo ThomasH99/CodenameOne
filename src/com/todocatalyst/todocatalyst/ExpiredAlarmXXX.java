@@ -17,7 +17,7 @@ import java.util.Date;
  *
  * @author Thomas
  */
-public class ExpiredAlarm implements Externalizable {
+public class ExpiredAlarmXXX implements Externalizable {
 
     final static String CLASS_NAME_EXPIRED_ALARM = "expiredAlarm";
 
@@ -35,14 +35,14 @@ public class ExpiredAlarm implements Externalizable {
 //        this.type = type;
 //    }
 
-    ExpiredAlarm(NotificationShadow notif) {
+    ExpiredAlarmXXX(NotificationShadow notif) {
         ASSERT.that(notif.getGuidStr()!=null, "trying to set alarm with guid==null, notif="+notif);
         this.guid = notif.getGuidStr();
         this.alarmTime = notif.alarmTime;
         this.type = notif.type;
     }
     
-    public ExpiredAlarm() {
+    public ExpiredAlarmXXX() {
     }
     
     @Override

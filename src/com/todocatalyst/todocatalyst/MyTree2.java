@@ -456,6 +456,9 @@ public class MyTree2 extends ContainerScrollY {
     }
 
     Container expandNode(boolean animate, Component c, boolean expandAllLevels) {
+        //save and disable stichyHeaders when expanding subtasks!
+        StickyHeaderGenerator saveStickyHeaderGen = stickyHeaderGenN;
+        stickyHeaderGenN = null;
         Container cont = expandNodeImpl(animate, c, expandAllLevels);
         Container parent = c.getParent();
         if (parent != null) { //added due to nullpoint in expand/collapse hierarchy
@@ -478,6 +481,7 @@ public class MyTree2 extends ContainerScrollY {
                 parent.revalidateWithAnimationSafety();
             }
         }
+        stickyHeaderGenN = saveStickyHeaderGen;
         return cont;
     }
 
@@ -736,7 +740,7 @@ public class MyTree2 extends ContainerScrollY {
             itemNodeParent.getParent().animateLayout(MyForm.ANIMATION_TIME_FAST); //animate hiding
         } else {
 //            itemNodeParent.animateLayoutAndWait(300); //animate hiding
-//            itemNodeParent.animateHierarchy(300); //animate hiding
+            itemNodeParent.animateHierarchy(300); //animate hiding
             itemNodeParent.animateLayout(MyForm.ANIMATION_TIME_FAST); //animate hiding
         }
         //then really remove the collapsed items:
@@ -1390,7 +1394,8 @@ public class MyTree2 extends ContainerScrollY {
 
     private static String makeHeader(String fieldName, String fieldStr, Object fieldValue, Object undefinedValue) {
         if (fieldValue == null || fieldValue.equals(undefinedValue)) {
-            return MyPrefs.listDefaultHeaderForUndefinedValue.getString();
+//            return MyPrefs.listDefaultHeaderForUndefinedValue.getString();
+            return fieldName + MyPrefs.listDefaultHeaderForUndefinedValue.getString();
         }
         StringBuilder s = new StringBuilder(fieldName);
         s.append(" ").append(fieldStr);
@@ -1456,7 +1461,7 @@ public class MyTree2 extends ContainerScrollY {
                     case Item.PARSE_STATUS:
 //                        newStr = getDiffStr(newStickyStr, "Status " + item.getStatus().getName());
 //                        newStr = getDiffStr(previousStickyStr, Item.STATUS + " " + item.getStatus().getName());
-                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.STATUS, item.getStatus().getName())); //no undefined value exists for ItemStatus
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.STATUS, item.getStatus().getVisibleName())); //no undefined value exists for ItemStatus
                         break;
                     case Item.PARSE_REMAINING_EFFORT_TOTAL:
 //                        newStr = getDiffStr(previousStickyStr, Item.EFFORT_REMAINING + " " + newTimeString(item.getRemaining()));
@@ -1511,7 +1516,7 @@ public class MyTree2 extends ContainerScrollY {
 //                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.IMPORTANCE, item.getImportanceN(), null));
                         newStr = getDiffStr(previousStickyStr, makeHeader(Item.IMPORTANCE,
                                 item.getImportanceN() == null
-                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                ? Item.IMPORTANCE + MyPrefs.listDefaultHeaderForUndefinedValue.getString()
                                 : item.getImportanceN().getDescription()));
                         break;
                     case Item.PARSE_URGENCY:
@@ -1519,7 +1524,7 @@ public class MyTree2 extends ContainerScrollY {
 //                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.URGENCY, item.getUrgencyN(), null));
                         newStr = getDiffStr(previousStickyStr, makeHeader(Item.URGENCY,
                                 item.getUrgencyN() == null
-                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                ? Item.URGENCY + MyPrefs.listDefaultHeaderForUndefinedValue.getString()
                                 : item.getUrgencyN().getDescription()));
                         break;
                     case Item.PARSE_CHALLENGE:
@@ -1527,7 +1532,7 @@ public class MyTree2 extends ContainerScrollY {
 //                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.CHALLENGE, item.getChallengeN(), null));
                         newStr = getDiffStr(previousStickyStr, makeHeader(Item.CHALLENGE,
                                 item.getChallengeN() == null
-                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                ? Item.CHALLENGE + MyPrefs.listDefaultHeaderForUndefinedValue.getString()
                                 : item.getChallengeN().getDescription()));
                         break;
                     case Item.PARSE_DREAD_FUN_VALUE:
@@ -1535,18 +1540,18 @@ public class MyTree2 extends ContainerScrollY {
 //                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.DREAD_FUN, item.getDreadFunValueN(), null));
                         newStr = getDiffStr(previousStickyStr, makeHeader(Item.DREAD_FUN,
                                 item.getDreadFunValueN() == null
-                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                ? Item.DREAD_FUN + MyPrefs.listDefaultHeaderForUndefinedValue.getString()
                                 : item.getDreadFunValueN().getDescription()));
                         break;
                     case Item.PARSE_EARNED_VALUE:
                         newStr = getDiffStr(previousStickyStr, makeHeader(Item.EARNED_VALUE,
                                 item.getEarnedValue() == 0
-                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                ? Item.EARNED_VALUE + MyPrefs.listDefaultHeaderForUndefinedValue.getString()
                                 : makeValueIntervalHeader((int) item.getEarnedValue(), new int[]{10, 100, 1000}, new String[]{"Below 10", "10-100", "100-1000", "Above 1000"})));
                     case Item.PARSE_EARNED_VALUE_PER_HOUR:
-                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EARNED_VALUE,
+                        newStr = getDiffStr(previousStickyStr, makeHeader(Item.EARNED_VALUE_PER_HOUR,
                                 item.getEarnedValuePerHour() == 0
-                                ? MyPrefs.listDefaultHeaderForUndefinedValue.getString()
+                                ? Item.EARNED_VALUE_PER_HOUR + MyPrefs.listDefaultHeaderForUndefinedValue.getString()
                                 : makeValueIntervalHeader((int) item.getEarnedValuePerHour(), new int[]{10, 100, 1000}, new String[]{"Below 10", "10-100", "100-1000", "Above 1000"})));
                         break;
                     case Item.PARSE_TEXT: //no header for text, could do a letter 'A' but not valuable //TODO - add the right-side menu with letters to jump directly to tasks starting with that letter
@@ -1581,10 +1586,10 @@ public class MyTree2 extends ContainerScrollY {
                                 newStr = Item.DUE_DATE + " " + MyDate.formatDateNew(item.getDueDate());
                                 break;
                             case DUE_TODAY_ONGOING:
-                                newStr = Item.DUE_DATE + " " + ItemStatus.ONGOING.getName() + " " + MyDate.formatDateNew(item.getDueDate());
+                                newStr = Item.DUE_DATE + " " + ItemStatus.ONGOING.getVisibleName()+ " " + MyDate.formatDateNew(item.getDueDate());
                                 break;
                             case DUE_TODAY_WAITING:
-                                newStr = Item.DUE_DATE + " " + ItemStatus.WAITING.getName() + " " + MyDate.formatDateNew(item.getDueDate());
+                                newStr = Item.DUE_DATE + " " + ItemStatus.WAITING.getVisibleName()+ " " + MyDate.formatDateNew(item.getDueDate());
                                 break;
                             case WAITING_TODAY:
                                 newStr = Item.WAIT_UNTIL_DATE + " " + MyDate.formatDateNew(item.getWaitUntilDate());
@@ -1636,7 +1641,8 @@ public class MyTree2 extends ContainerScrollY {
                 WorkSlot workSlot = (WorkSlot) current;
                 switch (parseId) {
                     case FilterSortDef.FILTER_SORT_TODAY_VIEW:
-                        newStr = getDiffStr(previousStickyStr, WorkSlot.WORKSLOT + " " + WorkSlot.START_TIME + " " + MyDate.formatDateNew(workSlot.getStartAdjusted(MyDate.currentTimeMillis()))); //UI: use adjusted, so a workslot stretching over midnight will get the right date after midnignt
+                        newStr = getDiffStr(previousStickyStr, WorkSlot.WORKSLOT + " " + WorkSlot.START_TIME + " "
+                                + MyDate.formatDateNew(workSlot.getStartAdjusted(MyDate.currentTimeMillis()).getTime())); //UI: use adjusted, so a workslot stretching over midnight will get the right date after midnignt
                         break;
                 }
             }

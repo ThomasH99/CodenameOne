@@ -12,16 +12,24 @@ import java.util.Date;
  * @author Thomas
  */
 public class AlarmRecord {
+//        String itemGuid;
+
+    Item item;
     Date alarmTime;
     AlarmType type;
-    
-    AlarmRecord(Date alarmTime,AlarmType type) {
-        this.alarmTime=alarmTime;
-        this.type=type;
+
+    AlarmRecord(Date alarmTime, AlarmType type, Item item) {
+        this.item = item;
+        this.alarmTime = alarmTime;
+        this.type = type;
     }
     
-     @Override
+    String getNotificationId() {
+        return type.addTypeStrToStr(item.getGuid());
+    }
+
+    @Override
     public String toString() {
-        return type+"/"+MyDate.formatDateTimeNew(alarmTime);
+        return type + "/" + MyDate.formatDateTimeNew(alarmTime);
     }
 }

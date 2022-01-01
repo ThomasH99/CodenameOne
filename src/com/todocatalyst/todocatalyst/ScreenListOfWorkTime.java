@@ -5,6 +5,7 @@
 package com.todocatalyst.todocatalyst;
 
 //import com.codename1.ui.*;
+import com.codename1.components.SpanLabel;
 import com.codename1.ui.Container;
 import com.codename1.ui.Label;
 import com.codename1.ui.Toolbar;
@@ -21,7 +22,7 @@ import java.util.Date;
 public class ScreenListOfWorkTime extends MyForm {
     //TODO!! make the workSlots editable directly inline in the list (more natural to edit in an overview of all workslots
 
-    static String SCREEN_TITLE = "Work time details: ";
+    static String SCREEN_TITLE = Item.WORKTIME; //"Work time details: ";
 // protected static String FORM_UNIQUE_ID = "ScreenListOfWorkSlTime"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
     private ItemAndListCommonInterface owner;
     private WorkTimeSlices workTime;
@@ -30,7 +31,8 @@ public class ScreenListOfWorkTime extends MyForm {
     ScreenListOfWorkTime(ItemAndListCommonInterface owner, WorkTimeSlices workTime, MyForm previousForm) {
 //        super("Work time for " + nameOfOwner, previousForm, () -> updateItemListOnDone.update(workSlotList));
 //        super(SCREEN_TITLE + ((nameOfOwner != null && nameOfOwner.length() > 0) ? " for " + nameOfOwner : ""), previousForm, () -> updateItemListOnDone.update(workTime));
-        super(SCREEN_TITLE + owner.getText(), previousForm, () -> {
+//        super(Format.f("{0} {1}", SCREEN_TITLE, owner.getText()), previousForm, () -> {
+        super(Format.f("{0 workslot} details", Item.WORKTIME), previousForm, () -> {
         });
         this.workTime = workTime;
         setUniqueFormId("ScreenListOfWorkTime");
@@ -71,11 +73,17 @@ public class ScreenListOfWorkTime extends MyForm {
                 }
                 Container sliceCont = new Container(new FlowLayout());
                 sliceCont
-                        .add(new Label("From " + (workSlice.workSlot.getOwner().getText()) + ": "
+                        //                        .add(new Label("From " + (workSlice.workSlot.getOwner().getText()) + ": "
+                        //                                + MyDate.formatDateTimeNew(new MyDate(workSlice.getStartTime()))
+                        //                                //                                + "-" + MyDate.formatTimeNew(new Date(workSlice.getEndTime()))));
+                        //                                + " " + MyDate.formatDurationShort(workSlice.getDurationInMillis())));
+                        .add(new SpanLabel(ItemAndListCommonInterface.getTypeString(workSlice.workSlot.getOwner(), false) + " " + workSlice.workSlot.getOwner().getText() + ": "
+                                + MyDate.formatDurationShort(workSlice.getDurationInMillis()) + ", "
                                 + MyDate.formatDateTimeNew(new MyDate(workSlice.getStartTime()))
-                                //                                + "-" + MyDate.formatTimeNew(new Date(workSlice.getEndTime()))));
-                                + " " + MyDate.formatDurationShort(workSlice.getDurationInMillis())));
-                if (Config.TEST) {
+                                + " - " + MyDate.formatTimeNew(new Date(workSlice.getEndTime()))
+                                + (Config.TEST ? " /TST WS.guid:" + workSlice.workSlot.getGuid() : ""))
+                        );
+                if (false&&Config.TEST) { //now included above
                     sliceCont.add(new Label("WorkSlot: \"" + workSlice.workSlot.getText() + "\" [" + workSlice.workSlot.getObjectIdP() + "]"));
                 }
 //                    .add(new Label(MyDate.formatDateNew(workSlice.getStartTime())))

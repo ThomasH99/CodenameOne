@@ -153,7 +153,7 @@ public class DAO {
 //        }
         //ALARMS - initialize
 //        AlarmHandler.getInstance().setupAlarmHandlingOnAppStart(); //TODO!!!! optimization: do in background
-        AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(); //TODO!!!! optimization: do in background
+//        AlarmHandler.getInstance().updateLocalNotificationsOnAppStartOrAllAlarmsEnOrDisabled(); //TODO!!!! optimization: do in background
 //<editor-fold defaultstate="collapsed" desc="comment">
 
 //TIMER - was running when app was moved to background? - now done with ReplayCommand
@@ -1940,41 +1940,6 @@ public class DAO {
 //        return tempItemList;
 //    }
 //</editor-fold>
-    private void sortSystemList(String name, List results) {
-        switch (name) {
-            case SYSTEM_LIST_ALL:
-                break;
-            case SYSTEM_LIST_DIARY:
-                sortCreationLog(results);
-                break;
-            case SYSTEM_LIST_LOG:
-                sortCompletionLog(results);
-                break;
-            case SYSTEM_LIST_NEXT:
-                sortNext(results);
-                break;
-            case SYSTEM_LIST_OVERDUE:
-                sortOverdue(results);
-                break;
-            case SYSTEM_LIST_PROJECTS:
-                sortAllProjects(results);
-                break;
-            case SYSTEM_LIST_TODAY:
-//                sortToday(cachedToday);
-                sortToday(results);
-                break;
-            case SYSTEM_LIST_TOUCHED:
-                sortTouchedLog(results);
-                break;
-            case SYSTEM_LIST_WORKSLOTS:
-                WorkSlot.sortWorkSlotList(results);
-                break;
-            case SYSTEM_LIST_STATISTICS:
-                //no sorting done here since done by Statistics screen
-                break;
-        }
-    }
-
     /**
      *
      * @param results
@@ -2015,9 +1980,241 @@ public class DAO {
         return new MyDate(MyDate.getEndOfToday().getTime() - MyPrefs.statisticsScreenDaysBeforeTodayToExclude.getInt() * MyDate.DAY_IN_MILLISECONDS);
     }
 
+//    public static Date getFirstFutureAlarmDate() {
+//        return getFirstFutureAlarmDate(true);
+//    }
+    public static Date getFirstFutureAlarmDate(Date now) {
+        Date firstDayForAlarms = now; //new MyDate();
+//        Date firstAlarmDateToRetrieve;
+//        if (firstDayForAlarms == null) {
+//            firstAlarmDateToRetrieve = extendToStartEndOfDays
+//                    ? MyDate.getStartOfDay(new MyDate(lastDayForAlarms.getTime() - MyPrefs.alarmPastDaysToFetchUncancelledAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS))
+//                    : new MyDate(lastDayForAlarms.getTime() - MyPrefs.alarmPastDaysToFetchUncancelledAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS); //startOfDay to get all alarms on the day, not only from time-of-day in latestDayForAlarms
+//        } else {
+//            firstAlarmDateToRetrieve = extendToStartEndOfDays
+//                    ? MyDate.getStartOfDay(firstDayForAlarms)
+//                    : firstDayForAlarms; //startOfDay to get all alarms on the day, not only from time-of-day in latestDayForAlarms
+//        }
+        return firstDayForAlarms;
+    }
+
+    public static Date getLastFutureAlarmDate(Date now) {
+//        return getLastFutureAlarmDate(true);
+//    }
+//
+//    public static Date getLastFutureAlarmDate(boolean extendToStartEndOfDays) {
+        Date lastDayForAlarms = MyDate.getEndOfDay(new MyDate(now.getTime() + MyPrefs.alarmFutureIntervalInWhichToSetAlarmsInHours.getInt() * MyDate.HOUR_IN_MILISECONDS));
+//        Date lastAlarmDateToRetrieve = extendToStartEndOfDays ? MyDate.getEndOfDay(lastDayForAlarms) : lastDayForAlarms; //startOfDay to get all alarms on the day, not only from time-of-day in latestDayForAlarms
+//        return lastAlarmDateToRetrieve;
+        return lastDayForAlarms;
+    }
+
+    public static Date getLastUnprocessedAlarmDate() {
+        return getLastUnprocessedAlarmDate(new MyDate());
+    }
+
+    public static Date getLastUnprocessedAlarmDate(Date now) {
+        Date lastAlarmDateToRetrieve = now; //new MyDate(); //all alarms in the past
+        return lastAlarmDateToRetrieve;
+    }
+
+    public static Date getFirstUnprocessedAlarmDate(Date lastUnprocessedDate) {
+//        Date firstAlarmDateToRetrieve = MyDate.getStartOfDay(new MyDate(getLastUnprocessedAlarmDate(lastUnprocessedDate).getTime() //startOfDate: get all alarms from the date, not just from the current time of day
+        Date firstAlarmDateToRetrieve = MyDate.getStartOfDay(new MyDate(lastUnprocessedDate.getTime() //startOfDate: get all alarms from the date, not just from the current time of day
+                - MyPrefs.alarmPastDaysToFetchUncancelledAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS));
+        return firstAlarmDateToRetrieve;
+    }
+
+    private void sortSystemList(String name, List results) {
+        switch (name) {
+            case SYSTEM_LIST_ALL:
+                break;
+            case SYSTEM_LIST_DIARY:
+                sortCreationLog(results);
+                break;
+            case SYSTEM_LIST_LOG:
+                sortCompletionLog(results);
+                break;
+            case SYSTEM_LIST_NEXT:
+                sortNext(results);
+                break;
+            case SYSTEM_LIST_OVERDUE:
+                sortOverdue(results);
+                break;
+            case SYSTEM_LIST_PROJECTS:
+                sortAllProjects(results);
+                break;
+            case SYSTEM_LIST_TODAY:
+//                sortToday(cachedToday);
+                sortToday(results);
+                break;
+            case SYSTEM_LIST_EDITED:
+                sortEditedLog(results);
+                break;
+            case SYSTEM_LIST_WORKSLOTS:
+                WorkSlot.sortWorkSlotList(results);
+                break;
+            case SYSTEM_LIST_STATISTICS:
+                //no sorting done here since done by Statistics screen
+                break;
+            case SYSTEM_LIST_FUTURE_ALARM_ITEMS:
+                //no sorting necessary for items with alamrs
+                //NO, not sorted here, the alarmRecords list i sorted in AlarmHandler!!
+                break;
+            case SYSTEM_LIST_UNPROCESSED_ALARM_ITEMS:
+                //sort on relevant alarm time (show most recently expired alarms first in list!)
+                //NO, not sorted here, the alarmRecords list is sorted in AlarmHandler!!
+                break;
+            case SYSTEM_LIST_TEMPLATES:
+                break;
+            default:
+                ASSERT.that("Unexpected systemListName=" + name);
+        }
+    }
+
+    private List<AlarmRecord> unprocessedAlarmsCached;
+
+    public List<AlarmRecord> getUnprocessedAlarmRecords(Date now, boolean forceReloadFromParse) {
+        if (false && unprocessedAlarmsCached == null) {
+            ItemList expiredItems = DAO.getInstance().fetchDynamicNamedItemList(DAO.SYSTEM_LIST_UNPROCESSED_ALARM_ITEMS, forceReloadFromParse, now);
+            List<Item> items = expiredItems.getListFull();
+//            Date now = getFirstUnprocessedAlarmDate(now);
+            Date last = getLastUnprocessedAlarmDate(now);
+            int size = items.size();
+
+//            List<AlarmRecord> unprocessedAlarms = new ArrayList<>(size * 2); //reserve for up to two alarms per item
+            unprocessedAlarmsCached = new ArrayList<>(size * 2); //reserve for up to two alarms per item
+            for (int i = 0; i < size; i++) {
+                unprocessedAlarmsCached.addAll(items.get(i).getUnprocessedAlarms(now, last, false)); //no sorting of individual alarm records necessary
+            }
+
+            Item.sortAlarmRecords(unprocessedAlarmsCached);
+        }
+        updateCachedAlarmRecords(now, forceReloadFromParse);
+        return unprocessedAlarmsCached;
+    }
+    private List<AlarmRecord> futureAlarmsCached;
+
+    public List<AlarmRecord> fetchFutureAlarmRecords(Date now, boolean forceReloadFromParse) {
+        if (false && (futureAlarmsCached == null || forceReloadFromParse)) { //
+
+            ItemList futureItems = DAO.getInstance().fetchDynamicNamedItemList(DAO.SYSTEM_LIST_FUTURE_ALARM_ITEMS, forceReloadFromParse, now);
+            List<Item> items = futureItems.getListFull();
+//            Date now = new MyDate(); //use same 'now'
+            int size = items.size();
+//        List<AlarmRecord> futureAlarms = new ArrayList<>(size * 2); //reserve for up to two alarms per item
+            futureAlarmsCached = new ArrayList<>(size * 2); //reserve for up to two alarms per item
+            for (int i = 0; i < size; i++) {
+                futureAlarmsCached.addAll(items.get(i).getAllFutureAlarmRecordsUnsorted(now));
+            }
+            Item.sortAlarmRecords(futureAlarmsCached);
+        }
+        updateCachedAlarmRecords(now, forceReloadFromParse);
+        return futureAlarmsCached;
+    }
+
+    /**
+     * force recalculation
+     */
+    public void resetCachedFutureAlarmRecords() {
+        futureAlarmsCached = null;
+    }
+
+    private void resetCachedUnprocessedAlarmRecords() {
+        unprocessedAlarmsCached = null;
+    }
+
+    private void resetCachedAlarmRecords() {
+//        futureAlarmsCached = null;
+//        unprocessedAlarmsCached = null;
+        resetCachedFutureAlarmRecords();
+        resetCachedUnprocessedAlarmRecords();
+    }
+
+    private void updateCachedAlarmRecords(Date now, boolean forceReloadFromParse) {
+//        Date firstUnprocessedDate = getFirstUnprocessedAlarmDate();
+//        Date firstUnprocessedDate = now;
+//        Date lastUnprocessedDate = getLastUnprocessedAlarmDate(now);
+        Date lastUnprocessedDate = getLastUnprocessedAlarmDate(now);
+        Date firstUnprocessedDate = getFirstUnprocessedAlarmDate(lastUnprocessedDate);
+        Date firstFutureDate = lastUnprocessedDate;
+
+        if (true || forceReloadFromParse || unprocessedAlarmsCached == null || futureAlarmsCached == null) { //true: for now force recalc of cached lists (some case doesn't update them right)
+            ItemList unprocessedItemList = DAO.getInstance().fetchDynamicNamedItemList(DAO.SYSTEM_LIST_UNPROCESSED_ALARM_ITEMS, forceReloadFromParse, now);
+            List<Item> itemsWithUnprocessed = unprocessedItemList.getListFull();
+            int unprocessedSize = itemsWithUnprocessed.size();
+
+//            List<AlarmRecord> unprocessedAlarms = new ArrayList<>(size * 2); //reserve for up to two alarms per item
+            unprocessedAlarmsCached = new ArrayList<>(unprocessedSize * 2); //reserve for up to two alarms per item
+            for (int i = 0; i < unprocessedSize; i++) {
+                unprocessedAlarmsCached.addAll(itemsWithUnprocessed.get(i).getUnprocessedAlarms(firstUnprocessedDate, lastUnprocessedDate, false)); //no sorting of individual alarm records necessary
+            }
+
+            Item.sortAlarmRecords(unprocessedAlarmsCached);
+
+//             if (true || futureAlarmsCached == null || forceReloadFromParse) { //
+            ItemList futureItemList = DAO.getInstance().fetchDynamicNamedItemList(DAO.SYSTEM_LIST_FUTURE_ALARM_ITEMS, forceReloadFromParse, now);
+            List<Item> futureItems = futureItemList.getListFull();
+//            Date firstFutureDate = new MyDate(); //use same 'now'
+            int futureSize = futureItems.size();
+//        List<AlarmRecord> futureAlarms = new ArrayList<>(size * 2); //reserve for up to two alarms per item
+            futureAlarmsCached = new ArrayList<>(futureSize * 2); //reserve for up to two alarms per item
+            for (int i = 0; i < futureSize; i++) {
+//                futureAlarmsCached.addAll(futureItems.get(i).getAllFutureAlarmRecordsUnsorted(firstFutureDate));
+                futureAlarmsCached.addAll(futureItems.get(i).getAllFutureAlarmRecordsUnsorted(firstUnprocessedDate)); //firstUnprocessedDate to get any alarms that may have expired since last call
+            }
+//            Item.sortAlarmRecords(futureAlarmsCached);
+//        }
+        }
+        Item.sortAlarmRecords(futureAlarmsCached);
+
+//        Date firstFutureDate = getFirstFutureAlarmDate();
+//        boolean futureAlarmsChanged = false;
+        //update both in case time has passed!!
+//        while (futureAlarmsCached != null && futureAlarmsCached.size() > 0 && MyDate.isBefore(futureAlarmsCached.get(0).alarmTime, firstFutureDate)) {
+//        while (futureAlarmsCached.size() > 0 && MyDate.isBefore(futureAlarmsCached.get(0).alarmTime, firstFutureDate)) {
+//        for (AlarmRecord alarmRecord : futureAlarmsCached) { //do ALL records
+        {
+            Iterator<AlarmRecord> future = futureAlarmsCached.iterator(); //do ALL records
+            while (future.hasNext()) {
+                AlarmRecord alarmRecord = future.next();
+//            if (MyDate.isBefore(futureAlarmsCached.get(0).alarmTime, firstFutureDate)) {
+//                unprocessedAlarmsCached.add(futureAlarmsCached.remove(0)); //add expired alarmRecord to Unprocessed
+//            }
+                if (MyDate.isBefore(alarmRecord.alarmTime, firstFutureDate)) {
+                    unprocessedAlarmsCached.add(alarmRecord); //add expired alarmRecord to Unprocessed
+//                    futureAlarmsCached.remove(alarmRecord);
+                    future.remove();
+                }
+            }
+        }
+//        Date firstUnprocessedDate = getFirstUnprocessedAlarmDate();
+//        while (unprocessedAlarmsCached != null && unprocessedAlarmsCached.size() > 0 && MyDate.isBefore(unprocessedAlarmsCached.get(0).alarmTime, firstUnprocessedDate)) {
+        //remove too old (expired) unprocessed alarmRecords
+//        while (unprocessedAlarmsCached.size() > 0 && MyDate.isBefore(unprocessedAlarmsCached.get(0).alarmTime, firstUnprocessedDate)) {
+//        for (AlarmRecord alarmRecord : unprocessedAlarmsCached) {
+        Iterator<AlarmRecord> unprocessed = unprocessedAlarmsCached.iterator();
+        while (unprocessed.hasNext()) {
+            AlarmRecord alarmRecord = unprocessed.next();
+//            if (MyDate.isBefore(unprocessedAlarmsCached.get(0).alarmTime, firstUnprocessedDate)) {
+//                unprocessedAlarmsCached.remove(0);
+//            }
+            if (MyDate.isBefore(alarmRecord.alarmTime, firstUnprocessedDate)) {
+//                unprocessedAlarmsCached.remove(alarmRecord);
+                unprocessed.remove();
+            }
+        }
+        Item.sortAlarmRecords(unprocessedAlarmsCached); //NB sort *after* adding possibly expired future alarms to unprocessed!
+    }
+
     public ItemList fetchDynamicNamedItemList(String name, boolean forceReloadFromParse) {
+        return fetchDynamicNamedItemList(name, forceReloadFromParse, null);
+    }
+
+    public ItemList fetchDynamicNamedItemList(String name, boolean forceReloadFromParse, Date now) {
 //        String name = DAO.SYSTEM_LIST_OVERDUE;
 //        refreshCachedList();
+        boolean refreshFromCache = true;
         ItemList tempItemList = (ItemList) cacheGetNamedItemList(name); //cahce: name -> objectIdP
         if (tempItemList == null) {
             tempItemList = ItemList.makeSystemList(name);
@@ -2025,7 +2222,7 @@ public class DAO {
         }
         if (tempItemList.isExpired() || forceReloadFromParse) {
             if (Config.TEST) {
-                Log.p("update dynamic list=" + name + "; expires=" + MyDate.formatDateNew(tempItemList.getExpireDate()));
+                Log.p("update dynamic list=" + name + "; expires=" + MyDate.formatDateTimeNew(tempItemList.getExpireDate()));
             }
             ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
             setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
@@ -2058,8 +2255,8 @@ public class DAO {
                 case SYSTEM_LIST_TODAY:
                     results = getToday();
                     break;
-                case SYSTEM_LIST_TOUCHED:
-                    query.whereGreaterThanOrEqualTo(Item.PARSE_UPDATED_AT, getTouchedLogStartDate());
+                case SYSTEM_LIST_EDITED:
+                    query.whereGreaterThanOrEqualTo(Item.PARSE_UPDATED_AT, getEditedLogStartDate());
                     break;
                 case SYSTEM_LIST_WORKSLOTS:
 //                    results=getWorkSlotsFromCacheOrParse(cacheExpiryDate, cacheExpiryDate, forceReloadFromParse);
@@ -2073,8 +2270,53 @@ public class DAO {
 //                            new MyDate(MyDate.getEndOfToday().getTime() - MyPrefs.statisticsScreenDaysBeforeTodayToExclude.getInt() * MyDate.DAY_IN_MILLISECONDS)); //end of interval is now (*end* of last day in interval)
                     query.whereGreaterThanOrEqualTo(Item.PARSE_COMPLETED_DATE, getStatisticsStartDate());
                     query.whereLessThanOrEqualTo(Item.PARSE_COMPLETED_DATE, getStatisticsEndDate()); //end of interval is now (*end* of last day in interval)
-//            if (onlyLeafTasks) 
-//                query.whereDoesNotExist(Item.PARSE_SUBTASKS);
+                    break;
+                case SYSTEM_LIST_FUTURE_ALARM_ITEMS:
+                    if (false) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+////                    query.whereNotEqualTo(Item.PARSE_STATUS, ItemStatus.DONE.toString()); //already excluded above
+////                    Date earliestAlarmDate = getEarliestAlarmDate(); // MyDate();
+////                    Date latestAlarmDate = getLatestAlarmDate(); //new MyDate(earliestAlarmDate.getTime() + MyDate.DAY_IN_MILLISECONDS);
+////                    /* the logic for below query: want all items with alarms potentially between earliest and last, this is equivalent to excluding all
+////                    where FIRST > latest OR LAST < earliest <=> FIRST <= latest && LAST >= earlist. This is likely going to return too many tasks, e.g. those were FIRST
+////                    is in the past and LAST is too far ahead in the future, but it shouldn't miss any releavnt tasks. */
+////                    query.whereLessThanOrEqualTo(Item.PARSE_FIRST_ALARM, latestAlarmDate);
+////                    query.whereLessThanOrEqualTo(Item.PARSE_LAST_ALARM, earliestAlarmDate); //end of interval is now (*end* of last day in interval)
+//                        Date earliestAlarmDate = getEarliestAlarmDate(); // MyDate();
+//                        Date latestAlarmDate = getLatestAlarmDate(); //new MyDate(earliestAlarmDate.getTime() + MyDate.DAY_IN_MILLISECONDS);
+//                        /* the logic for below query: want all items with alarms potentially between earliest and last, this is equivalent to excluding all
+//                    where FIRST > latest OR LAST < earliest <=> FIRST <= latest && LAST >= earlist. This is likely going to return too many tasks, e.g. those were FIRST
+//                    is in the past and LAST is too far ahead in the future, but it shouldn't miss any releavnt tasks. */
+//                        query.whereLessThanOrEqualTo(Item.PARSE_FIRST_ALARM, latestAlarmDate);
+//                        query.whereLessThanOrEqualTo(Item.PARSE_LAST_ALARM, earliestAlarmDate); //end of interval is now (*end* of last day in interval)
+//</editor-fold>
+                    } else {
+                        if (now == null) {
+                            now = new MyDate();
+                        }
+//                        results = getItemsWithFutureAlarms(xxx, cachedExpiryEditedLog, cachedExpiryCreationLog, cachedExpiryEditedLog, PARSE_OBJECTID_LENGTH);
+                        results = getItemsWithFutureAlarms(now);
+                        refreshFromCache = false;
+//                        futureAlarmsCached = null;
+                        resetCachedFutureAlarmRecords();
+//                        resetCachedAlarmRecords(); //NO, this will not work when list is fetched from updateCachedAlarmRecords()
+//                        AlarmHandler.getInstance().updateLocalNotificationsOnChange();
+                    }
+                    break;
+                case SYSTEM_LIST_UNPROCESSED_ALARM_ITEMS:
+                    if (now == null) {
+                        now = new MyDate();
+                    }
+//                    query.whereExists(Item.PARSE_PENDING_ALARMS);
+                    results = getItemsWithUnprocessedAlarms(now);
+                    refreshFromCache = false;
+//                    unprocessedAlarmsCached=null;
+                    resetCachedUnprocessedAlarmRecords();
+//                    resetCachedAlarmRecords();
+                    break;
+//                case SYSTEM_LIST_TEMPLATES:
+                default:
+                    ASSERT.that("unexpected case=" + name);
                     break;
             }
             if (results == null) {
@@ -2085,7 +2327,10 @@ public class DAO {
                 }
             }
             if (results != null) {
-                fetchListElementsIfNeededReturnCachedIfAvail(results);
+                if (refreshFromCache) { //not necessary when list comes from e.g. getItemsWithUnprocessedAlarms() which already calls fetch
+                    fetchListElementsIfNeededReturnCachedIfAvail(results);
+                }
+
                 sortSystemList(name, results); //sort
 //                if (name.equals(SYSTEM_LIST_WORKSLOTS)) {
 //                    removeExpiredWorkSlots(results, true);
@@ -2104,8 +2349,12 @@ public class DAO {
         return tempItemList;
     }
 
-    private void checkAndRefreshSystemList(String name, ItemAndListCommonInterface element, boolean delete) {
-        ItemList itemList = fetchDynamicNamedItemList(name, false);
+    private void refreshSystemList(String name, ItemAndListCommonInterface element, boolean delete) {
+        refreshSystemList(name, element, delete, new MyDate());
+    }
+
+    private void refreshSystemList(String name, ItemAndListCommonInterface element, boolean delete, Date now) {
+        ItemList itemList = fetchDynamicNamedItemList(name, false, now);
         List elements = itemList.getListFull();
         if (delete) {
             elements.remove(element);
@@ -2136,12 +2385,26 @@ public class DAO {
                     case SYSTEM_LIST_TODAY:
                         add = item.hasTodayDates();
                         break;
-                    case SYSTEM_LIST_TOUCHED:
+                    case SYSTEM_LIST_EDITED:
                         add = (item.getEditedDate() == null || item.getEditedDate().getTime() >= getEditedLogStartDate().getTime());
                         break;
                     case SYSTEM_LIST_STATISTICS:
                         add = (item.getCompletedDate().getTime() >= getStatisticsStartDate().getTime()
                                 && item.getCompletedDate().getTime() <= getStatisticsEndDate().getTime());
+                        break;
+                    case SYSTEM_LIST_FUTURE_ALARM_ITEMS:
+                        Date nextAlarm = item.getNextFutureAlarmN(); //except if Done
+                        add = (nextAlarm != null && nextAlarm.getTime() >= getFirstFutureAlarmDate(now).getTime() //==now
+                                && nextAlarm.getTime() <= getLastFutureAlarmDate(now).getTime()); //==endOfDay(now+30j)
+//                        futureAlarmsCached = null;
+                        resetCachedFutureAlarmRecords();
+//                        resetCachedAlarmRecords(); //force reculculation
+                        break;
+                    case SYSTEM_LIST_UNPROCESSED_ALARM_ITEMS:
+                        add = !item.getUnprocessedAlarms(now).isEmpty();
+//                        unprocessedAlarmsCached = null;
+                        resetCachedUnprocessedAlarmRecords();
+//                        resetCachedAlarmRecords(); //force reculculation
                         break;
                     default:
                         add = false;
@@ -2277,6 +2540,10 @@ public class DAO {
     }
 
     public int getBadgeCount(boolean returnLeafTaskCount) {
+        return getBadgeCount(returnLeafTaskCount, false);
+    }
+
+    public int getBadgeCount(boolean returnLeafTaskCount, boolean forceRefresh) {
         //UI: badgecount includes all elements shown in Today view (counting leaf-tasks for Projects!)
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        return getDueAndOrWaitingTodayCount(includeWaiting, includeStartingToday);
@@ -2307,19 +2574,22 @@ public class DAO {
             Log.p("performBackgroundFetch-getBadgeCount() - Today before refresh = " + getToday());
         }
 
-        getToday(true); //force update
+        getToday(forceRefresh); //force update
+
         if (Config.TEST) {
             Log.p("performBackgroundFetch-getBadgeCount() - Today AFTER refresh = " + getToday());
         }
         if (returnLeafTaskCount) {
-            getToday();
+//            getToday();
             int nbLeafTasks = ItemList.getNumberOfUndoneItems(getToday(), returnLeafTaskCount);
             if (Config.TEST) {
                 Log.p("performBackgroundFetch-getBadgeCount() - nbLeafTasks=" + nbLeafTasks);
             }
-            return ItemList.getNumberOfUndoneItems(getToday(), returnLeafTaskCount);
+//            return ItemList.getNumberOfUndoneItems(getToday(), returnLeafTaskCount);
+            return nbLeafTasks;
         } else {
-            int nbNonLeafTask = getToday().size();
+//            int nbNonLeafTask = getToday().size();
+            int nbNonLeafTask = ItemList.getNumberOfUndoneItems(getToday(), returnLeafTaskCount);
             if (Config.TEST) {
                 Log.p("performBackgroundFetch-getBadgeCount() - nbNonLeafTask=" + nbNonLeafTask);
             }
@@ -3275,9 +3545,9 @@ public class DAO {
                 ParseObject.GUID,
                 //
                 TimerInstance2.PARSE_TIMER_ELAPSED_TIME,
-                TimerInstance2.PARSE_TIMER_FULL_SCREEN,
+//                TimerInstance2.PARSE_TIMER_FULL_SCREEN,
                 TimerInstance2.PARSE_TIMER_START_TIME,
-                TimerInstance2.PARSE_TIMER_TIME_EVEN_INVALID_ITEMS,
+//                TimerInstance2.PARSE_TIMER_TIME_EVEN_INVALID_ITEMS,
                 TimerInstance2.PARSE_TIMER_WAS_RUNNING_WHEN_INTERRUPTED,
                 TimerInstance2.PARSE_TIMER_TASK_STATUS,
                 TimerInstance2.PARSE_TIMER_AUTO_NEXT,
@@ -3506,12 +3776,15 @@ public class DAO {
 //    public final static String SYSTEM_LIST_LOG = "Log"; //log of completed tasks "Done Log"
     public final static String SYSTEM_LIST_LOG = "Log"; //log of completed tasks "Done Log"
     public final static String SYSTEM_LIST_DIARY = "Diary"; //list of all tasks in order created, any status
-    public final static String SYSTEM_LIST_TOUCHED = "Touched"; //list of recently edited tasks (*not* changed since changed include update via inheritance or aggregration)
+    public final static String SYSTEM_LIST_EDITED = "Edited"; //list of recently edited tasks (*not* changed since changed include update via inheritance or aggregration)
     public final static String SYSTEM_LIST_ALL = "All";
     public final static String SYSTEM_LIST_PROJECTS = "Projects";
     public final static String SYSTEM_LIST_TEMPLATES = "Templates";
     public final static String SYSTEM_LIST_WORKSLOTS = "Workslots";
     public final static String SYSTEM_LIST_STATISTICS = "Statistics";
+    public final static String SYSTEM_LIST_FUTURE_ALARM_ITEMS = "FutureAlarmItems";
+    public final static String SYSTEM_LIST_UNPROCESSED_ALARM_ITEMS = "UnprocessedAlarms";
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public final static String SYSTEM_LIST_COMPLETION = "Completion";
 //                      CategoryList.CLASS_NAME);
 //            } else if (parseObject instanceof ItemListList) {
@@ -3524,7 +3797,6 @@ public class DAO {
 //        CategoryList.CLASS_NAME, ItemListList.CLASS_NAME, TemplateList.CLASS_NAME, Inbox.CLASS_NAME};//new ArrayList
 //    private final static String[] RESERVED_LIST_NAMES = {OVERDUE., TODAY., NEXT, LOG, DIARY, TOUCHED,
 //        CategoryList.CLASS_NAME, ItemListList.CLASS_NAME, TemplateList.CLASS_NAME, Inbox.CLASS_NAME};//new ArrayList
-//<editor-fold defaultstate="collapsed" desc="comment">
 //    private final static HashMap<String, ItemList> namedLists = new HashMap<>();
 
 //    public ItemList getNamedItemList(String name) {
@@ -4722,18 +4994,18 @@ public class DAO {
         return results;
     }
 
-    private Date getTouchedLogStartDate() {
-        return new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.touchedLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
-    }
-
-    private void sortTouchedLog(List<Item> list) {
-//        Collections.sort(list, (i1, i2) -> FilterSortDef.compareDate(i1.getCreatedAt(), i2.getCreatedAt()));
-        Collections.sort(list, (i1, i2) -> FilterSortDef.compareDate(i1.getUpdatedAt(), i2.getUpdatedAt())); //must put null values *first* since it would mean a new item not yet saved
-    }
-
+//    private Date getTouchedLogStartDate() {
+//        return new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.touchedLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
+//    }
+//
+//    private void sortTouchedLog(List<Item> list) {
+////        Collections.sort(list, (i1, i2) -> FilterSortDef.compareDate(i1.getCreatedAt(), i2.getCreatedAt()));
+//        Collections.sort(list, (i1, i2) -> FilterSortDef.compareDate(i1.getUpdatedAt(), i2.getUpdatedAt())); //must put null values *first* since it would mean a new item not yet saved
+//    }
 //    private List<Item> cachedTouchedLog;
     private Date cachedExpiryTouchedLog;
 
+//<editor-fold defaultstate="collapsed" desc="comment">
     /**
      * returns completed tasks by date modified
      *
@@ -4788,13 +5060,14 @@ public class DAO {
 //            }
 //        }
 //    }
+//</editor-fold>
     private Date getEditedLogStartDate() {
         return new MyDate(MyDate.getStartOfToday().getTime() - MyPrefs.editedLogInterval.getInt() * MyDate.DAY_IN_MILLISECONDS);
     }
 
     private void sortEditedLog(List<Item> list) {
 //        Collections.sort(list, (i1, i2) -> FilterSortDef.compareDate(i1.getCreatedAt(), i2.getCreatedAt()));
-        Collections.sort(list, (i1, i2) -> FilterSortDef.compareDate(i1.getEditedDate(), i2.getEditedDate())); //must put null values *first* since it would mean a new item not yet saved
+        Collections.sort(list, (i1, i2) -> FilterSortDef.compareDate(i2.getEditedDate(), i1.getEditedDate())); //must put null values *first* since it would mean a new item not yet saved
     }
 
     private List<Item> cachedEditedLog;
@@ -5085,31 +5358,35 @@ public class DAO {
             Item item = (Item) element;
             //each call below can, and should, be callable multiple times with the same items without it causing any issues 
 //            checkAndRefreshToday(item, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_TODAY, item, delete);
+            refreshSystemList(SYSTEM_LIST_TODAY, item, delete);
 //            checkAndRefreshAllProjects(item, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_PROJECTS, item, delete);
+            refreshSystemList(SYSTEM_LIST_PROJECTS, item, delete);
 //            checkAndRefreshAllTasks(item, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_ALL, item, delete);
+            refreshSystemList(SYSTEM_LIST_ALL, item, delete);
 //            checkAndRefreshCompletedLog(item, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_LOG, item, delete);
+            refreshSystemList(SYSTEM_LIST_LOG, item, delete);
 //            checkAndRefreshCreationLog(item, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_DIARY, item, delete);
+            refreshSystemList(SYSTEM_LIST_DIARY, item, delete);
 //            checkAndRefreshEditedLog(item, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_TOUCHED, item, delete);
+            refreshSystemList(SYSTEM_LIST_EDITED, item, delete);
 //            checkAndRefreshNext(item, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_NEXT, item, delete);
+            refreshSystemList(SYSTEM_LIST_NEXT, item, delete);
 //            checkAndRefreshOverdue(item, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_OVERDUE, item, delete);
+            refreshSystemList(SYSTEM_LIST_OVERDUE, item, delete);
 //            checkAndRefreshTouchedLog(item, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_TEMPLATES, item, delete);
+            if (false) {
+                refreshSystemList(SYSTEM_LIST_TEMPLATES, item, delete);
+            }
 //            checkAndRefreshCompletionLog(item, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_STATISTICS, item, delete);
+            refreshSystemList(SYSTEM_LIST_STATISTICS, item, delete);
+            refreshSystemList(SYSTEM_LIST_FUTURE_ALARM_ITEMS, item, delete);
+            refreshSystemList(SYSTEM_LIST_UNPROCESSED_ALARM_ITEMS, item, delete);
         } else if (element instanceof WorkSlot) {
             WorkSlot workSlot = (WorkSlot) element;
 //            checkAndRefreshToday(workSlot, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_TODAY, workSlot, delete);
+            refreshSystemList(SYSTEM_LIST_TODAY, workSlot, delete);
 //            checkAndRefreshActiveWorkSlots((WorkSlot) element, delete);
-            checkAndRefreshSystemList(SYSTEM_LIST_WORKSLOTS, workSlot, delete);
+            refreshSystemList(SYSTEM_LIST_WORKSLOTS, workSlot, delete);
         }
     }
 
@@ -7611,175 +7888,531 @@ public class DAO {
      * @param maxNumberItemsToRetrieve
      * @return only future dates, sorted
      */
-    public List<Item> getItemsWithNextcomingAlarms(int maxNumberItemsToRetrieve) {
-        return getItemsWithNextcomingAlarms(maxNumberItemsToRetrieve, false);
+//    public List<Item> getItemsWithNextcomingAlarms(int maxNumberItemsToRetrieve) {
+//        return getItemsWithNextcomingAlarms(maxNumberItemsToRetrieve, false);
+//    }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public List<Item> getItemsWithNextcomingAlarmsOLD(int maxNumberItemsToRetrieve, boolean backgroundFetch) {
+//        //TODO!!!! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
+//        //TODO possible to query on items where alarmTimes are stored in an array (e.g. get all items for which at least one alarmTime in the array falls within the searched interval)??
+//        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//        setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (false) {
+////            query.whereLessThan(Item.PARSE_NEXTCOMING_ALARM, new Date(MyDate.currentTimeMillis() + MyPrefs.alarmDaysAheadToFetchFutureAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS)); //don't search more than 30 days ahead in the future // NO real reason to limit the number
+////        } else {
+////            query.whereExists(Item.PARSE_NEXTCOMING_ALARM);
+////            query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on date
+////        }
+////        if (false) {
+////            query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on the alarm field
+////        }
+////        if (false) { //probably no reason not to simply fetch all default fields (and no need for referenced parseObjects' guid?!)
+////            if (backgroundFetch) {
+////                Log.p("getItemsWithNextcomingAlarms w *backgroundFetch* - is memoryCache empty?! cache.size=" + DAO.getInstance().cache.getCurrentMemoryCacheSize());
+////                if (false) { //just get all fields for simplicity (avoid some data is missing //optimization:
+////                    query.selectKeys(new ArrayList(Arrays.asList(ParseObject.GUID, Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE,
+////                            Item.PARSE_WAITING_ALARM_DATE, Item.PARSE_SNOOZE_DATE))); // just fetchFromCacheOnly the data needed to set alarms //TODO!! investigate if only fetching the relevant fields is a meaningful optimziation (check that only the fetched fields are used!)
+////                }
+////            } else {
+//////            query.selectKeys(new ArrayList()); // just fetch minimu
+////                query.selectKeys(Arrays.asList(ParseObject.GUID)); // just fetch minimu
+////            }
+////            query.selectKeys(Arrays.asList(
+////                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID,
+////                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID,
+////                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID
+////            ));
+////        }
+////</editor-fold>
+//        query.whereExists(Item.PARSE_NEXTCOMING_ALARM);
+//        query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on date
+//
+//        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//        query.setLimit(maxNumberItemsToRetrieve);
+//        List<Item> itemWithNextComingAlarms;
+//        int numberOfItemsRetrieved;
+//
+//        do { //repeat until we have at least some future results (if all retrieved results had nextcoming data in the past)
+////        List<Item> results = null;
+//            itemWithNextComingAlarms = null;
+//            try {
+//                itemWithNextComingAlarms = query.find();
+////            fetchAllElementsInSublist(results); //NO - this may be called while app is not active, so cahce not loaded
+////            return results;
+//            } catch (ParseException ex) {
+//                Log.e(ex);
+//            }
+//            if (true || !backgroundFetch) { //app will always be started and all objects in memory
+//                fetchListElementsIfNeededReturnCachedIfAvail(itemWithNextComingAlarms); //only get in cache when not started in background
+//            }
+//            numberOfItemsRetrieved = itemWithNextComingAlarms.size();
+//
+//            //remove all items where getNextcomingAlarmDateD is no longer valid (time has passed and getNextcomingAlarm() returns another later value or null - meaning no more alarms)
+//            List<Item> expired = new ArrayList();
+//            //Solution from http://stackoverflow.com/questions/122105/what-is-the-best-way-to-filter-a-java-collection :
+//            Iterator<Item> it = itemWithNextComingAlarms.iterator();
+//            Date nextAlarmDateInParse;
+////            Date futureDate;
+//            Date latestAlarmDate = new Date(MyDate.MIN_DATE); //time of the last alarm received from Parse server
+//            while (it.hasNext()) {
+//                Item itemWithNextComingAlarm = it.next();
+//                nextAlarmDateInParse = itemWithNextComingAlarm.getNextcomingAlarmFromParseN(); //should never be null because we've fetched items only with next alarms
+//                ASSERT.that(nextAlarmDateInParse != null, "all items with next alarm should have a defined nextAlarmDate, item=" + itemWithNextComingAlarm);
+//                //keep track of the latest next alarm in the search result
+//                if (nextAlarmDateInParse != null && nextAlarmDateInParse.getTime() > latestAlarmDate.getTime()) {
+//                    latestAlarmDate = nextAlarmDateInParse; //gather latest alarm date as we iterate through the items
+//                }
+//                Date nextComingAlarmDateN = itemWithNextComingAlarm.getNextcomingAlarmN(); //may return null if alarm has expired since
+////                if (nextComingAlarmDateN == null || (nextAlarmDateInParse == null && nextComingAlarmDateN.getTime() != nextAlarmDateInParse.getTime())) { //if there's no longer a future alarm, or it has changed, add to expired for an update
+//                if (nextComingAlarmDateN == null || nextComingAlarmDateN.getTime() != nextAlarmDateInParse.getTime()) { //if there's no longer a future alarm, or it has changed, add to expired for an update
+//                    expired.add(itemWithNextComingAlarm);
+//                    it.remove();
+//                }
+//            }
+//
+//            if (false) { //not necessary anymore because done above
+//                fetchListElementsIfNeededReturnCachedIfAvail(expired); //ensure all expired items point to cache before updating and potentially saving them below
+//            }
+//            //if any of the items with expired alarms have a new alarm that is within the range of the other items, then keep it (add it back in the list)
+////            Date lastAlarmDate = results.get(results.size() - 1).getNextcomingAlarmDateD();
+//            List<ParseObject> updated = new ArrayList();
+//            for (int i = 0, size = expired.size(); i < size; i++) {
+//                //TODO! move this processing into the loop above
+//                Item expItem = expired.get(i);
+////            Date firstFutureAlarm = expItem.getNextcomingAlarm(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
+////            expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
+//                expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
+//                Date newFirstAlarm = expItem.getNextcomingAlarmFromParseN(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
+//                updated.add(expItem); //save for a ParseServer update whether now null or with new value
+//                if (newFirstAlarm != null && newFirstAlarm.getTime() <= latestAlarmDate.getTime()) {
+//                    itemWithNextComingAlarms.add(expItem); //add the updated Items which do have a future alarm within the same interval as the other alarms retrieved (less than lastAlarmDate)
+//                }
+//            }
+////<editor-fold defaultstate="collapsed" desc="comment">
+//// save the updated Items in a batch //optimization: do this as background task to avoid blocking the event thread
+////            if (!updated.isEmpty()) {
+////                try {
+////                    ParseBatch parseBatch = ParseBatch.create();
+////                    parseBatch.addObjects(updated, ParseBatch.EBatchOpType.UPDATE);
+////                    parseBatch.execute();
+////                } catch (ParseException ex) {
+////                    Log.e(ex);
+////                }
+////            }
+////</editor-fold>
+////            saveBatch(updated);
+////            saveNew(updated);
+////            triggerParseUpdate();
+//            saveToParseNow(updated); //save in background
+//        } while (!backgroundFetch && (itemWithNextComingAlarms.isEmpty() && maxNumberItemsToRetrieve == numberOfItemsRetrieved)); //repeat in case every retrieved alarm was expired and we retrieved the maximum number (meaning there are like more alarms to retrieve)
+////        results.addAll(updated); //add the updated ones to results
+//        //sort the results
+//        if (itemWithNextComingAlarms != null && !itemWithNextComingAlarms.isEmpty()) {
+//            Collections.sort(itemWithNextComingAlarms, (object1, object2) -> {
+//                if (((Item) object1).getNextcomingAlarmFromParseN() == null) {
+//                    return -1;
+//                }
+//                if (((Item) object2).getNextcomingAlarmFromParseN() == null) {
+//                    return 1;
+//                }
+//                return FilterSortDef.compareDate(object1.getNextcomingAlarmFromParseN(), object2.getNextcomingAlarmFromParseN());
+//            });
+//        }
+//        return itemWithNextComingAlarms;
+//    }
+//</editor-fold>
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public List<Item> getItemsWithNextcomingAlarms(int maxNumberItemsToRetrieve, boolean backgroundFetch) {
+//        //TODO!!!! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
+//        //TODO possible to query on items where alarmTimes are stored in an array (e.g. get all items for which at least one alarmTime in the array falls within the searched interval)??
+//        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
+//        setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
+////<editor-fold defaultstate="collapsed" desc="comment">
+////        if (false) {
+////            query.whereLessThan(Item.PARSE_NEXTCOMING_ALARM, new Date(MyDate.currentTimeMillis() + MyPrefs.alarmDaysAheadToFetchFutureAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS)); //don't search more than 30 days ahead in the future // NO real reason to limit the number
+////        } else {
+////            query.whereExists(Item.PARSE_NEXTCOMING_ALARM);
+////            query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on date
+////        }
+////        if (false) {
+////            query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on the alarm field
+////        }
+////        if (false) { //probably no reason not to simply fetch all default fields (and no need for referenced parseObjects' guid?!)
+////            if (backgroundFetch) {
+////                Log.p("getItemsWithNextcomingAlarms w *backgroundFetch* - is memoryCache empty?! cache.size=" + DAO.getInstance().cache.getCurrentMemoryCacheSize());
+////                if (false) { //just get all fields for simplicity (avoid some data is missing //optimization:
+////                    query.selectKeys(new ArrayList(Arrays.asList(ParseObject.GUID, Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE,
+////                            Item.PARSE_WAITING_ALARM_DATE, Item.PARSE_SNOOZE_DATE))); // just fetchFromCacheOnly the data needed to set alarms //TODO!! investigate if only fetching the relevant fields is a meaningful optimziation (check that only the fetched fields are used!)
+////                }
+////            } else {
+//////            query.selectKeys(new ArrayList()); // just fetch minimu
+////                query.selectKeys(Arrays.asList(ParseObject.GUID)); // just fetch minimu
+////            }
+////            query.selectKeys(Arrays.asList(
+////                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID,
+////                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID,
+////                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID
+////            ));
+////        }
+////</editor-fold>
+//        query.whereExists(Item.PARSE_NEXTCOMING_ALARM);
+//        query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on date
+//
+//        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//        query.setLimit(maxNumberItemsToRetrieve);
+//        List<Item> itemWithNextComingAlarms;
+//        int numberOfItemsRetrieved;
+//
+//        do { //repeat until we have at least some future results (if all retrieved results had nextcoming data in the past)
+////        List<Item> results = null;
+//            itemWithNextComingAlarms = null;
+//            try {
+//                itemWithNextComingAlarms = query.find();
+////            fetchAllElementsInSublist(results); //NO - this may be called while app is not active, so cahce not loaded
+////            return results;
+//            } catch (ParseException ex) {
+//                Log.e(ex);
+//            }
+//            if (true || !backgroundFetch) { //app will always be started and all objects in memory
+//                fetchListElementsIfNeededReturnCachedIfAvail(itemWithNextComingAlarms); //only get in cache when not started in background
+//            }
+//            numberOfItemsRetrieved = itemWithNextComingAlarms.size();
+//
+//            //remove all items where getNextcomingAlarmDateD is no longer valid (time has passed and getNextcomingAlarm() returns another later value or null - meaning no more alarms)
+//            List<Item> expired = new ArrayList();
+//            //Solution from http://stackoverflow.com/questions/122105/what-is-the-best-way-to-filter-a-java-collection :
+//            Iterator<Item> it = itemWithNextComingAlarms.iterator();
+//            Date nextAlarmDateInParse;
+////            Date futureDate;
+//            Date latestAlarmDate = new Date(MyDate.MIN_DATE); //time of the last alarm received from Parse server
+//            while (it.hasNext()) {
+//                Item itemWithNextComingAlarm = it.next();
+//                nextAlarmDateInParse = itemWithNextComingAlarm.getNextcomingAlarmFromParseN(); //should never be null because we've fetched items only with next alarms
+//                ASSERT.that(nextAlarmDateInParse != null, "all items with next alarm should have a defined nextAlarmDate, item=" + itemWithNextComingAlarm);
+//                //keep track of the latest next alarm in the search result
+//                if (nextAlarmDateInParse != null && nextAlarmDateInParse.getTime() > latestAlarmDate.getTime()) {
+//                    latestAlarmDate = nextAlarmDateInParse; //gather latest alarm date as we iterate through the items
+//                }
+//                Date nextComingAlarmDateN = itemWithNextComingAlarm.getNextcomingAlarmN(); //may return null if alarm has expired since
+////                if (nextComingAlarmDateN == null || (nextAlarmDateInParse == null && nextComingAlarmDateN.getTime() != nextAlarmDateInParse.getTime())) { //if there's no longer a future alarm, or it has changed, add to expired for an update
+//                if (nextComingAlarmDateN == null || nextComingAlarmDateN.getTime() != nextAlarmDateInParse.getTime()) { //if there's no longer a future alarm, or it has changed, add to expired for an update
+//                    expired.add(itemWithNextComingAlarm);
+//                    it.remove();
+//                }
+//            }
+//
+//            if (false) { //not necessary anymore because done above
+//                fetchListElementsIfNeededReturnCachedIfAvail(expired); //ensure all expired items point to cache before updating and potentially saving them below
+//            }
+//            //if any of the items with expired alarms have a new alarm that is within the range of the other items, then keep it (add it back in the list)
+////            Date lastAlarmDate = results.get(results.size() - 1).getNextcomingAlarmDateD();
+//            List<ParseObject> updated = new ArrayList();
+//            for (int i = 0, size = expired.size(); i < size; i++) {
+//                //TODO! move this processing into the loop above
+//                Item expItem = expired.get(i);
+////            Date firstFutureAlarm = expItem.getNextcomingAlarm(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
+////            expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
+//                expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
+//                Date newFirstAlarm = expItem.getNextcomingAlarmFromParseN(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
+//                updated.add(expItem); //save for a ParseServer update whether now null or with new value
+//                if (newFirstAlarm != null && newFirstAlarm.getTime() <= latestAlarmDate.getTime()) {
+//                    itemWithNextComingAlarms.add(expItem); //add the updated Items which do have a future alarm within the same interval as the other alarms retrieved (less than lastAlarmDate)
+//                }
+//            }
+////<editor-fold defaultstate="collapsed" desc="comment">
+//// save the updated Items in a batch //optimization: do this as background task to avoid blocking the event thread
+////            if (!updated.isEmpty()) {
+////                try {
+////                    ParseBatch parseBatch = ParseBatch.create();
+////                    parseBatch.addObjects(updated, ParseBatch.EBatchOpType.UPDATE);
+////                    parseBatch.execute();
+////                } catch (ParseException ex) {
+////                    Log.e(ex);
+////                }
+////            }
+////</editor-fold>
+////            saveBatch(updated);
+////            saveNew(updated);
+////            triggerParseUpdate();
+//            saveToParseNow(updated); //save in background
+//        } while (!backgroundFetch && (itemWithNextComingAlarms.isEmpty() && maxNumberItemsToRetrieve == numberOfItemsRetrieved)); //repeat in case every retrieved alarm was expired and we retrieved the maximum number (meaning there are like more alarms to retrieve)
+////        results.addAll(updated); //add the updated ones to results
+//        //sort the results
+//        if (itemWithNextComingAlarms != null && !itemWithNextComingAlarms.isEmpty()) {
+//            Collections.sort(itemWithNextComingAlarms, (object1, object2) -> {
+//                if (((Item) object1).getNextcomingAlarmFromParseN() == null) {
+//                    return -1;
+//                }
+//                if (((Item) object2).getNextcomingAlarmFromParseN() == null) {
+//                    return 1;
+//                }
+//                return FilterSortDef.compareDate(object1.getNextcomingAlarmFromParseN(), object2.getNextcomingAlarmFromParseN());
+//            });
+//        }
+//        return itemWithNextComingAlarms;
+//    }
+//</editor-fold>
+//    public List<Item> getItemsWithUncancelledAlarms(int maxNumberItemsToRetrieve, Date firstDayForAlarms, Date lastDayForAlarms, boolean extendToStartEndOfDays, int daysAhead) {
+    public List<Item> getItemsWithUnprocessedAlarms() {
+        return getItemsWithUnprocessedAlarms(new MyDate());
     }
 
-    public List<Item> getItemsWithNextcomingAlarms(int maxNumberItemsToRetrieve, boolean backgroundFetch) {
+    public List<Item> getItemsWithUnprocessedAlarms(Date now) {
         //TODO!!!! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
         //TODO possible to query on items where alarmTimes are stored in an array (e.g. get all items for which at least one alarmTime in the array falls within the searched interval)??
-        ParseQuery<Item> query = ParseQuery.getQuery(Item.CLASS_NAME);
-        setupItemQueryNotTemplateNotDeletedLimit10000(query, true);
 //<editor-fold defaultstate="collapsed" desc="comment">
-//        if (false) {
-//            query.whereLessThan(Item.PARSE_NEXTCOMING_ALARM, new Date(MyDate.currentTimeMillis() + MyPrefs.alarmDaysAheadToFetchFutureAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS)); //don't search more than 30 days ahead in the future // NO real reason to limit the number
+//        Date lastAlarmDateToRetrieve = extendToStartEndOfDays
+//                ? MyDate.getEndOfDay(new MyDate(lastDayForAlarms.getTime()))
+//                : lastDayForAlarms; //startOfDay to get all alarms on the day, not only from time-of-day in latestDayForAlarms
+//        Date firstAlarmDateToRetrieve;
+//        if (firstDayForAlarms == null) {
+//            firstAlarmDateToRetrieve = extendToStartEndOfDays
+//                    ? MyDate.getStartOfDay(new MyDate(lastDayForAlarms.getTime() - MyPrefs.alarmPastDaysToFetchUncancelledAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS))
+//                    : new MyDate(lastDayForAlarms.getTime() - MyPrefs.alarmPastDaysToFetchUncancelledAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS); //startOfDay to get all alarms on the day, not only from time-of-day in latestDayForAlarms
 //        } else {
-//            query.whereExists(Item.PARSE_NEXTCOMING_ALARM);
-//            query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on date
+//            firstAlarmDateToRetrieve = extendToStartEndOfDays
+//                    ? MyDate.getStartOfDay(firstDayForAlarms)
+//                    : firstDayForAlarms; //startOfDay to get all alarms on the day, not only from time-of-day in latestDayForAlarms
 //        }
-//        if (false) {
-//            query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on the alarm field
-//        }
-//        if (false) { //probably no reason not to simply fetch all default fields (and no need for referenced parseObjects' guid?!)
-//            if (backgroundFetch) {
-//                Log.p("getItemsWithNextcomingAlarms w *backgroundFetch* - is memoryCache empty?! cache.size=" + DAO.getInstance().cache.getCurrentMemoryCacheSize());
-//                if (false) { //just get all fields for simplicity (avoid some data is missing //optimization:
-//                    query.selectKeys(new ArrayList(Arrays.asList(ParseObject.GUID, Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE,
-//                            Item.PARSE_WAITING_ALARM_DATE, Item.PARSE_SNOOZE_DATE))); // just fetchFromCacheOnly the data needed to set alarms //TODO!! investigate if only fetching the relevant fields is a meaningful optimziation (check that only the fetched fields are used!)
-//                }
-//            } else {
-////            query.selectKeys(new ArrayList()); // just fetch minimu
-//                query.selectKeys(Arrays.asList(ParseObject.GUID)); // just fetch minimu
-//            }
-//            query.selectKeys(Arrays.asList(
-//                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID,
-//                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID,
-//                    TemplateList.PARSE_ITEMS + "." + ParseObject.GUID
-//            ));
-//        }
+//        int maxNumberItemsToRetrieve = ; //no limit on number!! We retrieve all for the given time interval
 //</editor-fold>
-        query.whereExists(Item.PARSE_NEXTCOMING_ALARM);
-        query.addAscendingOrder(Item.PARSE_NEXTCOMING_ALARM); //sort on date
+//        Date lastAlarmDateToRetrieve = new MyDate(); //all alarms in the past
+        Date lastAlarmDateToRetrieve = getLastUnprocessedAlarmDate(now); //all alarms in the past
+//        Date firstAlarmDateToRetrieve = new MyDate(lastAlarmDateToRetrieve.getTime()
+//                - MyPrefs.alarmPastDaysToFetchUncancelledAlarms.getInt() * MyDate.DAY_IN_MILLISECONDS);
+        Date firstAlarmDateToRetrieve = getFirstUnprocessedAlarmDate(lastAlarmDateToRetrieve);
 
-        query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-        query.setLimit(maxNumberItemsToRetrieve);
-        List<Item> itemWithNextComingAlarms;
-        int numberOfItemsRetrieved;
+        //get items with past alarms that are neither Cancelled, nor Snoozed
+        ParseQuery<Item> queryReminderAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(queryReminderAlarm, true);
+        queryReminderAlarm.whereGreaterThanOrEqualTo(Item.PARSE_ALARM_DATE, firstAlarmDateToRetrieve);
+        queryReminderAlarm.whereLessThanOrEqualTo(Item.PARSE_ALARM_DATE, lastAlarmDateToRetrieve);
+        queryReminderAlarm.whereDoesNotExist(Item.PARSE_ALARM_CANCELLED);
+        queryReminderAlarm.whereDoesNotExist(Item.PARSE_ALARM_SNOOZE_DATE); //NB. normal alarm is ignored if it has been snoozed
+//        queryReminderAlarm.setLimit(maxNumberItemsToRetrieve);
+//        queryReminderAlarm.addAscendingOrder(Item.PARSE_ALARM_DATE); //sort on the alarm field
 
-        do { //repeat until we have at least some future results (if all retrieved results had nextcoming data in the past)
-//        List<Item> results = null;
-            itemWithNextComingAlarms = null;
-            try {
-                itemWithNextComingAlarms = query.find();
-//            fetchAllElementsInSublist(results); //NO - this may be called while app is not active, so cahce not loaded
-//            return results;
-            } catch (ParseException ex) {
-                Log.e(ex);
-            }
-            if (true || !backgroundFetch) { //app will always be started and all objects in memory
-                fetchListElementsIfNeededReturnCachedIfAvail(itemWithNextComingAlarms); //only get in cache when not started in background
-            }
-            numberOfItemsRetrieved = itemWithNextComingAlarms.size();
+        //get items with past Snoozed alarms
+        ParseQuery<Item> querySnoozedAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(querySnoozedAlarm, true);
+        querySnoozedAlarm.whereGreaterThanOrEqualTo(Item.PARSE_ALARM_SNOOZE_DATE, firstAlarmDateToRetrieve);
+        querySnoozedAlarm.whereLessThanOrEqualTo(Item.PARSE_ALARM_SNOOZE_DATE, lastAlarmDateToRetrieve); //NB! Snooze and Cancelled should be mutually exclusive (if a snooze is set, alarm cannot be cancelled)
+//        querySnoozedAlarm.setLimit(maxNumberItemsToRetrieve);
 
-            //remove all items where getNextcomingAlarmDateD is no longer valid (time has passed and getNextcomingAlarm() returns another later value or null - meaning no more alarms)
-            List<Item> expired = new ArrayList();
-            //Solution from http://stackoverflow.com/questions/122105/what-is-the-best-way-to-filter-a-java-collection :
-            Iterator<Item> it = itemWithNextComingAlarms.iterator();
-            Date nextAlarmDateInParse;
-//            Date futureDate;
-            Date latestAlarmDate = new Date(MyDate.MIN_DATE); //time of the last alarm received from Parse server
-            while (it.hasNext()) {
-                Item itemWithNextComingAlarm = it.next();
-                nextAlarmDateInParse = itemWithNextComingAlarm.getNextcomingAlarmFromParseN(); //should never be null because we've fetched items only with next alarms
-                ASSERT.that(nextAlarmDateInParse != null, "all items with next alarm should have a defined nextAlarmDate, item=" + itemWithNextComingAlarm);
-                //keep track of the latest next alarm in the search result
-                if (nextAlarmDateInParse != null && nextAlarmDateInParse.getTime() > latestAlarmDate.getTime()) {
-                    latestAlarmDate = nextAlarmDateInParse; //gather latest alarm date as we iterate through the items
-                }
-                Date nextComingAlarmDateN = itemWithNextComingAlarm.getNextcomingAlarmN(); //may return null if alarm has expired since
-//                if (nextComingAlarmDateN == null || (nextAlarmDateInParse == null && nextComingAlarmDateN.getTime() != nextAlarmDateInParse.getTime())) { //if there's no longer a future alarm, or it has changed, add to expired for an update
-                if (nextComingAlarmDateN == null || nextComingAlarmDateN.getTime() != nextAlarmDateInParse.getTime()) { //if there's no longer a future alarm, or it has changed, add to expired for an update
-                    expired.add(itemWithNextComingAlarm);
-                    it.remove();
-                }
-            }
+        //get items with past Waiting alarms that are neither Cancelled, nor Snoozed
+        ParseQuery<Item> queryWaitingAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingAlarm, true);
+        queryWaitingAlarm.whereGreaterThanOrEqualTo(Item.PARSE_WAITING_ALARM_DATE, firstAlarmDateToRetrieve);
+        queryWaitingAlarm.whereLessThanOrEqualTo(Item.PARSE_WAITING_ALARM_DATE, lastAlarmDateToRetrieve);
+        queryWaitingAlarm.whereDoesNotExist(Item.PARSE_WAITING_CANCELLED);
+        queryWaitingAlarm.whereDoesNotExist(Item.PARSE_WAITING_SNOOZE_DATE);
+//        queryWaitingAlarm.setLimit(maxNumberItemsToRetrieve);
 
-            if (false) { //not necessary anymore because done above
-                fetchListElementsIfNeededReturnCachedIfAvail(expired); //ensure all expired items point to cache before updating and potentially saving them below
-            }
-            //if any of the items with expired alarms have a new alarm that is within the range of the other items, then keep it (add it back in the list)
-//            Date lastAlarmDate = results.get(results.size() - 1).getNextcomingAlarmDateD();
-            List<ParseObject> updated = new ArrayList();
-            for (int i = 0, size = expired.size(); i < size; i++) {
-                //TODO! move this processing into the loop above
-                Item expItem = expired.get(i);
-//            Date firstFutureAlarm = expItem.getNextcomingAlarm(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
-//            expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
-                expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
-                Date newFirstAlarm = expItem.getNextcomingAlarmFromParseN(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
-                updated.add(expItem); //save for a ParseServer update whether now null or with new value
-                if (newFirstAlarm != null && newFirstAlarm.getTime() <= latestAlarmDate.getTime()) {
-                    itemWithNextComingAlarms.add(expItem); //add the updated Items which do have a future alarm within the same interval as the other alarms retrieved (less than lastAlarmDate)
-                }
-            }
-//<editor-fold defaultstate="collapsed" desc="comment">
-// save the updated Items in a batch //optimization: do this as background task to avoid blocking the event thread
-//            if (!updated.isEmpty()) {
-//                try {
-//                    ParseBatch parseBatch = ParseBatch.create();
-//                    parseBatch.addObjects(updated, ParseBatch.EBatchOpType.UPDATE);
-//                    parseBatch.execute();
-//                } catch (ParseException ex) {
-//                    Log.e(ex);
-//                }
+        //get items with past Snoozed Waiting alarms
+        ParseQuery<Item> querySnoozedWaiting = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(querySnoozedWaiting, true);
+        querySnoozedWaiting.whereGreaterThanOrEqualTo(Item.PARSE_WAITING_SNOOZE_DATE, firstAlarmDateToRetrieve);
+        querySnoozedWaiting.whereLessThanOrEqualTo(Item.PARSE_WAITING_SNOOZE_DATE, lastAlarmDateToRetrieve); //NB! Snooze and Cancelled should be mutually exclusive (if a snooze is set, alarm cannot be cancelled)
+//        querySnoozedWaiting.setLimit(maxNumberItemsToRetrieve);
+
+        try {
+            ParseQuery<Item> queryGetAllItemsWithAlarms = ParseQuery.getOrQuery(new ArrayList(Arrays.asList(
+                    queryReminderAlarm, querySnoozedAlarm, queryWaitingAlarm, querySnoozedWaiting)));
+//            if (false) {
+//                queryGetAllItemsWithAlarms.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
+//                queryGetAllItemsWithAlarms.setLimit(maxNumberItemsToRetrieve);
 //            }
-//</editor-fold>
-//            saveBatch(updated);
-//            saveNew(updated);
-//            triggerParseUpdate();
-            saveToParseNow(updated); //save in background
-        } while (!backgroundFetch && (itemWithNextComingAlarms.isEmpty() && maxNumberItemsToRetrieve == numberOfItemsRetrieved)); //repeat in case every retrieved alarm was expired and we retrieved the maximum number (meaning there are like more alarms to retrieve)
-//        results.addAll(updated); //add the updated ones to results
-        //sort the results
-        if (itemWithNextComingAlarms != null && !itemWithNextComingAlarms.isEmpty()) {
-            Collections.sort(itemWithNextComingAlarms, (object1, object2) -> {
-                if (((Item) object1).getNextcomingAlarmFromParseN() == null) {
-                    return -1;
-                }
-                if (((Item) object2).getNextcomingAlarmFromParseN() == null) {
-                    return 1;
-                }
-                return FilterSortDef.compareDate(object1.getNextcomingAlarmFromParseN(), object2.getNextcomingAlarmFromParseN());
-            });
+            List<Item> results = queryGetAllItemsWithAlarms.find();
+            fetchListElementsIfNeededReturnCachedIfAvail(results); //YES - seems app is started before calling this!! NO - this may be called while app is not active, so cahce not loaded 
+//            unprocessedAlarmsCached = null; //reset cache
+            resetCachedUnprocessedAlarmRecords();
+//            AlarmHandler.getInstance().updateLocalNotificationsOnBackgroundFetch();
+            return results;
+        } catch (ParseException ex) {
+            Log.e(ex);
         }
-        return itemWithNextComingAlarms;
+        return null;
     }
 
-    public List<Item> getItemsWithAlarms(int maxNumberItemsToRetrieve, Date timeAfterWhichToFindNextItemWithAlarm, Date timeAfterWhichToFindNextItemWithWaitingAlarm,
-            Date timeAfterWhichToFindNextItemWithSnoozedAlarm, int daysAhead) {
+    /**
+     * fetch all relevant Items with either Unprocessed alarms or future alarms
+     *
+     * @param now
+     * @return
+     */
+    public List<Item> getItemsWithRelevantAlarms(Date now) {
+        //TODO!!    !! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
+        //TODO possible to query on items where alarmTimes are stored in an array (e.g. get all items for which at least one alarmTime in the array falls within the searched interval)??
+
+//        Date lastAlarmDateToRetrieve =  getLastFutureAlarmDate(now); //all alarms in the past
+//        Date firstAlarmDateToRetrieve = getFirstUnprocessedAlarmDate(lastAlarmDateToRetrieve);
+        Date lastAlarmDateToRetrieve = getLastUnprocessedAlarmDate(now); //all alarms in the past
+        Date firstAlarmDateToRetrieve = getFirstUnprocessedAlarmDate(lastAlarmDateToRetrieve);
+
+        //get items with past alarms that are neither Cancelled, nor Snoozed
+        ParseQuery<Item> queryReminderAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(queryReminderAlarm, true);
+        queryReminderAlarm.whereGreaterThanOrEqualTo(Item.PARSE_ALARM_DATE, firstAlarmDateToRetrieve);
+        queryReminderAlarm.whereLessThanOrEqualTo(Item.PARSE_ALARM_DATE, lastAlarmDateToRetrieve);
+        queryReminderAlarm.whereDoesNotExist(Item.PARSE_ALARM_CANCELLED);
+        queryReminderAlarm.whereDoesNotExist(Item.PARSE_ALARM_SNOOZE_DATE); //NB. normal alarm is ignored if it has been snoozed
+//        queryReminderAlarm.setLimit(maxNumberItemsToRetrieve);
+//        queryReminderAlarm.addAscendingOrder(Item.PARSE_ALARM_DATE); //sort on the alarm field
+
+        //get items with past Snoozed alarms
+        ParseQuery<Item> querySnoozedAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(querySnoozedAlarm, true);
+        querySnoozedAlarm.whereGreaterThanOrEqualTo(Item.PARSE_ALARM_SNOOZE_DATE, firstAlarmDateToRetrieve);
+        querySnoozedAlarm.whereLessThanOrEqualTo(Item.PARSE_ALARM_SNOOZE_DATE, lastAlarmDateToRetrieve); //NB! Snooze and Cancelled should be mutually exclusive (if a snooze is set, alarm cannot be cancelled)
+//        querySnoozedAlarm.setLimit(maxNumberItemsToRetrieve);
+
+        //get items with past Waiting alarms that are neither Cancelled, nor Snoozed
+        ParseQuery<Item> queryWaitingAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingAlarm, true);
+        queryWaitingAlarm.whereGreaterThanOrEqualTo(Item.PARSE_WAITING_ALARM_DATE, firstAlarmDateToRetrieve);
+        queryWaitingAlarm.whereLessThanOrEqualTo(Item.PARSE_WAITING_ALARM_DATE, lastAlarmDateToRetrieve);
+        queryWaitingAlarm.whereDoesNotExist(Item.PARSE_WAITING_CANCELLED);
+        queryWaitingAlarm.whereDoesNotExist(Item.PARSE_WAITING_SNOOZE_DATE);
+//        queryWaitingAlarm.setLimit(maxNumberItemsToRetrieve);
+
+        //get items with past Snoozed Waiting alarms
+        ParseQuery<Item> querySnoozedWaiting = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(querySnoozedWaiting, true);
+        querySnoozedWaiting.whereGreaterThanOrEqualTo(Item.PARSE_WAITING_SNOOZE_DATE, firstAlarmDateToRetrieve);
+        querySnoozedWaiting.whereLessThanOrEqualTo(Item.PARSE_WAITING_SNOOZE_DATE, lastAlarmDateToRetrieve); //NB! Snooze and Cancelled should be mutually exclusive (if a snooze is set, alarm cannot be cancelled)
+//        querySnoozedWaiting.setLimit(maxNumberItemsToRetrieve);
+
+        int maxNumberItemsToRetrieve = MyPrefs.alarmMaxNumberItemsForWhichToSetupAlarms.getInt();
+
+//        Date timeAfterWhichToFindNextItemWithAlarm = getFirstFutureAlarmDate();
+        Date timeAfterWhichToFindNextItemWithAlarm = now;
+        Date timeAfterWhichToFindNextItemWithWaitingAlarmDate = getLastFutureAlarmDate(now);
+
+        ParseQuery<Item> queryFutureReminderAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(queryFutureReminderAlarm, true);
+        queryFutureReminderAlarm.whereGreaterThan(Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItemWithAlarm);
+        queryFutureReminderAlarm.setLimit(maxNumberItemsToRetrieve);
+
+        ParseQuery<Item> querySnoozeAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(querySnoozeAlarm, true);
+        querySnoozeAlarm.whereGreaterThan(Item.PARSE_ALARM_SNOOZE_DATE, timeAfterWhichToFindNextItemWithAlarm);
+        querySnoozeAlarm.setLimit(maxNumberItemsToRetrieve);
+
+        ParseQuery<Item> queryFutureWaitingAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(queryFutureWaitingAlarm, true);
+        queryFutureWaitingAlarm.whereGreaterThan(Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItemWithWaitingAlarmDate);
+        queryFutureWaitingAlarm.setLimit(maxNumberItemsToRetrieve);
+
+        ParseQuery<Item> queryWaitingSnoozeAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingSnoozeAlarm, true);
+        queryWaitingSnoozeAlarm.whereGreaterThan(Item.PARSE_WAITING_SNOOZE_DATE, timeAfterWhichToFindNextItemWithWaitingAlarmDate);
+        queryWaitingSnoozeAlarm.setLimit(maxNumberItemsToRetrieve);
+
+        try {
+            ParseQuery<Item> queryGetAllItemsWithAlarms = ParseQuery.getOrQuery(new ArrayList(Arrays.asList(
+                    queryReminderAlarm, querySnoozedAlarm, queryWaitingAlarm, querySnoozedWaiting,
+                    queryFutureReminderAlarm, querySnoozeAlarm, queryFutureWaitingAlarm, queryWaitingSnoozeAlarm)));
+//            if (false) {
+//                queryGetAllItemsWithAlarms.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
+//                queryGetAllItemsWithAlarms.setLimit(maxNumberItemsToRetrieve);
+//            }
+            List<Item> results = queryGetAllItemsWithAlarms.find();
+            fetchListElementsIfNeededReturnCachedIfAvail(results); //YES - seems app is started before calling this!! NO - this may be called while app is not active, so cahce not loaded 
+//            unprocessedAlarmsCached = null; //reset cache
+            resetCachedUnprocessedAlarmRecords();
+//            AlarmHandler.getInstance().updateLocalNotificationsOnBackgroundFetch();
+            return results;
+        } catch (ParseException ex) {
+            Log.e(ex);
+        }
+        return null;
+    }
+
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    public List<Item> getItemsWithFutureAlarmsOLD(int maxNumberItemsToRetrieve, Date timeAfterWhichToFindNextItemWithAlarm, Date timeAfterWhichToFindNextItemWithWaitingAlarm,
+//            Date timeAfterWhichToFindNextItemWithSnoozedAlarm, int daysAhead) {
+//        //TODO!!!! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
+//        //TODO possible to query on items where alarmTimes are stored in an array (e.g. get all items for which at least one alarmTime in the array falls within the searched interval)??
+//
+//        ParseQuery<Item> queryReminderAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+//        setupItemQueryNotTemplateNotDeletedLimit10000(queryReminderAlarm, true);
+//        queryReminderAlarm.whereGreaterThan(Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItemWithAlarm);
+////        queryReminderAlarm.whereLessThan(Item.PARSE_ALARM_DATE, new Date(timeAfterWhichToFindNextItemWithAlarm.getTime() + MyDate.DAY_IN_MILLISECONDS * daysAhead)); //don't search more than 30 days ahead in the future
+////        queryReminderAlarm.whereLessThan(Item.PARSE_ALARM_DATE, new Date(timeAfterWhichToFindNextItemWithAlarm.getTime() + MyDate.DAY_IN_MILLISECONDS * daysAhead)); //don't search more than 30 days ahead in the future
+//        queryReminderAlarm.addAscendingOrder(Item.PARSE_ALARM_DATE); //sort on the alarm field
+//        queryReminderAlarm.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//
+//        ParseQuery<Item> queryWaitingAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+//        setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingAlarm, true);
+//        queryWaitingAlarm.whereGreaterThan(Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItemWithWaitingAlarm);
+////        queryWaitingAlarm.whereLessThan(Item.PARSE_WAITING_ALARM_DATE, new Date(timeAfterWhichToFindNextItemWithWaitingAlarm.getTime() + MyDate.DAY_IN_MILLISECONDS * daysAhead)); //don't
+//        queryWaitingAlarm.addAscendingOrder(Item.PARSE_WAITING_ALARM_DATE); //sort on the alarm field
+//        queryWaitingAlarm.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//
+//        ParseQuery<Item> querySnoozedAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+//        setupItemQueryNotTemplateNotDeletedLimit10000(querySnoozedAlarm, true);
+//        querySnoozedAlarm.whereGreaterThan(Item.PARSE_SNOOZE_DATE, timeAfterWhichToFindNextItemWithSnoozedAlarm);
+////        querySnoozedAlarm.whereLessThan(Item.PARSE_SNOOZE_DATE, new Date(timeAfterWhichToFindNextItemWithSnoozedAlarm.getTime() + MyDate.DAY_IN_MILLISECONDS * daysAhead)); //don't
+//        querySnoozedAlarm.addAscendingOrder(Item.PARSE_SNOOZE_DATE); //sort on the alarm field
+//        querySnoozedAlarm.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//        try {
+//            ParseQuery<Item> queryGetAllItemsWithAlarms = ParseQuery.getOrQuery(new ArrayList(Arrays.asList(queryReminderAlarm, queryWaitingAlarm, querySnoozedAlarm)));
+//
+//            if (false) {
+//                queryGetAllItemsWithAlarms.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
+//            }
+//            queryGetAllItemsWithAlarms.setLimit(maxNumberItemsToRetrieve);
+//            List<Item> results = queryGetAllItemsWithAlarms.find();
+//            fetchListElementsIfNeededReturnCachedIfAvail(results); //YES - seems app is started before calling this!! NO - this may be called while app is not active, so cahce not loaded
+//            return results;
+//        } catch (ParseException ex) {
+//            Log.e(ex);
+//        }
+//        return null;
+//    }
+//</editor-fold>
+//    public List<Item> getItemsWithFutureAlarms(int maxNumberItemsToRetrieve, Date timeAfterWhichToFindNextItemWithAlarm, Date timeAfterWhichToFindNextItemWithWaitingAlarm,
+    public List<Item> getItemsWithFutureAlarms(Date now) {
         //TODO!!!! should this completely avoid cache to work even when launched when the app is NOT running?? Need to disable caching for backgroundFetch!!
         //TODO possible to query on items where alarmTimes are stored in an array (e.g. get all items for which at least one alarmTime in the array falls within the searched interval)??
+        int maxNumberItemsToRetrieve = MyPrefs.alarmMaxNumberItemsForWhichToSetupAlarms.getInt();
+
+//        Date timeAfterWhichToFindNextItemWithAlarm = getFirstFutureAlarmDate();
+        Date timeAfterWhichToFindNextItemWithAlarm = now;
+        Date timeAfterWhichToFindNextItemWithWaitingAlarmDate = getLastFutureAlarmDate(now);
 
         ParseQuery<Item> queryReminderAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
         setupItemQueryNotTemplateNotDeletedLimit10000(queryReminderAlarm, true);
         queryReminderAlarm.whereGreaterThan(Item.PARSE_ALARM_DATE, timeAfterWhichToFindNextItemWithAlarm);
-//        queryReminderAlarm.whereLessThan(Item.PARSE_ALARM_DATE, new Date(timeAfterWhichToFindNextItemWithAlarm.getTime() + MyDate.DAY_IN_MILLISECONDS * daysAhead)); //don't search more than 30 days ahead in the future
-//        queryReminderAlarm.whereLessThan(Item.PARSE_ALARM_DATE, new Date(timeAfterWhichToFindNextItemWithAlarm.getTime() + MyDate.DAY_IN_MILLISECONDS * daysAhead)); //don't search more than 30 days ahead in the future
-        queryReminderAlarm.addAscendingOrder(Item.PARSE_ALARM_DATE); //sort on the alarm field
-        queryReminderAlarm.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+        queryReminderAlarm.setLimit(maxNumberItemsToRetrieve);
+
+        ParseQuery<Item> querySnoozeAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(querySnoozeAlarm, true);
+        querySnoozeAlarm.whereGreaterThan(Item.PARSE_ALARM_SNOOZE_DATE, timeAfterWhichToFindNextItemWithAlarm);
+        querySnoozeAlarm.setLimit(maxNumberItemsToRetrieve);
 
         ParseQuery<Item> queryWaitingAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
         setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingAlarm, true);
-        queryWaitingAlarm.whereGreaterThan(Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItemWithWaitingAlarm);
-//        queryWaitingAlarm.whereLessThan(Item.PARSE_WAITING_ALARM_DATE, new Date(timeAfterWhichToFindNextItemWithWaitingAlarm.getTime() + MyDate.DAY_IN_MILLISECONDS * daysAhead)); //don't 
-        queryWaitingAlarm.addAscendingOrder(Item.PARSE_WAITING_ALARM_DATE); //sort on the alarm field
-        queryWaitingAlarm.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+        queryWaitingAlarm.whereGreaterThan(Item.PARSE_WAITING_ALARM_DATE, timeAfterWhichToFindNextItemWithWaitingAlarmDate);
+        queryWaitingAlarm.setLimit(maxNumberItemsToRetrieve);
 
-        ParseQuery<Item> querySnoozedAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
-        setupItemQueryNotTemplateNotDeletedLimit10000(querySnoozedAlarm, true);
-        querySnoozedAlarm.whereGreaterThan(Item.PARSE_SNOOZE_DATE, timeAfterWhichToFindNextItemWithSnoozedAlarm);
-//        querySnoozedAlarm.whereLessThan(Item.PARSE_SNOOZE_DATE, new Date(timeAfterWhichToFindNextItemWithSnoozedAlarm.getTime() + MyDate.DAY_IN_MILLISECONDS * daysAhead)); //don't 
-        querySnoozedAlarm.addAscendingOrder(Item.PARSE_SNOOZE_DATE); //sort on the alarm field
-        querySnoozedAlarm.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+        ParseQuery<Item> queryWaitingSnoozeAlarm = ParseQuery.getQuery(Item.CLASS_NAME);
+        setupItemQueryNotTemplateNotDeletedLimit10000(queryWaitingSnoozeAlarm, true);
+        queryWaitingSnoozeAlarm.whereGreaterThan(Item.PARSE_WAITING_SNOOZE_DATE, timeAfterWhichToFindNextItemWithWaitingAlarmDate);
+        queryWaitingSnoozeAlarm.setLimit(maxNumberItemsToRetrieve);
+
         try {
-            ParseQuery<Item> queryGetAllItemsWithAlarms = ParseQuery.getOrQuery(new ArrayList(Arrays.asList(queryReminderAlarm, queryWaitingAlarm, querySnoozedAlarm)));
-
+            ParseQuery<Item> queryGetAllItemsWithAlarms = ParseQuery.getOrQuery(new ArrayList(Arrays.asList(
+                    queryReminderAlarm, querySnoozeAlarm, queryWaitingAlarm, queryWaitingSnoozeAlarm)));
             if (false) {
-                queryGetAllItemsWithAlarms.selectKeys(new ArrayList(Arrays.asList(Item.PARSE_TEXT, Item.PARSE_DUE_DATE, Item.PARSE_ALARM_DATE, Item.PARSE_WAITING_ALARM_DATE))); // just fetchFromCacheOnly the data needed to set alarms
+                queryGetAllItemsWithAlarms.setLimit(maxNumberItemsToRetrieve); //UNCLEAR how this would limit the return items (should exclude oldest, but how would Parse know?!)
             }
-            queryGetAllItemsWithAlarms.setLimit(maxNumberItemsToRetrieve);
             List<Item> results = queryGetAllItemsWithAlarms.find();
             fetchListElementsIfNeededReturnCachedIfAvail(results); //YES - seems app is started before calling this!! NO - this may be called while app is not active, so cahce not loaded 
+//            futureAlarmsCached = null;
+            resetCachedFutureAlarmRecords();
+//            AlarmHandler.getInstance().updateLocalNotificationsOnChange();
             return results;
         } catch (ParseException ex) {
             Log.e(ex);
@@ -7817,6 +8450,11 @@ public class DAO {
                 Item.PARSE_ACTUAL_EFFORT,
                 Item.PARSE_ACTUAL_EFFORT_TASK_ITSELF,
                 Item.PARSE_ALARM_DATE,
+                Item.PARSE_ALARM_SNOOZE_DATE,
+                Item.PARSE_ALARM_CANCELLED,
+                Item.PARSE_WAITING_ALARM_DATE,
+                Item.PARSE_WAITING_SNOOZE_DATE,
+                Item.PARSE_WAITING_CANCELLED,
                 Item.PARSE_CHALLENGE,
                 Item.PARSE_COMMENT,
                 Item.PARSE_COMPLETED_DATE,
@@ -7835,13 +8473,13 @@ public class DAO {
                 Item.PARSE_IMPORTANCE_URGENCY_VIRT,
                 Item.PARSE_INHERIT_ENABLED,
                 Item.PARSE_INTERRUPT_OR_INSTANT_TASK,
-                Item.PARSE_NEXTCOMING_ALARM,
+                //                Item.PARSE_NEXTCOMING_ALARM,
                 Item.PARSE_PRIORITY,
                 Item.PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF,
                 Item.PARSE_REMAINING_EFFORT_TOTAL,
                 Item.PARSE_RESTART_TIMER,
-                Item.PARSE_SNOOZED_TYPE,
-                Item.PARSE_SNOOZE_DATE,
+                //                Item.PARSE_SNOOZED_TYPE,
+                //                Item.PARSE_SNOOZE_DATE,
                 Item.PARSE_STARRED,
                 Item.PARSE_TEMPLATE,
                 //                Item.PARSE_UPDATED_AT, //NOT fetched explicitedly since always included
@@ -8005,78 +8643,80 @@ public class DAO {
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, now);
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
-        if (false) {
-            query.include(Item.PARSE_OWNER_ITEM);
-            query.include(Item.PARSE_OWNER_LIST);
-            query.include(Item.PARSE_OWNER_TEMPLATE_LIST);
-            query.include(Item.PARSE_SUBTASKS);
-            query.include(Item.PARSE_CATEGORIES);
-            query.include(Item.PARSE_FILTER_SORT_DEF);
-            query.include(Item.PARSE_REPEAT_RULE);
-            query.include(Item.PARSE_WORKSLOTS);
-            query.include(Item.PARSE_INTERRUPTED_TASK);
-            query.include(Item.PARSE_SOURCE);
-            query.include(Item.PARSE_DEPENDS_ON_TASK);
-            query.selectKeys(Arrays.asList(
-                    Item.PARSE_OWNER_ITEM + "." + ParseObject.GUID,
-                    Item.PARSE_OWNER_LIST + "." + ParseObject.GUID,
-                    Item.PARSE_OWNER_TEMPLATE_LIST + "." + ParseObject.GUID,
-                    Item.PARSE_SUBTASKS + "." + ParseObject.GUID,
-                    Item.PARSE_CATEGORIES + "." + ParseObject.GUID,
-                    Item.PARSE_FILTER_SORT_DEF + "." + ParseObject.GUID,
-                    Item.PARSE_REPEAT_RULE + "." + ParseObject.GUID,
-                    Item.PARSE_WORKSLOTS + "." + ParseObject.GUID,
-                    Item.PARSE_INTERRUPTED_TASK + "." + ParseObject.GUID,
-                    Item.PARSE_SOURCE + "." + ParseObject.GUID,
-                    Item.PARSE_DEPENDS_ON_TASK + "." + ParseObject.GUID,
-                    //
-                    ParseObject.GUID,
-                    //
-                    Item.PARSE_ACTUAL_EFFORT,
-                    Item.PARSE_ACTUAL_EFFORT_TASK_ITSELF,
-                    Item.PARSE_ALARM_DATE,
-                    Item.PARSE_CHALLENGE,
-                    Item.PARSE_COMMENT,
-                    Item.PARSE_COMPLETED_DATE,
-                    Item.PARSE_DATE_WHEN_SET_WAITING,
-                    Item.PARSE_DELETED_DATE,
-                    Item.PARSE_DREAD_FUN_VALUE,
-                    Item.PARSE_DUE_DATE,
-                    Item.PARSE_EARNED_VALUE,
-                    Item.PARSE_EARNED_VALUE_PER_HOUR,
-                    Item.PARSE_EDITED_DATE,
-                    Item.PARSE_EFFORT_ESTIMATE,
-                    Item.PARSE_EFFORT_ESTIMATE_PROJECT_TASK_ITSELF,
-                    Item.PARSE_EXPIRES_ON_DATE,
-                    Item.PARSE_HIDE_UNTIL_DATE,
-                    Item.PARSE_IMPORTANCE,
-                    Item.PARSE_IMPORTANCE_URGENCY_VIRT,
-                    Item.PARSE_INHERIT_ENABLED,
-                    Item.PARSE_INTERRUPT_OR_INSTANT_TASK,
-                    Item.PARSE_NEXTCOMING_ALARM,
-                    Item.PARSE_PRIORITY,
-                    Item.PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF,
-                    Item.PARSE_REMAINING_EFFORT_TOTAL,
-                    Item.PARSE_RESTART_TIMER,
-                    Item.PARSE_SNOOZED_TYPE,
-                    Item.PARSE_SNOOZE_DATE,
-                    Item.PARSE_STARRED,
-                    Item.PARSE_TEMPLATE,
-                    //                Item.PARSE_UPDATED_AT, //NOT fetched explicitedly since always included
-                    //                Item.PARSE_CREATED_AT, //NOT fetched explicitedly since always included
-                    Item.PARSE_STARTED_ON_DATE,
-                    Item.PARSE_START_BY_DATE,
-                    Item.PARSE_STATUS,
-                    Item.PARSE_TEXT,
-                    //                    Item.PARSE_TIMER_PAUSED_XXX,
-                    //                    Item.PARSE_TIMER_STARTED_XXX,
-                    Item.PARSE_URGENCY,
-                    Item.PARSE_WAITING_ALARM_DATE,
-                    Item.PARSE_WAIT_UNTIL_DATE
-            ));
-        } else {
-            setupItemQueryWithIndirectAndGuids(query);
-        }
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        if (false) {
+//            query.include(Item.PARSE_OWNER_ITEM);
+//            query.include(Item.PARSE_OWNER_LIST);
+//            query.include(Item.PARSE_OWNER_TEMPLATE_LIST);
+//            query.include(Item.PARSE_SUBTASKS);
+//            query.include(Item.PARSE_CATEGORIES);
+//            query.include(Item.PARSE_FILTER_SORT_DEF);
+//            query.include(Item.PARSE_REPEAT_RULE);
+//            query.include(Item.PARSE_WORKSLOTS);
+//            query.include(Item.PARSE_INTERRUPTED_TASK);
+//            query.include(Item.PARSE_SOURCE);
+//            query.include(Item.PARSE_DEPENDS_ON_TASK);
+//            query.selectKeys(Arrays.asList(
+//                    Item.PARSE_OWNER_ITEM + "." + ParseObject.GUID,
+//                    Item.PARSE_OWNER_LIST + "." + ParseObject.GUID,
+//                    Item.PARSE_OWNER_TEMPLATE_LIST + "." + ParseObject.GUID,
+//                    Item.PARSE_SUBTASKS + "." + ParseObject.GUID,
+//                    Item.PARSE_CATEGORIES + "." + ParseObject.GUID,
+//                    Item.PARSE_FILTER_SORT_DEF + "." + ParseObject.GUID,
+//                    Item.PARSE_REPEAT_RULE + "." + ParseObject.GUID,
+//                    Item.PARSE_WORKSLOTS + "." + ParseObject.GUID,
+//                    Item.PARSE_INTERRUPTED_TASK + "." + ParseObject.GUID,
+//                    Item.PARSE_SOURCE + "." + ParseObject.GUID,
+//                    Item.PARSE_DEPENDS_ON_TASK + "." + ParseObject.GUID,
+//                    //
+//                    ParseObject.GUID,
+//                    //
+//                    Item.PARSE_ACTUAL_EFFORT,
+//                    Item.PARSE_ACTUAL_EFFORT_TASK_ITSELF,
+//                    Item.PARSE_ALARM_DATE,
+//                    Item.PARSE_CHALLENGE,
+//                    Item.PARSE_COMMENT,
+//                    Item.PARSE_COMPLETED_DATE,
+//                    Item.PARSE_DATE_WHEN_SET_WAITING,
+//                    Item.PARSE_DELETED_DATE,
+//                    Item.PARSE_DREAD_FUN_VALUE,
+//                    Item.PARSE_DUE_DATE,
+//                    Item.PARSE_EARNED_VALUE,
+//                    Item.PARSE_EARNED_VALUE_PER_HOUR,
+//                    Item.PARSE_EDITED_DATE,
+//                    Item.PARSE_EFFORT_ESTIMATE,
+//                    Item.PARSE_EFFORT_ESTIMATE_PROJECT_TASK_ITSELF,
+//                    Item.PARSE_EXPIRES_ON_DATE,
+//                    Item.PARSE_HIDE_UNTIL_DATE,
+//                    Item.PARSE_IMPORTANCE,
+//                    Item.PARSE_IMPORTANCE_URGENCY_VIRT,
+//                    Item.PARSE_INHERIT_ENABLED,
+//                    Item.PARSE_INTERRUPT_OR_INSTANT_TASK,
+//                    Item.PARSE_NEXTCOMING_ALARM,
+//                    Item.PARSE_PRIORITY,
+//                    Item.PARSE_REMAINING_EFFORT_FOR_TASK_ITSELF,
+//                    Item.PARSE_REMAINING_EFFORT_TOTAL,
+//                    Item.PARSE_RESTART_TIMER,
+//                    Item.PARSE_SNOOZED_TYPE,
+//                    Item.PARSE_SNOOZE_DATE,
+//                    Item.PARSE_STARRED,
+//                    Item.PARSE_TEMPLATE,
+//                    //                Item.PARSE_UPDATED_AT, //NOT fetched explicitedly since always included
+//                    //                Item.PARSE_CREATED_AT, //NOT fetched explicitedly since always included
+//                    Item.PARSE_STARTED_ON_DATE,
+//                    Item.PARSE_START_BY_DATE,
+//                    Item.PARSE_STATUS,
+//                    Item.PARSE_TEXT,
+//                    //                    Item.PARSE_TIMER_PAUSED_XXX,
+//                    //                    Item.PARSE_TIMER_STARTED_XXX,
+//                    Item.PARSE_URGENCY,
+//                    Item.PARSE_WAITING_ALARM_DATE,
+//                    Item.PARSE_WAIT_UNTIL_DATE
+//            ));
+//        } else {
+//</editor-fold>
+        setupItemQueryWithIndirectAndGuids(query);
+//        }
         List<Item> results = null;
         try {
             results = query.find();
@@ -8092,6 +8732,7 @@ public class DAO {
     private boolean cacheAllItemsFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         List<Item> results = getAllItemsFromParse(reloadUpdateAfterThis, now);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        if (Config.REPAIR_DATA) {
 //            for (Item item : results) {
 //                if (item.getOwner()== item) {
@@ -8099,6 +8740,7 @@ public class DAO {
 //                }
 //            }
 //        }
+//</editor-fold>
         cacheList(results);
         return !results.isEmpty();
     }
@@ -8141,39 +8783,41 @@ public class DAO {
         query.whereLessThanOrEqualTo(RepeatRuleParseObject.PARSE_UPDATED_AT, now);
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
         query.whereDoesNotExist(RepeatRuleParseObject.PARSE_DELETED_DATE);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        query.selectKeys(Arrays.asList(ParseObject.GUID));
-        if (false) {
-            query.include(RepeatRuleParseObject.PARSE_UNDONE_INSTANCES);
-            query.include(RepeatRuleParseObject.PARSE_DONE_INSTANCES);
-            query.selectKeys(Arrays.asList(
-                    RepeatRuleParseObject.PARSE_UNDONE_INSTANCES + "." + ParseObject.GUID,
-                    RepeatRuleParseObject.PARSE_DONE_INSTANCES + "." + ParseObject.GUID,
-                    //
-                    ParseObject.GUID,
-                    //
-                    RepeatRuleParseObject.PARSE_COUNT,
-                    //                RepeatRuleParseObject.PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR_XXX,
-                    //                RepeatRuleParseObject.PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR_XXX,
-                    //                RepeatRuleParseObject.PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED_XXX,
-                    RepeatRuleParseObject.PARSE_DATE_ON_COMPLETION_REPEATS,
-                    RepeatRuleParseObject.PARSE_DAYS_IN_WEEK,
-                    RepeatRuleParseObject.PARSE_DAY_IN_MONTH,
-                    RepeatRuleParseObject.PARSE_DAY_IN_YEAR,
-                    //                RepeatRuleParseObject.PARSE_DONE_INSTANCES,
-                    RepeatRuleParseObject.PARSE_END_DATE,
-                    RepeatRuleParseObject.PARSE_FREQUENCY,
-                    RepeatRuleParseObject.PARSE_INTERVAL,
-                    RepeatRuleParseObject.PARSE_MONTHS_IN_YEAR,
-                    RepeatRuleParseObject.PARSE_NUMBER_OF_DAYS_TO_GENERATE_AHEAD,
-                    RepeatRuleParseObject.PARSE_NUMBER_SIMULTANEOUS_REPEATS_TO_GENERATE_AHEAD,
-                    RepeatRuleParseObject.PARSE_REPEAT_TYPE,
-                    //                RepeatRuleParseObject.PARSE_SPECIFIED_START_DATE_XXX,
-                    RepeatRuleParseObject.PARSE_WEEKDAYS_IN_MONTH,
-                    RepeatRuleParseObject.PARSE_WEEKS_IN_MONTH
-            ));
-        } else {
-            setupRepeatRuleQueryWithIndirectAndGuids(query);
-        }
+//        if (false) {
+//            query.include(RepeatRuleParseObject.PARSE_UNDONE_INSTANCES);
+//            query.include(RepeatRuleParseObject.PARSE_DONE_INSTANCES);
+//            query.selectKeys(Arrays.asList(
+//                    RepeatRuleParseObject.PARSE_UNDONE_INSTANCES + "." + ParseObject.GUID,
+//                    RepeatRuleParseObject.PARSE_DONE_INSTANCES + "." + ParseObject.GUID,
+//                    //
+//                    ParseObject.GUID,
+//                    //
+//                    RepeatRuleParseObject.PARSE_COUNT,
+//                    //                RepeatRuleParseObject.PARSE_COUNT_OF_INSTANCES_DONE_SO_FAR_XXX,
+//                    //                RepeatRuleParseObject.PARSE_COUNT_OF_INSTANCES_GENERATED_SO_FAR_XXX,
+//                    //                RepeatRuleParseObject.PARSE_DATE_OF_LATEST_COMPLETED_CANCELLED_XXX,
+//                    RepeatRuleParseObject.PARSE_DATE_ON_COMPLETION_REPEATS,
+//                    RepeatRuleParseObject.PARSE_DAYS_IN_WEEK,
+//                    RepeatRuleParseObject.PARSE_DAY_IN_MONTH,
+//                    RepeatRuleParseObject.PARSE_DAY_IN_YEAR,
+//                    //                RepeatRuleParseObject.PARSE_DONE_INSTANCES,
+//                    RepeatRuleParseObject.PARSE_END_DATE,
+//                    RepeatRuleParseObject.PARSE_FREQUENCY,
+//                    RepeatRuleParseObject.PARSE_INTERVAL,
+//                    RepeatRuleParseObject.PARSE_MONTHS_IN_YEAR,
+//                    RepeatRuleParseObject.PARSE_NUMBER_OF_DAYS_TO_GENERATE_AHEAD,
+//                    RepeatRuleParseObject.PARSE_NUMBER_SIMULTANEOUS_REPEATS_TO_GENERATE_AHEAD,
+//                    RepeatRuleParseObject.PARSE_REPEAT_TYPE,
+//                    //                RepeatRuleParseObject.PARSE_SPECIFIED_START_DATE_XXX,
+//                    RepeatRuleParseObject.PARSE_WEEKDAYS_IN_MONTH,
+//                    RepeatRuleParseObject.PARSE_WEEKS_IN_MONTH
+//            ));
+//        } else {
+//</editor-fold>
+        setupRepeatRuleQueryWithIndirectAndGuids(query);
+//        }
         List<RepeatRuleParseObject> results = null;
 
         try {
@@ -8255,31 +8899,35 @@ public class DAO {
         }
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        query.selectKeys(Arrays.asList(ParseObject.GUID));
-        if (false) {
-            query.include(Category.PARSE_FILTER_SORT_DEF);
-            query.include(Category.PARSE_OWNER);
-            query.include(Category.PARSE_ITEMS);
-            query.include(Category.PARSE_WORKSLOTS);
-            query.selectKeys(Arrays.asList(
-                    Category.PARSE_FILTER_SORT_DEF + "." + ParseObject.GUID,
-                    Category.PARSE_OWNER + "." + ParseObject.GUID,
-                    Category.PARSE_ITEMS + "." + ParseObject.GUID,
-                    Category.PARSE_WORKSLOTS + "." + ParseObject.GUID,
-                    ParseObject.GUID,
-                    Category.PARSE_COMMENT,
-                    Category.PARSE_DELETED_DATE,
-                    Category.PARSE_EDITED_DATE,
-                    Category.PARSE_SYSTEM_NAME,
-                    Category.PARSE_TEXT
-            ));
-        } else {
-            setupCategoriesQueryWithIndirectAndGuids(query);
-        }
-        //exclude the full data of the following fields (only keep Category's own data=Category.PARSE_COMMENT, Category.PARSE_TEXT, Category.PARSE_SYSTEM_NAME)
-//        query.selectKeys(Arrays.asList(Category.PARSE_ITEMLIST,Category.PARSE_FILTER_SORT_DEF, 
+//        if (false) {
+//            query.include(Category.PARSE_FILTER_SORT_DEF);
+//            query.include(Category.PARSE_OWNER);
+//            query.include(Category.PARSE_ITEMS);
+//            query.include(Category.PARSE_WORKSLOTS);
+//            query.selectKeys(Arrays.asList(
+//                    Category.PARSE_FILTER_SORT_DEF + "." + ParseObject.GUID,
+//                    Category.PARSE_OWNER + "." + ParseObject.GUID,
+//                    Category.PARSE_ITEMS + "." + ParseObject.GUID,
+//                    Category.PARSE_WORKSLOTS + "." + ParseObject.GUID,
+//                    ParseObject.GUID,
+//                    Category.PARSE_COMMENT,
+//                    Category.PARSE_DELETED_DATE,
+//                    Category.PARSE_EDITED_DATE,
+//                    Category.PARSE_SYSTEM_NAME,
+//                    Category.PARSE_TEXT
+//            ));
+//        } else {
+//</editor-fold>
+        setupCategoriesQueryWithIndirectAndGuids(query);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//        }
+//exclude the full data of the following fields (only keep Category's own data=Category.PARSE_COMMENT, Category.PARSE_TEXT, Category.PARSE_SYSTEM_NAME)
+//        query.selectKeys(Arrays.asList(Category.PARSE_ITEMLIST,Category.PARSE_FILTER_SORT_DEF,
 //                Category.PARSE_ITEM_BAG, Category.PARSE_META_LISTS, Category.PARSE_SOURCE_LISTS,
 //                Category.PARSE_OWNER, Category.PARSE_WORKSLOTS        ));
+//</editor-fold>
         List<Category> results = null;
 
         try {
@@ -8307,6 +8955,7 @@ public class DAO {
         return catStr;
     }
 
+//<editor-fold defaultstate="collapsed" desc="comment">
 //    public List<Category> convCatObjectIdsListToCategoryListN(List<String> categoryIdList) {
 //        if (categoryIdList == null) {
 //            return null;
@@ -8329,6 +8978,7 @@ public class DAO {
 //        }
 //        return items;
 //    }
+//</editor-fold>
     private boolean cacheAllCategoriesFromParse(Date reloadUpdateAfterThis, Date now) {
         //TODO!!!!! need to implement buffering/skip to avoid hitting the maximum of 1000 objects
         List<Category> results = getAllCategoriesFromParse(reloadUpdateAfterThis, now);
@@ -8366,27 +9016,29 @@ public class DAO {
         query.whereLessThanOrEqualTo(Item.PARSE_UPDATED_AT, reloadUpToAndIncludingThisDate);
         query.setLimit(MyPrefs.cacheMaxNumberParseObjectsToFetchInQueries.getInt()); //TODO!!!!
         query.whereDoesNotExist(Item.PARSE_DELETED_DATE);
+//<editor-fold defaultstate="collapsed" desc="comment">
 //        query.selectKeys(Arrays.asList(ParseObject.GUID));
-        if (false) {
-//            query.include(ItemList.PARSE_FILTER_SORT_DEF);
-//            query.include(ItemList.PARSE_ITEMS); //tasks
-//            query.include(ItemList.PARSE_OWNER);
-//            query.include(ItemList.PARSE_WORKSLOTS);
-//            query.selectKeys(Arrays.asList(
-//                    ItemList.PARSE_FILTER_SORT_DEF + "." + ParseObject.GUID,
-//                    ItemList.PARSE_ITEMS + "." + ParseObject.GUID,
-//                    ItemList.PARSE_OWNER + "." + ParseObject.GUID,
-//                    ItemList.PARSE_WORKSLOTS + "." + ParseObject.GUID,
-//                    ParseObject.GUID,
-//                    ItemList.PARSE_COMMENT,
-//                    ItemList.PARSE_DELETED_DATE,
-//                    ItemList.PARSE_EDITED_DATE,
-//                    ItemList.PARSE_SYSTEM_NAME,
-//                    ItemList.PARSE_TEXT
-//            ));
-        } else {
-            setupItemListQueryWithIndirectAndGuids(query);
-        }
+//        if (false) {
+////            query.include(ItemList.PARSE_FILTER_SORT_DEF);
+////            query.include(ItemList.PARSE_ITEMS); //tasks
+////            query.include(ItemList.PARSE_OWNER);
+////            query.include(ItemList.PARSE_WORKSLOTS);
+////            query.selectKeys(Arrays.asList(
+////                    ItemList.PARSE_FILTER_SORT_DEF + "." + ParseObject.GUID,
+////                    ItemList.PARSE_ITEMS + "." + ParseObject.GUID,
+////                    ItemList.PARSE_OWNER + "." + ParseObject.GUID,
+////                    ItemList.PARSE_WORKSLOTS + "." + ParseObject.GUID,
+////                    ParseObject.GUID,
+////                    ItemList.PARSE_COMMENT,
+////                    ItemList.PARSE_DELETED_DATE,
+////                    ItemList.PARSE_EDITED_DATE,
+////                    ItemList.PARSE_SYSTEM_NAME,
+////                    ItemList.PARSE_TEXT
+////            ));
+//        } else {
+//</editor-fold>
+        setupItemListQueryWithIndirectAndGuids(query);
+//        }
 
         if (!includeSystemLists) {
             query.whereDoesNotExist(ItemList.PARSE_SYSTEM_NAME);
@@ -8501,6 +9153,7 @@ public class DAO {
     public void resetAndDeleteAndReloadAllCachedData() {
 //        Dialog ip = new InfiniteProgress().showInfiniteBlocking();
         if (false) {
+//<editor-fold defaultstate="collapsed" desc="comment">
 //            Storage.getInstance().deleteStorageFile(FILE_DATE_FOR_LAST_CACHE_REFRESH); //delete date so all data will be reloaded in cacheLoadDataChangedOnServer()
 //            if (cacheGuid != null) {
 ////            cache.clearStorageCache(); //delete any locally cached data/files
@@ -8514,6 +9167,7 @@ public class DAO {
 ////            cacheWorkSlots.clearAllCache(RESERVED_LIST_NAMES); //clear any cached data (even in memory to make sure we get a completely fresh copy)
 //                cacheGuidWorkSlots = null;  //force GC and creation of new cache in initAndConfigureCache()
 //            }
+//</editor-fold>
         } else {
             clearAllCacheAndStorage(true);
         }

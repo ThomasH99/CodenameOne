@@ -168,7 +168,7 @@ public class RepeatRuleParseObject
 
     final static String REPEAT_RULE_NO_REPEAT = "Never"; //"None";
     final static String REPEAT_RULE_COMPLETED = "On completion";
-    final static String REPEAT_RULE_DUE_DATES = "From date";
+    final static String REPEAT_RULE_DUE_DATES = "From due date";
     final static String REPEAT_RULE_WORKSLOT = "On expiry";
     private final static String[] REPEAT_RULE_TYPE_NAMES = {REPEAT_RULE_NO_REPEAT, REPEAT_RULE_DUE_DATES, REPEAT_RULE_COMPLETED}; //TODO!!: add repeat from TODAY, e.g. I create a new task today and it should repeat every two weeks from now (<=> DueDate==today??)
 
@@ -202,15 +202,15 @@ public class RepeatRuleParseObject
     final static String REPEAT_RULE_YEARLY_TYPE = "Repeat yearly";
     final static String REPEAT_RULE_YEARLY_TYPE_HELP = "Repeat yearly based on day in year or based on months";
     final static String REPEAT_RULE_UNTIL = "Repeat how long";
-    final static String REPEAT_RULE_UNTIL_HELP = "When to stop repeating";
+    final static String REPEAT_RULE_UNTIL_HELP = "How long should the task repeat"; //"When to stop repeating";
     final static String REPEAT_RULE_UNTIL_DATE = "Repeat until";
     final static String REPEAT_RULE_UNTIL_DATE_HELP = "Repeat will stop after this date";
     final static String REPEAT_RULE_UNTIL_TIMES = "Repeat this many times";
-    final static String REPEAT_RULE_UNTIL_TIMES_HELP = "Repeat will stop after this many repeats";
-    final static String REPEAT_RULE_NUMBER_REPEATS = "Create multiple future repeats";
+    final static String REPEAT_RULE_UNTIL_TIMES_HELP = "Stop after this many repeats"; //"Repeat will stop after this many repeats";
+    final static String REPEAT_RULE_NUMBER_REPEATS = "Create several future repeats"; //"Create multiple future repeats";
     final static String REPEAT_RULE_NUMBER_REPEATS_HELP = "Create more than one future repeats";
     final static String FOREVER = "Forever";
-    final static String UNTIL = "Until date";
+    final static String UNTIL = "Until"; //"Until date";
     final static String COUNT = "Times";
 
     public RepeatRuleParseObject() {

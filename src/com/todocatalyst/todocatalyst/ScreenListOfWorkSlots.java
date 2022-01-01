@@ -456,7 +456,7 @@ public class ScreenListOfWorkSlots extends MyForm {
 //        String startTimeStr = MyDate.formatDateSmart(new MyDate(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
         String startTimeStr;
         if (workSlot.isOngoing(now)) {
-            startTimeStr = MyDate.formatDateSmart(new MyDate(workSlot.getStartAdjusted(now))); //UI: for ongoing workSlot, show 'now' instead of startTime
+            startTimeStr = MyDate.formatDateSmart(new MyDate(workSlot.getStartAdjusted(now).getTime())); //UI: for ongoing workSlot, show 'now' instead of startTime
         } else {
             startTimeStr = MyDate.formatDateSmart(workSlot.getStartTimeD(), true, false, true); //UI: for ongoing workSlot, show 'now' instead of startTime
         }//        String startTimeGUID = workSlot.getStartAdjusted(now) != workSlot.getStartTimeD().getTime() ? "WorkSlotStartTimeNow" : "WorkSlotStartTime";

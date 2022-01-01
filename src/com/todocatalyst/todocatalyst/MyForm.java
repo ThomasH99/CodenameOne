@@ -319,7 +319,9 @@ public class MyForm extends Form implements ActionListener {
 //    }
     public String getUniqueFormId() {
 //        return uniqueFormId != null ? uniqueFormId : (getTitle() != null && !getTitle().isEmpty() ? getTitle() : "NoScreenId");
-        ASSERT.that(uniqueFormId != null && !uniqueFormId.isEmpty(), () -> "no uniqueFormId defined for this form=" + this);
+        if (false) {
+            ASSERT.that(uniqueFormId != null && !uniqueFormId.isEmpty(), () -> "no uniqueFormId defined for this form=" + this);
+        }
         return uniqueFormId;
     }
 
@@ -332,7 +334,7 @@ public class MyForm extends Form implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent evt) {
-        assert false; //should never be called?!
+        ASSERT.that(false, "should never be called?!");
         if (evt.getSource() == TimerStack2.getInstance()) {
             TimerInstance2 timerInstance = TimerStack2.getTimerInstanceN();
             if (timerInstance != null) {
@@ -479,7 +481,7 @@ public class MyForm extends Form implements ActionListener {
     static final String SCREEN_ALARM_TITLE = "Reminders";
     static final String SCREEN_ALARM_HELP = "Shows past reminders that have not yet been cancelled or snoozed. Starting Timer on a task or editing it will cancel the reminder"; //"See active reminders"
     static final String SCREEN_ALARM_EMPTY = "No Reminders to deal with";
-    static final String SCREEN_TASK_LIST_TITLE = "Tasks";
+    static final String SCREEN_ALL_TASK_LISTS_TITLE = "All Task lists";
     static final String SCREEN_TASK_LIST_HELP = "Edit a list of tasks"; //"See active reminders"
     static final String SCREEN_NEW_TASK_TITLE = "**not used (task text is title)";
     static final String SCREEN_NEW_TASK_HELP = "Edit the task details"; //"See active reminders"
@@ -515,12 +517,12 @@ public class MyForm extends Form implements ActionListener {
     static final String SCREEN_OVERDUE_HELP = "Overdue: tasks that were due in recent days but not yet completed"; // "Creation log", "Created tasks"
     static final String SCREEN_TUTORIAL = "Tutorial";
     static final String SCREEN_TUTORIAL_HELP = "Tutorial";
-    static final String SCREEN_TOUCHED_TITLE = "Edited"; //"Touched";
-    static final String SCREEN_TOUCHED_HELP = "Edited: tasks that have been edited in recent days";
-    static final String SCREEN_TOUCHED_EMPTY = "No tasks changed the last " + MyPrefs.touchedLogInterval.getInt() + " days";
+//    static final String SCREEN_TOUCHED_TITLE = "Edited"; //"Touched";
+//    static final String SCREEN_TOUCHED_HELP = "Edited: tasks that have been edited in recent days";
+//    static final String SCREEN_TOUCHED_EMPTY = "No tasks changed the last " + MyPrefs.touchedLogInterval.getInt() + " days";
     static final String SCREEN_EDITED_TITLE = "Edited"; //"Touched";
     static final String SCREEN_EDITED_HELP = "Edited: tasks that have been edited in recent days";
-    static final String SCREEN_EDITED_EMPTY = "No tasks changed the last " + MyPrefs.touchedLogInterval.getInt() + " days";
+    static final String SCREEN_EDITED_EMPTY = "No tasks changed the last " + MyPrefs.editedLogInterval.getInt() + " days";
     static final String SCREEN_TOUCHED_24H = "Touched last 24h";
     static final String SCREEN_STATISTICS_TITLE = "Results"; //Achievements, Work, Progress, Feats, Outcome, Headway, "Review"; //"Accomplished"; //"Achievements"; //"Statistics", "History"
     static final String SCREEN_STATISTICS_HELP = "Review: recently completed tasks grouped by day/week/month and list/category, with their estimated and actual effort."; //"Accomplished"; //"Achievements"; //"Statistics", "History"
@@ -581,12 +583,12 @@ public class MyForm extends Form implements ActionListener {
                 | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NON_EDITABLE_LIST
                 //                        | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_TIMER
                 | ScreenListOfItems.OPTION_NO_WORK_TIME, 0, DAO.SYSTEM_LIST_TODAY),
-        TOUCHED(SCREEN_TOUCHED_TITLE, SCREEN_TOUCHED_HELP, SCREEN_TOUCHED_EMPTY, Icons.iconMainTouched, null, colorLigthBluish,
+        EDITED(SCREEN_EDITED_TITLE, SCREEN_EDITED_HELP, SCREEN_EDITED_EMPTY, Icons.iconMainTouched, null, colorLigthBluish,
                 ScreenListOfItems.OPTION_NO_EDIT_LIST_PROPERTIES | ScreenListOfItems.OPTION_NO_MODIFIABLE_FILTER
                 | ScreenListOfItems.OPTION_NO_NEW_BUTTON | ScreenListOfItems.OPTION_NO_WORK_TIME
-                | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, DAO.SYSTEM_LIST_TOUCHED),
+                | ScreenListOfItems.OPTION_NO_NEW_FROM_TEMPLATE | ScreenListOfItems.OPTION_NON_EDITABLE_LIST, DAO.SYSTEM_LIST_EDITED),
         WORKSLOTS(SCREEN_WORKSLOTS_TITLE, SCREEN_WORKSLOTS_HELP, SCREEN_WORKSLOTS_EMPTY, Icons.iconMainWorkSlots, null, DAO.SYSTEM_LIST_WORKSLOTS),
-        STATISTICS(SCREEN_STATISTICS_TITLE, SCREEN_STATISTICS_HELP, "", Icons.iconMainStatistics, null,DAO.SYSTEM_LIST_STATISTICS);
+        STATISTICS(SCREEN_STATISTICS_TITLE, SCREEN_STATISTICS_HELP, "", Icons.iconMainStatistics, null, DAO.SYSTEM_LIST_STATISTICS);
         private String screenTitle;
         private String helpText;
         private String emptyScrText;
@@ -702,7 +704,8 @@ public class MyForm extends Form implements ActionListener {
                     return st.getIcon();
                 }
             }
-            return null;
+//            return null;
+            return ' ';
         }
 
         static Font getListFont(String systemName) {
@@ -2015,20 +2018,23 @@ public class MyForm extends Form implements ActionListener {
             //                || (item.getWaitingTillDate().getTime() != 0 && item.getWaitingAlarmDate().getTime() != 0)) {
 //                || (item.getWaitingTillDate().getTime() < MyDate.currentTimeMillis() || item.getWaitingAlarmDate().getTime() < MyDate.currentTimeMillis())) {
 
-            new PickerDialog("Set Waiting", "Waiting tasks are automatically hidden until the set date.",
-                    Format.f("Set a {0}", Item.WAIT_UNTIL_DATE),
+            PickerDialog dia = new PickerDialog("Set Waiting", "Waiting tasks are automatically hidden until the set date.",
+                    Format.f("Set {0}", Item.WAIT_UNTIL_DATE),
                     item.getWaitUntilDate(),
                     new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemWaitingDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS),
-                    Format.f("Set a {0}", Item.WAITING_ALARM_DATE), item.getWaitingAlarmDate(),
-                    d -> item.setWaitUntilDate(d), d -> item.setWaitingAlarmDate(d),
-                    (d) -> d != null && d.getTime() != 0
+                    Format.f("Set {0}", Item.WAITING_ALARM_DATE),
+                    item.getWaitingAlarmDate(),
+                    d -> item.setWaitUntilDateInParse(d, false, false, true),//false,false: don't update updateWaitingAlarm and updateItemStatus when setting dates in popup
+                    d -> item.setWaitingAlarmDate(d),
                     //if a waiting date is defined, set alarm default days before, 
                     //UI: it is OK to set WaitingDate in the past (item will not be hidden), or alarmDate in the past (alarm will just never be activated)
                     //UI: if no waitingTillDate is set, the alarm Date will be set to defaultWaitDaysAhead-defaultAlarmDaysBeforeWaitingDate
                     //                    ? new MyDate(Math.max(MyDate.currentTimeMillis(), d.getTime() - MyPrefs.itemWaitingAlarmDefaultDaysBeforeWaitingDate.getInt() * MyDate.DAY_IN_MILLISECONDS))
+                    (d) -> (d != null && d.getTime() != 0)
                     ? new MyDate(d.getTime() - MyPrefs.itemWaitingAlarmDefaultDaysBeforeWaitingDate.getInt() * MyDate.DAY_IN_MILLISECONDS)
                     : new MyDate(MyDate.currentTimeMillis() + ((MyPrefs.itemWaitingDateDefaultDaysAheadInTime.getInt() - MyPrefs.itemWaitingAlarmDefaultDaysBeforeWaitingDate.getInt()) * MyDate.DAY_IN_MILLISECONDS))
-            ).show();
+            );
+            dia.show();
         }
     }
 
@@ -2158,6 +2164,7 @@ public class MyForm extends Form implements ActionListener {
     static Date showDialogSetDueDateN() {
         return showDialogSetDueDateN(Item.getDefaultDueDate(), "This template");
     }
+
     static Date showDialogSetDueDateN(Date dueDate) {
         return showDialogSetDueDateN(dueDate, "This template");
     }
@@ -2763,8 +2770,15 @@ public class MyForm extends Form implements ActionListener {
      * of the entire list)
      */
     public void refreshAfterEdit() {
+//        refreshAfterEdit(false);
+//    }
+//
+//    public void refreshAfterEdit(boolean disableRevalidation) {
         if (false && Config.TEST) {
             ASSERT.that(false, "Calling RefreshAfterEdit");
+        }
+        if (Config.TEST) {
+            Log.p("Calling MyForm.RefreshAfterEdit");
         }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        if (editFieldOnShowOrRefresh != null) { // && (testIfEdit == null || testIfEdit.test())) {
@@ -2851,7 +2865,9 @@ public class MyForm extends Form implements ActionListener {
         }
 //        revalidate();
 //        revalidateLater();
+//        if (!disableRevalidation) {
         revalidateWithAnimationSafety();
+//        }
         restoreKeepPos();
         if (Config.TEST) {
             Log.p("refreshAfterEdit() finished for screen " + getUniqueFormId());
@@ -3053,17 +3069,17 @@ public class MyForm extends Form implements ActionListener {
 //        if (false) {
 //            TimerStack2.getInstance().removeActionListenerXXX(this); //stop listening to the Timer //Necessary (since only one screen can be set as listener)?!
 //        }
-        if (false && previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
-            previousValues.deleteFile();
-//            previousValues.clear(); //if still accessed
-        }
+//        if (false && previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
+//            previousValues.deleteFile();
+////            previousValues.clear(); //if still accessed
+//        }
         if (Config.TEST) {
             ASSERT.that(parentForm != null, "In showPreviousScreenOrDefault() in form=" + getUniqueFormId() + ", previousForm==null!");
         }
-        if (false && parentForm.getPinchInsertContainer() != null) { //now done in PinchInsertContainer.closePinchContainer
-//            MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(getPinchInsertContainer());
-            parentForm.getPinchInsertContainer().closePinchContainer(true);
-        }
+//        if (false && parentForm.getPinchInsertContainer() != null) { //now done in PinchInsertContainer.closePinchContainer
+////            MyDragAndDropSwipeableContainer.removeFromParentScrollYAndReturnParent(getPinchInsertContainer());
+//            parentForm.getPinchInsertContainer().closePinchContainer(true);
+//        }
         if (callRefreshAfterEdit) {
             parentForm.refreshAfterEdit();
 
@@ -3072,17 +3088,17 @@ public class MyForm extends Form implements ActionListener {
 //                DAO.getInstance().saveInBackground(() -> previousForm.refreshAfterEdit());
 //            }
         }
-        if (false) {
-//            previousForm.showBack(!(this instanceof ScreenTimer6));  //prevent exiting from ScreenTimer6 to pop the last replayCommand (since ScreenTimer6 is never launched with a replayCommand)
-        } else {
-            onExit();
-            parentForm.showBack();  //prevent exiting from ScreenTimer6 to pop the last replayCommand (since ScreenTimer6 is never launched with a replayCommand)
-            //NB! must not delete previousValues before showBack since showBack will close an open text field and trigger saving a pinchContainer which will not work correctly if previousValues no longer contain the referenced element
-            if (previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
-                previousValues.deleteFile();
+//        if (false) {
+////            previousForm.showBack(!(this instanceof ScreenTimer6));  //prevent exiting from ScreenTimer6 to pop the last replayCommand (since ScreenTimer6 is never launched with a replayCommand)
+//        } else {
+        onExit();
+        parentForm.showBack();  //prevent exiting from ScreenTimer6 to pop the last replayCommand (since ScreenTimer6 is never launched with a replayCommand)
+        //NB! must not delete previousValues before showBack since showBack will close an open text field and trigger saving a pinchContainer which will not work correctly if previousValues no longer contain the referenced element
+        if (previousValues != null) { //if this (current) form has locally saved value, delete them before the previous form is shown
+            previousValues.deleteFile();
 //            previousValues.clear(); //if still accessed
-            }
         }
+//        }
     }
 
     /**
@@ -3773,7 +3789,7 @@ public class MyForm extends Form implements ActionListener {
 
     public MyReplayCommand makeEditFilterSortCommand(ItemAndListCommonInterface filterOwnerItemListOrItem) {
 //        return MyReplayCommand.createKeep("FilterSortSettings", "Edit filter/sort", Icons.iconEditFilterSort, (e) -> {
-        return MyReplayCommand.createKeep("FilterSortSettings", Format.f("Edit {0 filter}",FilterSortDef.FILTER_SORT), Icons.iconEditFilterSort, (e) -> {
+        return MyReplayCommand.createKeep("FilterSortSettings", Format.f("Edit {0 filter}", FilterSortDef.FILTER_SORT), Icons.iconEditFilterSort, (e) -> {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            FilterSortDef filterSortDef = itemListOrItem.getFilterSortDefN() == null
 //                    ? new FilterSortDef()

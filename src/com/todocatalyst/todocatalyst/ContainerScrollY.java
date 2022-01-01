@@ -18,28 +18,41 @@ import com.codename1.ui.layouts.Layout;
  * @author Thomas
  */
 public class ContainerScrollY extends Container {
-    
-    
+
     public ContainerScrollY() {
         super();
 //        setScrollableY(true);
     }
+
     public ContainerScrollY(Layout l) {
         super(l);
 //        setScrollableY(true);
     }
-    
+
     public void setScrollYPublic(int scrollY) {
         setScrollY(scrollY);
     }
-    
+
+    @Override
+    /**
+     * THJ: this assumes that the UI leaves enough white space to always
+     * override the UII with the scrollbar w/o hiding any needed information.
+     * AND that the UI is redrawn as the scrollbar fades away.
+     */
+    public int getSideGap() { //in CN1.Component
+//        if (isScrollableY() && isScrollVisible()) {
+//            return getUIManager().getLookAndFeel().getVerticalScrollWidth();
+//        }
+        return 0; //force gap to 0 width, will this work???
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
     /**
-    * Makes sure the component is visible in the scroll if this container is
-    * scrollable
-    *
-    * @param c the component that will be scrolling for visibility
-    //     */
+     * Makes sure the component is visible in the scroll if this container is
+     * scrollable
+     *
+     * @param c the component that will be scrolling for visibility //
+     */
 //    public void scrollComponentToVisible(final Component c) {
 //        if (isScrollable()) {
 //            if (c != null) {

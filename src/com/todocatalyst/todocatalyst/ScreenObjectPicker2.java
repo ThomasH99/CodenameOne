@@ -166,7 +166,7 @@ public class ScreenObjectPicker2<E> extends MyForm {
             MyForm previousForm, Runnable updateOnDone, GetStringFrom labelMaker, int minNbOfSelected, int maxNbOfSelected,
             boolean removeFirstAddedObjectIfMoreThanMaxAreAdded, boolean scrollToFirstSelected, boolean exitWhenMaxObjectsIsSelected) {
         super(title, previousForm, updateOnDone);
-        ASSERT.that(getListTitlesN==null&&icons==null&&iconFonts==null,"all should be null, or neither");
+        ASSERT.that((getListTitlesN==null&&icons==null&&iconFonts==null)||(getListTitlesN!=null&&icons!=null&&iconFonts!=null),"all should be null, or neither");
         setUniqueFormId("ScreenObjectPicker");
         previousValues = new SaveEditedValuesLocally(getUniqueFormId());
         assert maxNbOfSelected >= minNbOfSelected && maxNbOfSelected >= 1;

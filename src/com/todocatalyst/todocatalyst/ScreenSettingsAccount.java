@@ -44,7 +44,8 @@ import java.util.ArrayList;
  * @author Thomas
  */
 //public class ScreenSettings extends MyForm {
-public class ScreenSettingsAccount extends MyForm {
+//public class ScreenSettingsAccount extends MyForm {
+public class ScreenSettingsAccount extends ScreenSettingsCommon {
     //TODO store login+password locally (or at least user key?)
     //TODO Settings option to log out
     //DONE support option to update email (and change login id since email is normally used)
@@ -52,20 +53,20 @@ public class ScreenSettingsAccount extends MyForm {
 
     public final static String SCREEN_TITLE = "Account";
     public final static String SCREEN_HELP = "**";
-    
-            public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, SCREEN_TITLE);
 
+    public static String SETTINGS_MENU_TEXT = Format.f(MyForm.SETTINGS_MENU_TEXT_BASE, SCREEN_TITLE);
 
     private ParseUser parseUser; //fetch password
 
 // protected static String FORM_UNIQUE_ID = "ScreenSettings"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    MyForm mainScreen;
     ScreenSettingsAccount(MyForm previousScreen) { // throws ParseException, IOException {
-        super(SCREEN_TITLE, previousScreen, () -> {
+//        super(SCREEN_TITLE, previousScreen, () -> {
+        super(SETTINGS_MENU_TEXT, previousScreen, () -> {
         });
         setUniqueFormId("ScreenSettings");
         makeContainerBoxY();
-        addCommandsToToolbar();
+//        addCommandsToToolbar();
 
         try {
             parseUser = ParseUser.fetchBySession(ParseUser.getCurrent().getSessionToken());
@@ -98,22 +99,22 @@ public class ScreenSettingsAccount extends MyForm {
         addStandardBackCommand();
 
         if (Config.TEST) {
-            toolbar.addCommandToOverflowMenu(Command.create("User authenticated", null, (e) -> {
+            toolbar.addCommandToOverflowMenu(Command.create("TST Flip User authenticated", null, (e) -> {
                 userAuthenticated = !userAuthenticated;
                 refreshAfterEdit();
             }));
-            toolbar.addCommandToOverflowMenu(Command.create("Email defined", null, (e) -> {
+            toolbar.addCommandToOverflowMenu(Command.create("TST Flip Email defined", null, (e) -> {
                 emailSet = !emailSet;
                 if (!emailSet) {
                     emailVerified = false; //cannot have a verified email if no email is set!
                 }
                 refreshAfterEdit();
             }));
-            toolbar.addCommandToOverflowMenu(Command.create("Email verified", null, (e) -> {
+            toolbar.addCommandToOverflowMenu(Command.create("TST Flip Email verified", null, (e) -> {
                 emailVerified = !emailVerified;
                 refreshAfterEdit();
             }));
-            toolbar.addCommandToOverflowMenu(Command.create("Parseuser= null", null, (e) -> {
+            toolbar.addCommandToOverflowMenu(Command.create("TST Parseuser=null", null, (e) -> {
                 parseUser = null;
                 refreshAfterEdit();
             }));
@@ -150,12 +151,24 @@ public class ScreenSettingsAccount extends MyForm {
 //            addSettingBoolean(content, parseIdMap2, MyPrefs.deleteLocalStorageIfRestartedQuickly);
 //        }
 //        addSettingInt(content, parseIdMap2, MyPrefs.deleteLocalStorageIfRestartedBeforeSeconds, 5, 120, 5); //kin, max, step
-           if(Config.TEST) content.add("User auth=" + userAuthenticated + " Email set=" + emailSet + " verif=" + emailVerified);
+            if (Config.TEST) {
+                content.add("User auth=" + userAuthenticated + " Email set=" + emailSet + " verif=" + emailVerified);
+            }
 
             {
                 String currentEmail = parseUser.getEmail();
 //            Boolean emailVerified = parseUser.getBoolean("emailVerified") != null && parseUser.getBoolean("emailVerified");
 //            boolean emailSet = currentEmail != null && !currentEmail.isEmpty() && parseUser.isAuthenticated();
+
+                //TRIAL ACCOUNT WARNING
+//                if (!emailSet || Config.TEST) {
+                if (!emailSet ) {
+//            content.add("Help: Enter your mail to create an account to backup your tasks and data");
+                    content.add(new SpanLabel("You are using a trial account without a defined email. "
+                            + "Enter your email to create your account and enable backup.", "ButtonHelpTextWarning"));
+                }
+
+                content.add(makeSpacer());
 
                 TextField emailAddressTextField = new TextField("", "Email", 20, TextArea.EMAILADDR);
                 if (currentEmail != null) {
@@ -170,7 +183,12 @@ public class ScreenSettingsAccount extends MyForm {
                 content.add("Email:");
                 content.add(emailAddressTextField);
 
-                Button updateEmailButton = new Button(CommandTracked.create("Change email", Icons.iconUpdateEmail, (e) -> {
+                SpanLabel correctEmailFormat = new SpanLabel("Enter a correct email, for example: name@gmail.com", "ButtonHelpText");
+//                        confirmYourEmail.setUIID("ButtonHelpText");
+                content.add(correctEmailFormat);
+//                        correctEmailFormat.setHidden(true);
+
+                Button updateEmailButton = new Button(CommandTracked.create(emailSet ? "Change email" : "Save email", Icons.iconUpdateEmail, (e) -> {
                     String emailTxt = emailAddressTextField.getText();
                     String errorMsg = ScreenLogin.validEmail(emailTxt);
                     if (errorMsg == null && !emailTxt.equals(ParseUser.getCurrent().getEmail())) {
@@ -195,17 +213,30 @@ public class ScreenSettingsAccount extends MyForm {
                         } // else if(emailTxt.equals(ParseUser.getCurrent().getEmail())) { //NO reason to show an error if email is the same
                     }
                 }, (emailSet ? "ChangeEmail" : "SetEmailForTrialAccount")));
-                updateEmailButton.setUIID("WideButton");
+
+//                updateEmailButton.setUIID("WideButton");
+                updateEmailButton.setEnabled(!emailAddressTextField.getText().isEmpty() && !emailAddressTextField.getText().equals(currentEmail) && ScreenLogin.validEmail(emailAddressTextField.getText()) == null);
+                updateEmailButton.setUIID(updateEmailButton.isEnabled() ? "WideButton" : "WideButtonDisabled");
+
                 content.add(updateEmailButton);
 
-                //TRIAL ACCOUNT WARNING
-                if (!emailSet || Config.TEST) {
-//            content.add("Help: Enter your mail to create an account to backup your tasks and data");
-                    content.add(new SpanLabel("You are using a trial account without a defined email. "
-                            + "Enter your email to create your account and enable backup.", "ButtonHelpTextWarning"));
-                }
+                emailAddressTextField.addDataChangedListener((type, index) -> {
+                    if (false) {
+                        if (!emailAddressTextField.getText().equals(currentEmail)) { //only if user has changed the email, or entered a first email
+                            if (ScreenLogin.validEmail(emailAddressTextField.getText()) == null) {
+                                updateEmailButton.setEnabled(true);
+                            } else {
+                                updateEmailButton.setEnabled(false);
+                            }
+                        } else {
+                            updateEmailButton.setEnabled(false);
+                        }
+                    }
+                    //only if user has changed the email, or entered a first email
+                    updateEmailButton.setEnabled(!emailAddressTextField.getText().equals(currentEmail) && ScreenLogin.validEmail(emailAddressTextField.getText()) == null);
+                    updateEmailButton.setUIID(updateEmailButton.isEnabled() ? "WideButton" : "WideButtonDisabled");
 
-                content.add(makeSpacer());
+                });
 
                 //VISIBLE PASSWORD FOR TESTING
                 if (Config.TEST && Config.TEST_STORE_PASSWORD_FOR_USER) {
@@ -214,23 +245,26 @@ public class ScreenSettingsAccount extends MyForm {
 
                 content.add(makeSpacer());
 
-                if (emailSet || Config.TEST) { //UI: only enable resetting password once a valid email is known and confirmed by the user!!
+//                if (emailSet || Config.TEST) { //UI: only enable resetting password once a valid email is known and confirmed by the user!!
+                if (emailSet ) { //UI: only enable resetting password once a valid email is known and confirmed by the user!!
 
-                    if (!emailVerified || Config.TEST) {
+//                    if (!emailVerified || Config.TEST) {
+                    if (!emailVerified ) {
 //                            content.add(new SpanLabel("You have not yet confirmed your email address by clicking on the link in the email you have received.\n\n"
 //                                    + "Please confirm your email to enable resetting your password and changing your email."));
 //                            content.add(new SpanLabel("You cannot reset your password until you have confirmed you email by clicking the link in the verification email.\n\n"
 //                                    + "If you have not received the email please check your spam and that email is correct."));
                         SpanLabel confirmYourEmail = new SpanLabel("You need to confirm your email by clicking the link in the verification email you received.\n\n"
                                 + "This is necessary to fully enable your account, for example to reset your password.\n\n"
-                                + "If you have not received the email please check your spam, check your email address is correct, or click the button below to receive the mail again.", "ButtonHelpText");
-                        confirmYourEmail.setUIID("ButtonHelpText");
+                                + "If you have not received the email please check your spam, check that your email address is correct, or click the button below to receive the mail again.", "ButtonHelpText");
+//                        confirmYourEmail.setUIID("ButtonHelpText");
                         content.add(confirmYourEmail);
+                        
                         Button resendVerificationEmailButton = new Button(CommandTracked.create("Resend verification email", Icons.iconSendVerificationEmail, (e) -> {
                             parseUser.setEmail(parseUser.getEmail()); //trick: set email to same email to force a verification email
                             try {
                                 parseUser.save();
-                                Dialog.show("", "You will get a confirmation email shortly", "OK",null);
+                                Dialog.show("", "You will get a confirmation email shortly", "OK", null);
                             } catch (ParseException ex) {
                                 Dialog.show("ERROR", "Something went wrong when updating your account. Please check your email is correct and try again. "
                                         + "You can also email support@todocatalyst.com and mention this error: \n\n"
@@ -242,7 +276,8 @@ public class ScreenSettingsAccount extends MyForm {
                         content.add(resendVerificationEmailButton);
 
                     }
-                    if (emailVerified || Config.TEST) {
+//                    if (emailVerified || Config.TEST) {
+                    if (emailVerified ) {
                         //RESET PASSWORD
                         Button resetPassword = new Button(CommandTracked.create("Reset password", Icons.iconResetPassword, (e) -> {
                             ParseUser user = ParseUser.getCurrent();
@@ -272,7 +307,8 @@ public class ScreenSettingsAccount extends MyForm {
                         content.add(resetPasswordHelp);
                     }
 
-                    if (emailVerified || Config.TEST) {
+//                    if (emailVerified || Config.TEST) {
+                    if (emailVerified ) {
                         //LOG OUT
                         Button logoutButton = new Button(CommandTracked.createMaterial("Log out", Icons.iconLogout, (e) -> {
                             if (!emailVerified) {
@@ -348,7 +384,8 @@ public class ScreenSettingsAccount extends MyForm {
                     content.add(deleteMyAccountButton);
 //                        content.add(new SpanLabel("Delete account and all data permanently (all your data will be permanently deleted and cannot be recovered - make backup", "ButtonHelpText"));
 //                    content.add(new SpanLabel("Delete permanently account and all data (account information, tasks, lists etc). Your data cannot be recovered after this.", "ButtonHelpText"));
-                    content.add(new SpanLabel("Permanently delete this account and all tasks, lists, history, everything... Your data cannot be recovered after this.", "ButtonHelpText"));
+                    content.add(new SpanLabel("Permanently delete this account and all tasks, lists, history, ... Everything. "
+                            + "\nYour data cannot be recovered after this.", "ButtonHelpText"));
 //            content.add(layoutN("Delete ALL data (tasks etc) permanently", deleteAllData,
 //                            "This will permanently delete all your data (tasks, lists, categories etc) from your account. The deleted data can NOT be restored in any way afterwards (there is .")); //TODO!!! show how many tasks etc, ask to enter email to confirm, add "I confirm I delete all my data and that they cannot be restored [v]"
                 }

@@ -1584,6 +1584,11 @@ public class MyDate extends Date {
 
     static String formatDateNew(Date date, boolean useYesterdayTodayTomorrow, boolean includeDate,
             boolean includeTimeOfDay, boolean includeDayOfWeek, boolean useUSformat) {
+        return formatDateNew(date, useYesterdayTodayTomorrow, includeDate, includeTimeOfDay, includeDayOfWeek, useUSformat, false);
+    }
+
+    static String formatDateNew(Date date, boolean useYesterdayTodayTomorrow, boolean includeDate,
+            boolean includeTimeOfDay, boolean includeDayOfWeek, boolean useUSformat, boolean includeSeconds) {
         if (date.getTime() == 0) {
             return "No date"; //"NONE"
         }
@@ -1608,7 +1613,7 @@ public class MyDate extends Date {
 //                str = formatAsYesterdayTodayTomorrow(date);
                 if (includeTimeOfDay) {
 //                    dtfmt = new SimpleDateFormat(" KK:mm a");
-                    dtfmt = new SimpleDateFormat("KK:mm a");
+                    dtfmt = includeSeconds ? new SimpleDateFormat("KK:mm:ss a") : new SimpleDateFormat("KK:mm a");
 //                    str += dtfmt.format(cal.getTime());
 //                    str = str + (str.length() != 0 ? " " : "") + dtfmt.format(cal.getTime()); //add space before time if not first string
                     str = str + (str.length() != 0 ? " " : "") + dtfmt.format(date); //add space before time if not first string
@@ -1616,7 +1621,7 @@ public class MyDate extends Date {
             } else {
                 dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "") + (includeDate ? "MM/dd/yyyy" : "")
                         + (includeDate && includeTimeOfDay ? " " : "")
-                        + (includeTimeOfDay ? "KK:mm a" : ""));
+                        + (includeTimeOfDay ? (includeSeconds ? "KK:mm:ss a" : "KK:mm a") : ""));
 //                str = dtfmt.format(cal.getTime());
                 str = dtfmt.format(date);
             }
@@ -1624,7 +1629,7 @@ public class MyDate extends Date {
             if (useYesterdayTodayTomorrow && (str = formatAsYesterdayTodayTomorrow(date)) != null) {
 //                str = formatAsYesterdayTodayTomorrow(date);
                 if (includeTimeOfDay) {
-                    dtfmt = new SimpleDateFormat("HH:mm");
+                    dtfmt = new SimpleDateFormat("HH:mm" + (includeSeconds ? ":ss" : ""));
 //                    str = str + (str.length() != 0 ? " " : "") + dtfmt.format(cal.getTime()); //add space before time if not first string
                     str = str + (str.length() != 0 ? " " : "") + dtfmt.format(date); //add space before time if not first string
                 }
@@ -1632,7 +1637,7 @@ public class MyDate extends Date {
                 dtfmt = new SimpleDateFormat((includeDayOfWeek ? "EEE " : "")
                         + (includeDate ? "dd/MM/yyyy" : "")
                         + (includeDate && includeTimeOfDay ? " " : "")
-                        + (includeTimeOfDay ? "HH:mm" : "")); //TODO if not using date, will add a space too much between EEE and HH:mm
+                        + (includeTimeOfDay ? "HH:mm" + (includeSeconds ? ":ss" : "") : "")); //TODO if not using date, will add a space too much between EEE and HH:mm
 //                str = dtfmt.format(cal.getTime());
                 str = dtfmt.format(date);
             }
@@ -1645,6 +1650,24 @@ public class MyDate extends Date {
         long time = date.getTime();
 //        Date startOfYesterday = MyDate.getStartOfDay(new Date(startOfToday.getTime() - MyDate.DAY_IN_MILLISECONDS));
         return time < startOfToday && time >= startOfToday - MyDate.DAY_IN_MILLISECONDS;
+    }
+
+    public static boolean isBefore(Date date, Date limit) {
+        return date.getTime() != 0 && date.getTime() <= limit.getTime();
+    }
+
+    public static boolean isInThePast(Date date) {
+//        return date.getTime()!=0 &&date.getTime() <= MyDate.currentTimeMillis();
+        return isBefore(date, new MyDate());
+    }
+
+    public static boolean isAfter(Date date, Date limit) {
+        return date.getTime() != 0 && date.getTime() > limit.getTime();
+    }
+
+    public static boolean isInTheFuture(Date date) {
+//        return date.getTime()!=0 &&date.getTime() > MyDate.currentTimeMillis();
+        return isAfter(date, new MyDate());
     }
 
     /**
@@ -1663,9 +1686,12 @@ public class MyDate extends Date {
     }
 
     /**
-     * check if date is within next 6 days, e.g. if today is Thursday it will be true if date is Fri-Wed, but NOT next Thur to avoid in smart dates that next Thur is shown as Thur which may make user think it is today
+     * check if date is within next 6 days, e.g. if today is Thursday it will be
+     * true if date is Fri-Wed, but NOT next Thur to avoid in smart dates that
+     * next Thur is shown as Thur which may make user think it is today
+     *
      * @param date
-     * @return 
+     * @return
      */
     public static boolean isNextcoming6Days(Date date) {
         long startOfToday = MyDate.getStartOfDay(new MyDate()).getTime();
@@ -2134,7 +2160,7 @@ public class MyDate extends Date {
         forcedDeltaTime = 0;
     }
 
-    static long getCurrentTimeShift() {
+    static long getTimeShift() {
         return forcedDeltaTime;
     }
 

@@ -91,17 +91,19 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
     private final static String MSG_QUIT_TIMER_SMALL_TIMER = "Quit";
     private final static String MSG_STOP_TIMER = "Stop"; //"Quit Timer"; "Quit"-> clearer if adding 'Timer'
     private final static String MSG_SET_WAITING = "Wait"; //"Set Waiting"; -> too long w 3 buttons (Quit+Wait+Next)
-    private final static String MSG_NEXT_TASK_LABEL = "Next: ";
+    private final static String MSG_NEXT_TASK_LABEL = "Next task: ";
     private final static String MSG_SOURCE_LABEL = "Source: ";
     private final static String MSG_NEXT_TASK = "Next";
     private final static String MSG_NEXT_TASK_SMALL_TIMER = "Next";
     private final static String MSG_SELECT_SOURCE_SCREEN_TITLE = "Select for Timer";
     private final static String MSG_NEW_TASK_CMD = "New task";
+    private final static String MSG_NEW_TASK_CMD_HELP = "Add a new task after the currently timed task. Lets you add tasks on the fly as you use the Timer.";
     private final static String MSG_NEW_SUBTASK_CMD = "New subtask";
+    private final static String MSG_NEW_SUBTASK_CMD_HELP = "Add a new subtask to the currently timed task. Lets you split a large task into small ones directly when timing it.";
     private final static String MSG_AUTO_START_BUTTON = "Auto-start";
-    private final static String MSG_AUTO_START_BUTTON_HELP = "Auto-start";
+    private final static String MSG_AUTO_START_BUTTON_HELP = "Automatically start timer";
     private final static String MSG_AUTO_NEXT_BUTTON = "Auto-next";
-    private final static String MSG_AUTO_NEXT_BUTTON_HELP = "Auto-next";
+    private final static String MSG_AUTO_NEXT_BUTTON_HELP = "Automatically move to next task";
 //    protected static String FORM_UNIQUE_ID = "ScreenTimer"; //unique id for each form, used to name local files for each form+ParseObject, and for analytics
 //    private Container timerContentainer = new Container(BoxLayout.y());
 //    private TimerStackEntry entry;
@@ -766,6 +768,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
         ItemAndListCommonInterface timerSourceN = timerInstanceN != null ? timerInstanceN.getTimerSourceN() : (timedItemN != null ? timedItemN.getOwner() : null); //use owner as source if no other specific source is indicated (works eg when creating a new task which is added to Inbox)
 
         Button elapsedTimeButton = new Button("", (fullScreenTimer ? "TimerStartStop" : "TimerStartStopSmall"));
+        elapsedTimeButton.setIconUIID(SUBTASK_KEY);
 
         MyDurationPicker hiddenElapsedTimePicker = new MyDurationPicker();
         hiddenElapsedTimePicker.setFormatter(new SimpleDateFormat("")); //hiddenElapsedTimePicker must be added to a Form, but we don't want to show it, only activate it via a longpress on the timer button
@@ -1072,7 +1075,11 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                     } else {
 //                        ScreenItem2 screenItem = new ScreenItem2(timedItemN, (MyForm) myForm, () -> {
 //                        new ScreenItem2(TimerStack2.getTimedItemN(), (MyForm) myForm, () -> {
-                        ScreenItem2 editItemScr = new ScreenItem2(timedItemN, (MyForm) myForm, () -> {
+                        ItemAndListCommonInterface oldOwner = timedItemN.getOwner();
+                        ScreenItem2 editItemScr = new ScreenItem2(timedItemN, myForm, () -> {
+                            if (!Objects.equals(timerInstanceN.getTimerSourceN(), timedItemN.getOwner())) {
+
+                            }
 //                        if (false) {
 //                            description.setText(timedItem.getText());
 //                            status.setStatus(timedItem.getStatus());
@@ -1178,7 +1185,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
             timerContainer.add(swipeable);
         } else {
             //BIG TIMER 
-            if (MyPrefs.enableEditingAsync.getBoolean()&&timedItemN != null && timedItemN.isInteruptOrInstantTask() && description.getText().equals("")) {
+            if (MyPrefs.enableEditingAsync.getBoolean() && timedItemN != null && timedItemN.isInteruptOrInstantTask() && description.getText().equals("")) {
 //                    contentPane.getComponentForm().setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
 //                myForm.setEditOnShow(description); //UI: for interrupt/instant tasks or new tasks (no previous text), automatically enter into description field 
                 description.startEditingAsync();
@@ -1274,11 +1281,13 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
 //                    interruptedTimersContainer.add(new SpanLabel(ItemAndListCommonInterface.getHierarchyAsStringN(interruptedTimerInstance.getTimerSourceN(), itm, true, true)));
 //                    interruptedList.add(new SpanLabel(ItemAndListCommonInterface.getHierarchyAsStringN(interruptedTimerInstance.getTimerSourceN(), itm, true, true)));
                     SpanLabel intTxtLabel = new SpanLabel(
-                            ItemAndListCommonInterface.getHierarchyAsStringN(interruptedTimerInstance.getTimerSourceN(), itm, true, true, "\"\"") //"<no text>"
-                            + " " + MyDate.formatDurationStd(interruptedTimerInstance.getElapsedTimeToDisplay()));
+                            //                            item.getText().isEmpty() && MyPrefs.showEmptyTaskText.getBoolean() ? Item.EMPTY_TASK_TEXT : item.getText()
+                            ItemAndListCommonInterface.getHierarchyAsStringN(interruptedTimerInstance.getTimerSourceN(), itm, true, true,
+                                    "\"" + (MyPrefs.showEmptyTaskText.getBoolean() ? Item.EMPTY_TASK_TEXT : "") + "\"") //"<no text>"
+                            + ", Timer: " + MyDate.formatDurationStd(interruptedTimerInstance.getElapsedTimeToDisplay()));
                     if (itm != null && itm.isInteruptOrInstantTask()) {
-                        intTxtLabel.setMaterialIcon(Icons.iconTimerLaunch);
-                        intTxtLabel.setTextPosition(Component.LEFT);
+                        intTxtLabel.setMaterialIcon(Icons.iconInterrupt);
+                        intTxtLabel.setTextPosition(Component.RIGHT);
                     }
 //                    intTxtLabel.setUIID("ExpandableContainerElt");
                     intTxtLabel.setTextUIID("ExpandableContainerElt");
@@ -1550,6 +1559,7 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
             Item nextComingItem = TimerStack2.getInstance().getNextComingItemN();
 
 //            SpanButton gotoNextTaskButtonWithItemText = null;
+            Container nextTaskCont = new Container(new FlowLayout(Component.CENTER)); //LEFT looks unbalanced
             SpanLabel nextTaskLabel = null;
             if (nextComingItem != null && MyPrefs.timerShowNextTask.getBoolean()) {
 //<editor-fold defaultstate="collapsed" desc="comment">
@@ -1565,9 +1575,16 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
 //                }
 //</editor-fold>
 //                gotoNextTaskButtonWithItemText = new SpanButton(MSG_NEXT_TASK_LABEL + "\"" + nextComingItem.getText() + "\""
-                nextTaskLabel = new SpanLabel(MSG_NEXT_TASK_LABEL + "\"" + nextComingItem.getText() + "\""
-                        + (MyPrefs.timerShowRemainingForNextTask.getBoolean() && nextComingItem.getRemainingForTaskItself() > 0
-                        ? (" [" + MyDate.formatDurationShort(nextComingItem.getRemainingForTaskItself()) + "]") : ""), "BigTimerNextItemWithText");
+                nextTaskLabel = new SpanLabel(MSG_NEXT_TASK_LABEL + nextComingItem.getText(), "BigTimerNextItemWithText");
+                nextTaskCont.add(nextTaskLabel);
+                if (MyPrefs.timerShowRemainingForNextTask.getBoolean() && nextComingItem.getRemainingForTaskItself() > 0) {
+                    Label nextTaskRemaining = new Label(MyDate.formatDurationShort(nextComingItem.getRemainingForTaskItself()));
+                    nextTaskRemaining.setGap(MyForm.GAP_LABEL_ICON);
+                    nextTaskRemaining.setFontIcon(Icons.myIconFont, Icons.iconRemainingCust);
+                    nextTaskRemaining.setTextPosition(Label.RIGHT);
+                    nextTaskCont.add(nextTaskRemaining);
+                }
+
             }
 
             Button nextComingButton = null;
@@ -1617,7 +1634,9 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                 Container autoOptionsCont = new Container(new GridLayout(2));
 
                 autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(null, MSG_AUTO_START_BUTTON,
-                        () -> timerInstanceN.isAutoStartTimer(), (b) -> timerInstanceN.setAutoStartTimer(b), () -> DAO.getInstance().saveToParseNow(timerInstanceN),
+                        () -> timerInstanceN.isAutoStartTimer(), 
+                        (b) -> timerInstanceN.setAutoStartTimer(b), 
+                        () -> DAO.getInstance().saveToParseNow(timerInstanceN),
                         MSG_AUTO_START_BUTTON_HELP, "TimerSwitch"));
 //                autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(MSG_AUTO_NEXT_BUTTON, MSG_AUTO_NEXT_BUTTON_HELP, () -> timerInstanceN.isAutoGotoNextTask(), (b) -> timerInstanceN.setAutoGotoNextTask(b)));
 
@@ -1662,8 +1681,9 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
                 timerButtonsContainer.add(GridLayout.encloseIn(1, completedButton));
             }
             //SHOW NEXTCOMING TASK
-            if (nextTaskLabel != null) {
-                timerButtonsContainer.add(GridLayout.encloseIn(1, nextTaskLabel));
+            if (nextTaskCont != null && nextTaskCont.getComponentCount() > 0) {
+//                timerButtonsContainer.add(GridLayout.encloseIn(1, nextTaskLabel));
+                timerButtonsContainer.add(GridLayout.encloseIn(1, nextTaskCont));
             }
 
 //<editor-fold defaultstate="collapsed" desc="comment">

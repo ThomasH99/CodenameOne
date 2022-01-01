@@ -13,6 +13,7 @@ import com.codename1.ui.events.DataChangedListener;
 import com.codename1.ui.util.EventDispatcher;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.util.UITimer;
+import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.Item.PARSE_OWNER_ITEM;
 import java.util.ArrayList;
@@ -44,8 +45,8 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
     final static String PARSE_TIMER_START_TIME = "startTime"; //only != 0 when timer is actually running
     final static String PARSE_TIMER_ELAPSED_TIME = "elapsedMillis"; //only != 0 when timer is paused/stopped
     final static String PARSE_TIMER_WAS_RUNNING_WHEN_INTERRUPTED = "interrupted"; //timer was interrupted while running so should automatically restart when interrupt is over 
-    final static String PARSE_TIMER_TIME_EVEN_INVALID_ITEMS = "timeInvalidTasks"; //time eg Done/Cancelled tasks, used when launching timer via leftSwipe directly on any tasks, to timer will continue on (equally) invalid subtasks etc
-    final static String PARSE_TIMER_FULL_SCREEN = "fullScreen"; //timer was interrupted while running so should automatically restart when interrupt is over 
+    final static String PARSE_TIMER_TIME_EVEN_INVALID_ITEMS_XXX = "timeInvalidTasks"; //time eg Done/Cancelled tasks, used when launching timer via leftSwipe directly on any tasks, to timer will continue on (equally) invalid subtasks etc
+    final static String PARSE_TIMER_FULL_SCREEN_XXX = "fullScreen"; //timer was interrupted while running so should automatically restart when interrupt is over 
     final static String PARSE_TIMER_TASK_STATUS = Item.PARSE_STATUS; //timer was interrupted while running so should automatically restart when interrupt is over 
     final static String PARSE_TIMER_AUTO_NEXT = "autoNext";
     final static String PARSE_TIMER_AUTO_START = "autoStart";
@@ -470,16 +471,16 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
         return timedItem;
     }
 
-    public void setFullScreen(boolean fullScreen) {
+    public void setFullScreenXXX(boolean fullScreen) {
         if (fullScreen) {
-            put(PARSE_TIMER_FULL_SCREEN, true);
+            put(PARSE_TIMER_FULL_SCREEN_XXX, true);
         } else {
-            remove(PARSE_TIMER_FULL_SCREEN);
+            remove(PARSE_TIMER_FULL_SCREEN_XXX);
         }
     }
 
     public boolean isFullScreen() {
-        Boolean fullScreen = getBoolean(PARSE_TIMER_FULL_SCREEN);
+        Boolean fullScreen = getBoolean(PARSE_TIMER_FULL_SCREEN_XXX);
         return fullScreen != null;
     }
 
@@ -540,15 +541,15 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
             }
             if (timerSourceN instanceof Item) {
                 put(PARSE_PROJECT, timerSourceN);
+                remove(PARSE_LIST);
                 remove(PARSE_CATEGORY);
-                remove(PARSE_LIST);
             } else if (timerSourceN instanceof Category) {
-                put(PARSE_CATEGORY, timerSourceN);
                 remove(PARSE_PROJECT);
                 remove(PARSE_LIST);
+                put(PARSE_CATEGORY, timerSourceN);
             } else if (timerSourceN instanceof ItemList) {
-                put(PARSE_LIST, timerSourceN);
                 remove(PARSE_PROJECT);
+                put(PARSE_LIST, timerSourceN);
                 remove(PARSE_CATEGORY);
             } else { //if null
                 ASSERT.that(timerSourceN == null);
@@ -1336,7 +1337,7 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
             newNextTimedItemN = findNextTimerItem(nextIndex, sourceLeafTasks, wrapAroundToStartOfSource);
         }
 
-        //if we were timing an item before and it has changed, then stop and save timer for that item before changing just below in setTimesItems
+        //if we were timing an item before and it has changed, then stop and save timer for that item before changing just below in setTimedItems
         if (currentlyTimedItemN != null & !Objects.equals(currentlyTimedItemN, newTimedItemN)) {
             stopTimerOnTimedItemAndUpdateActualsAndSave(false, saveTimerInstanceXXX);
         }
@@ -1834,4 +1835,15 @@ public class TimerInstance2 extends ParseObject implements ActionListener {
         }
     }
 
+    @Override
+    public void save() throws ParseException {
+        if (Config.TEST) {
+            ASSERT.that(getTimerSourceN() != null || (getTimedItemN() != null && getTimedItemN().isInteruptOrInstantTask()),
+                    "saving TimerInstance but w/o a TimerSouce and TimedItem NOT an interrupt, TimerInstance=" + this);
+        }
+        super.save();
+        if (Config.TEST) {
+            ASSERT.that(getACL() != null, "TimerInstance ACL is null?! TimerInstance=" + this);
+        }
+    }
 }

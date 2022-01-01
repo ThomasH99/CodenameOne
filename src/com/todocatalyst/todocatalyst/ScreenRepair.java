@@ -999,7 +999,7 @@ public class ScreenRepair extends MyForm {
             ScreenWelcome loginScreen = new ScreenWelcome(ScreenRepair.this, true);
             loginScreen.show();
         })));
-        
+
         content.add(new Button(MyReplayCommand.create("Getting Started screen", null, (e9) -> {
 //            Form hi = new MyForm("Native Logs Reader", BoxLayout.y());
             ScreenGettingStarted gettingStartedScreen = new ScreenGettingStarted(ScreenRepair.this, true);
@@ -1079,7 +1079,7 @@ public class ScreenRepair extends MyForm {
             fd.setLayout(BoxLayout.y());
             fd.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e2) -> ScreenRepair.this.showBack()));
             fd.add(new Label("Current shift:"));
-            fd.add(new Label(MyDate.formatDurationStd(MyDate.getCurrentTimeShift())));
+            fd.add(new Label(MyDate.formatDurationStd(MyDate.getTimeShift())));
             fd.add(new Label("Current time:"));
             MyDateAndTimePicker picker = new MyDateAndTimePicker(new Date(MyDate.currentTimeMillis()));
             picker.addActionListener(evt -> {
@@ -1175,70 +1175,71 @@ public class ScreenRepair extends MyForm {
 //                }
 //                ));
 //</editor-fold>
-        content.add(
-                new Button(new Command("Simulate LocalNotif reception", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
-                    @Override
-                    public void actionPerformed(ActionEvent evt) {
-                        if (AlarmHandler.getInstance().getLocalNotificationsTEST().size() > 0) {
-                            AlarmHandler.getInstance().localNotificationReceived(AlarmHandler.getInstance().getLocalNotificationsTEST().get(0).notificationId);
-                        } else {
-                            Dialog.show("INFO", "No pending local notifications", "OK", null);
-                        }
-                    }
-                }
-                ));
+//        content.add(
+//                new Button(new Command("Simulate LocalNotif reception", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
+//                    @Override
+//                    public void actionPerformed(ActionEvent evt) {
+//                        if (AlarmHandler.getInstance().getLocalNotificationsTEST().size() > 0) {
+//                            AlarmHandler.getInstance().localNotificationReceived(AlarmHandler.getInstance().getLocalNotificationsTEST().get(0).notificationId);
+//                        } else {
+//                            Dialog.show("INFO", "No pending local notifications", "OK", null);
+//                        }
+//                    }
+//                }
+//                ));
 
         content.add(
                 new Button(new Command("Update AlarmHandler", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
                     @Override
                     public void actionPerformed(ActionEvent evt) {
-                        AlarmHandler.getInstance().setupAlarmHandlingOnAppStart();
+//                        AlarmHandler.getInstance().setupAlarmHandlingOnAppStart();
+                        AlarmHandler.getInstance().updateLocalNotificationsOnChange();
                     }
                 }
                 ));
 
-        if (false) {
-            content.add(
-                    new Button(new Command("Refresh first alarms", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
-                        @Override
-                        public void actionPerformed(ActionEvent evt) {
-                            List<Item> itemsWithAlarms = DAO.getInstance().getItemsWithAlarms(10000, new Date(0), new Date(0), new Date(0), 10000);
-                            List<Item> updated = new ArrayList();
-                            for (int i = 0, size = itemsWithAlarms.size(); i < size; i++) {
-                                Item expItem = itemsWithAlarms.get(i);
-                                Date oldFirstAlarm = expItem.getNextcomingAlarmFromParseN();
-                                expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
-                                Date newFirstAlarm = expItem.getNextcomingAlarmFromParseN(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
-                                if ((oldFirstAlarm == null && newFirstAlarm != null) //newFirst now defined
-                                        || (newFirstAlarm == null && oldFirstAlarm != null) //oldFirst now invalid
-                                        || (newFirstAlarm != null && oldFirstAlarm != null && oldFirstAlarm.getTime() != newFirstAlarm.getTime()) //First has changed
-                                        ) {
-                                    updated.add(expItem); //save for a ParseServer update whether now null or with new value
-                                }
-                            }
-
-                            // save the updated Items in a batch //optimization: do this as background task to avoid blocking the event thread
-                            if (!updated.isEmpty()) {
-                                try {
-                                    ParseBatch parseBatch = ParseBatch.create();
-                                    parseBatch.addObjects(updated, ParseBatch.EBatchOpType.UPDATE);
-                                    parseBatch.execute();
-                                } catch (ParseException ex) {
-                                    Log.e(ex);
-                                }
-                            }
-                        }
-                    }
-                    ));
-        }
-
+//        if (false) {
+//            content.add(
+//                    new Button(new Command("Refresh first alarms", null/*FontImage.create(" \ue838 ", iconStyle)*/) {
+//                        @Override
+//                        public void actionPerformed(ActionEvent evt) {
+//                            List<Item> itemsWithAlarms = DAO.getInstance().getItemsWithFutureAlarms(10000, new Date(0), new Date(0), new Date(0), 10000);
+//                            List<Item> updated = new ArrayList();
+//                            for (int i = 0, size = itemsWithAlarms.size(); i < size; i++) {
+//                                Item expItem = itemsWithAlarms.get(i);
+////                                Date oldFirstAlarm = expItem.getNextcomingAlarmFromParseN();
+//                                expItem.updateNextcomingAlarm();//update the first alarm to new value (or null if no more alarms). NB! Must update even when no first alarm (firstFutureAlarm returns null)
+////                                Date newFirstAlarm = expItem.getNextcomingAlarmFromParseN(); //optimization: this statement and next both call Item.getAllFutureAlarmRecordsSorted() which is a bit expensive
+//                                if ((oldFirstAlarm == null && newFirstAlarm != null) //newFirst now defined
+//                                        || (newFirstAlarm == null && oldFirstAlarm != null) //oldFirst now invalid
+//                                        || (newFirstAlarm != null && oldFirstAlarm != null && oldFirstAlarm.getTime() != newFirstAlarm.getTime()) //First has changed
+//                                        ) {
+//                                    updated.add(expItem); //save for a ParseServer update whether now null or with new value
+//                                }
+//                            }
+//
+//                            // save the updated Items in a batch //optimization: do this as background task to avoid blocking the event thread
+//                            if (!updated.isEmpty()) {
+//                                try {
+//                                    ParseBatch parseBatch = ParseBatch.create();
+//                                    parseBatch.addObjects(updated, ParseBatch.EBatchOpType.UPDATE);
+//                                    parseBatch.execute();
+//                                } catch (ParseException ex) {
+//                                    Log.e(ex);
+//                                }
+//                            }
+//                        }
+//                    }
+//                    ));
+//        }
         content.add(new Button(new Command("Show local notifications") {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 Form form = new MyForm("Local notifiations", null, null);
                 form.setLayout(BoxLayout.y());
                 form.getToolbar().setBackCommand(Command.createMaterial("", Icons.iconBackToPreviousScreen, (e) -> ScreenRepair.this.showBack()));
-                LocalNotificationsShadowList list = AlarmHandler.getInstance().getLocalNotificationsTEST();
+//                LocalNotificationsShadowList list = AlarmHandler.getInstance().getLocalNotificationsTEST();
+                List<NotificationShadow> list = AlarmHandler.getInstance().getLocalNotificationsTEST();
                 for (int i = 0, size = list.size(); i < size; i++) {
                     form.addComponent(new SpanLabel(list.get(i).toString()));
                 }

@@ -36,6 +36,9 @@ public class ScreenSettingsWorkSlot extends ScreenSettingsCommon {
      */
 //    private Container buildContentContainer(boolean back, String errorMessage, java.util.List<Map<String, Object>> listings) {
     protected void buildContentPane(Container content) {
+        if (Config.TEST) {
+            content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.workTimeAllocateProjectsOwnRemainingBeforeSubtasks));
+        }
         content.add(makeEditIntSetting(parseIdMap2, MyPrefs.workSlotDefaultDurationInMinutes, 0, 60 * 24, 5)); //UI: workslots limited to 24h duration
         content.add(makeEditIntSetting(parseIdMap2, MyPrefs.workSlotDurationStepIntervalInMinutes, 0, 30, 1));
         content.add(makeEditBooleanSetting(parseIdMap2, MyPrefs.workSlotsMayBeCreatedInThePast));

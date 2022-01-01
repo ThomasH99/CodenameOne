@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * the Work time allocated from a series of WorkSlots to a task/project. Not
@@ -23,7 +24,8 @@ public class WorkTimeSlices {
     //TODO is sorting really necessary? Yes, since work time coming from different sources may not be sequential
 //    private List<WorkSlot> workSlots = null;
 //    private List<WorkSlotSlice> workSlotSlicesSortedOnStartTime = new ArrayList(); //null;
-    private ItemAndListCommonInterface allocatedTo;
+//    private ItemAndListCommonInterface allocatedTo;
+    private Item allocatedTo;
     private int lastIndex = 0;
     private long lastEndTime = MyDate.MIN_DATE; //the last dateTime that was allocated
     private List<WorkSlotSlice> workSlotSlicesInPriorityOrder; //in priority order??!
@@ -206,7 +208,7 @@ public class WorkTimeSlices {
 //    }
 //</editor-fold>
     public String toString() {
-        String res = "";
+        String res = " ";
         String sep = "";
 //        for (WorkSlotSlice workSlot : workSlotSlicesSortedOnStartTime) {
         for (WorkSlotSlice workSlot : workSlotSlicesInPriorityOrder) {
@@ -217,9 +219,15 @@ public class WorkTimeSlices {
         if (workSlotSlicesInPriorityOrder.size() == 0) {
             res = "WorkTime empty";
         }
-        return res + " for:" + (allocatedTo != null ? allocatedTo.getText() : "<none>");
+        return "F:" + (allocatedTo != null ? "\"" + allocatedTo.getText() + "\"" : "<none>")+res;
     }
 
+    /**
+     * return the list of slices that this slice is made up of (in case worktime
+     * came from several different workslots)
+     *
+     * @return
+     */
     public List<WorkSlotSlice> getWorkSlotSlices() {
 //        return workSlotSlicesSortedOnStartTime;
         return workSlotSlicesInPriorityOrder;
@@ -428,6 +436,19 @@ public class WorkTimeSlices {
         return availableDuration;
     }
 
+    /**
+     * return the Item this slice is allocated to
+     *
+     * @return
+     */
+    public Item getAllocatedTo() {
+        return this.allocatedTo;
+    }
+
+    public void setAllocatedTo(Item allocatedTo) {
+        this.allocatedTo = allocatedTo;
+    }
+
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    public void setFinishTime(long finishTime) {
 //        this.finishTime = finishTime;
@@ -531,7 +552,8 @@ public class WorkTimeSlices {
 ////</editor-fold>
 //    }
 //</editor-fold>
-    WorkTimeSlices getWorkTime(long remainingDuration, ItemAndListCommonInterface allocatedTo) {
+//    WorkTimeSlices getWorkTime(long remainingDuration, ItemAndListCommonInterface allocatedTo) {
+    WorkTimeSlices getWorkTimeN(long remainingDuration, Item allocatedTo) {
         //special case if requestedDuration is zero: 
 //        int lastIndex = 0;
 //        long lastEndTime = 0; //the last dateTime that was allocated
@@ -541,7 +563,12 @@ public class WorkTimeSlices {
                 || lastIndex >= workSlotSlicesInPriorityOrder.size()) {
             return null;
         }
-        this.allocatedTo = allocatedTo;
+        //if we're askingg for WorkTimeSlices for the Item these slices were allocated to, simply return the full set
+        if (Objects.equals(allocatedTo, getAllocatedTo())) {
+            return this;
+        }
+//        this.allocatedTo = allocatedTo;
+        setAllocatedTo(allocatedTo); //save the info of what Item this slice is allocatedTo
         long needed = remainingDuration;
         List<WorkSlotSlice> newWorkSlotSlices = new ArrayList<WorkSlotSlice>();
         //         while (needed>0 && lastIndex<workSlotSlicesSortedByPriority.size()) {
@@ -550,6 +577,7 @@ public class WorkTimeSlices {
             if (workSlice.getEndTime() > lastEndTime || (workSlice.getEndTime() == lastEndTime && needed == 0)) { //if there's still workTime left in this slice (== so if one task takes the last working time, but is followed by others w zero duration, they also get the same end time)
                 //allocate 
                 WorkSlotSlice newSliceN = workSlice.getSliceN(lastEndTime, needed);
+//                WorkSlotSlice newSliceN = workSlice.getSliceN(lastEndTime, needed, allocatedTo);
                 if (newSliceN != null) {
                     newWorkSlotSlices.add(newSliceN);
                     lastEndTime = newSliceN.getEndTime();

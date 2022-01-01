@@ -26,7 +26,7 @@ class WorkSlotSlice implements Work {
     private long endTime;// = Long.MAX_VALUE;
 //    long missingDuration;// = 0;
     private long now; //DEBUG: keep for the ASSERT statements
-    private ItemAndListCommonInterface allocatedToXXX;
+//    private ItemAndListCommonInterface allocatedToXXX;
 
     public WorkSlot getWorkSlot() {
         return workSlot;
@@ -43,7 +43,7 @@ class WorkSlotSlice implements Work {
                 //                + " Mis=" + MyDate.formatDurationShort(missingDuration, true)
                 + " WS:" + (workSlot != null ? workSlot.toString() : "NONE?!")
                 + " O:" + (workSlot != null && workSlot.getOwner() != null ? workSlot.getOwner().getText() : "<null>")
-                + " AllTo:" + (allocatedToXXX != null ? allocatedToXXX.getText() : "<null>")
+//                + " AllTo:" + (allocatedToXXX != null ? allocatedToXXX.getText() : "<null>")
                 //                + (allocatedToXXX != null ? ( " AllocTo:" +allocatedToXXX.getText() ): "")
                 + "]";
 //                + " of "
@@ -64,10 +64,12 @@ class WorkSlotSlice implements Work {
 //        this.missingDuration = missingDuration;
 //        ASSERT.that(startTime >= workSlot.getStartAdjusted(), "startTime:" + new Date(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new Date(workSlot.getStartAdjusted()));
         if (Config.WORKTIME_TEST) {
-            ASSERT.that(startTime < this.endTime, "0 duration workSlice!!: startTime:" + new MyDate(startTime) + ", endTime=" + new MyDate(endTime) + ", workSlot.getStartAdjusted():" + new MyDate(workSlot.getStartAdjusted(now)));
+            ASSERT.that(startTime < this.endTime, "0 duration workSlice!!: startTime:" + new MyDate(startTime) + ", endTime=" + new MyDate(endTime) + ", workSlot.getStartAdjusted():" 
+                    + new MyDate(workSlot.getStartAdjusted(now).getTime()));
         }
         if (Config.WORKTIME_TEST) {
-            ASSERT.that(startTime >= workSlot.getStartAdjusted(now), "startTime:" + new MyDate(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" + new MyDate(workSlot.getStartAdjusted(now)));
+            ASSERT.that(startTime >= workSlot.getStartAdjusted(now).getTime(), "startTime:" + new MyDate(startTime) + " must be greater than or equal to workSlot.getStartAdjusted():" 
+                    + new MyDate(workSlot.getStartAdjusted(now).getTime()));
         }
         if (Config.WORKTIME_TEST) {
             ASSERT.that(endTime <= workSlot.getEndTime(), "endTime:" + new MyDate(endTime) + "must be less than workSlot.getEndTime():" + new MyDate(workSlot.getEndTime()));
@@ -96,7 +98,7 @@ class WorkSlotSlice implements Work {
     WorkSlotSlice(WorkSlot workSlot, long now) {
 //            this.workSlot = workSlot;
 //            this(workSlot, Long.MIN_VALUE, Long.MAX_VALUE);
-        this(workSlot, workSlot.getStartAdjusted(now), workSlot.getEndTime());
+        this(workSlot, workSlot.getStartAdjusted(now).getTime(), workSlot.getEndTime());
         if (Config.WORKTIME_TEST) {
             ASSERT.that(endTime >= startTime, "endTime < startTime!!, WorkSlotSlice=" + this);
         }
@@ -107,7 +109,7 @@ class WorkSlotSlice implements Work {
     }
 
 //    private WorkSlotSlice getSlice(long startTime, long duration, ItemAndListCommonInterface allocatedTo) {
-    private WorkSlotSlice getSliceN(long startTime, long duration, Item allocatedTo) {
+    public WorkSlotSlice getSliceN(long startTime, long duration, Item allocatedTo) {
 //<editor-fold defaultstate="collapsed" desc="comment">
 //            if (startTime == MyDate.MIN_DATE) {
 //                startTime = workSlot.getStartAdjusted();
@@ -123,7 +125,7 @@ class WorkSlotSlice implements Work {
 //        if (startTime >= this.startTime && startTime < this.endTime) { //TODO optimization: simplify/optimize epxression
 //</editor-fold>
         //if either duration==0 or startTime==endTime, an empty slide will be allocated
-        this.allocatedToXXX = allocatedTo;
+//        this.allocatedToXXX = allocatedTo;
 //        workSlot.addItemWithSlice(allocatedTo);
         long actualStartTime = Math.max(startTime, this.startTime);
 //<editor-fold defaultstate="collapsed" desc="comment">

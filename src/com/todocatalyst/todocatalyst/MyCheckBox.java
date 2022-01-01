@@ -11,6 +11,7 @@ import com.codename1.ui.Command;
 import com.codename1.ui.Container;
 import com.codename1.ui.Dialog;
 import com.codename1.ui.FontImage;
+import com.codename1.ui.Form;
 import com.codename1.ui.Image;
 import com.codename1.ui.Label;
 import com.codename1.ui.events.ActionEvent;
@@ -82,25 +83,25 @@ public class MyCheckBox extends Button {
     public MyCheckBox(Item item) {//, IsItemOngoing itemOngoing) {
         this(item, false);
     }
+
     public MyCheckBox(Item item, boolean makeInactive) {//, IsItemOngoing itemOngoing) {
-        this(item != null ? item.getStatus() : ItemStatus.CREATED, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), 
+        this(item != null ? item.getStatus() : ItemStatus.CREATED, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress),
                 (oldStatus, newStatus) -> {
-            if (item != null
+                    if (item != null
                     && newStatus != oldStatus
                     && item.setStatus(newStatus)) {
-                item.setEditedDateToNow();
-                DAO.getInstance().saveToParseNow(item); //save (and trigger change event)
-                return true;
-            };
-            return false;
+                        item.setEditedDateToNow();
+                        DAO.getInstance().saveToParseNow(item); //save (and trigger change event)
+                        return true;
+                    };
+                    return false;
 //        }, null, null, null, false);
-        }, null, null, null, makeInactive);
+                }, null, null, null, makeInactive);
     }
 
 //    public MyCheckBox(ItemStatus itemStatus, boolean makeInactive) {//, IsItemOngoing itemOngoing) {
 //        this(itemStatus, MyPrefs.getBoolean(MyPrefs.checkBoxShowStatusMenuOnSingleClickInsteadOfLongPress), null, null, null, null, makeInactive);
 //    }
-
 //    public MyCheckBox(Item item, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler) {
 //    public MyCheckBox(ItemStatus initialItemStatus, boolean activateFullMenuOnSingleClick, ProcessItemStatusChange statusChangeHandler, IsItemOngoing itemOngoingXXX) {
 //        this(initialItemStatus, activateFullMenuOnSingleClick, statusChangeHandler, itemOngoingXXX, null, null, null);
@@ -220,7 +221,7 @@ public class MyCheckBox extends Button {
                     longPressed = false;
                 } else {
                     if (this.activateFullMenuOnSingleClick) {
-                        selectNewStatusOnSingleClick();
+                        selectNewStatusInPopupMenu();
                     } else {
                         //TODO!! move below logic into static method in Item to avoid duplication
 //                ItemStatus itemStatus = itemStatus.getStatus();
@@ -248,7 +249,7 @@ public class MyCheckBox extends Button {
             });
             addLongPressListener((evt) -> {
                 longPressed = true;
-                selectNewStatusOnSingleClick();
+                selectNewStatusInPopupMenu();
 //                fireActionEvent(-1, -1); //trigger action event
             });
         }
@@ -344,10 +345,11 @@ public class MyCheckBox extends Button {
         return b;
     }
 
-    private Button create(String cmdName, char materialIcon, final ActionListener ev) {
+    private Button createSetStatusButton(String cmdName, char materialIcon, final ActionListener ev) {
         Command c = Command.createMaterial(cmdName, materialIcon, ev);
         c.setIconFont(Icons.myIconFont);
         Button b = new Button(c);
+        b.setUIID("ButtonLeftAlign");
 //        b.setFontIcon(Icons.myIconFont, materialIcon);
         return b;
     }
@@ -370,7 +372,7 @@ public class MyCheckBox extends Button {
 //        return b;
 //    }
 //</editor-fold>
-    private void selectNewStatusOnSingleClick() {
+    private void selectNewStatusInPopupMenu() {
         //TODO move this logic to Item.xxx
 //<editor-fold defaultstate="collapsed" desc="comment">
 //        d = new Dialog("Select");
@@ -390,25 +392,33 @@ public class MyCheckBox extends Button {
 //                    this.singleIconStyle = s;
 //                }
 //</editor-fold>
-        MyPopupMenu d = new MyPopupMenu(groupStyleUIID,
-                create("Cancel", null, (e) -> {
-                }),
-                create(ItemStatus.CREATED.getName(), iconsPopupChar[ItemStatus.CREATED.ordinal()], (e) -> {
+//        MyPopupMenu d = new MyPopupMenu(groupStyleUIID,
+        MyPopupMenu d = new MyPopupMenu(this,
+                //                create("Cancel", null, (e) -> {
+                //                }),
+                createSetStatusButton(ItemStatus.CREATED.getVisibleName(), iconsPopupChar[ItemStatus.CREATED.ordinal()], (e) -> {
                     setStatus(ItemStatus.CREATED);
                 }),
-                create(ItemStatus.ONGOING.getName(), iconsPopupChar[ItemStatus.ONGOING.ordinal()], (e) -> {
+                createSetStatusButton(ItemStatus.ONGOING.getVisibleName(), iconsPopupChar[ItemStatus.ONGOING.ordinal()], (e) -> {
                     setStatus(ItemStatus.ONGOING);
                 }),
-                create(ItemStatus.WAITING.getName(), iconsPopupChar[ItemStatus.WAITING.ordinal()], (e) -> {
+                createSetStatusButton(ItemStatus.WAITING.getVisibleName(), iconsPopupChar[ItemStatus.WAITING.ordinal()], (e) -> {
                     setStatus(ItemStatus.WAITING);
                 }),
-                create(ItemStatus.DONE.getName(), iconsPopupChar[ItemStatus.DONE.ordinal()], (e) -> {
+                createSetStatusButton(ItemStatus.DONE.getVisibleName(), iconsPopupChar[ItemStatus.DONE.ordinal()], (e) -> {
                     setStatus(ItemStatus.DONE);
                 }),
-                create(ItemStatus.CANCELLED.getName(), iconsPopupChar[ItemStatus.CANCELLED.ordinal()], (e) -> {
+                createSetStatusButton(ItemStatus.CANCELLED.getVisibleName(), iconsPopupChar[ItemStatus.CANCELLED.ordinal()], (e) -> {
                     setStatus(ItemStatus.CANCELLED);
                 }));
-        d.popup(); //showDialog(x) = x is the component the dialog will 'point' to
+//        d.popup(); //showDialog(x) = x is the component the dialog will 'point' to
+        Form f = getComponentForm();
+        int oldTint = f.getTintColor();
+//        f.setTintColor(0);
+        if(false)f.setTintColor(0x111);
+//                    menuDialog.showPopupDialog(showMenu);
+        d.showPopupDialog(this); //showDialog(x) = x is the component the dialog will 'point' to
+        f.setTintColor(oldTint);
     }
 //<editor-fold defaultstate="collapsed" desc="comment">
 //    private void selectNewStatusOLD() {

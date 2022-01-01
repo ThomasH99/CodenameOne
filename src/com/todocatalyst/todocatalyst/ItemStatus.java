@@ -18,7 +18,9 @@ public enum ItemStatus {
     /**
      * work has started / is currently being worked on
      */
-    ONGOING("In progress", "Work has started"),
+//    ONGOING("In progress", "Work has started"),
+//    ONGOING("Ongoing", "Work has started"),
+    ONGOING("Started", "Work has started"),
     /**
      * work has started, but has been put on hold or is waiting for something
      * from the outside (remaining can't do work on it until some external event
@@ -48,7 +50,7 @@ public enum ItemStatus {
 //        return shortName;
 //    }
 
-    public String getName() {
+    public String getVisibleName() {
         return visibleName;
     }
 

@@ -79,20 +79,22 @@ public class ScreenGettingStarted extends MyForm {
 //        "Customize to suit your needs"
 //    };
     private final static String[] full = new String[]{
-        "Tips", "Most things in TodoCatalyst are pretty easy. But here are a few tips that are useful to know before you start",
-        "Help everywhere", "There is help available almost everywhere. Click the text of task fields, screen titles or settings to reveal/hide it",
-        "Drag and drop", "You can drag and drop element around to reorder manually sorted lists, simply long-press the task, list or category and drop it in its new position",
-        "Long-press task status", "Long-press the task status to set a task Waiting or Cancel it",
-        "Swipe commands", "In most lists you can swipe an element to access useful functions",
-        "Swipe time fields", "To delete a date or duration, left-swipe and press the (x)",
+        "Tips", "Most things in TodoCatalyst are pretty easy. But here are a few tips that are useful to know before you start.",
+        "Help everywhere", "Help can be shown or hidden by clicking the descriptions of task fields, screen titles or settings.",
+        "Drag and drop", "You can drag and drop element around to reorder manually sorted lists, simply long-press the task, list or category and drop it in its new position.",
+        "Long-press task status", "Long-press the task status to set a task Waiting or Cancel it.",
+        "Swipe commands", "In most lists you can swipe an element to access useful functions.",
+        "Swipe time fields", "To delete a date or duration, left-swipe and press the (x).",
         "Pinch insert tasks", "You can easily insert new tasks (or lists, categories, ...) directly where you want with pinch-insert (squeeze out with two fingers)",
-//        "Long-press", "Many elements have additional functionality when you long-press, swipe on...",
+        //        "Long-press", "Many elements have additional functionality when you long-press, swipe on...",
         //        "Long-press", "In the home screen, long-press one of the Plan/Do/Check sections to expand that and collapse the other sections",
         "Long-press to collapse all list headers", "In sorted lists, long-press a section header to collapse/expand ALL sections at once",
         "Long-press to expand all project subtasks", "Long-press to expand the full hierarchy of a project",
         "Tab task to see details", "Tap a task's text to select how much detail to show",
         "Tab statusbar to navigate lists", "In addition to the usual tap-statusbar-to-scroll-up, you can long-press to scroll a list to the end or double-tap to switch between the two last positions",
-        "Customize to suit your needs", "Out of the box, TodoCatalyst behaves like you'd expect, but there are settings available to adapt it your liking. Screen settings are available both directly from each screen and from global settings"
+        "Set your priorities", "Little is more important than getting the priorities right. Define priorities using the Eisenhower matrix (Importance vs Urgency), by value or value per hour (ROI), or find tasks that are easy or difficult, or fun or dreaded, to match your energy level.",
+        //        "Customize to suit your needs", "Out of the box, TodoCatalyst behaves like you'd expect, but there are settings available to adapt it your liking. Screen settings are available both directly from each screen and from global settings"
+        "Configure to suit your needs", "Numerous settings let you adapt it to suit your preferences and way of working. Available directly from screens or via global settings."
     };
     TextField email;
 
@@ -146,6 +148,11 @@ public class ScreenGettingStarted extends MyForm {
 //        return page;
     }
 
+    /**
+     *
+     * @param previousForm
+     * @param showBackButton show BackButton instead of Go to main screen
+     */
     public ScreenGettingStarted(MyForm previousForm, boolean showBackButton) {
         super("Getting started tips", previousForm, () -> {
         });
@@ -166,12 +173,14 @@ public class ScreenGettingStarted extends MyForm {
         }
         if (!test || Config.TEST) {
             //hide titlebar: http://stackoverflow.com/questions/42871223/how-do-i-hide-get-rid-the-title-bar-on-a-form-codename-one
-            Button getStarted = new Button(CommandTracked.create("Go to main screen", Icons.iconGetStarted, (e) -> {
+//            Button getStarted = new Button(CommandTracked.create("Go to main screen", Icons.iconGetStarted, (e) -> {
+            Button getStarted = new Button(CommandTracked.create("Get started", null, (e) -> {
                 new ScreenMain(null).show();
             }, "GetStarted"));
             getStarted.setUIID("BigButton");
             getStarted.setTextPosition(Button.LEFT);
-            cont.add(BorderLayout.SOUTH, BoxLayout.encloseY(getStarted, ScreenSettingsCommon.makeHelpText("You see this screen again via Settings -> Help -> Getting Started")));
+//            cont.add(BorderLayout.SOUTH, BoxLayout.encloseY(getStarted, ScreenSettingsCommon.makeHelpText("You see this screen again via Settings -> Help -> Getting Started")));
+            cont.add(BorderLayout.SOUTH, BoxLayout.encloseY(getStarted, ScreenSettingsCommon.makeHelpText("You see this screen again via Settings -> Help")));
         }
 
 //        cont.add(BorderLayout.SOUTH, getStarted);
