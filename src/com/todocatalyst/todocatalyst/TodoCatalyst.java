@@ -1334,7 +1334,7 @@ public class TodoCatalyst implements LocalNotificationCallback, BackgroundFetch 
     private void updateBadgeCountAtStartOfNewDay() {
         Date lastBadgeUpdate = (Date) Storage.getInstance().readObject(LAST_BADGE_UPDATE_TIME_FILENAME);
         if (Config.TEST) {
-            Log.p("performBackgroundFetch-updateBadgeCountAtStartOfNewDay() - lastBadgeUpdate=" + MyDate.formatDateTimeNew(lastBadgeUpdate));
+            Log.p("performBackgroundFetch-updateBadgeCountAtStartOfNewDay() - lastBadgeUpdate=" + (lastBadgeUpdate!=null?MyDate.formatDateTimeNew(lastBadgeUpdate):"<not set>"));
         }
 
         Date now = new MyDate();

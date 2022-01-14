@@ -715,14 +715,15 @@ TextField {
 
 /****************** Dialog *******************/
 
-Dialog {
-    background-color: floralwhite; /**/
+Dialog { /*contains the DialogContentPane in BoxLayout.CENTER. The Title is */
+    /*background-color: floralwhite; */
+    background-color: white; /**/
     /*color: green;*/
-    padding: 0 5mm 0 5mm;
-    margin: 2mm;
+    padding: 0mm; /*0mm to ensure title stretches to edge of dialog */
+    margin: 0mm;
     border: 1mm solid ; /*#007AFF;/**/
     border-color: darkgray; /*var(--ios-blue);/**/
-    border-radius: 2mm 2mm 2mm 2mm ;
+    border-radius: 2mm; /*all rounded corners - above title and bottom of dialog */
 }
 DialogTitle {
     cn1-derive: Title;
@@ -731,8 +732,9 @@ DialogTitle {
     /*font-size: 140%;*/
     font-size: var(--font-size-big);
     background: darkgray;
-    border-radius: 2mm 2mm 0 0;
+    border-radius: 2mm 2mm 0 0; /*title should also have rounded corners at top*/
     padding: 1mm 0;
+    margin:0;
     /*margin: 0mm 0;*/
     /*    border-bottom: 1px solid darkgray;
         border-left: 1mm solid darkgray;
@@ -742,9 +744,10 @@ DialogTitle {
 DialogContentPane {
     /*cn1-derive: Title;*/
     cn1-derive: Container;
-    background:white;
+    background:transparent;
     margin: 1mm;
-    padding: 1mm;
+    padding: 1mm 2mm;
+    border-radius: 0mm 0mm 2mm 2mm; /*make bottom of content (eg white background) rounded corners*/
 }
 DialogBody {
     cn1-derive: Label;

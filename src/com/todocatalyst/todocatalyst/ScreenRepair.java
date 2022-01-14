@@ -864,6 +864,13 @@ public class ScreenRepair extends MyForm {
             new ScreenRepairData(ScreenRepair.this).show();
         })));
 
+        content.add(new Button(new Command("showDialogSetWaitingDateAndAlarmIfAppropriate") {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                showDialogSetWaitingDateAndAlarmIfAppropriate(new Item("test task 10m"));
+            }
+        }));
+        
         content.add(new Button(new Command("Test stackTrace->Parse") {
             @Override
             public void actionPerformed(ActionEvent evt) {

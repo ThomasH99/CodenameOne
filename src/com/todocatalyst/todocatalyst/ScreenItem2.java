@@ -2141,7 +2141,7 @@ public class ScreenItem2 extends MyForm {
                                 () -> {
                                     if (locallyEditedOwner.size() > 0) { //if >0, first element cannot be null!
                                         ItemAndListCommonInterface selectedOwner = locallyEditedOwner.get(0); //even if multiple should be selected (shouldn't be possible), only use first
-                                        itemOrg.setOwner(selectedOwner);
+                                        itemOrg.setOwner(selectedOwner, true, true, true); //last true => add itemOrg to new owner
                                     } else { //locallyEditedOwner.size()==0 => no selected owner (either old one was deleted, or a previously new one was removed, or simply none was chosen)
                                         ASSERT.that(false, "should not be possible to not select an owner");
                                     }
@@ -3041,6 +3041,8 @@ public class ScreenItem2 extends MyForm {
 //                    DAO.getInstance().saveToParseAndWait(locallyEditedRepeatRuleCopy); //MUST save here to itemOrg can be saved locally without ref's to unsaved objects
 //                }
                     previousValues.saveElementToSaveLocally();//update locally stored element to include RR
+                } else {
+                    itemOrg.setRepeatRule(null); //if repeatRule was edited to NoRepeat, then delete any rule which was previously set!!
                 }
             }, true, dueDate.getDate().getTime() != 0 ? dueDate.getDate() : null, () -> makeDefaultDueDate(), false).show(); //TODO false<=>editing startdate not allowed - correct???
         }

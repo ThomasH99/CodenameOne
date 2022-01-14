@@ -303,7 +303,7 @@ public class ScreenItemListProperties extends MyForm {
 
         content.add(new Button(CommandTracked.create("Export to CSV", null, (e) -> {
             Storage.getInstance();
-            itemList.exportToCsv((itemList.getText().isEmpty() ? "unnamedList" : itemList.getText()) + ".csv");
+            itemList.csvSaveToFile((itemList.getText().isEmpty() ? "unnamedList" : itemList.getText()) + ".csv");
         }, "ExportListToCSV")));
 
         return content;

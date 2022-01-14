@@ -248,8 +248,9 @@ public class MyPrefs {
             = new PrefEntry("Add new tasks in Timer to timed list/category instead of timed project",
                     "timerAddNewTaskToTimedListInsteadOfTimedProject", prod ? false : false, "**");
     static PrefEntry timerShowInterruptedTimerListExpanded
-            = new PrefEntry("**",
-                    "timerShowInterruptedTimerListExpanded", prod ? false : false, "**");
+            = new PrefEntry("**",                    "timerShowInterruptedTimerListExpanded", prod ? false : false, "**");
+    static PrefEntry timerActivateCreateProjectAsYouGoZZZ
+            = new PrefEntry("**",                    "timerActivateCreateProjectAsYouGo", prod ? false : false, "**");
 
     static PrefEntry hideIconsInEditTaskScreen //also used for SCreenWorkSlot!
             = new PrefEntry("Hide the icons when editing to save screen space",
@@ -675,6 +676,12 @@ public class MyPrefs {
             = new PrefEntry("Cache dynamic lists (pull to refresh) - NOT supported by app yet", "cacheDynamicLists", prod ? false : false, "**");
     static PrefEntry onlyAllowOneDeviceToEdit
             = new PrefEntry("Only one device is allowed to edit user's data", "onlyAllowOneDeviceToEdit", prod ? true : false, "**");
+    static PrefEntry useMacLineBreakForCSVFiles
+            = new PrefEntry("Create a CSV file with line breaks for Mac/Linux file format", "useMacLineBreakForCSVFiles", prod ? false : true, "**");
+    static PrefEntry useEltTextOverGuidsCSVFiles
+            = new PrefEntry(Format.f("Use {0 description} in generated CSV files, instead of {1 guid}",Item.DESCRIPTION,Item.OBJECT_GUID), 
+                    "useMacLineBreakForCSVFiles", prod ? true : true, "**");
+ 
     //TESTING settings
     static PrefEntry testPickersOnDevice
             = new PrefEntry("Activate different pickers in ScreenItem2 to test pickers on iOS", "testPickersOnDevice", prod ? false : false, "**");

@@ -1589,7 +1589,7 @@ public class MyDate extends Date {
 
     static String formatDateNew(Date date, boolean useYesterdayTodayTomorrow, boolean includeDate,
             boolean includeTimeOfDay, boolean includeDayOfWeek, boolean useUSformat, boolean includeSeconds) {
-        if (date.getTime() == 0) {
+        if (date == null || date.getTime() == 0) {
             return "No date"; //"NONE"
         }
 //        java.util.Calendar cal = java.util.Calendar.getInstance();

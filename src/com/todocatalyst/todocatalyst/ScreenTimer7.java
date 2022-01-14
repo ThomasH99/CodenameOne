@@ -85,21 +85,21 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
 //    final static String TIMER_REPLAY = "StartTimer-";
 //    private TimerInstance timerInstance;//= new TimerStack();
     Command backCommand = null; //not private since accessed from TimerStack to exit Full screen timer
-    private final static String MSG_NO_SOURCE_SET = "<No list selected>"; //"<No source>" "<Select list to time>"
+    private final static String MSG_NO_SOURCE_SET = "<No focus list selected>";//"<No list selected>"; //"<No source>" "<Select list to time>"
+    private final static String MSG_SOURCE_LABEL = "Focus list: "; //"Source: "; Focus list; Timed list; *Timing*: Currently timing: Timer source: Source list; Timer focus list; 
+    private final static String MSG_SELECT_SOURCE_SCREEN_TITLE = "Select Timer focus list"; //Select focus list; Select list to time; List to time; Timer input: 
     private final static String MSG_NEW_TASK_DEFAULT_TEXT = "New Task";
     private final static String MSG_QUIT_TIMER = "Stop all timers"; //"Quit timer"; //"Quit Timer"; "Quit"-> clearer if adding 'Timer'
     private final static String MSG_QUIT_TIMER_SMALL_TIMER = "Quit";
     private final static String MSG_STOP_TIMER = "Stop"; //"Quit Timer"; "Quit"-> clearer if adding 'Timer'
     private final static String MSG_SET_WAITING = "Wait"; //"Set Waiting"; -> too long w 3 buttons (Quit+Wait+Next)
     private final static String MSG_NEXT_TASK_LABEL = "Next task: ";
-    private final static String MSG_SOURCE_LABEL = "Source: ";
     private final static String MSG_NEXT_TASK = "Next";
     private final static String MSG_NEXT_TASK_SMALL_TIMER = "Next";
-    private final static String MSG_SELECT_SOURCE_SCREEN_TITLE = "Select for Timer";
-    private final static String MSG_NEW_TASK_CMD = "New task";
-    private final static String MSG_NEW_TASK_CMD_HELP = "Add a new task after the currently timed task. Lets you add tasks on the fly as you use the Timer.";
-    private final static String MSG_NEW_SUBTASK_CMD = "New subtask";
-    private final static String MSG_NEW_SUBTASK_CMD_HELP = "Add a new subtask to the currently timed task. Lets you split a large task into small ones directly when timing it.";
+    private final static String MSG_NEW_TASK_CMD = "Add task"; //"New task";
+    private final static String MSG_NEW_TASK_CMD_HELP = "Add a new task to the Focus list after the currently timed task. Lets you add tasks on the fly as you use the Timer.";
+    private final static String MSG_NEW_SUBTASK_CMD = "Add subtask";//"New subtask";
+    private final static String MSG_NEW_SUBTASK_CMD_HELP = "Add a subtask to the currently timed task. Split a large task into small ones as you time it.";
     private final static String MSG_AUTO_START_BUTTON = "Auto-start";
     private final static String MSG_AUTO_START_BUTTON_HELP = "Automatically start timer";
     private final static String MSG_AUTO_NEXT_BUTTON = "Auto-next";
@@ -1194,41 +1194,43 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
             MyButton addNewTask = null;
             MyButton addNewSubtask = null;
 
-            if (fullScreenTimer) {
+            if (MyPrefs.timerActivateCreateProjectAsYouGoZZZ.getBoolean()&&fullScreenTimer) {
                 if ((timedItemN instanceof Item && timedItemN.getOwner() != null)) { //if a task is being timed, and it has an owner, then we can add add'l tasks/subtasks
 
-                    Command addNewTaskCommand = CommandTracked.create(MSG_NEW_TASK_CMD, null, (e) -> { //"Add task" "
-                        //add a new task after the current
+                    if (timerSourceN != null) { //UI: don't allow adding new tasks unless we have a source (too difficult to understand if adding new tasks to timedTask's owner -> //TODO: this could be fixed with a toastbar msg)
+                        Command addNewTaskCommand = CommandTracked.create(MSG_NEW_TASK_CMD, null, (e) -> { //"Add task" "
+                            //add a new task after the current
 //                        ItemAndListCommonInterface listToAddTaskTo = timerSourceN;
-                        Item newTask = new Item(true);
-                        //if currently timedItem is
-                        if (Objects.equals(timedItemN.getOwner(), timerSourceN)) { //we're timing an item directly in source, so we simply add new task after the currently timed
-                            timerSourceN.addToList(newTask, timedItemN, true); //UI:add new task *after* currently timed (so it becomes the next to be timed)
-                        } else {
-                            if (timedItemN.getOwner() instanceof Item) {
-                                if (timerSourceN instanceof Category && timedItemN.getCategories().contains(timerSourceN)) { //if we're timing an item in the shown category (and NOT a subtask of a project in the category)
-                                    ((Category) timerSourceN).addItemToCategory(newTask, timedItemN, true, true); //add new task to category, *after* currently timed item
-                                    //NB. newTask will automatically be added to Inbox on save
-                                } else { //we're timing a subtask in a project
-                                    ASSERT.that(Objects.equals(timedItemN.getOwnerTopLevelList(), timerSourceN)
-                                            || (timerSourceN instanceof Category && timedItemN.getOwnerTopLevelProject().getCategories().contains(timerSourceN)), "when timing a subtask, the prject should always belong to the source");
-                                    if (MyPrefs.timerAddNewTaskToTimedListInsteadOfTimedProject.getBoolean()) {
-                                        timerSourceN.addToList(newTask, timedItemN, true);
-                                    } else {
-                                        ItemAndListCommonInterface owner = timedItemN.getOwner();
-                                        owner.addToList(newTask, timedItemN, true); //UI:add new task *after* currently timed (so it becomes the next to be timed)
+                            Item newTask = new Item(true);
+                            //if currently timedItem is
+                            if (Objects.equals(timedItemN.getOwner(), timerSourceN)) { //we're timing an item directly in source, so we simply add new task after the currently timed
+                                timerSourceN.addToList(newTask, timedItemN, true); //UI:add new task *after* currently timed (so it becomes the next to be timed)
+                            } else {
+                                if (timedItemN.getOwner() instanceof Item) {
+                                    if (timerSourceN instanceof Category && timedItemN.getCategories().contains(timerSourceN)) { //if we're timing an item in the shown category (and NOT a subtask of a project in the category)
+                                        ((Category) timerSourceN).addItemToCategory(newTask, timedItemN, true, true); //add new task to category, *after* currently timed item
+                                        //NB. newTask will automatically be added to Inbox on save
+                                    } else { //we're timing a subtask in a project
+                                        ASSERT.that(Objects.equals(timedItemN.getOwnerTopLevelList(), timerSourceN)
+                                                || (timerSourceN instanceof Category && timedItemN.getOwnerTopLevelProject().getCategories().contains(timerSourceN)), "when timing a subtask, the prject should always belong to the source");
+                                        if (MyPrefs.timerAddNewTaskToTimedListInsteadOfTimedProject.getBoolean()) {
+                                            timerSourceN.addToList(newTask, timedItemN, true);
+                                        } else {
+                                            ItemAndListCommonInterface owner = timedItemN.getOwner();
+                                            owner.addToList(newTask, timedItemN, true); //UI:add new task *after* currently timed (so it becomes the next to be timed)
+                                        }
                                     }
                                 }
                             }
-                        }
-                        TimerStack2.getInstance().goToNextTimedItem(); //stop and save a currently timed item
-                        TimerStack2.getInstance().fireChangedEvent();
-                        TimerStack2.getInstance().saveAll();
-                        DAO.getInstance().triggerParseUpdate();
+                            TimerStack2.getInstance().goToNextTimedItem(); //stop and save a currently timed item
+                            TimerStack2.getInstance().fireChangedEvent();
+                            TimerStack2.getInstance().saveAll();
+                            DAO.getInstance().triggerParseUpdate();
 //                        TimerStack2.getInstance().(status, fullScreenTimer);
-                    }, "TimerAddNewTask");
-                    addNewTask = new MyButton(addNewTaskCommand);
-                    addNewTask.setLongPressHelp("Add new task to \"" + timedItemN.getOwner().getText() + "\" after current task and start timing it");
+                        }, "TimerAddNewTask");
+                        addNewTask = new MyButton(addNewTaskCommand);
+                        addNewTask.setLongPressHelp("Add new task to \"" + timedItemN.getOwner().getText() + "\" after current task and start timing it");
+                    }
 
                     Command addNewSubtaskCommand = CommandTracked.create(MSG_NEW_SUBTASK_CMD, null, (e) -> { //"Add subtask"
                         //add a new task after the current
@@ -1623,42 +1625,67 @@ public class ScreenTimer7 extends MyForm {//implements ActionListener {
 //            }
 //</editor-fold>
             //AUTO-NEXT/START SWITCHES & ADD TASKS BUTTONS
-            Container addNewTasksCont = new Container(new GridLayout(2));
-            if (addNewTask != null && addNewSubtask != null) {
-                addNewTasksCont.add(addNewTask).add(addNewSubtask);
+            if (MyPrefs.timerActivateCreateProjectAsYouGoZZZ.getBoolean()&&(addNewTask != null || addNewSubtask != null)) {
+                Container addNewTasksCont = new Container(new GridLayout(addNewTask != null && addNewSubtask != null ? 2 : 1));
+                if (addNewTask != null) {
+                    addNewTasksCont.add(addNewTask);
+                }
+                if (addNewSubtask != null) {
+                    addNewTasksCont.add(addNewSubtask);
 //                timerButtonsContainer.add(addNewTasksCont);
-            }
+                }
 
-            if (timerInstanceN != null) {
-                addNewTasksCont.setHidden(timerInstanceN.isAutoGotoNextTask());
-                Container autoOptionsCont = new Container(new GridLayout(2));
+                if (timerInstanceN != null) {
+                    addNewTasksCont.setHidden(timerInstanceN.isAutoGotoNextTask());
+                    Container autoOptionsCont = new Container(new GridLayout(2));
 
-                autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(null, MSG_AUTO_START_BUTTON,
-                        () -> timerInstanceN.isAutoStartTimer(), 
-                        (b) -> timerInstanceN.setAutoStartTimer(b), 
-                        () -> DAO.getInstance().saveToParseNow(timerInstanceN),
-                        MSG_AUTO_START_BUTTON_HELP, "TimerSwitch"));
+                    autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(null, MSG_AUTO_START_BUTTON,
+                            () -> timerInstanceN.isAutoStartTimer(),
+                            (b) -> timerInstanceN.setAutoStartTimer(b),
+                            () -> DAO.getInstance().saveToParseNow(timerInstanceN),
+                            MSG_AUTO_START_BUTTON_HELP, "TimerSwitch"));
 //                autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(MSG_AUTO_NEXT_BUTTON, MSG_AUTO_NEXT_BUTTON_HELP, () -> timerInstanceN.isAutoGotoNextTask(), (b) -> timerInstanceN.setAutoGotoNextTask(b)));
 
-                autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(null, MSG_AUTO_NEXT_BUTTON,
-                        () -> timerInstanceN.isAutoGotoNextTask(), (b) -> timerInstanceN.setAutoGotoNextTask(b),
-                        () -> { //when auto-next is on, hide the buttons
-                            addNewTasksCont.setHidden(true);
-                            addNewTasksCont.getComponentForm().animateLayout(ANIMATION_TIME_DEFAULT);
-                            DAO.getInstance().saveToParseNow(timerInstanceN);
-                        },
-                        () -> {
-                            addNewTasksCont.setHidden(false);
-                            addNewTasksCont.getComponentForm().animateLayout(ANIMATION_TIME_DEFAULT);
-                            DAO.getInstance().saveToParseNow(timerInstanceN);
-                        },
-                        MSG_AUTO_NEXT_BUTTON_HELP, "TimerSwitch"));
+                    autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(null, MSG_AUTO_NEXT_BUTTON,
+                            () -> timerInstanceN.isAutoGotoNextTask(), (b) -> timerInstanceN.setAutoGotoNextTask(b),
+                            () -> { //when auto-next is on, hide the buttons
+                                addNewTasksCont.setHidden(true);
+                                addNewTasksCont.getComponentForm().animateLayout(ANIMATION_TIME_DEFAULT);
+                                DAO.getInstance().saveToParseNow(timerInstanceN);
+                            },
+                            () -> {
+                                addNewTasksCont.setHidden(false);
+                                addNewTasksCont.getComponentForm().animateLayout(ANIMATION_TIME_DEFAULT);
+                                DAO.getInstance().saveToParseNow(timerInstanceN);
+                            },
+                            MSG_AUTO_NEXT_BUTTON_HELP, "TimerSwitch"));
 //            timerButtonsContainer.add(GridLayout.encloseIn(2,
 //                    MyBorderLayout.centerEastWest(null, new Switch(), new SpanLabel("Auto-next")),
 //                    MyBorderLayout.centerEastWest(null, new Switch(), new SpanLabel("Auto-start"))
 //            ));
-                timerButtonsContainer.add(autoOptionsCont);
-                timerButtonsContainer.add(addNewTasksCont);
+                    timerButtonsContainer.add(autoOptionsCont);
+                    timerButtonsContainer.add(addNewTasksCont);
+                }
+            } else { //as long as AddNewTask/Subtasks are not ready, use simplified version here: 
+                Container autoOptionsCont = new Container(new GridLayout(2));
+
+                    autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(null, MSG_AUTO_START_BUTTON,
+                            () -> timerInstanceN.isAutoStartTimer(),
+                            (b) -> timerInstanceN.setAutoStartTimer(b),
+                            () -> DAO.getInstance().saveToParseNow(timerInstanceN),
+                            MSG_AUTO_START_BUTTON_HELP, "TimerSwitch"));
+                    
+                    autoOptionsCont.add(ScreenSettingsCommon.makeEditBoolean(null, MSG_AUTO_NEXT_BUTTON,
+                            () -> timerInstanceN.isAutoGotoNextTask(), (b) -> timerInstanceN.setAutoGotoNextTask(b),
+                            () -> { 
+                                DAO.getInstance().saveToParseNow(timerInstanceN);
+                            },
+                            () -> {
+                                DAO.getInstance().saveToParseNow(timerInstanceN);
+                            },
+                            MSG_AUTO_NEXT_BUTTON_HELP, "TimerSwitch"));
+                    
+                    timerButtonsContainer.add(autoOptionsCont);
             }
 
             //TIMER BUTTONS

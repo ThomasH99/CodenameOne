@@ -1021,7 +1021,7 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
     final static String SOURCE_HELP = "Shows the task was copied from. E.g. for tasks created using templates, automatically repeating tasks or copy/paste. Can be useful for example to find all instances of a given template. "; //Template or Task that this one is a copy of, "Task copy of"
     final static String OBJECT_ID = "Task Id"; //"Reference"; //"Id"; //"Unique id"
     final static String OBJECT_ID_HELP = "An internal unique identifier. This may be useful if contacting support"; //"Unique id"
-    final static String OBJECT_GUID = "Task Guid"; //"Reference"; //"Id"; //"Unique id"
+    final static String OBJECT_GUID = "Internal identifier"; //"Task Guid"; //"Reference"; //"Id"; //"Unique id"
     final static String OBJECT_GUID_HELP = "An internal unique identifier. This may be useful if contacting support"; //"Unique id"
     final static String STARRED = "Starred"; //"Unique id"
     final static String STARRED_HELP = "Tasks can be marked with a Star to emphasize them**"; //"Unique id"
@@ -1687,7 +1687,9 @@ public class Item /* extends BaseItemOrList */ extends ParseObject implements
 
     @Override
     public void setOwner(ItemAndListCommonInterface owner) {
-        setOwner(owner, true, true, true); //by default, update inherited values and remove from previous owner (and remove previously inherited values), and add to new owner at default insert-position
+        //by default, update inherited values and remove from previous owner (and remove previously inherited values), 
+        //DON'T add to new owner (at default insert-position) since this causes double-inserts some places
+        setOwner(owner, true, true, false);
     }
 
 //    public ParseObject getOwner() {
@@ -11562,155 +11564,18 @@ MUST also update supertask so that e.g. the completedDate of project is updated 
         return CLASS_NAME;
     }
 
-    private final static String csvFormatStringFull = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-    private final static String csvFormatStringDateOnly = "yyyy-MM-dd";
-    private final static String csvFormatStringDateHhMmSsOnly = "yyyy-MM-dd'T'HH:mm:ss";
-    private final static String csvFormatStringDateHhMmOnly = "yyyy-MM-dd'T'HH:mm";
-    private final static SimpleDateFormat csvDateFullFormatter = new SimpleDateFormat(csvFormatStringFull);
-    private final static SimpleDateFormat csvDateDateOnlyFormatter = new SimpleDateFormat(csvFormatStringDateOnly);
-    private final static SimpleDateFormat csvDateTimeHhMmOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmOnly);
-    private final static SimpleDateFormat csvDateTimeHhMmSsOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmSsOnly);
+//    private final static String csvFormatStringFull = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+//    private final static String csvFormatStringDateOnly = "yyyy-MM-dd";
+//    private final static String csvFormatStringDateHhMmSsOnly = "yyyy-MM-dd'T'HH:mm:ss";
+//    private final static String csvFormatStringDateHhMmOnly = "yyyy-MM-dd'T'HH:mm";
+//    private final static SimpleDateFormat csvDateFullFormatter = new SimpleDateFormat(csvFormatStringFull);
+//    private final static SimpleDateFormat csvDateDateOnlyFormatter = new SimpleDateFormat(csvFormatStringDateOnly);
+//    private final static SimpleDateFormat csvDateTimeHhMmOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmOnly);
+//    private final static SimpleDateFormat csvDateTimeHhMmSsOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmSsOnly);
 
-    private Date csvStringToDate(String dateStr) { // throws com.codename1.l10n.ParseException {
-//        YYYY-MM-DDThh:mm:ss.sssZ
-//        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-//if(!dateStr.contains('T'))
-        Date date;
-        try {
-            date = csvDateFullFormatter.parse(dateStr);
-        } catch (com.codename1.l10n.ParseException ex) {
-            try {
-                date = csvDateTimeHhMmSsOnlyFormatter.parse(dateStr);
-            } catch (com.codename1.l10n.ParseException ex1) {
-                try {
-                    date = csvDateTimeHhMmOnlyFormatter.parse(dateStr);
-                } catch (com.codename1.l10n.ParseException ex2) {
-                    try {
-                        date = csvDateDateOnlyFormatter.parse(dateStr);
-                    } catch (com.codename1.l10n.ParseException ex3) {
-                        return new MyDate(0); //if no successful parse of the string, return a '0' date (undefined)
-                    }
-                }
-            }
-        }
-        return date;
-    }
-
-    private String csvDateToString(Date date, SimpleDateFormat formatter) {
-        if (date != null && date.getTime() != 0) {
-            return formatter.format(date);
-        } else {
-            return "";
-        }
-    }
-
-    private String csvDurationToString(long duration, SimpleDateFormat formatter) {
-        if (duration != 0) {
-            return formatter.format(duration);
-        } else {
-            return "";
-        }
-    }
-
-    private String csvBoolToString(boolean b, String trueString) {
-        if (b) {
-            return trueString != null ? trueString : "TRUE";
-        } else {
-            return "";
-        }
-    }
-
-    private String csvBoolToString(boolean b) {
-        return csvBoolToString(b, "TRUE");
-    }
-
-    private String csvSubtasksToString(List<ItemAndListCommonInterface> subtasks) {
-        if (subtasks == null || subtasks.size() == 0) {
-            return "";
-        }
-        String s = null;
-        for (ItemAndListCommonInterface subtask : subtasks) {
-            if (s == null) {
-                s = "\"" + subtask.getText() + "\"";
-            } else {
-                s += "," + "\"" + subtask.getText() + "\"";
-            }
-        }
-        return s;
-    }
-
-    private final static String csvFormatStringDuratioHhMmSs = "HH:mm:ss";
-    private final static String csvFormatStringDuratioHhMm = "HH:mm";
-    private final static SimpleDateFormat csvDurationHhMmS = new SimpleDateFormat(csvFormatStringDuratioHhMmSs);
-    private final static SimpleDateFormat csvDurationHhM = new SimpleDateFormat(csvFormatStringDuratioHhMm);
-
-    private long csvStringToDuration(String durationStr) {
-        long duration = 0;
-        Date durationDate = null;
-        try {
-            durationDate = csvDurationHhMmS.parse(durationStr);
-        } catch (com.codename1.l10n.ParseException ex) {
-            try {
-                durationDate = csvDurationHhM.parse(durationStr);
-            } catch (com.codename1.l10n.ParseException ex1) {
-                try {
-                    durationDate = csvDateTimeHhMmOnlyFormatter.parse(durationStr);
-                } catch (com.codename1.l10n.ParseException ex2) {
-                    try {
-                        durationDate = csvDateDateOnlyFormatter.parse(durationStr);
-                    } catch (com.codename1.l10n.ParseException ex3) {
-//                        return duration=0; //if no successful parse of the string, return a '0' date (undefined)
-                    }
-                }
-            }
-        }
-        if (durationDate != null) {
-            duration = durationDate.getTime();
-        }
-        return duration;
-    }
-
-    /**
-     * return True if string is defined and either equals True or does not equal
-     * False and is non-empty (any string other than False or empty will be
-     * considered True)
-     *
-     * @param boolStr
-     * @return
-     */
-    private boolean csvStringToBool(String boolStr) {
-        return boolStr != null && (boolStr.equals("True") || (!boolStr.equals("False") && !boolStr.isEmpty()));
-    }
-
-    private String csvNullString(Object boolStr, MyForm.GetString s) {
-        return boolStr != null ? s.get() : "";
-    }
-
-    private static String csvElementId(ItemAndListCommonInterface element) {
-        return element != null ? element.getGuid() : "";
-    }
-
-    private static List<Category> csvCategories(String categories) {
-//        ItemAndListCommonInterface element = DAO.getInstance().fetchElement(elementId);
-        Log.p("ERROR - categories not parsed in CSV: " + categories);
-        return new ArrayList();
-    }
-
-    private static ItemAndListCommonInterface csvElement(String elementId) {
-        ItemAndListCommonInterface element = DAO.getInstance().fetchElement(elementId);
-        if (element != null) {
-            return element;
-        } else {
-            //TODO!!!!
-            //search for element in other ways:
-            //search for an element with the same Description (indicate eg the full text of the owner project)
-            //let user assign 'own' unique IDs (any type of string or number) and search for those (build a hasmap
-            return null;
-        }
-    }
-// throws com.codename1.l10n.ParseException {
 
     final static String[] csvFieldList = new String[]{
+        GUID,
         PARSE_TEXT,
         PARSE_OWNER_ITEM,
         PARSE_OWNER_LIST,
@@ -11757,27 +11622,40 @@ MUST also update supertask so that e.g. the completedDate of project is updated 
      * @return
      */
 //    public String[] convertToFromCSV(ArrayList list, String[] fieldIds, String[] fieldValues, boolean toCSV) {
-    public String[] convertToCSV() {
+    @Override
+    public String[] csvConvertToStringArray() {
         String[] csvValues = new String[csvFieldList.length];
         convertToFromCSV(csvFieldList, csvValues, true);
         return csvValues;
     }
 
-    public boolean convertFromCSV(String[] csvFieldList, String[] cvsValues) {
-        String[] csvValues = new String[csvFieldList.length];
-        convertToFromCSV(csvFieldList, csvValues, false);
-        return true; //TODO!! return status/error log (if any fields did not convert correctly)
-    }
-
+//<editor-fold defaultstate="collapsed" desc="comment">
+//    private final static String linebreak = MyPrefs.useMacLineBreakForCSVFiles.getBoolean() ? "\n" : "\r\n";
+    
     /**
+     * convert to a csv 'file' format: one string with one line per csv item
      *
-     * @param fieldIds list of fieldIds - if toCSV, list of fields to export,
-     * otherwise order in which the field values are stored in fieldValus
-     * @param fieldValues if toCSV, the array in which to store the generated
-     * csv values, otherwise the list of values to import into this item
-     * @param toCSV
      * @return
      */
+//    public String convertToCSVFile() {
+//        String csvFile = "";
+//        String[] strArray=csvConvertToStringArray();
+//        for (String s : csvConvertToStringArray()) {
+//            csvFile += s + linebreak;
+//        }
+//        return csvFile;
+//    }
+//</editor-fold>
+
+//    @Override
+//    public boolean csvSetFromStringArray(String[] csvFieldList, String[] cvsValues) {
+//        String[] csvValues = new String[csvFieldList.length];
+//        convertToFromCSV(csvFieldList, csvValues, false);
+//        return true; //TODO!! return status/error log (if any fields did not convert correctly)
+//    }
+
+   
+    @Override
     public void convertToFromCSV(String[] fieldIds, String[] fieldValues, boolean toCSV) {
         String val = null;
         for (int i = 0, size = fieldIds.length; i < size; i++) {
@@ -11794,6 +11672,13 @@ MUST also update supertask so that e.g. the completedDate of project is updated 
 //            val = fieldValues[i];
 //<editor-fold defaultstate="collapsed" desc="the HUGE switch">
             switch (fieldId) {
+                case GUID:
+                    if (toCSV) {
+                        csv = getGuid();
+                    } else {
+                        setGuid(val);
+                    }
+                    break;
                 case PARSE_TEXT:
                     if (toCSV) {
                         csv = getText();
@@ -11810,7 +11695,7 @@ MUST also update supertask so that e.g. the completedDate of project is updated 
                     break;
                 case PARSE_STATUS:
                     if (toCSV) {
-                        csv = getStatus().getDescription();
+                        csv = getStatus().getVisibleName();
                     } else {
                         setStatus(ItemStatus.getValue(val));
                     }
@@ -11870,7 +11755,7 @@ MUST also update supertask so that e.g. the completedDate of project is updated 
                     break;
                 case PARSE_REPEAT_RULE:
                     if (toCSV) {
-                        csv = csvNullString(getRepeatRuleN(), () -> getRepeatRuleN().toString());
+                        csv = csvNullString(getRepeatRuleN(), () -> getRepeatRuleN().getText());
                     } else {
                         Log.p("Cannot import " + Item.REPEAT_RULE + ". Please manually set RepeatRule for task " + getText() + " to this value = " + val);
                     }
@@ -11919,21 +11804,24 @@ MUST also update supertask so that e.g. the completedDate of project is updated 
                     break;
                 case PARSE_EFFORT_ESTIMATE:
                     if (toCSV) {
-                        csv = csvDurationToString(getEstimateTotal(), csvDateFullFormatter);
+//                        csv = csvDurationToString(getEstimateTotal(), csvDateFullFormatter);
+                        csv = csvDurationToString(getEstimateTotal());
                     } else {
                         setEstimateForTask(csvStringToDuration(val), false);
                     }
                     break;
                 case PARSE_REMAINING_EFFORT_TOTAL:
                     if (toCSV) {
-                        csv = csvDurationToString(getRemainingTotalFromParse(), csvDurationHhMmS);
+//                        csv = csvDurationToString(getRemainingTotalFromParse(), csvDurationHhMmS);
+                        csv = csvDurationToString(getRemainingTotalFromParse());
                     } else {
                         setRemainingForTaskItself(csvStringToDuration(val), false); //UI: import of project estimates
                     }
                     break;
                 case PARSE_ACTUAL_EFFORT:
                     if (toCSV) {
-                        csv = csvDurationToString(getActualForTaskItself(), csvDurationHhMmS);
+//                        csv = csvDurationToString(getActualForTaskItself(), csvDurationHhMmS);
+                        csv = csvDurationToString(getActualForTaskItself());
                     } else {
                         setActualForTaskItself(csvStringToDuration(val), false); //UI: import of project estimates
                     }
@@ -11949,7 +11837,7 @@ MUST also update supertask so that e.g. the completedDate of project is updated 
                     break;
                 case PARSE_PRIORITY:
                     if (toCSV) {
-                        csv = ((Integer) getPriority()).toString();
+                        csv = getPriority()!=0?((Integer) getPriority()).toString():""; //don't set for 0 (default value)
                     } else {
                         setPriority(Integer.parseInt((String) val)); //TODO!!! more resistant parsing of val (illegal formats, null values)
                     }
@@ -11964,7 +11852,7 @@ MUST also update supertask so that e.g. the completedDate of project is updated 
                     break;
                 case PARSE_EARNED_VALUE:
                     if (toCSV) {
-                        csv = ((Double) getEarnedValue()).toString();
+                        csv = getEarnedValue()!=0?((Double) getEarnedValue()).toString():"";
                     } else {
                         setEarnedValue(Double.parseDouble(val));//TODO!!! more resistant parsing of val (illegal formats, null values)
                     }
@@ -12059,7 +11947,8 @@ MUST also update supertask so that e.g. the completedDate of project is updated 
                 case PARSE_UPDATED_AT:
                     csv = csvDateToString(getUpdatedAt(), csvDateFullFormatter);
                     if (toCSV) {
-                        csv = MyDate.formatDateNew(getUpdatedAt());
+//                        csv = MyDate.formatDateNew(getUpdatedAt());
+                        csv = csvDateToString(getUpdatedAt(),csvDateFullFormatter);
                     } else {
                         Log.p("Cannot import " + Item.UPDATED_DATE);
                     }

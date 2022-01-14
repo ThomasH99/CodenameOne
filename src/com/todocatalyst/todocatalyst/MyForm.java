@@ -2018,7 +2018,7 @@ public class MyForm extends Form implements ActionListener {
             //                || (item.getWaitingTillDate().getTime() != 0 && item.getWaitingAlarmDate().getTime() != 0)) {
 //                || (item.getWaitingTillDate().getTime() < MyDate.currentTimeMillis() || item.getWaitingAlarmDate().getTime() < MyDate.currentTimeMillis())) {
 
-            PickerDialog dia = new PickerDialog("Set Waiting", "Waiting tasks are automatically hidden until the set date.",
+            PickerDialog dia = new PickerDialog("Set Waiting", "Waiting tasks can automatically be hidden until the set date.",
                     Format.f("Set {0}", Item.WAIT_UNTIL_DATE),
                     item.getWaitUntilDate(),
                     new MyDate(MyDate.currentTimeMillis() + MyPrefs.itemWaitingDateDefaultDaysAheadInTime.getInt() * MyDate.DAY_IN_MILLISECONDS),
@@ -3840,7 +3840,7 @@ public class MyForm extends Form implements ActionListener {
     }
 
     public Command makeExportToCSVCommand(ItemAndListCommonInterface itemOrg) {
-        return Command.createMaterial("ExportCSV", 'X', e -> itemOrg.exportToCsv());
+        return Command.createMaterial("ExportCSV", 'X', e -> itemOrg.csvPrintToLog());
     }
 
     public Command makeImportTasksAsTextLines(ItemAndListCommonInterface itemOrg) {

@@ -3545,9 +3545,9 @@ public class DAO {
                 ParseObject.GUID,
                 //
                 TimerInstance2.PARSE_TIMER_ELAPSED_TIME,
-//                TimerInstance2.PARSE_TIMER_FULL_SCREEN,
+                //                TimerInstance2.PARSE_TIMER_FULL_SCREEN,
                 TimerInstance2.PARSE_TIMER_START_TIME,
-//                TimerInstance2.PARSE_TIMER_TIME_EVEN_INVALID_ITEMS,
+                //                TimerInstance2.PARSE_TIMER_TIME_EVEN_INVALID_ITEMS,
                 TimerInstance2.PARSE_TIMER_WAS_RUNNING_WHEN_INTERRUPTED,
                 TimerInstance2.PARSE_TIMER_TASK_STATUS,
                 TimerInstance2.PARSE_TIMER_AUTO_NEXT,
@@ -6119,7 +6119,7 @@ public class DAO {
      *
      * @param parseObjectList
      */
-    private void cleanList(List<ParseObject> parseObjectList) {
+    private void cleanListOLD(List<ParseObject> parseObjectList) {
         for (ParseObject p : parseObjectList) {
             if (p instanceof ItemAndListCommonInterface) {
                 List fullList = ((ItemAndListCommonInterface) p).getListFull();
@@ -6131,6 +6131,27 @@ public class DAO {
                 Log.p("UNSAVED OBJ REFERENCE EXCEPTION for elt NOT ItemAndListCommonInterface=" + p);
             }
         }
+    }
+
+    private void saveUnsavedElt(ParseObject unsaved) {
+        if (unsaved instanceof Item) {
+            StackTrace.saveParseObjectAsCSV((Item) unsaved); //
+            Log.p("UNSAVED ITEM saved to StackTrace=" + unsaved);
+        } else {
+            Log.p("UNSAVED OBJ REFERENCE EXCEPTION for elt NOT ItemAndListCommonInterface=" + unsaved);
+        }
+    }
+
+    private void saveUnsavedEltsAndCleanListXXX(List<ParseObject> parseObjectList) {
+        for (ParseObject unsaved : parseObjectList) {
+            if (unsaved instanceof Item) {
+                StackTrace.saveParseObjectAsCSV((Item) unsaved); //
+                Log.p("UNSAVED ITEM saved to StackTrace=" + unsaved);
+            } else {
+                Log.p("UNSAVED OBJ REFERENCE EXCEPTION for elt NOT ItemAndListCommonInterface=" + unsaved);
+            }
+        }
+        parseObjectList.clear(); //UI: remove all references to unsaved element (meaning the info that they belonged to the list is completely lost)
     }
 
     private ParseBatch batchSavePrepareN(Collection<ParseObject> saveList, Collection<ParseObject> deleteListN) throws ParseException {
@@ -6166,37 +6187,80 @@ public class DAO {
         if (!createList.isEmpty() || !updateList.isEmpty() || (deleteListN != null && !deleteListN.isEmpty())) {
 //        try {
             parseBatch = ParseBatch.create();
-            if (!createList.isEmpty()) {
+
+            Iterator<ParseObject> createsItr = createList.iterator();
+//            if (!createList.isEmpty()) {
+            while (createsItr.hasNext()) {
+                ParseObject p = createsItr.next();
                 try {
-                    parseBatch.addObjects(createList, EBatchOpType.CREATE);
-//                } catch (ParseException ex) {
+//                    if (parseBatch == null) {
+//                        parseBatch = ParseBatch.create(); //only create if actually needed (not if no or only faulty objects)
+//                    }
+//                    parseBatch.addObjects(createList, EBatchOpType.CREATE);
+                    parseBatch.addObject(p, EBatchOpType.CREATE);
                 } catch (Exception ex) {
-                    cleanList(updateList);
-                    parseBatch.addObjects(updateList, EBatchOpType.UPDATE);
+                    createsItr.remove();
+//                    saveUnsavedEltsAndCleanList(updateList);
+                    saveUnsavedElt(p);
+                    saveList.remove(p); //also remove from underlying list
+                    toSaveList.remove(p); //also remove from underlying list
+//                    parseBatch.addObjects(updateList, EBatchOpType.UPDATE);
                 }
             }
-            if (!updateList.isEmpty()) {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (!updateList.isEmpty()) {
+//                try {
+//                    parseBatch.addObjects(updateList, EBatchOpType.UPDATE);
+////                } catch (ParseException ex) {
+//                } catch (Exception ex) {
+//                    saveUnsavedEltsAndCleanList(updateList);
+//                    parseBatch.addObjects(updateList, EBatchOpType.UPDATE);
+//                }
+//            }
+//</editor-fold>
+            createsItr = updateList.iterator();
+            while (createsItr.hasNext()) {
+                ParseObject p = createsItr.next();
                 try {
-                    parseBatch.addObjects(updateList, EBatchOpType.UPDATE);
-//                } catch (ParseException ex) {
+                    parseBatch.addObject(p, EBatchOpType.UPDATE);
                 } catch (Exception ex) {
-                    cleanList(updateList);
-                    parseBatch.addObjects(updateList, EBatchOpType.UPDATE);
+                    createsItr.remove();
+                    saveUnsavedElt(p);
+                    saveList.remove(p); //also remove from underlying list
+                    toSaveList.remove(p); //also remove from underlying list
                 }
             }
 
-            if (deleteListN != null && !deleteListN.isEmpty()) {
-                try {
-                    parseBatch.addObjects(deleteListN, EBatchOpType.DELETE);
-//                } catch (ParseException ex) {
-                } catch (Exception ex) {
-                    cleanList(updateList);
-                    parseBatch.addObjects(updateList, EBatchOpType.UPDATE);
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            if (deleteListN != null && !deleteListN.isEmpty()) {
+//                try {
+//                    parseBatch.addObjects(deleteListN, EBatchOpType.DELETE);
+////                } catch (ParseException ex) {
+//                } catch (Exception ex) {
+//                    saveUnsavedEltsAndCleanList(updateList);
+//                    parseBatch.addObjects(updateList, EBatchOpType.UPDATE);
+//                }
+//            }
+//</editor-fold>
+            if (deleteListN != null) {
+                Iterator<ParseObject> deletesItr = deleteListN.iterator();
+                while (deletesItr.hasNext()) {
+                    ParseObject p = deletesItr.next();
+                    try {
+                        parseBatch.addObject(p, EBatchOpType.DELETE);
+                    } catch (Exception ex) {
+                        deletesItr.remove();
+                        deleteListN.remove(p);
+                        toDeleteList.remove(p); //also remove from underlying list
+                    }
                 }
             }
         }
         //NB. Sseparating encoding (addObjects) and execution will  NOT enable parallelism since execution will reset dirty, which means any additional changes to parseobjects would be lost
 //        parseBatch.execute();
+//        if (parseBatch != null && parseBatch.equals(ParseBatch.create())) {
+//            parseBatch = null;
+//        }
         return parseBatch;
 //        } catch (ParseException ex) {
 //            Log.e(ex);

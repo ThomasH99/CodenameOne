@@ -13,6 +13,7 @@ import com.codename1.ui.util.EventDispatcher;
 import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.DAO.SYSTEM_LIST_TODAY;
+import static com.todocatalyst.todocatalyst.Item.PARSE_CREATED_AT;
 //import static com.todocatalyst.todocatalyst.Item.PARSE_DELETED_DATE;
 import static com.todocatalyst.todocatalyst.Item.PARSE_RESTART_TIMER;
 //import static com.todocatalyst.todocatalyst.Item.PARSE_WORKSLOTS;
@@ -68,6 +69,7 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
     final static String PARSE_WORKSLOTS = Item.PARSE_WORKSLOTS; //"filterSort";
 //    final static String PARSE_SYSTEM_LIST = "system";
     final static String PARSE_SYSTEM_NAME = "systemName"; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
+    final static String PARSE_UPDATED_AT = Item.PARSE_UPDATED_AT; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
     final static String PARSE_EDITED_DATE = Item.PARSE_EDITED_DATE; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
     final static String PARSE_EXPIRE_BY_DATE = "expireBy"; //special field (never saved to Parse, only used for locally stored systemlists)
     final static String PARSE_DELETED_DATE = Item.PARSE_DELETED_DATE; //special field to store 'fixed' system names for lists, e.g. Next (which are not localized!)
@@ -4611,6 +4613,97 @@ public class ItemList<E extends ItemAndListCommonInterface> extends ParseObject
      */
     public boolean isExpired() {
         return getExpireDate().getTime() < System.currentTimeMillis();
+    }
+
+    final static String[] csvFieldList = new String[]{
+        PARSE_TEXT,
+        PARSE_COMMENT,
+        PARSE_ITEMS,
+        PARSE_DELETED_DATE,
+        PARSE_CREATED_AT,
+        PARSE_EDITED_DATE,
+        PARSE_UPDATED_AT,
+        PARSE_FILTER_SORT_DEF,
+        PARSE_WORKSLOTS
+    };
+
+    public String[] csvConvertToStringArray() {
+        String[] csvValues = new String[csvFieldList.length];
+        convertToFromCSV(csvFieldList, csvValues, true);
+        return csvValues;
+    }
+
+    public void convertToFromCSV(String[] fieldIds, String[] fieldValues, boolean toCSV) {
+        String val = null;
+        for (int i = 0, size = fieldIds.length; i < size; i++) {
+//        ArrayList list = new ArrayList();
+//            String fieldId = fieldIds[i];
+            String fieldId = fieldIds[i];
+            if (Config.TEST) {
+                Log.p("CSV field = " + fieldId);
+            }
+            if (!toCSV) {
+                val = fieldValues[i];
+            }
+            String csv = "";
+            switch (fieldId) {
+                case PARSE_TEXT:
+                    if (toCSV) {
+                        csv = getText();
+                    } else {
+                        setText(val);
+                    }
+                    break;
+                case PARSE_COMMENT:
+                    if (toCSV) {
+                        csv = getComment();
+                    } else {
+                        setComment(val);
+                    }
+                    break;
+//                 case PARSE_ITEMS:
+//                    //TODO: how to convert subtasks to sth meaningful? At least so they can be imported, e.g. "task text [guid]"
+//                    //TODO and write leaf subtasks to file first, so they have been read in when reading in their project, so they can be found via the guid
+//                    if (toCSV) {
+//                        csv = csvSubtasksToString(getListFull());
+//                    } else {
+//                        setStatus(ItemStatus.valueOf(val));
+//                    }
+//                    break;
+                case PARSE_UPDATED_AT:
+                    csv = csvDateToString(getUpdatedAt(), csvDateFullFormatter);
+                    if (toCSV) {
+                        csv = MyDate.formatDateNew(getUpdatedAt());
+                    } else {
+                        Log.p("Cannot import " + Item.UPDATED_DATE);
+                    }
+                    break;
+                case PARSE_CREATED_AT:
+                    if (toCSV) {
+                        csv = csvDateToString(getCreatedAt(), csvDateFullFormatter);
+                    } else {
+                        Log.p("Cannot import " + Item.CREATED_DATE);
+                    }
+                    break;
+                case PARSE_EDITED_DATE:
+                    if (toCSV) {
+                        csv = csvDateToString(getEditedDate(), csvDateFullFormatter);
+                    } else {
+                        setEditedDate(csvStringToDate(val));
+                    }
+                    break;
+                case PARSE_DELETED_DATE:
+                    if (toCSV) {
+                        csv = csvDateToString(getSoftDeletedDateN(), csvDateFullFormatter);
+                    } else {
+                        setSoftDeletedDate(csvStringToDate(val));
+                    }
+                    break;
+            }
+            if (toCSV) {
+                fieldValues[i] = csv;
+            }
+        }
     }
 
 //            cachePut(defaultFilterSortDef);

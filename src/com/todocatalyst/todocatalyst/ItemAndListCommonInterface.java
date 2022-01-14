@@ -5,12 +5,15 @@
  */
 package com.todocatalyst.todocatalyst;
 
+import com.codename1.io.File;
+import com.codename1.io.FileSystemStorage;
 import com.codename1.io.Log;
+import com.codename1.l10n.SimpleDateFormat;
+import com.codename1.ui.Dialog;
 import com.codename1.ui.events.ActionEvent;
 import com.codename1.ui.events.ActionListener;
 import com.codename1.ui.util.EventDispatcher;
 import com.codename1.util.StringUtil;
-import com.parse4cn1.ParseException;
 import com.parse4cn1.ParseObject;
 import static com.todocatalyst.todocatalyst.ItemList.ACTION_EVENT_CHANGED;
 import static com.todocatalyst.todocatalyst.ItemList.ACTION_EVENT_REMOVED;
@@ -25,9 +28,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 //import java.io.FileWriter;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 
 /**
  *
@@ -1630,37 +1630,279 @@ public interface ItemAndListCommonInterface<E extends ItemAndListCommonInterface
         }
     }
 
-    default public String[] convertToCSV() {
+//    final static String csvFormatStringFull = "yyyy-MM-dd'T'HH:mm:ss.SSS";
+//    final static String csvFormatStringFull = "yyyy-MM-dd'T'HH:mm:ss"; //https://stackoverflow.com/questions/804118/best-timestamp-format-for-csv-excel
+    final static String csvFormatStringFull = "yyyy-MM-dd HH:mm:ss"; //https://stackoverflow.com/questions/804118/best-timestamp-format-for-csv-excel
+    final static String csvFormatStringDateOnly = "yyyy-MM-dd";
+//    final static String csvFormatStringDateHhMmSsOnly = "yyyy-MM-dd'T'HH:mm:ss";
+    final static String csvFormatStringDateHhMmSsOnly = "yyyy-MM-dd HH:mm:ss";
+//    final static String csvFormatStringDateHhMmOnly = "yyyy-MM-dd'T'HH:mm";
+    final static String csvFormatStringDateHhMmOnly = "yyyy-MM-dd HH:mm";
+    final static SimpleDateFormat csvDateFullFormatter = new SimpleDateFormat(csvFormatStringFull);
+    final static SimpleDateFormat csvDateDateOnlyFormatter = new SimpleDateFormat(csvFormatStringDateOnly);
+    final static SimpleDateFormat csvDateTimeHhMmOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmOnly);
+    final static SimpleDateFormat csvDateTimeHhMmSsOnlyFormatter = new SimpleDateFormat(csvFormatStringDateHhMmSsOnly);
+
+    default Date csvStringToDate(String dateStr) { // throws com.codename1.l10n.ParseException {
+//        YYYY-MM-DDThh:mm:ss.sssZ
+//        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+//if(!dateStr.contains('T'))
+        Date date;
+        try {
+            date = csvDateFullFormatter.parse(dateStr);
+        } catch (com.codename1.l10n.ParseException ex) {
+            try {
+                date = csvDateTimeHhMmSsOnlyFormatter.parse(dateStr);
+            } catch (com.codename1.l10n.ParseException ex1) {
+                try {
+                    date = csvDateTimeHhMmOnlyFormatter.parse(dateStr);
+                } catch (com.codename1.l10n.ParseException ex2) {
+                    try {
+                        date = csvDateDateOnlyFormatter.parse(dateStr);
+                    } catch (com.codename1.l10n.ParseException ex3) {
+                        return new MyDate(0); //if no successful parse of the string, return a '0' date (undefined)
+                    }
+                }
+            }
+        }
+        return date;
+    }
+
+    default String csvDateToString(Date date, SimpleDateFormat formatter) {
+        if (date != null && date.getTime() != 0) {
+            return formatter.format(date);
+        } else {
+            return "";
+        }
+    }
+
+    default String csvDurationToString(long duration, SimpleDateFormat formatter) {
+        if (duration != 0) {
+            return formatter.format(duration);
+        } else {
+            return "";
+        }
+    }
+    default String csvDurationToString(long duration) {
+//        return duration+"";
+//        return csvDurationToString(duration, csvDurationHhMmS);
+        return ((int)duration/1000)+"";
+    }
+
+    default String csvBoolToString(boolean b, String trueString) {
+        if (b) {
+            return trueString != null ? trueString : "TRUE";
+        } else {
+            return "";
+        }
+    }
+
+    default String csvBoolToString(boolean b) {
+        return csvBoolToString(b, "TRUE");
+    }
+
+    default String csvSubtasksToString(List<ItemAndListCommonInterface> subtasks) {
+        if (subtasks == null || subtasks.size() == 0) {
+            return "";
+        }
+        String s = null;
+        for (ItemAndListCommonInterface subtask : subtasks) {
+            if (s == null) {
+                s = "\"" + subtask.getText() + "\"";
+            } else {
+                s += "," + "\"" + subtask.getText() + "\"";
+            }
+        }
+        return s;
+    }
+
+    final static String csvFormatStringDuratioHhMmSs = "HH:mm:ss";
+    final static String csvFormatStringDuratioHhMm = "HH:mm";
+    final static SimpleDateFormat csvDurationHhMmS = new SimpleDateFormat(csvFormatStringDuratioHhMmSs);
+    final static SimpleDateFormat csvDurationHhM = new SimpleDateFormat(csvFormatStringDuratioHhMm);
+
+    default long csvStringToDuration(String durationStrInSeconds) {
+        long duration = 0;
+        Date durationDate = null;
+        try {
+            durationDate = csvDurationHhMmS.parse(durationStrInSeconds);
+        } catch (com.codename1.l10n.ParseException ex) {
+            try {
+                durationDate = csvDurationHhM.parse(durationStrInSeconds);
+            } catch (com.codename1.l10n.ParseException ex1) {
+                try {
+                    durationDate = csvDateTimeHhMmOnlyFormatter.parse(durationStrInSeconds);
+                } catch (com.codename1.l10n.ParseException ex2) {
+                    try {
+                        durationDate = csvDateDateOnlyFormatter.parse(durationStrInSeconds);
+                    } catch (com.codename1.l10n.ParseException ex3) {
+//                        return duration=0; //if no successful parse of the string, return a '0' date (undefined)
+                    }
+                }
+            }
+        }
+        if (durationDate != null) {
+            duration = durationDate.getTime();
+        }
+        return duration;
+    }
+
+    /**
+     * return True if string is defined and either equals True or does not equal
+     * False and is non-empty (any string other than False or empty will be
+     * considered True)
+     *
+     * @param boolStr
+     * @return
+     */
+    default boolean csvStringToBool(String boolStr) {
+        return boolStr != null && (boolStr.equals("True") || (!boolStr.equals("False") && !boolStr.isEmpty()));
+    }
+
+    default String csvNullString(Object boolStr, MyForm.GetString s) {
+        return boolStr != null ? s.get() : "";
+    }
+
+    default String csvElementId(ItemAndListCommonInterface element) {
+        return element != null ? (MyPrefs.useEltTextOverGuidsCSVFiles.getBoolean() ? element.getText() : element.getGuid()) : "";
+    }
+
+    default List<Category> csvCategories(String categories) {
+//        ItemAndListCommonInterface element = DAO.getInstance().fetchElement(elementId);
+        Log.p("ERROR - categories not parsed in CSV: " + categories);
+        return new ArrayList();
+    }
+
+    default ItemAndListCommonInterface csvElement(String elementId) {
+        ItemAndListCommonInterface element = DAO.getInstance().fetchElement(elementId);
+        if (element != null) {
+            return element;
+        } else {
+            //TODO!!!!
+            //search for element in other ways:
+            //search for an element with the same Description (indicate eg the full text of the owner project)
+            //let user assign 'own' unique IDs (any type of string or number) and search for those (build a hasmap
+            return null;
+        }
+    }
+// throws com.codename1.l10n.ParseException {
+
+    /**
+     *
+     * @return
+     */
+    default public String[] csvConvertToStringArray() {
         return new String[]{"CSV export of " + this.getClass().toString() + " not supported yet"};
     }
 
-    ;
+    /**
+     *
+     * @param fieldIds list of fieldIds - if toCSV, list of fields to export,
+     * otherwise order in which the field values are stored in fieldValus
+     * @param fieldValues if toCSV, the array in which to store the generated
+     * csv values, otherwise the list of values to import into this item
+     * @param toCSV
+     * @return
+     */
+    default public void convertToFromCSV(String[] fieldIds, String[] fieldValues, boolean toCSV) {
+        ASSERT.that("CSV export of " + this.getClass().toString() + " not supported yet");
+    }
 
-   default public void exportToCsv(String filename) {
+    default public boolean csvSetFromStringArray(String[] csvFieldList, String[] cvsValues) {
+        String[] csvValues = new String[csvFieldList.length];
+        convertToFromCSV(csvFieldList, csvValues, false);
+        return true; //TODO!! return status/error log (if any fields did not convert correctly)
+    }
+
+    default public void csvSaveToStringBuilder(StringBuilder strBuffer) {
         try {
-            Writer w;
-            if (true) {
-//                w = new ca.weblite.codename1.json.StringWriter();
-                w = new StringWriter();
-            } else {
-//                w = new FileWriter(filename);
+            if (this instanceof Item) {
+                CSVHelper.writeLine(strBuffer, Arrays.asList(Item.csvFieldList)); //write column names
+            } else if (this instanceof ItemList) {
+                //treat Categories like ItemLists (not very interesting to export Categories since they can be recreated from the Items' categories)
+                CSVHelper.writeLine(strBuffer, Arrays.asList(ItemList.csvFieldList)); //write column names
             }
-            CSVHelper.writeLine(w, Arrays.asList(Item.csvFieldList));
-            CSVHelper.writeLine(w, Arrays.asList(convertToCSV()));
 
+            CSVHelper.writeLine(strBuffer, Arrays.asList(csvConvertToStringArray())); //write element itself
+
+            //write all subelements
             List<E> list = getListFull();
             for (E elt : list) {
-                CSVHelper.writeLine(w, Arrays.asList(elt.convertToCSV()));
+                CSVHelper.writeLine(strBuffer, Arrays.asList(elt.csvConvertToStringArray()));
             }
+        } catch (Exception ex) {
+            Log.p(ex.getMessage());
+        }
+    }
 
-            Log.p(w.toString());
+    /**
+     *
+     * @param filename
+     */
+    default public void csvSaveToFile(String filename) {
+        try {
+//<editor-fold defaultstate="collapsed" desc="comment">
+//            OutputStream writer;
+//            Writer writer;
+//            if (true) {
+////                w = new ca.weblite.codename1.json.StringWriter();
+//                writer = new StringWriter();
+//            } else {
+////                w = new FileWriter(filename);
+//            }
+//</editor-fold>
+            if (this instanceof Item || this instanceof ItemList) { //treat Categories like ItemLists (not very interesting to export Categories since they can be recreated from the Items' categories)
+                StringBuilder strBuffer = new StringBuilder();
+
+                CSVHelper.writeLine(strBuffer, Arrays.asList(Item.csvFieldList)); //write column names
+
+                CSVHelper.writeLine(strBuffer, Arrays.asList(csvConvertToStringArray())); //write element itself
+
+                //write all subelements
+                List<E> list = getListFull();
+                for (E elt : list) {
+                    CSVHelper.writeLine(strBuffer, Arrays.asList(elt.csvConvertToStringArray()));
+                }
+
+                if (filename != null && !filename.isEmpty()) {
+//            FileOutputStream fc = new FileOutputStream(filename);
+//            BufferedOutputStream o = new BufferedOutputStream(fc, filename);
+                    if (FileSystemStorage.getInstance().exists(filename)) {
+                        if (Dialog.show("WARNING", "Trying to write CSV data to an existing file", "Overwrite", "Cancel")) {
+                            File file = new File(filename);
+//<editor-fold defaultstate="collapsed" desc="comment">
+////                        OutputStream out = FileSystemStorage.getInstance().openOutputStream(filename);
+//                        CSVHelper.writeLine(strBuffer, Arrays.asList(Item.csvFieldList));
+//                        out.write(strBuffer.);
+//
+//                        FileSystemStorage fs = FileSystemStorage.getInstance();
+//                        OutputStream stream = fs.openOutputStream(filename);
+//                        stream.write(content.getBytes("UTF-8"));
+//                        stream.close();
+//</editor-fold>
+                            com.codename1.io.Util.writeStringToFile(file, strBuffer.toString());
+                        }
+                    }
+                } else {
+                    Log.p(strBuffer.toString());
+                }
+            }
         } catch (Exception ex) {
             Log.p(ex.getLocalizedMessage());
         }
     }
 
-    default public void exportToCsv() {
-        exportToCsv(null);
+    default public void csvSaveToFile() {
+        if (!getText().isEmpty()) {
+            csvSaveToFile(getText() + ".csv");
+        } else {
+            csvSaveToFile(getTypeString(this) + MyDate.formatDateTimeNew(new MyDate()) + ".csv");
+
+        }
+    }
+
+    default public void csvPrintToLog() {
+        csvSaveToFile(null);
     }
 
     static int countIndentChars(StringBuffer s, String indentChars) {

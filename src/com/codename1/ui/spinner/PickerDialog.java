@@ -27,8 +27,8 @@ public class PickerDialog {
     DateSpinner3D dateSpinner;
     DurationSpinner3D durationSpinner3D;
 
-    public static String DONE_BUTTON_TEXT = "Done";
-    public static String CANCEL_BUTTON_TEXT = "Cancel";
+    public static String DONE_BUTTON_TEXT = "Set";
+    public static String CANCEL_BUTTON_TEXT = "Skip";
 
     public PickerDialog(String title, String text, Object value, String doneText, String cancelText, int type) {
         this.type = type;
@@ -142,7 +142,9 @@ public class PickerDialog {
 
 //        spinner3D.getPreferredSize();
         Container cont = new Container(BoxLayout.y());
-        cont.add(new SpanLabel(text, "PickerDialogText"));
+        SpanLabel helpTextLabel = new SpanLabel(text, "PickerDialogText");
+        helpTextLabel.setTextPosition(Component.CENTER);
+        cont.add(helpTextLabel);
 
         DateSpinner3D waitingDateSpinner = new DateSpinner3D();
         waitingDateSpinner.setValue(waitingDate);
